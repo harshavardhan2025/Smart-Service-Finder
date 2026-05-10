@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import "../App.css";
 
 function Navbar() {
   const navigate = useNavigate();
-  const isLoggedIn = !!localStorage.getItem("userRole");
+  const location = useLocation();
+  const isAuthPage = location.pathname === "/login" || location.pathname === "/signup";
+  const isLoggedIn = !!localStorage.getItem("userRole") && !isAuthPage;
   const userRole = localStorage.getItem("userRole") || "user";
 
   // Sync state with localStorage and document body attribute
@@ -109,6 +111,45 @@ function Navbar() {
 
         {isLoggedIn ? (
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+            {/* Worker Dashboard Quick Link */}
+            {localStorage.getItem("userRole") === "worker" && (
+              <Link to="/worker-dashboard" style={{ textDecoration: "none" }}>
+                <button
+                  style={{
+                    backgroundColor: "var(--primary)",
+                    color: "white",
+                    border: "none",
+                    padding: "10px 18px",
+                    cursor: "pointer",
+                    borderRadius: "8px",
+                    fontWeight: 600
+                  }}
+                >
+                  🛠️ Worker Panel
+                </button>
+              </Link>
+            )}
+
+            {/* User Dashboard Quick Link */}
+            {localStorage.getItem("userRole") === "user" && (
+              <Link to="/user-dashboard" style={{ textDecoration: "none" }}>
+                <button
+                  style={{
+                    backgroundColor: "var(--primary)",
+                    color: "white",
+                    border: "none",
+                    padding: "10px 18px",
+                    cursor: "pointer",
+                    borderRadius: "8px",
+                    fontWeight: 600
+                  }}
+                >
+                  👤 My Dashboard
+                </button>
+              </Link>
+            )}
+
+            {/* Admin Dashboard Quick Link */}
             {localStorage.getItem("userRole") === "admin" && (
               <Link to="/admin-dashboard" style={{ textDecoration: "none" }}>
                 <button

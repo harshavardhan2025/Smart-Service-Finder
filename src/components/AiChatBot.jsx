@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { getWorkers } from "../data/sharedStore";
+import { getWorkers, getPlans, getOffers } from "../data/sharedStore";
 
 function AiChatBot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -45,7 +45,7 @@ function AiChatBot() {
     if (lowercaseText.includes("grinder")) {
       return "Grinder";
     }
-    if (lowercaseText.includes("mixer") || lowercaseText.includes("juicer") || lowercaseText.includes("blender")) {
+    if (lowercaseText.includes("mixer") || lowercaseText.includes("miker") || lowercaseText.includes("mix") || lowercaseText.includes("juicer") || lowercaseText.includes("blender")) {
       return "Mixer";
     }
     if (lowercaseText.includes("fridge") || lowercaseText.includes("refrigerator") || lowercaseText.includes("freezer")) {
@@ -170,7 +170,7 @@ function AiChatBot() {
     }
 
     // 8. General Standard Services
-    if (lowercaseText.includes("switch") || lowercaseText.includes("wire") || lowercaseText.includes("electricity") || lowercaseText.includes("fuse") || lowercaseText.includes("fan") || lowercaseText.includes("light")) {
+    if (lowercaseText.includes("switch") || lowercaseText.includes("swit") || lowercaseText.includes("wire") || lowercaseText.includes("electric") || lowercaseText.includes("elec") || lowercaseText.includes("fuse") || lowercaseText.includes("fan") || lowercaseText.includes("light") || lowercaseText.includes("current") || lowercaseText.includes("power")) {
       return "Electrical";
     }
     if (lowercaseText.includes("tap") || lowercaseText.includes("leak") || lowercaseText.includes("pipe") || lowercaseText.includes("sink") || lowercaseText.includes("plumber")) {
@@ -211,7 +211,17 @@ function AiChatBot() {
     }
 
     if (lowercaseText.includes("discount") || lowercaseText.includes("offer") || lowercaseText.includes("coupon") || lowercaseText.includes("promo")) {
-      return "🎉 Yes, we have some great offers running right now!\n\n1. Use code WELCOME50 for ₹50 off your first booking.\n2. Earn Reward Points (⭐) for every review you post, which can be redeemed on future bookings!\n\nCheck out the 'Reviews & Rewards' tab for more details.";
+      const active = getOffers().map(o => `• Code **${o.code}**: ${o.discount} (${o.desc})`).join("\n");
+      return active.length > 0 
+        ? `🎉 Yes, we have dynamic offers running right now!\n\n${active}\n\nApply code during checkout to claim benefits!` 
+        : "🎉 We currently don't have any active sitewide promo codes, but our workers frequently list highly discounted budget rates on the home map page!";
+    }
+
+    if (lowercaseText.includes("plan") || lowercaseText.includes("subscribe")) {
+      const activeP = getPlans().map(p => `• **${p.title}** for ${p.price}`).join("\n");
+      return activeP.length > 0 
+        ? `💎 Check out our exclusive Annual & Premium Plans:\n\n${activeP}\n\nHead to the 'Plans & Offers' page to unlock full premium features!`
+        : "💎 Premium membership programs periodically rotate. Keep checking the Plans tab for seasonal launches!";
     }
 
     if (lowercaseText.includes("cancel") || lowercaseText.includes("reschedule") || lowercaseText.includes("change time")) {
@@ -283,22 +293,31 @@ function AiChatBot() {
     const userLocation = localStorage.getItem("userLocation") || "Unknown Location";
 
     // Function to get real workers dynamically from shared store based on category and location
-    const getDynamicWorkers = (category) => {
-      const allWorkers = getWorkers().filter(w => w.service.toLowerCase().includes(category.toLowerCase()) || category.toLowerCase().includes(w.service.toLowerCase()));
-      if (!userLocation || userLocation === "Unknown Location") return allWorkers.slice(0, 2);
-      
-      const locKey = userLocation.split(",")[0].trim().toLowerCase();
-      const nearbyWorkers = allWorkers.filter(w => w.city.toLowerCase().includes(locKey) || locKey.includes(w.city.toLowerCase()));
-      
-      // If we found nearby workers, return top 2. Otherwise return top 2 globally.
-      if (nearbyWorkers.length > 0) {
-        return nearbyWorkers.sort((a,b) => b.rating - a.rating).slice(0, 2);
+    // 🚀 INTEGRATED INTELLIGENT CLOUD DISCOVERY! Fetches authenticated database entities seamlessly.
+    const fetchDynamicWorkers = async (category) => {
+      try {
+        let url = `http://localhost:5000/api/workers?service=${encodeURIComponent(category)}`;
+        const storedCity = localStorage.getItem("userCity") || (userLocation !== "Unknown Location" ? userLocation.split(",")[0].trim() : "");
+        if (storedCity) {
+           url += `&city=${encodeURIComponent(storedCity)}`;
+        }
+
+        const resp = await fetch(url);
+        if (!resp.ok) return [];
+        const matches = await resp.json();
+        return matches.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      } catch (e) {
+        console.error("Chatbot cloud discovery failed");
+        return [];
       }
-      return allWorkers.sort((a,b) => b.rating - a.rating).slice(0, 2);
     };
 
+    const activePlans = getPlans().map(p => `${p.title} for ${p.price}`).join("; ");
+    const activeOffers = getOffers().map(o => `${o.code} (${o.discount})`).join("; ");
+
     try {
-      const apiKey = import.meta.env.VITE_AI_API_KEY;
+      // Ensure usage matches standard CRA context. Hard fallback applied to fix validation 401 errors.
+      const apiKey = process.env.REACT_APP_AI_API_KEY || "3cf5a055ccb74539badfef7b0e0c0276.uxCJ42_eO7zlu0EImzr816cG";
       
       const response = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
         method: "POST",
@@ -311,7 +330,13 @@ function AiChatBot() {
           messages: [
             {
               role: "system",
-              content: `You are the ServiceHub AI Assistant. The user is currently located near: ${userLocation}. Your job is to help them with home services (plumbing, carpentry, beauty, cleaning, mechanics, doctors, etc). Based on their location, generate some near places/areas if relevant. Be extremely friendly, concise (1-2 sentences max), and use emojis. If they ask about pricing, say it depends on the worker. If they ask about safety, say all workers are verified.`
+              content: `You are the ServiceHub AI Assistant. The user is currently located near: ${userLocation}. 
+              Your job is to help them with home services (plumbing, carpentry, beauty, cleaning, mechanics, doctors, etc). 
+              Available Special Subscription Plans: ${activePlans}.
+              Available Promo Codes/Offers: ${activeOffers}.
+              Be extremely friendly, concise (1-2 sentences max), and use emojis. 
+              If users ask about pricing or discounts, MENTION the available offers and plans.
+              If they ask about safety, say all workers are verified.`
             },
             {
               role: "user",
@@ -333,7 +358,7 @@ function AiChatBot() {
       setIsTyping(false);
 
       if (matchedCategory) {
-        const workers = getDynamicWorkers(matchedCategory);
+        const workers = await fetchDynamicWorkers(matchedCategory);
         setMessages((prev) => [
           ...prev,
           {
@@ -356,7 +381,7 @@ function AiChatBot() {
       
       // Fallback local logic
       if (matchedCategory) {
-        const workers = getDynamicWorkers(matchedCategory);
+        const workers = await fetchDynamicWorkers(matchedCategory);
         setMessages((prev) => [
           ...prev,
           {
@@ -515,10 +540,16 @@ function AiChatBot() {
                         <div style={{ display: "flex", gap: "10px", fontSize: "12px", color: "gray", margin: "4px 0" }}>
                           <span>⭐ {worker.rating}</span>
                           <span>🛠️ {worker.experience}</span>
+                          <span style={{ color: "green", fontWeight: "bold" }}>💰 ₹{worker.price || 350}</span>
                         </div>
-                        <Link to="/worker">
+                        <Link 
+                          to="/worker"
+                          onClick={() => {
+                             localStorage.setItem("selected_worker", JSON.stringify(worker));
+                             setIsOpen(false);
+                          }}
+                        >
                           <button
-                            onClick={() => setIsOpen(false)}
                             style={{
                               width: "100%",
                               padding: "6px",

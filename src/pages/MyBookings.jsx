@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getBookings, updateWalletBalance, addTransaction } from "../data/sharedStore";
 
 const serviceIcons = {
@@ -16,10 +16,29 @@ const serviceIcons = {
 function MyBookings() {
   const [liveBookings, setLiveBookings] = useState([]);
   const [reviewedIds, setReviewedIds] = useState(new Set());
+  const navigate = useNavigate();
 
-  const syncBookings = () => {
-    // Read all bookings from sharedStore.js
-    setLiveBookings(getBookings());
+  const syncBookings = async () => {
+    const customerId = localStorage.getItem("userId");
+    const cName = localStorage.getItem("userName") || "Verified Client";
+    if (!customerId) return;
+
+    try {
+       // 🛰️ COMPOSITE SYNCHRONIZATION: Load Bookings & Real Reviews simultaneously!
+       const [bResp, rResp] = await Promise.all([
+          fetch(`http://localhost:5000/api/bookings?customer_id=${customerId}`),
+          fetch(`http://localhost:5000/api/reviews?customer_name=${encodeURIComponent(cName)}`)
+       ]);
+       const bData = await bResp.json();
+       const rData = await rResp.json();
+
+       if (Array.isArray(bData)) setLiveBookings(bData);
+       if (Array.isArray(rData)) {
+          // Auto-Hydrate accurate reviewed ID matrix flawlessly!
+          const committedIds = new Set(rData.map(r => r.booking_id));
+          setReviewedIds(committedIds);
+       }
+    } catch(err) { console.error("Cloud bookings sync failed."); }
   };
 
   useEffect(() => {
@@ -30,25 +49,14 @@ function MyBookings() {
   }, []);
 
   const handleReview = (booking) => {
-    if (reviewedIds.has(booking.id)) return;
-    
-    // 1. Give 50 Rs to wallet
-    updateWalletBalance(50);
-    
-    // 2. Log transaction
-    addTransaction({
-      service: "Review Cashback - " + booking.service,
-      worker: booking.workerName,
-      amount: 50,
-      method: "Cashback",
-      status: "Paid",
-      icon: "🎁"
-    });
+     // 🚀 DYNAMIC PASSTHROUGH: The backend auto-filters correctly, simply redirect effortlessly!
+     navigate("/reviews");
+  };
 
-    // 3. Prevent clicking again
-    setReviewedIds(new Set(reviewedIds).add(booking.id));
-    
-    alert(`Thank you! A reward of ₹50 cashback has been instantly added to your Wallet for reviewing ${booking.workerName}! 🎁 Check your Profile Wallet.`);
+  const handleComplaint = (booking) => {
+    const bid = booking._id || booking.id;
+    // 🚀 DYNAMIC ESCALATION: Transfer control instantly to physical Support Desk flawlessly!
+    navigate("/support", { state: { bookingId: bid, service: booking.service } });
   };
 
   const getStatusStyles = (status) => {
@@ -125,7 +133,7 @@ function MyBookings() {
             { label: "Total", count: liveBookings.length, color: "#1e293b", bg: "#f1f5f9" },
             { label: "Confirmed/Accepted", count: liveBookings.filter(b => b.status === "Confirmed" || b.status === "Accepted").length, color: "#16a34a", bg: "#dcfce7" },
             { label: "Upcoming/Pending", count: liveBookings.filter(b => b.status === "Upcoming").length, color: "#d97706", bg: "#fef3c7" },
-            { label: "Completed", count: liveBookings.filter(b => b.status === "Completed").length, color: "#2563eb", bg: "#dbeafe" }
+            { label: "Completed", count: liveBookings.filter(b => b.status === "Completed" || b.status === "Paid Out").length, color: "#2563eb", bg: "#dbeafe" }
           ].map(({ label, count, color, bg }) => (
             <div
               key={label}
@@ -162,11 +170,12 @@ function MyBookings() {
           ) : (
             liveBookings.map((booking) => {
               const { color, bg } = getStatusStyles(booking.status);
-              const isReviewed = reviewedIds.has(booking.id);
+              const bid = booking._id || booking.id;
+              const isReviewed = reviewedIds.has(bid);
               
               return (
                 <div
-                  key={booking.id}
+                  key={bid}
                   style={{
                     backgroundColor: "white",
                     borderRadius: "14px",
@@ -197,7 +206,7 @@ function MyBookings() {
                           {booking.service}
                         </h3>
                         <p style={{ margin: "3px 0 0 0", fontSize: "13px", color: "#64748b" }}>
-                          👷 {booking.workerName}
+                          👷 Verified Professional Assigned
                         </p>
                       </div>
                     </div>
@@ -232,11 +241,11 @@ function MyBookings() {
                   >
                     <span>📅 Date: {booking.date}</span>
                     <span>🕐 Time: {booking.time}</span>
-                    <span style={{ fontWeight: 700, color: "#0284c7" }}>💰 Price: ₹{booking.amount} ({booking.paymentMethod})</span>
+                    <span style={{ fontWeight: 700, color: "#0284c7" }}>💰 Cost: ₹{booking.price || booking.amount || 0}</span>
                   </div>
 
-                  {booking.status === "Completed" && (
-                    <div style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px dashed #cbd5e1" }}>
+                  {(booking.status === "Completed" || booking.status === "Paid Out") && (
+                    <div style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px dashed #cbd5e1", display: "flex", gap: "12px", flexWrap: "wrap" }}>
                       <button 
                         onClick={() => handleReview(booking)}
                         disabled={isReviewed}
@@ -255,6 +264,28 @@ function MyBookings() {
                         }}
                       >
                         {isReviewed ? "✅ Review Submitted & Cashback Claimed" : "⭐ Leave Review & Earn ₹50 Wallet Cashback"}
+                      </button>
+
+                      <button 
+                        onClick={() => handleComplaint(booking)}
+                        style={{
+                          backgroundColor: "#fee2e2",
+                          color: "#dc2626",
+                          border: "1px solid #fecaca",
+                          padding: "8px 16px",
+                          borderRadius: "8px",
+                          fontWeight: "bold",
+                          cursor: "pointer",
+                          fontSize: "13px",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          transition: "all 0.2s"
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#fecaca"}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#fee2e2"}
+                      >
+                        ⚠️ Report Grievance
                       </button>
                     </div>
                   )}

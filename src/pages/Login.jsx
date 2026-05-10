@@ -8,28 +8,47 @@ function Login() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     if (!email || !password) {
       alert("Please fill in all fields!");
       return;
     }
 
-    if (email === "user@gmail.com" && password === "user123") {
-      localStorage.setItem("userRole", "user");
-      alert("Welcome Customer! You are logged in successfully! 🎉");
-      navigate("/");
-    } else if (email === "worker@gmail.com" && password === "worker123") {
-      localStorage.setItem("userRole", "worker");
-      localStorage.setItem("loggedInWorkerId", "WK001");
-      alert("Welcome Worker! You are logged in successfully! 🛠️");
-      navigate("/worker-dashboard");
-    } else if (email === "admin@gmail.com" && password === "admin123") {
-      localStorage.setItem("userRole", "admin");
-      alert("Welcome Administrator! You are logged in successfully! 👑");
-      navigate("/admin-dashboard");
-    } else {
-      alert("❌ Invalid Credentials. Please try again.");
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Invalid login credentials!");
+      }
+
+      // Save user session details consistently
+      const user = data.user;
+      localStorage.setItem("userRole", user.role);
+      localStorage.setItem("userName", user.name);
+      localStorage.setItem("userEmail", user.email);
+      localStorage.setItem("userId", user.id || user._id);
+      localStorage.setItem("authToken", data.token); // For future auth requests
+
+      if (user.role === "worker") {
+        localStorage.setItem("loggedInWorkerId", user.id);
+        alert(`Welcome Professional ${user.name}! You are logged in successfully! 🛠️`);
+        navigate("/worker-dashboard");
+      } else if (user.role === "admin") {
+        alert("Welcome Administrator! You are logged in successfully! 👑");
+        navigate("/admin-dashboard");
+      } else {
+        alert(`Welcome Customer ${user.name}! You are logged in successfully! 🎉`);
+        navigate("/user-dashboard");
+      }
+    } catch (err) {
+      alert(`❌ Login Failed: ${err.message}`);
     }
   };
 

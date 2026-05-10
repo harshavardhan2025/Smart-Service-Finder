@@ -1,25 +1,39 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getWorkers } from "../data/sharedStore";
 
 function getShortLocation(fullAddress) {
   if (!fullAddress) return "";
+  const lower = fullAddress.toLowerCase();
+  if (lower.includes("kakinada")) return "kakinada";
+  if (lower.includes("rajahmundry")) return "rajahmundry";
   return fullAddress.split(",")[0].trim().toLowerCase();
 }
 
 function TopWorkers({ searchedLocation }) {
-  const locationKey = getShortLocation(searchedLocation);
-  const allWorkers = getWorkers();
+  const [cloudWorkers, setCloudWorkers] = useState([]);
+  
+  useEffect(() => {
+    const fetchWorkers = async () => {
+       try {
+         const resp = await fetch("http://localhost:5000/api/workers");
+         if (resp.ok) setCloudWorkers(await resp.json());
+       } catch(e) { console.error("Top workers fail"); }
+    };
+    fetchWorkers();
+  }, []);
 
+  const locationKey = getShortLocation(searchedLocation);
+  
   // Filter by location if available, else show all sorted by rating
-  const workers = searchedLocation
-    ? allWorkers.filter((w) =>
+  const candidates = searchedLocation
+    ? cloudWorkers.filter((w) =>
         w.city.toLowerCase().includes(locationKey) ||
         locationKey.includes(w.city.toLowerCase())
       )
-    : allWorkers;
+    : cloudWorkers;
 
   // Always show top 4 by rating
-  const topWorkers = [...workers].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 4);
+  const topWorkers = [...candidates].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 4);
 
   return (
     <div className="fade-in" style={{ padding: "20px" }}>
@@ -34,7 +48,7 @@ function TopWorkers({ searchedLocation }) {
 
       {topWorkers.length === 0 ? (
         <p style={{ color: "gray", fontStyle: "italic" }}>
-          No top-rated workers found near "{searchedLocation.split(",")[0]}". Try a different location.
+          Scanning cloud for top professionals...
         </p>
       ) : (
         <div
@@ -45,9 +59,9 @@ function TopWorkers({ searchedLocation }) {
             paddingBottom: "10px"
           }}
         >
-          {topWorkers.map((worker, index) => (
+          {topWorkers.map((worker) => (
             <div
-              key={index}
+              key={worker._id}
               className="premium-card"
               style={{ minWidth: "220px", flex: "0 0 auto" }}
             >
@@ -59,14 +73,26 @@ function TopWorkers({ searchedLocation }) {
               <p style={{ margin: "8px 0", fontWeight: "bold", fontSize: "14px" }}>
                 <span style={{ color: "#f59e0b" }}>⭐</span> {worker.rating}
               </p>
+              <p style={{ margin: "4px 0 10px 0", fontWeight: "800", fontSize: "16px", color: "var(--success)" }}>
+                ₹{worker.price || 350}
+              </p>
 
-              <Link to="/worker" style={{ textDecoration: 'none' }}>
+              <Link 
+                to="/worker" 
+                onClick={() => localStorage.setItem("selected_worker", JSON.stringify(worker))}
+                style={{ textDecoration: 'none' }}
+              >
                 <button
                   style={{
                     width: "100%",
                     marginTop: "10px",
                     backgroundColor: "var(--primary)",
                     color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    padding: "10px",
+                    fontWeight: "bold",
+                    cursor: "pointer"
                   }}
                 >
                   View Profile

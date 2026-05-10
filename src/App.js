@@ -53,6 +53,11 @@ function App() {
         />
 
         <Route
+          path="/user-dashboard"
+          element={<UserDashboard />}
+        />
+
+        <Route
           path="/worker-dashboard"
           element={<WorkerDashboard />}
         />

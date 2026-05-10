@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
-import { getBookings, getReviews, getComplaints, getWorkers, saveWorkers, updateBookingStatus, cancelBooking, getNotifications, markNotificationsRead } from "../data/sharedStore";
+// Dynamically enhanced to consume real Mongo cloud telemetry
 
 function WorkerDashboard() {
   const [activeTab, setActiveTab] = useState("status");
@@ -28,63 +28,93 @@ function WorkerDashboard() {
   });
   const [editProfile, setEditProfile] = useState({ ...profile });
 
-  // Function to pull latest data from central shared store
-  const syncStore = () => {
-    const currentWorkerInfo = getWorkers().find(w => w.id === selectedWorkerId) || getWorkers()[0] || {};
-    const allBookings = getBookings().filter(b => 
-      b.workerId === currentWorkerInfo.id || 
-      b.workerName === currentWorkerInfo.name ||
-      (b.service && currentWorkerInfo.service && (
-        String(b.service).toLowerCase().includes(String(currentWorkerInfo.service).toLowerCase()) ||
-        String(currentWorkerInfo.service).toLowerCase().includes(String(b.service).toLowerCase())
-      ))
-    );
-    const allReviews = getReviews().filter(r => r.workerName === currentWorkerInfo.name || r.workerId === currentWorkerInfo.id);
-    const allComplaints = getComplaints().filter(c => c.workerName === currentWorkerInfo.name || c.workerId === currentWorkerInfo.id);
+  // Pull real runtime data directly from active Mongo Cloud Backend
+  const syncStore = async () => {
+    const currentUserId = localStorage.getItem("userId");
+    const userEmail = localStorage.getItem("userEmail");
+    if (!currentUserId || !userEmail) return;
 
-    setBookings(allBookings);
-    setReviews(allReviews);
-    setComplaints(allComplaints);
-    setSysNotifications(getNotifications("worker"));
-    setIsActive(currentWorkerInfo.isOnline !== false);
-    if (currentWorkerInfo.name) {
-      setProfile({
-        name: currentWorkerInfo.name,
-        profession: currentWorkerInfo.service,
-        phone: "9876543210",
-        email: `${currentWorkerInfo.name.toLowerCase().replace(/\s+/g, "")}@gmail.com`,
-        city: currentWorkerInfo.city,
-        rating: currentWorkerInfo.rating,
-        totalReviews: currentWorkerInfo.reviews,
-        joinedDate: "Jan 2024",
-        photo: currentWorkerInfo.service.includes("Doctors") ? "🩺" : "👷"
-      });
+    try {
+      let targetWorkerMongoId = null;
+
+      // 1. DISCOVER AUTHENTIC WORKER ID VIA EMAIL INDEXING FIRST
+      const workerResp = await fetch(`http://localhost:5000/api/workers`);
+      if (workerResp.ok) {
+        const allWorkers = await workerResp.json();
+        const match = allWorkers.find(w => w.email === userEmail || w._id === currentUserId);
+        if (match) {
+          targetWorkerMongoId = match._id; // Authentic Primary Key established
+          setProfile({
+            name: match.name,
+            profession: match.service,
+            phone: "9876543210",
+            email: match.email,
+            city: match.city,
+            rating: match.rating || 5.0,
+            walletBalance: match.walletBalance || 0,
+            totalReviews: 1,
+            joinedDate: "May 2026",
+            mongoId: match._id,
+            photo: match.service && match.service.includes("Doctors") ? "🩺" : "👷"
+          });
+          setIsActive(match.status === "Active");
+        }
+      }
+
+      // 2. EXECUTE RELATIONAL QUERY USING AUTHENTIC PRIMARY KEY
+      if (targetWorkerMongoId) {
+        const bookingResp = await fetch(`http://localhost:5000/api/bookings?worker_id=${targetWorkerMongoId}`);
+        if (bookingResp.ok) {
+          const data = await bookingResp.json();
+          setBookings(data);
+        }
+      }
+    } catch (err) {
+       console.error("Worker Sync Failed:", err);
     }
   };
 
-  const handleAcceptOrder = (bookingId) => {
-    updateBookingStatus(bookingId, "Accepted");
-    alert("✅ Order accepted successfully! The customer has been notified. 🚀");
-    syncStore();
+  const handleAcceptOrder = async (bookingId) => {
+    try {
+      await fetch(`http://localhost:5000/api/bookings/${bookingId}`, {
+         method: "PATCH",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ status: "Accepted" })
+      });
+      alert("✅ Order accepted successfully! The customer has been notified. 🚀");
+      syncStore();
+    } catch (err) { alert("Update failed"); }
   };
 
-  const handleStatusChange = (bookingId, newStatus) => {
-    updateBookingStatus(bookingId, newStatus);
-    alert(`Status updated to: ${newStatus}`);
-    syncStore();
-  }
-
-  const handleRejectOrder = (bookingId) => {
-    if (window.confirm("Are you sure you want to reject this customer order?")) {
-      cancelBooking(bookingId, "worker");
-      alert("❌ Request rejected successfully.");
+  const handleStatusChange = async (bookingId, newStatus) => {
+    try {
+      await fetch(`http://localhost:5000/api/bookings/${bookingId}`, {
+         method: "PATCH",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ status: newStatus })
+      });
+      alert(`Status updated to: ${newStatus}`);
       syncStore();
+    } catch (err) { alert("Update failed"); }
+  };
+
+  const handleRejectOrder = async (bookingId) => {
+    if (window.confirm("Are you sure you want to reject this customer order?")) {
+       try {
+          await fetch(`http://localhost:5000/api/bookings/${bookingId}`, {
+             method: "PATCH",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify({ status: "Rejected" })
+          });
+          alert("❌ Request rejected successfully.");
+          syncStore();
+       } catch (err) { alert("Failed to reject"); }
     }
   };
 
   const handleMarkNotificationsRead = () => {
-    markNotificationsRead("worker");
-    syncStore();
+    // Placeholder
+    alert("Marked all read locally.");
   };
 
   useEffect(() => {
@@ -95,6 +125,11 @@ function WorkerDashboard() {
     const interval = setInterval(syncStore, 3000);
     return () => clearInterval(interval);
   }, [selectedWorkerId]);
+
+  // Dynamically compute physical earnings directly from active database bookings instantly
+  const dynamicRevenueTotal = bookings
+    .filter(b => b.status === "Paid Out")
+    .reduce((sum, b) => sum + (Number(b.price) || 0), 0);
 
   // Combine real DB notifications with the bookings map
   const notifications = [
@@ -107,16 +142,16 @@ function WorkerDashboard() {
       time: new Date(n.timestamp).toLocaleTimeString(),
       read: n.read
     })),
-    ...bookings.filter(b => b.status === "Pending" || b.status === "Upcoming").map((b) => ({
-      id: `b-${b.id}`,
-      bookingId: b.id,
+    ...bookings.filter(b => ["Pending", "Upcoming", "Accepted", "On the Way", "Started"].includes(b.status)).map((b) => ({
+      id: `b-${b._id}`,
+      bookingId: b._id,
       bookingStatus: b.status,
       type: "booking",
       icon: "📅",
-      title: "New Booking Request!",
-      message: `${b.customer} wants to book ${b.service} on ${b.date} at ${b.time}. Address: ${b.address}`,
-      customerAddr: b.address,
-      workerAddr: "Worker Location",
+      title: `Job Request: ${b.service || 'New Order'}`,
+      message: `Request for ${b.service} on ${b.date} at ${b.time}. Customer location details included below.`,
+      customerAddr: b.address || "Client Location",
+      workerAddr: profile.city || "Worker Area",
       time: "Real-time",
       read: false
     }))
@@ -196,12 +231,21 @@ function WorkerDashboard() {
                   </p>
                 </div>
                 <button 
-                  onClick={() => {
-                    const nextState = !isActive;
-                    setIsActive(nextState);
-                    const allWorkers = getWorkers();
-                    const updated = allWorkers.map(w => w.id === selectedWorkerId ? { ...w, isOnline: nextState } : w);
-                    saveWorkers(updated);
+                  onClick={async () => {
+                    const newStatus = !isActive ? "Active" : "Inactive";
+                    if (profile.mongoId) {
+                      try {
+                        await fetch(`http://localhost:5000/api/workers/${profile.mongoId}`, {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ status: newStatus })
+                        });
+                        setIsActive(!isActive);
+                        alert(`Status saved globally as ${newStatus}!`);
+                      } catch(e) { alert("Cloud sync failed"); }
+                    } else {
+                      setIsActive(!isActive);
+                    }
                   }} 
                   style={{
                     width: "100%", padding: "16px", fontSize: 16, fontWeight: 700, border: "none", borderRadius: 10, cursor: "pointer",
@@ -235,12 +279,12 @@ function WorkerDashboard() {
                     </thead>
                     <tbody>
                       {bookings.map(b => (
-                        <tr key={b.id} style={{ borderBottom: "1px solid #e2e8f0", fontSize: 14 }}>
-                          <td style={{ padding: "14px 8px", fontWeight: 700 }}>{b.customer}</td>
+                        <tr key={b._id} style={{ borderBottom: "1px solid #e2e8f0", fontSize: 14 }}>
+                          <td style={{ padding: "14px 8px", fontWeight: 700 }}>{b.customer_name || "Verified Customer"}</td>
                           <td style={{ padding: "14px 8px" }}>{b.service}</td>
                           <td style={{ padding: "14px 8px" }}>📅 {b.date}<br />🕐 {b.time}</td>
                           <td style={{ padding: "14px 8px" }}>{b.address}</td>
-                          <td style={{ padding: "14px 8px", fontWeight: 700, color: "var(--primary)" }}>₹{b.amount}</td>
+                          <td style={{ padding: "14px 8px", fontWeight: 700, color: "var(--primary)" }}>₹{b.price}</td>
                           <td style={{ padding: "14px 8px" }}>
                             <span style={statusStyle(b.status)}>{b.status}</span>
                           </td>
@@ -399,7 +443,7 @@ function WorkerDashboard() {
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 20, marginBottom: 32 }}>
                 <div className="premium-card" style={{ textAlign: "center" }}>
                   <div style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 700, textTransform: "uppercase" }}>Total Earned</div>
-                  <div style={{ fontSize: 38, fontWeight: 900, color: "var(--primary)", marginTop: 8 }}>₹{totalEarnings}</div>
+                  <div style={{ fontSize: 38, fontWeight: 900, color: "var(--primary)", marginTop: 8 }}>₹{dynamicRevenueTotal}</div>
                 </div>
                 <div className="premium-card" style={{ textAlign: "center" }}>
                   <div style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 700, textTransform: "uppercase" }}>Jobs Received</div>

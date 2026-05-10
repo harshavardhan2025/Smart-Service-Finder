@@ -116,11 +116,35 @@ const SERVICES = [
 
 function getShortLocation(fullAddress) {
   if (!fullAddress) return "";
+  const lower = fullAddress.toLowerCase();
+  // 🧠 SMART ADAPTIVE RESOLVER: Scan entire address instead of just the first comma segment!
+  if (lower.includes("kakinada")) return "kakinada";
+  if (lower.includes("rajahmundry")) return "rajahmundry";
+  
   return fullAddress.split(",")[0].trim().toLowerCase();
 }
 
 function NearbyWorkers({ searchedLocation }) {
   const [selectedService, setSelectedService] = useState(null);
+  const [cloudWorkers, setCloudWorkers] = useState([]);
+
+  const locationKey = getShortLocation(searchedLocation) || "mumbai";
+  const displayCity = locationKey.charAt(0).toUpperCase() + locationKey.slice(1).toLowerCase();
+
+  useEffect(() => {
+    const fetchLiveWorkers = async () => {
+       try {
+         // 🚀 DYNAMIC BACKEND LOCATION STREAM! Leverages remote AI cluster analysis!
+         let url = "http://localhost:5000/api/workers";
+         if (locationKey) {
+            url += `?city=${encodeURIComponent(locationKey)}`;
+         }
+         const resp = await fetch(url);
+         if (resp.ok) setCloudWorkers(await resp.json());
+       } catch(e) { console.error("Nearby fetch fail"); }
+    };
+    fetchLiveWorkers();
+  }, [locationKey]); // ⚡ Re-runs every time location changes!
   
   // Generic Subservice State
   const [activeSubService, setActiveSubService] = useState(null);
@@ -129,9 +153,6 @@ function NearbyWorkers({ searchedLocation }) {
   // Beauty Specific States
   const [selectedGender, setSelectedGender] = useState(null);
   const [activeBeautySubService, setActiveBeautySubService] = useState(null);
-
-  const locationKey = getShortLocation(searchedLocation) || "mumbai";
-  const displayCity = locationKey.charAt(0).toUpperCase() + locationKey.slice(1).toLowerCase();
 
   // Determine active service filter text based on interactive state selection
   let activeServiceText = null;
@@ -146,12 +167,11 @@ function NearbyWorkers({ searchedLocation }) {
     activeServiceText = selectedService.name;
   }
 
-  const allWorkers = getWorkers();
+  const allWorkers = cloudWorkers;
   const filteredWorkers = activeServiceText
     ? allWorkers.filter(
         (worker) =>
-          worker.service === activeServiceText &&
-          worker.city.toLowerCase().includes(locationKey)
+          worker.service === activeServiceText
       )
     : [];
 

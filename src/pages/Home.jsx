@@ -44,7 +44,8 @@ function Home() {
       let searchAreas = [baseLoc];
 
       try {
-        const apiKey = import.meta.env.VITE_AI_API_KEY;
+        // CRA prefers process.env over import.meta.env. Standard fallback inserted.
+        const apiKey = process.env.REACT_APP_AI_API_KEY || "3cf5a055ccb74539badfef7b0e0c0276.uxCJ42_eO7zlu0EImzr816cG";
         
         // ZhipuAI / GLM standard endpoint (which matches the ID.SECRET key format)
         const response = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
@@ -95,17 +96,31 @@ function Home() {
   }, [searchedLocation]);
 
   useEffect(() => {
-    const syncOnline = () => {
-      const allActive = getWorkers().filter(w => w.isOnline !== false && w.status === "Active");
-      if (searchedLocation) {
-        const key = searchedLocation.split(",")[0].trim().toLowerCase();
-        setOnlineWorkers(allActive.filter(w => w.city.toLowerCase().includes(key) || key.includes(w.city.toLowerCase())));
-      } else {
+    const syncOnline = async () => {
+      try {
+        let url = "http://localhost:5000/api/workers";
+        let extractedKey = "";
+
+        if (searchedLocation) {
+           const lower = searchedLocation.toLowerCase();
+           extractedKey = lower.includes("kakinada") ? "kakinada" : lower.includes("rajahmundry") ? "rajahmundry" : searchedLocation.split(",")[0].trim().toLowerCase();
+           url += `?city=${encodeURIComponent(extractedKey)}`;
+        }
+
+        // 🤖 RECURSIVELY TETHERED TO BACKEND AI SPATIAL INTELLIGENCE!
+        const resp = await fetch(url);
+        if (!resp.ok) return;
+        const cloudWorkers = await resp.json();
+        
+        // The backend handles the 40km expansion, so we just take ALL active workers returned by the API!
+        const allActive = cloudWorkers.filter(w => w.status === "Active");
+        
         setOnlineWorkers(allActive);
-      }
+        setAiSuggestedWorkers(allActive.slice(0, 3));
+      } catch(e) { console.error("Home cloud workers fail"); }
     };
     syncOnline();
-    const interval = setInterval(syncOnline, 3000);
+    const interval = setInterval(syncOnline, 5000);
     return () => clearInterval(interval);
   }, [searchedLocation]);
 

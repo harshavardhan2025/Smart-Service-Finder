@@ -10,6 +10,7 @@ function Signup() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
   const [profession, setProfession] = useState("Carpentry");
+  const [city, setCity] = useState("Mumbai"); // New Location State
   const navigate = useNavigate();
 
   const handleSignup = async (e) => {
@@ -30,13 +31,37 @@ function Signup() {
       return;
     }
 
-    const msg =
-      role === "worker"
-        ? `Account created successfully as a Professional ${profession}! 🎉`
-        : `Account created successfully as a User / Customer! 🎉`;
-    
-    alert(msg);
-    navigate("/login");
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          phone,
+          role,
+          profession: role === "worker" ? profession : null,
+          city: role === "worker" ? city : "Mumbai" // Capturing defined city
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Registration failed!");
+      }
+
+      alert(
+        role === "worker"
+          ? `Account created successfully as a Professional ${profession} in ${city}! 🎉`
+          : `Account created successfully as a User / Customer! 🎉`
+      );
+      
+      navigate("/login");
+    } catch (err) {
+      alert(`❌ Registration Error: ${err.message}`);
+    }
   };
 
   const handleGoogleSignUp = () => {
@@ -200,13 +225,32 @@ function Signup() {
                     <option value="Refrigerator">Refrigerator Repair</option>
                     <option value="Water Purifier">Water Purifier Repair</option>
                   </optgroup>
-                  <optgroup label="🎉 Events Sub-Categories">
+                  <optgroup label="🎉 Additional Specializations">
                     <option value="Photography">Photography</option>
-                    <option value="Purohit">Purohit</option>
                     <option value="Decor">Decor</option>
                     <option value="Mehandi">Mehandi</option>
-                    <option value="Makeup">Makeup</option>
+                    <option value="Doctors & Medical">Doctors & Medical</option>
                   </optgroup>
+                </select>
+              </div>
+            )}
+
+            {/* Explicit Location Column Injection requested for Workers */}
+            {role === "worker" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <label style={{ fontSize: "14px", fontWeight: 600, color: "#475569" }}>Serving Location (City)</label>
+                <select
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  style={{ width: "100%", boxSizing: "border-box" }}
+                >
+                  <option value="Mumbai">Mumbai</option>
+                  <option value="Bangalore">Bangalore</option>
+                  <option value="Hyderabad">Hyderabad</option>
+                  <option value="Chennai">Chennai</option>
+                  <option value="Delhi">Delhi</option>
+                  <option value="Kakinada">Kakinada</option>
+                  <option value="Tirupati">Tirupati</option>
                 </select>
               </div>
             )}

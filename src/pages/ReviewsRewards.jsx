@@ -1,40 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { addReview, updateWalletBalance, addTransaction } from "../data/sharedStore";
 
 const POINTS_PER_REVIEW = 50;
 
-const initialReviews = [
-  {
-    id: 1,
-    service: "Electrician Service",
-    worker: "Ramesh K.",
-    date: "20 May 2026",
-    reviewed: true,
-    rating: 5,
-    comment: "Great electrician service. Very professional!",
-    pointsEarned: 50
-  },
-  {
-    id: 2,
-    service: "Plumbing Service",
-    worker: "Vijay S.",
-    date: "22 May 2026",
-    reviewed: false,
-    rating: 0,
-    comment: ""
-  },
-  {
-    id: 3,
-    service: "House Cleaning",
-    worker: "Sunita D.",
-    date: "25 May 2026",
-    reviewed: true,
-    rating: 4,
-    comment: "Very clean and thorough work.",
-    pointsEarned: 50
-  }
-];
+const initialReviews = [];
 
 const REWARDS = [
   {
@@ -100,15 +70,38 @@ function StarPicker({ value, onChange }) {
 }
 
 function ReviewsRewards() {
-  const [reviews, setReviews] = useState(initialReviews);
+  const [reviews, setReviews] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [drafts, setDrafts] = useState({});
   const [redeemedRewards, setRedeemedRewards] = useState([]);
   const [toast, setToast] = useState("");
 
-  const totalPoints = reviews
-    .filter((r) => r.reviewed)
-    .reduce((sum, r) => sum + (r.pointsEarned || POINTS_PER_REVIEW), 0);
+  useEffect(() => {
+     const loadData = async () => {
+        const cId = localStorage.getItem("userId");
+        const cName = localStorage.getItem("userName") || "Verified Client";
+        if (!cId) return;
+        try {
+           // 🔥 FETCH AUTHENTIC HISTORY: Load physical reviews & validated completed bookings!
+           const [rResp, bResp] = await Promise.all([
+              fetch(`http://localhost:5000/api/reviews?customer_name=${encodeURIComponent(cName)}`),
+              fetch(`http://localhost:5000/api/bookings?customer_id=${cId}`)
+           ]);
+           
+           const rData = await rResp.json();
+           const bData = await bResp.json();
 
+           if (Array.isArray(rData)) setReviews(rData);
+           if (Array.isArray(bData)) {
+              // Filter only Completed items flawlessly!
+              setBookings(bData.filter(b => b.status === "Completed" || b.status === "Paid Out"));
+           }
+        } catch(err) { console.error("Live rewards fetch failed."); }
+     };
+     loadData();
+  }, []);
+
+  const totalPoints = reviews.length * POINTS_PER_REVIEW;
   const spentPoints = redeemedRewards.reduce((sum, r) => sum + r.points, 0);
   const availablePoints = totalPoints - spentPoints;
 
@@ -120,36 +113,52 @@ function ReviewsRewards() {
     setTimeout(() => setToast(""), 3000);
   };
 
-  const submitReview = (id) => {
-    const draft = drafts[id] || {};
+  const submitReview = async (bookingObj) => {
+    const bid = bookingObj._id || bookingObj.id;
+    const draft = drafts[bid] || {};
     if (!draft.rating || draft.rating === 0) {
       showToast("⚠️ Please select a star rating first!");
       return;
     }
-    setReviews((prev) =>
-      prev.map((r) =>
-        r.id === id
-          ? { ...r, reviewed: true, rating: draft.rating, comment: draft.comment || "", pointsEarned: POINTS_PER_REVIEW }
-          : r
-      )
-    );
-    addReview(id, draft.rating, draft.comment);
 
-    // Give actual wallet money for the review
-    updateWalletBalance(POINTS_PER_REVIEW);
-    
-    // Add transaction history
-    addTransaction({
-      service: `Review Reward - ${draft.rating}⭐`,
-      worker: "System Cashback",
-      amount: POINTS_PER_REVIEW,
-      method: "Cashback",
-      status: "Paid",
-      icon: "🎁"
-    });
+    try {
+       // 🔥 LIVE CLOUD COMMITMENT: Write hard record to MongoDB!
+       const resp = await fetch("http://localhost:5000/api/reviews", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+             booking_id: bid,
+             service: bookingObj.service,
+             worker_id: bookingObj.worker_id,
+             customer_name: localStorage.getItem("userName") || "Verified Client",
+             rating: draft.rating,
+             comment: draft.comment || ""
+          })
+       });
 
-    showToast(`✅ Review submitted! ₹${POINTS_PER_REVIEW} has been instantly added to your Wallet.`);
+       if (!resp.ok) throw new Error("Post fail");
+       const savedReview = await resp.json();
+
+       // 🏆 Hydrate Live State natively flawlessly!
+       setReviews((prev) => [savedReview, ...prev]);
+
+       // Give actual wallet money for the review
+       updateWalletBalance(POINTS_PER_REVIEW);
+       
+       addTransaction({
+         service: `Review Earned - ${bookingObj.service}`,
+         worker: bookingObj.worker_id,
+         amount: POINTS_PER_REVIEW,
+         method: "Cashback",
+         status: "Paid",
+         icon: "🎁"
+       });
+
+       showToast(`✅ Review submitted! ₹${POINTS_PER_REVIEW} added to Wallet & Rewards increased!`);
+    } catch(err) { showToast("🛑 Sync Error: Review write failed."); }
   };
+
+
 
   const redeemReward = (reward) => {
     if (availablePoints < reward.points) {
@@ -180,8 +189,8 @@ function ReviewsRewards() {
     }
   };
 
-  const pendingReviews = reviews.filter((r) => !r.reviewed);
-  const doneReviews = reviews.filter((r) => r.reviewed);
+  const pendingReviews = bookings.filter(b => !reviews.some(r => r.booking_id === (b._id || b.id)));
+  const doneReviews = reviews;
 
   return (
     <div
@@ -313,85 +322,88 @@ function ReviewsRewards() {
               ✍️ Pending Reviews ({pendingReviews.length})
             </h2>
             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-              {pendingReviews.map((r) => (
-                <div
-                  key={r.id}
-                  style={{
-                    backgroundColor: "white",
-                    borderRadius: "14px",
-                    padding: "20px",
-                    border: "2px dashed #c4b5fd",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
-                    <div>
-                      <h3 style={{ margin: "0 0 4px 0", fontSize: "16px", fontWeight: 700, color: "#1e293b" }}>
-                        {r.service}
-                      </h3>
-                      <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>👷 {r.worker} · 📅 {r.date}</p>
-                    </div>
-                    <span
-                      style={{
-                        backgroundColor: "#fef3c7",
-                        color: "#d97706",
-                        padding: "4px 10px",
-                        borderRadius: "20px",
-                        fontSize: "12px",
-                        fontWeight: 700
-                      }}
-                    >
-                      +{POINTS_PER_REVIEW} pts waiting
-                    </span>
-                  </div>
-
-                  <StarPicker
-                    value={drafts[r.id]?.rating || 0}
-                    onChange={(val) =>
-                      setDrafts((prev) => ({ ...prev, [r.id]: { ...prev[r.id], rating: val } }))
-                    }
-                  />
-
-                  <textarea
-                    placeholder="Share your experience (optional)..."
-                    value={drafts[r.id]?.comment || ""}
-                    onChange={(e) =>
-                      setDrafts((prev) => ({
-                        ...prev,
-                        [r.id]: { ...prev[r.id], comment: e.target.value }
-                      }))
-                    }
-                    rows={3}
+              {pendingReviews.map((r) => {
+                const bid = r._id || r.id;
+                return (
+                  <div
+                    key={bid}
                     style={{
-                      width: "100%",
-                      padding: "10px 14px",
-                      borderRadius: "8px",
-                      border: "1px solid #e2e8f0",
-                      fontSize: "14px",
-                      resize: "vertical",
-                      boxSizing: "border-box",
-                      marginBottom: "12px",
-                      fontFamily: "inherit"
-                    }}
-                  />
-
-                  <button
-                    onClick={() => submitReview(r.id)}
-                    style={{
-                      padding: "10px 22px",
-                      background: "linear-gradient(135deg, #7c3aed, #4c1d95)",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "8px",
-                      fontWeight: 700,
-                      fontSize: "14px",
-                      cursor: "pointer"
+                      backgroundColor: "white",
+                      borderRadius: "14px",
+                      padding: "20px",
+                      border: "2px dashed #c4b5fd",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
                     }}
                   >
-                    Submit Review & Earn {POINTS_PER_REVIEW} pts ⭐
-                  </button>
-                </div>
-              ))}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
+                      <div>
+                        <h3 style={{ margin: "0 0 4px 0", fontSize: "16px", fontWeight: 700, color: "#1e293b" }}>
+                          {r.service}
+                        </h3>
+                        <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>👷 Service Expert · 📅 {r.date}</p>
+                      </div>
+                      <span
+                        style={{
+                          backgroundColor: "#fef3c7",
+                          color: "#d97706",
+                          padding: "4px 10px",
+                          borderRadius: "20px",
+                          fontSize: "12px",
+                          fontWeight: 700
+                        }}
+                      >
+                        +{POINTS_PER_REVIEW} pts waiting
+                      </span>
+                    </div>
+
+                    <StarPicker
+                      value={drafts[bid]?.rating || 0}
+                      onChange={(val) =>
+                        setDrafts((prev) => ({ ...prev, [bid]: { ...prev[bid], rating: val } }))
+                      }
+                    />
+
+                    <textarea
+                      placeholder="Share your experience (optional)..."
+                      value={drafts[bid]?.comment || ""}
+                      onChange={(e) =>
+                        setDrafts((prev) => ({
+                          ...prev,
+                          [bid]: { ...prev[bid], comment: e.target.value }
+                        }))
+                      }
+                      rows={3}
+                      style={{
+                        width: "100%",
+                        padding: "10px 14px",
+                        borderRadius: "8px",
+                        border: "1px solid #e2e8f0",
+                        fontSize: "14px",
+                        resize: "vertical",
+                        boxSizing: "border-box",
+                        marginBottom: "12px",
+                        fontFamily: "inherit"
+                      }}
+                    />
+
+                    <button
+                      onClick={() => submitReview(r)}
+                      style={{
+                        padding: "10px 22px",
+                        background: "linear-gradient(135deg, #7c3aed, #4c1d95)",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "8px",
+                        fontWeight: 700,
+                        fontSize: "14px",
+                        cursor: "pointer"
+                      }}
+                    >
+                      Submit Review & Earn {POINTS_PER_REVIEW} pts ⭐
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -484,7 +496,7 @@ function ReviewsRewards() {
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {doneReviews.map((r) => (
                 <div
-                  key={r.id}
+                  key={r._id}
                   style={{
                     backgroundColor: "white",
                     borderRadius: "12px",
@@ -496,9 +508,9 @@ function ReviewsRewards() {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
                     <div>
                       <h3 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "#1e293b" }}>
-                        {r.service}
+                        {r.service || "Professional Service"}
                       </h3>
-                      <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>👷 {r.worker} · 📅 {r.date}</p>
+                      <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>👷 Verified Partner · 📅 {r.date}</p>
                     </div>
                     <span
                       style={{
@@ -510,12 +522,12 @@ function ReviewsRewards() {
                         fontWeight: 700
                       }}
                     >
-                      +{r.pointsEarned} pts earned ✅
+                      +{POINTS_PER_REVIEW} pts earned ✅
                     </span>
                   </div>
                   <div style={{ marginTop: "10px" }}>
                     <span style={{ color: "#f59e0b", fontSize: "18px" }}>
-                      {"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}
+                      {"★".repeat(r.rating || 5)}{"☆".repeat(5 - (r.rating || 5))}
                     </span>
                     {r.comment && (
                       <p style={{ margin: "6px 0 0 0", fontSize: "14px", color: "#475569", fontStyle: "italic" }}>

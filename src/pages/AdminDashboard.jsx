@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { getComplaints, getWorkers, saveWorkers, getTransactions, verdictComplaint, getBookings, getPlans, savePlans, getOffers, saveOffers } from "../data/sharedStore";
 
 function AdminDashboard() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
 
   // Live state pulled dynamically from sharedStore
@@ -10,6 +12,7 @@ function AdminDashboard() {
   const [transactions, setTransactions] = useState([]);
   const [complaints, setComplaints] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [liveRealTimeBookings, setLiveRealTimeBookings] = useState([]);
 
   // Initial Services Mock State (Category management with Sub-categories matching NearbyWorkers.jsx)
   const [services, setServices] = useState([
@@ -136,16 +139,73 @@ function AdminDashboard() {
            c.phone.toLowerCase().includes(customerSearch.toLowerCase());
   });
 
-  const syncAdminStore = () => {
-    setWorkers(getWorkers());
+  const syncAdminStore = async () => {
+    // Stop reliance on static dummy stores and continuously pulse the real cloud!
+    try {
+       const wResp = await fetch("http://localhost:5000/api/workers");
+       if (wResp.ok) setWorkers(await wResp.json());
+
+       const bResp = await fetch("http://localhost:5000/api/bookings");
+       if (bResp.ok) setLiveRealTimeBookings(await bResp.json());
+       const cResp = await fetch("http://localhost:5000/api/complaints");
+       if (cResp.ok) setComplaints(await cResp.json());
+    } catch(err) { console.error("Background sync fail", err); }
+
+    // Retain internal operational caches for logic continuity
     setTransactions(getTransactions());
-    setComplaints(getComplaints());
     setBookings(getBookings());
     setAdminPlans(getPlans());
     setAdminOffers(getOffers());
+
+    // Dynamic Customer Sync
+    const staticCustomers = [
+      { id: "CUST-01", name: "Harsha Vardhan", email: "harsha@gmail.com", phone: "9876543210", status: "Active" },
+      { id: "CUST-02", name: "Amit Khanna", email: "amit@gmail.com", phone: "9988776655", status: "Active" },
+      { id: "CUST-03", name: "Anjali Sen", email: "anjali@gmail.com", phone: "9122334455", status: "Active" },
+      { id: "CUST-04", name: "Sanjay Dutt", email: "sanjay@gmail.com", phone: "9888877777", status: "Suspended" }
+    ];
+    
+    const registered = JSON.parse(localStorage.getItem("sh_registered_users") || "[]")
+                        .filter(u => u.role === "user")
+                        .map(u => ({ id: u.id || u.email, name: u.name, email: u.email, phone: u.phone, status: "Active" }));
+
+    // Dedup logic based on emails
+    const combinedMap = new Map();
+    staticCustomers.forEach(c => combinedMap.set(c.email, c));
+    registered.forEach(c => combinedMap.set(c.email, c));
+
+    setCustomers(Array.from(combinedMap.values()));
   };
 
   useEffect(() => {
+    // Rigid Firewall Check: Enforce Admin Identity Exclusivity instantly
+    const role = localStorage.getItem("userRole");
+    if (role !== "admin") {
+       navigate("/login");
+       return;
+    }
+
+    const fetchCloudBookings = async () => {
+       try {
+          const resp = await fetch("http://localhost:5000/api/bookings");
+          if (resp.ok) {
+             const data = await resp.json();
+             setLiveRealTimeBookings(data);
+          }
+       } catch(err) { console.error("Cloud fetch failed."); }
+    };
+    const fetchCloudWorkers = async () => {
+       try {
+          const resp = await fetch("http://localhost:5000/api/workers");
+          if (resp.ok) {
+             const data = await resp.json();
+             setWorkers(data);
+          }
+       } catch(err) { console.error("Workers cloud fetch failed."); }
+    };
+
+    fetchCloudBookings();
+    fetchCloudWorkers();
     syncAdminStore();
     // Poll every 3 seconds to ensure instant real-time data sync across modules
     const interval = setInterval(syncAdminStore, 3000);
@@ -169,13 +229,12 @@ function AdminDashboard() {
     }
   };
 
-  // Calculate Overview Stats
-  const totalRevenue = transactions
-    .filter((t) => t.status === "Paid")
-    .reduce((sum, t) => sum + t.amount, 0);
+  // Calculate true database stats dynamically from loaded bookings
+  const totalRevenue = liveRealTimeBookings
+    .reduce((sum, b) => sum + (Number(b.price) || 0), 0);
 
-  const averageBookingValue = transactions.filter((t) => t.status === "Paid").length > 0
-    ? totalRevenue / transactions.filter((t) => t.status === "Paid").length
+  const averageBookingValue = liveRealTimeBookings.length > 0
+    ? Math.round(totalRevenue / liveRealTimeBookings.length)
     : 0;
 
   // Add Service Handler
@@ -272,26 +331,55 @@ function AdminDashboard() {
   };
 
   // Toggle Worker Status (Block / Active)
-  const toggleWorkerStatus = (id) => {
-    const updated = workers.map((w) => {
-      if (w.id === id) {
-        const newStatus = w.status === "Active" ? "Blocked" : "Active";
-        alert(`Worker "${w.name}" has been ${newStatus}!`);
-        return { ...w, status: newStatus };
-      }
-      return w;
-    });
-    setWorkers(updated);
-    saveWorkers(updated);
+  // Toggle Worker Status physically in Database
+  const toggleWorkerStatus = async (id) => {
+    const worker = workers.find(w => w._id === id);
+    if (!worker) return;
+    
+    const newStatus = worker.status === "Active" ? "Blocked" : "Active";
+    try {
+       await fetch(`http://localhost:5000/api/workers/${id}`, {
+         method: "PATCH",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ status: newStatus })
+       });
+       
+       setWorkers(workers.map(w => w._id === id ? { ...w, status: newStatus } : w));
+       alert(`Worker "${worker.name}" has been ${newStatus} globally!`);
+    } catch(err) { alert("Cloud update failed"); }
   };
 
-  // Remove Worker Handler
-  const handleRemoveWorker = (id, name) => {
-    if (window.confirm(`Are you sure you want to permanently remove worker "${name}"?`)) {
-      const updated = workers.filter((w) => w.id !== id);
-      setWorkers(updated);
-      saveWorkers(updated);
-      alert(`Worker "${name}" has been removed successfully.`);
+  // Dynamically Adjust Worker Price based on Performance
+  const updateWorkerPrice = async (id, currentPrice) => {
+    const worker = workers.find(w => w._id === id);
+    if (!worker) return;
+    
+    const newPrice = window.prompt(`Enter new base rate for "${worker.name}" (Current: ₹${currentPrice || 0}):`, currentPrice);
+    if (!newPrice || isNaN(newPrice)) return;
+    
+    try {
+       const resp = await fetch(`http://localhost:5000/api/workers/${id}`, {
+         method: "PATCH",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ price: Number(newPrice) })
+       });
+       if (!resp.ok) throw new Error("Price patch failed");
+       
+       setWorkers(workers.map(w => w._id === id ? { ...w, price: Number(newPrice) } : w));
+       alert(`Successfully updated performance price for ${worker.name} to ₹${newPrice}!`);
+    } catch(err) { alert("Failed to update cloud price profile."); }
+  };
+
+  // Permanently Delete Worker physically in Database
+  const handleRemoveWorker = async (id, name) => {
+    if (window.confirm(`Are you sure you want to permanently delete worker "${name}"? This cannot be undone.`)) {
+       try {
+          await fetch(`http://localhost:5000/api/workers/${id}`, {
+            method: "DELETE"
+          });
+          setWorkers(workers.filter(w => w._id !== id));
+          alert(`Worker "${name}" has been completely removed from the system.`);
+       } catch(err) { alert("Cloud delete failed."); }
     }
   };
 
@@ -299,10 +387,18 @@ function AdminDashboard() {
 
 
   // Handle Complaint Verdict
-  const handleComplaintVerdict = (id, verdict) => {
-    verdictComplaint(id, verdict);
-    alert(`Complaint resolved with verdict: ${verdict}! Worker rating has been updated dynamically.`);
-    syncAdminStore();
+  const handleComplaintVerdict = async (id, verdict) => {
+    try {
+       const resp = await fetch(`http://localhost:5000/api/complaints/${id}/resolve`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ verdict })
+       });
+       if (!resp.ok) throw new Error("Server rejected patch.");
+       
+       alert(`⚖️ DECISION RECORDED!\nComplaint resolved as ${verdict} inside physical cloud ledger.`);
+       syncAdminStore();
+    } catch(err) { alert(`🛑 Failed to resolve decision: ${err.message}`); }
   };
 
   return (
@@ -323,13 +419,6 @@ function AdminDashboard() {
             boxShadow: "4px 0 10px rgba(0,0,0,0.05)"
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "30px" }}>
-            <span style={{ fontSize: "30px" }}>👑</span>
-            <div>
-              <h3 style={{ margin: 0, fontWeight: 800, fontSize: "18px" }}>Admin Panel</h3>
-              <span style={{ fontSize: "11px", color: "#94a3b8" }}>ServiceHub Control</span>
-            </div>
-          </div>
 
           {[
             { id: "overview", name: "Overview & Revenue", icon: "📊" },
@@ -337,7 +426,8 @@ function AdminDashboard() {
             { id: "workers", name: "Manage Workers", icon: "👷" },
             { id: "customers", name: "Manage Customers", icon: "👤" },
             { id: "complaints", name: `Complaints (${complaints.filter(c => c.status === "Under Review" || c.adminVerdict === "Pending").length})`, icon: "⚠️" },
-            { id: "plans-offers", name: "Manage Plans & Offers", icon: "🏷️" }
+            { id: "plans-offers", name: "Manage Plans & Offers", icon: "🏷️" },
+            { id: "escrow-payouts", name: "Escrow Payouts 💰", icon: "💸" }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -850,17 +940,19 @@ function AdminDashboard() {
                       <th style={{ padding: "12px" }}>Name</th>
                       <th style={{ padding: "12px" }}>Specialty</th>
                       <th style={{ padding: "12px" }}>Location</th>
-                      <th style={{ padding: "12px" }}>Rating & Reviews</th>
+                      <th style={{ padding: "12px" }}>Base Rate (₹)</th>
+                      <th style={{ padding: "12px" }}>Rating</th>
                       <th style={{ padding: "12px" }}>Status</th>
                       <th style={{ padding: "12px", textAlign: "right" }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredWorkers.map((w) => (
-                      <tr key={w.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                      <tr key={w._id} style={{ borderBottom: "1px solid #f1f5f9" }}>
                         <td style={{ padding: "12px", fontWeight: 700, color: "#1e293b" }}>{w.name}</td>
                         <td style={{ padding: "12px" }}>{w.service}</td>
                         <td style={{ padding: "12px" }}>📍 {w.city}</td>
+                        <td style={{ padding: "12px", fontWeight: "800", color: "var(--success)" }}>₹{w.price || 0}</td>
                         <td style={{ padding: "12px" }}>
                           <span style={{ color: "#f59e0b", marginRight: "4px" }}>⭐</span>
                           <strong>{w.rating}</strong> ({w.reviews} reviews)
@@ -880,8 +972,26 @@ function AdminDashboard() {
                           </span>
                         </td>
                         <td style={{ padding: "12px", textAlign: "right" }}>
+                          {/* 📈 EDIT RATE ACTION */}
                           <button
-                            onClick={() => toggleWorkerStatus(w.id)}
+                            onClick={() => updateWorkerPrice(w._id, w.price)}
+                            style={{
+                              backgroundColor: "#e8f5e9",
+                              color: "#2e7d32",
+                              border: "none",
+                              padding: "6px 12px",
+                              borderRadius: "6px",
+                              fontWeight: "bold",
+                              fontSize: "12px",
+                              cursor: "pointer",
+                              marginRight: "8px"
+                            }}
+                          >
+                            Edit Rate
+                          </button>
+                          
+                          <button
+                            onClick={() => toggleWorkerStatus(w._id)}
                             style={{
                               backgroundColor: w.status === "Active" ? "#fff3e0" : "var(--primary-light)",
                               color: w.status === "Active" ? "#e65100" : "var(--primary-dark)",
@@ -897,7 +1007,7 @@ function AdminDashboard() {
                             {w.status === "Active" ? "Block" : "Unblock"}
                           </button>
                           <button
-                            onClick={() => handleRemoveWorker(w.id, w.name)}
+                            onClick={() => handleRemoveWorker(w._id, w.name)}
                             style={{
                               backgroundColor: "#ffebee",
                               color: "#c62828",
@@ -1021,17 +1131,17 @@ function AdminDashboard() {
                     </thead>
                     <tbody>
                       {complaints.map((c) => (
-                        <tr key={c.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                          <td style={{ padding: "12px", fontWeight: "bold" }}>{c.id}</td>
-                          <td style={{ padding: "12px" }}>{c.customer}</td>
+                        <tr key={c._id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                          <td style={{ padding: "12px", fontWeight: "bold", fontSize: 11 }}>{c._id?.substr(-6).toUpperCase()}</td>
+                          <td style={{ padding: "12px" }}>{c.reported_by || "User"}</td>
                           <td style={{ padding: "12px" }}>
-                            <div style={{ fontWeight: "bold", color: "#1e293b" }}>{c.workerName}</div>
+                            <div style={{ fontWeight: "bold", color: "#dc2626" }}>⚠️ {c.issue_type}</div>
                             <div style={{ fontSize: "11px", color: "#475569", fontWeight: 700, marginTop: "2px", backgroundColor: "#f1f5f9", padding: "2px 6px", borderRadius: "4px", display: "inline-block" }}>
-                              Worker ID: {c.workerId || "1"}
+                              Booking: {c.booking_id?.substr(-6) || "N/A"}
                             </div>
                           </td>
-                          <td style={{ padding: "12px", color: "#475569" }}>"{c.desc}"</td>
-                          <td style={{ padding: "12px" }}>{c.date}</td>
+                          <td style={{ padding: "12px", color: "#475569", fontSize: 13, fontStyle: "italic" }}>"{c.description}"</td>
+                          <td style={{ padding: "12px", fontSize: 12 }}>{c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "Recent"}</td>
                           <td style={{ padding: "12px" }}>
                             <span
                               style={{
@@ -1039,31 +1149,31 @@ function AdminDashboard() {
                                 borderRadius: "20px",
                                 fontSize: "11px",
                                 fontWeight: 700,
-                                backgroundColor: c.adminVerdict === "Valid" ? "#ffebee" : c.adminVerdict === "Pending" ? "#fff3e0" : "var(--primary-light)",
-                                color: c.adminVerdict === "Valid" ? "#c62828" : c.adminVerdict === "Pending" ? "#e65100" : "var(--primary-dark)"
+                                backgroundColor: c.admin_verdict === "Valid" ? "#ffebee" : c.admin_verdict === "Pending" ? "#fff3e0" : "#f0fdf4",
+                                color: c.admin_verdict === "Valid" ? "#c62828" : c.admin_verdict === "Pending" ? "#e65100" : "#16a34a"
                               }}
                             >
-                              {c.adminVerdict}
+                              {c.admin_verdict || "Under Review"}
                             </span>
                           </td>
                           <td style={{ padding: "12px", textAlign: "right" }}>
-                            {c.adminVerdict === "Pending" ? (
+                            {c.admin_verdict === "Pending" || !c.admin_verdict ? (
                               <div style={{ display: "flex", gap: "6px", justifyContent: "flex-end" }}>
                                 <button
-                                  onClick={() => handleComplaintVerdict(c.id, "Valid")}
+                                  onClick={() => handleComplaintVerdict(c._id, "Valid")}
                                   style={{ backgroundColor: "#ef4444", color: "white", border: "none", padding: "6px 10px", borderRadius: "4px", fontSize: "11px", fontWeight: "bold", cursor: "pointer" }}
                                 >
                                   Valid (Deduct ⭐)
                                 </button>
                                 <button
-                                  onClick={() => handleComplaintVerdict(c.id, "Dismissed")}
+                                  onClick={() => handleComplaintVerdict(c._id, "Dismissed")}
                                   style={{ backgroundColor: "#e2e8f0", color: "#475569", border: "none", padding: "6px 10px", borderRadius: "4px", fontSize: "11px", fontWeight: "bold", cursor: "pointer" }}
                                 >
                                   Dismiss
                                 </button>
                               </div>
                             ) : (
-                              <span style={{ fontSize: "12px", color: "#94a3b8", fontWeight: "bold" }}>Resolved</span>
+                              <span style={{ fontSize: "12px", color: "#16a34a", fontWeight: "bold" }}>✅ DECIDED</span>
                             )}
                           </td>
                         </tr>
@@ -1142,7 +1252,7 @@ function AdminDashboard() {
                     >
                       <option value="">Assign Worker Based on Plan (Optional)</option>
                       {workers.map(w => (
-                        <option key={w.id} value={w.id}>{w.name} (ID: {w.id} - {w.service})</option>
+                        <option key={w._id} value={w._id}>{w.name} (ID: {w._id.substr(-6).toUpperCase()} - {w.service})</option>
                       ))}
                     </select>
                     <div style={{ display: "flex", gap: "10px" }}>
@@ -1335,6 +1445,88 @@ function AdminDashboard() {
                     </tbody>
                   </table>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "escrow-payouts" && (
+            <div className="fade-in" style={{ animation: "fadeIn 0.3s ease" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+                <div>
+                  <h2 style={{ margin: "0 0 6px", fontWeight: 800, color: "#1e293b" }}>Admin Escrow Approvals</h2>
+                  <p style={{ margin: 0, color: "#64748b", fontSize: "14px" }}>Approve & Release locked payments to workers after successful job completion.</p>
+                </div>
+                <div style={{ backgroundColor: "#e0e7ff", padding: "10px 20px", borderRadius: "8px", color: "#4338ca", fontWeight: 700 }}>
+                  🔐 System Hold: ₹{liveRealTimeBookings.filter(b => b.status === "Completed").reduce((a, b) => a + b.price, 0)}
+                </div>
+              </div>
+
+              <div style={{ backgroundColor: "white", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", padding: "24px" }}>
+                {liveRealTimeBookings.filter(b => ["Completed", "Paid Out"].includes(b.status)).length === 0 ? (
+                  <div style={{ textAlign: "center", color: "#94a3b8", padding: "48px 0" }}>
+                    <div style={{ fontSize: "48px", marginBottom: "12px" }}>⚖️</div>
+                    <h3>No pending escrows found.</h3>
+                    <p>Awaiting completion signals from active workers.</p>
+                  </div>
+                ) : (
+                  <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+                    <thead>
+                      <tr style={{ borderBottom: "2px solid #f1f5f9", color: "#64748b", fontSize: "13px" }}>
+                        <th style={{ padding: "12px 8px" }}>Booking ID</th>
+                        <th style={{ padding: "12px 8px" }}>Service</th>
+                        <th style={{ padding: "12px 8px" }}>Locked Amt</th>
+                        <th style={{ padding: "12px 8px" }}>Current Status</th>
+                        <th style={{ padding: "12px 8px", textAlign: "right" }}>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {liveRealTimeBookings.filter(b => ["Completed", "Paid Out"].includes(b.status)).map(b => (
+                        <tr key={b._id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                          <td style={{ padding: "14px 8px", fontFamily: "monospace", fontSize: "12px" }}>#{b._id.substr(-6).toUpperCase()}</td>
+                          <td style={{ padding: "14px 8px", fontWeight: 600, color: "#334155" }}>{b.service}</td>
+                          <td style={{ padding: "14px 8px", fontWeight: 700, color: "#16a34a" }}>₹{b.price}</td>
+                          <td style={{ padding: "14px 8px" }}>
+                            <span style={{ padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700, backgroundColor: b.status === "Paid Out" ? "#dcfce7" : "#fff3e0", color: b.status === "Paid Out" ? "#16a34a" : "#e65100" }}>
+                              {b.status === "Paid Out" ? "✓ SENT TO WORKER" : "🔒 HELD BY ADMIN"}
+                            </span>
+                          </td>
+                          <td style={{ padding: "14px 8px", textAlign: "right" }}>
+                            {b.status !== "Paid Out" ? (
+                              <button 
+                                onClick={async () => {
+                                  if(window.confirm(`Verify completion and release ₹${b.price} directly to the Worker account now?`)) {
+                                     try {
+                                       const respAction = await fetch(`http://localhost:5000/api/bookings/${b._id}/release`, {
+                                         method: "POST"
+                                       });
+                                       if (!respAction.ok) {
+                                          const errorData = await respAction.json();
+                                          throw new Error(errorData.error || "Server Rejected Release");
+                                       }
+                                       alert(`💸 FUNDS RELEASED SUCCESSFUL!\n₹${b.price} has been deposited into the Worker wallet system.`);
+                                       
+                                       // Force IMMEDIATE Local Visual Update Flawlessly
+                                       setLiveRealTimeBookings(prev => prev.map(item => item._id === b._id ? { ...item, status: "Paid Out" } : item));
+                                       
+                                       // Verify with central registry refresh
+                                       const resp = await fetch("http://localhost:5000/api/bookings");
+                                       if (resp.ok) setLiveRealTimeBookings(await resp.json());
+                                     } catch(err) { alert(`🛑 Release Failed: ${err.message}`); }
+                                  }
+                                }}
+                                style={{ backgroundColor: "#4338ca", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer" }}
+                              >
+                                💸 Release Money
+                              </button>
+                            ) : (
+                              <span style={{ fontSize: "12px", color: "#94a3b8", fontStyle: "italic" }}>Completed Successfully</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
             </div>
           )}

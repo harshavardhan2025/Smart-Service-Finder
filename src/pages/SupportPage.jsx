@@ -1,9 +1,14 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
+import { useLocation } from "react-router-dom";
 
 function SupportPage() {
-  const [issue, setIssue] = useState("");
-  const [category, setCategory] = useState("billing");
+  const location = useLocation();
+  const passedBooking = location.state?.bookingId;
+  const passedService = location.state?.service;
+
+  const [issue, setIssue] = useState(passedBooking ? `Regarding ${passedService} (ID: ${passedBooking.substr(-6).toUpperCase()}): ` : "");
+  const [category, setCategory] = useState(passedBooking ? "worker" : "billing");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [success, setSuccess] = useState(false);
@@ -30,19 +35,35 @@ function SupportPage() {
     }
   ];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!issue.trim() || !email.trim() || !phone.trim()) {
       alert("Please fill out all fields before submitting your support ticket!");
       return;
     }
-    setSuccess(true);
-    setTimeout(() => {
-      setSuccess(false);
-      setIssue("");
-      setEmail("");
-      setPhone("");
-    }, 4000);
+
+    try {
+       // 🚀 PHYSICAL CLOUD WRITE: Commit support ticket directly to MongoDB grievance node!
+       const resp = await fetch("http://localhost:5000/api/complaints", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+             booking_id: passedBooking || "NON-BOOKING-INQUIRY",
+             issue_type: `SUPPORT TICKET: ${category.toUpperCase()}`,
+             description: `Email: ${email} | Phone: ${phone} | Message: ${issue}`,
+             reported_by: localStorage.getItem("userName") || email || "Web Guest"
+          })
+       });
+       if (!resp.ok) throw new Error("Cloud post rejection.");
+
+       setSuccess(true);
+       setTimeout(() => {
+         setSuccess(false);
+         setIssue("");
+         setEmail("");
+         setPhone("");
+       }, 4000);
+    } catch(err) { alert("🛑 Submission Fail: Database synchronization issue. Please try again later."); }
   };
 
   return (
