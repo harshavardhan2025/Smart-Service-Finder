@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { useNavigate } from "react-router-dom";
+import api from "../utils/apiClient";
 
 function BookingPage() {
   const [date, setDate] = useState(new Date());
@@ -117,26 +118,20 @@ function BookingPage() {
 
     try {
       // 🌐 AUTHORITATIVE MASTER COMMITMENT TO CLOUD BACKEND!
-      const resp = await fetch("http://localhost:5000/api/bookings", {
-         method: "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({
-            customer_id: customerId,
-            customer_name: customerName,
-            worker_id: workerDbId,
-            date: date.toISOString().split('T')[0],
-            time: selectedSlot,
-            service: selectedWorker.service,
-            price: calculatedPrice,
-            address: localStorage.getItem("userCity") ? `Downtown Area, ${localStorage.getItem("userCity")}` : "Standard Client Address, Rajahmundry",
-            status: "Pending"
-         })
+      // 🌐 AUTHORITATIVE MASTER COMMITMENT TO CLOUD BACKEND via HIGH-QUALITY GATEWAY!
+      const { error: bookErr } = await api.post("/bookings", {
+         customer_id: customerId,
+         customer_name: customerName,
+         worker_id: workerDbId,
+         date: date.toISOString().split('T')[0],
+         time: selectedSlot,
+         service: selectedWorker.service,
+         price: calculatedPrice,
+         address: localStorage.getItem("userCity") ? `Downtown Area, ${localStorage.getItem("userCity")}` : "Standard Client Address, Rajahmundry",
+         status: "Pending"
       });
-
-      if (!resp.ok) {
-         const errData = await resp.json();
-         throw new Error(errData.error || "Cloud Submission Denied");
-      }
+      
+      if (bookErr) throw new Error(bookErr);
 
       // Fire authoritative Physical cloud transaction record instantly flawlessly!
       await fetch("http://localhost:5000/api/transactions", {
