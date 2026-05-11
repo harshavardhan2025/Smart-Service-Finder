@@ -13,9 +13,9 @@ function WorkerDashboard() {
   const selectedWorkerId = Number(sessionStorage.getItem("loggedInWorkerId")) || 1;
 
   const [bookings, setBookings] = useState([]);
-  const [reviews, setReviews] = useState([]);
-  const [complaints, setComplaints] = useState([]);
-  const [sysNotifications, setSysNotifications] = useState([]);
+  const complaints = [];
+  const sysNotifications = [];
+
   const [profile, setProfile] = useState({
     name: sessionStorage.getItem("userName") || "Worker",
     profession: "...",

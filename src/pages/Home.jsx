@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import LocationSearch from "../components/LocationSearch";
@@ -66,8 +66,7 @@ function Home() {
         const data = await response.json();
         if (data.choices && data.choices.length > 0) {
           const result = data.choices[0].message.content;
-          const locs = result.split(",").map(l => l.trim().toLowerCase()).filter(Boolean);
-          searchAreas = [...searchAreas, ...locs];
+
         } else {
           throw new Error("No choices returned");
         }

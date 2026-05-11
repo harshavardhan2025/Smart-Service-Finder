@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 // Replaced local simulator with direct Backend API calls
-import { FaWallet, FaCalendarCheck, FaRegClock, FaHeadset, FaRupeeSign } from "react-icons/fa";
+import { FaWallet, FaCalendarCheck, FaRegClock, FaHeadset } from "react-icons/fa";
 
 function UserDashboard() {
   const navigate = useNavigate();

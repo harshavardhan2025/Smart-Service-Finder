@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 const POINTS_PER_REVIEW = 50;
 
-const initialReviews = [];
+
 
 const REWARDS = [
   {

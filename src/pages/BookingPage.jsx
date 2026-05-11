@@ -32,6 +32,7 @@ function BookingPage() {
         } catch(e) { console.error("Collision engine load fail."); }
      };
      loadSchedule();
+     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Load the currently selected worker dynamically from localStorage
@@ -159,10 +160,7 @@ function BookingPage() {
     }
   };
 
-  const sBtn = {
-    padding: "12px 24px", backgroundColor: "var(--primary)", color: "white",
-    border: "none", borderRadius: 8, cursor: "pointer", fontSize: 16, fontWeight: 700
-  };
+
 
   return (
     <div style={{ 

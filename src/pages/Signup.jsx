@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import { supabase } from "../lib/supabase.js";
+
 
 function Signup() {
   const [name, setName] = useState("");
