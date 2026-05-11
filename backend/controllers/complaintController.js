@@ -2,7 +2,9 @@ import Complaint from "../models/Complaint.js";
 
 export const getComplaints = async (req, res) => {
   try {
-    const list = await Complaint.find().sort({ createdAt: -1 });
+    const filter = {};
+    if (req.query.reported_by) filter.reported_by = req.query.reported_by;
+    const list = await Complaint.find(filter).sort({ createdAt: -1 });
     res.status(200).json(list);
   } catch (error) {
     res.status(400).json({ error: error.message });
