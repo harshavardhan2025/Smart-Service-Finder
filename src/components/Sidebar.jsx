@@ -93,7 +93,7 @@ function Sidebar() {
         {/* Logo / Title */}
         <div style={{ marginBottom: "40px", paddingTop: "24px", borderBottom: "1px solid rgba(255,255,255,0.08)", paddingBottom: "20px" }}>
           <h2 style={{ margin: 0, fontSize: "22px", fontWeight: 800, letterSpacing: "0.5px", display: "flex", alignItems: "center", gap: "10px" }}>
-            🛠️ Service<span style={{ color: "var(--primary)" }}>Hub</span>
+            🛠️ Work<span style={{ color: "var(--primary)" }}>zy</span>
           </h2>
           <p style={{ margin: "6px 0 0 0", fontSize: "12px", color: "#94a3b8" }}>
             Navigate Customer Dashboard

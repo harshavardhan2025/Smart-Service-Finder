@@ -60,7 +60,7 @@ function Navbar() {
         }}
       >
         <h2 style={{ margin: 0, fontWeight: 800, fontSize: "22px", letterSpacing: "-0.5px" }}>
-          🛠️ Service<span style={{ color: "var(--primary)" }}>Hub</span>
+          🛠️ Work<span style={{ color: "var(--primary)" }}>zy</span>
         </h2>
       </Link>
 
