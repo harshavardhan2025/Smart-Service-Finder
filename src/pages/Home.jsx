@@ -278,7 +278,7 @@ function Home() {
           fontWeight: 500
         }}
       >
-        © 2026 Workzy Inc. All rights reserved. Made with ❤️ by Antigravity.
+        © 2026 Workzy Inc. All rights reserved. Made with ❤️ by PS-152 Team.
       </footer>
     </div>
   );
