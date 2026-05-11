@@ -142,22 +142,22 @@ function AdminDashboard() {
   const syncAdminStore = async () => {
     // Stop reliance on static dummy stores and continuously pulse the real cloud!
     try {
-       const wResp = await fetch("http://localhost:5000/api/workers");
+       const wResp = await fetch("/api/workers");
        if (wResp.ok) setWorkers(await wResp.json());
 
-       const bResp = await fetch("http://localhost:5000/api/bookings");
+       const bResp = await fetch("/api/bookings");
        if (bResp.ok) {
            const bData = await bResp.json();
            setLiveRealTimeBookings(bData);
            setBookings(bData);
        }
-       const cResp = await fetch("http://localhost:5000/api/complaints");
+       const cResp = await fetch("/api/complaints");
        if (cResp.ok) setComplaints(await cResp.json());
-       const pResp = await fetch("http://localhost:5000/api/plans");
+       const pResp = await fetch("/api/plans");
        if (pResp.ok) setAdminPlans(await pResp.json());
-       const oResp = await fetch("http://localhost:5000/api/offers");
+       const oResp = await fetch("/api/offers");
        if (oResp.ok) setAdminOffers(await oResp.json());
-       const tResp = await fetch("http://localhost:5000/api/transactions");
+       const tResp = await fetch("/api/transactions");
        if (tResp.ok) setTransactions(await tResp.json());
     } catch(err) { console.error("Background sync fail", err); }
 
@@ -191,7 +191,7 @@ function AdminDashboard() {
 
     const fetchCloudBookings = async () => {
        try {
-          const resp = await fetch("http://localhost:5000/api/bookings");
+          const resp = await fetch("/api/bookings");
           if (resp.ok) {
              const data = await resp.json();
              setLiveRealTimeBookings(data);
@@ -200,7 +200,7 @@ function AdminDashboard() {
     };
     const fetchCloudWorkers = async () => {
        try {
-          const resp = await fetch("http://localhost:5000/api/workers");
+          const resp = await fetch("/api/workers");
           if (resp.ok) {
              const data = await resp.json();
              setWorkers(data);
@@ -342,7 +342,7 @@ function AdminDashboard() {
     
     const newStatus = worker.status === "Active" ? "Blocked" : "Active";
     try {
-       await fetch(`http://localhost:5000/api/workers/${id}`, {
+       await fetch(`/api/workers/${id}`, {
          method: "PATCH",
          headers: { "Content-Type": "application/json" },
          body: JSON.stringify({ status: newStatus })
@@ -362,7 +362,7 @@ function AdminDashboard() {
     if (!newPrice || isNaN(newPrice)) return;
     
     try {
-       const resp = await fetch(`http://localhost:5000/api/workers/${id}`, {
+       const resp = await fetch(`/api/workers/${id}`, {
          method: "PATCH",
          headers: { "Content-Type": "application/json" },
          body: JSON.stringify({ price: Number(newPrice) })
@@ -378,7 +378,7 @@ function AdminDashboard() {
   const handleRemoveWorker = async (id, name) => {
     if (window.confirm(`Are you sure you want to permanently delete worker "${name}"? This cannot be undone.`)) {
        try {
-          await fetch(`http://localhost:5000/api/workers/${id}`, {
+          await fetch(`/api/workers/${id}`, {
             method: "DELETE"
           });
           setWorkers(workers.filter(w => w._id !== id));
@@ -393,7 +393,7 @@ function AdminDashboard() {
   // Handle Complaint Verdict
   const handleComplaintVerdict = async (id, verdict) => {
     try {
-       const resp = await fetch(`http://localhost:5000/api/complaints/${id}/resolve`, {
+       const resp = await fetch(`/api/complaints/${id}/resolve`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ verdict })
@@ -1269,14 +1269,14 @@ function AdminDashboard() {
                           try {
                              if (editingPlan) {
                                 const pid = editingPlan._id || editingPlan.id;
-                                await fetch(`http://localhost:5000/api/plans/${pid}`, {
+                                await fetch(`/api/plans/${pid}`, {
                                    method: "PATCH",
                                    headers: { "Content-Type": "application/json" },
                                    body: JSON.stringify(payload)
                                 });
                                 setEditingPlan(null);
                              } else {
-                                await fetch("http://localhost:5000/api/plans", {
+                                await fetch("/api/plans", {
                                    method: "POST",
                                    headers: { "Content-Type": "application/json" },
                                    body: JSON.stringify(payload)
@@ -1336,7 +1336,7 @@ function AdminDashboard() {
                                 if (window.confirm("Permanently erase this physical plan?")) {
                                   try {
                                      const pid = p._id || p.id;
-                                     await fetch(`http://localhost:5000/api/plans/${pid}`, { method: "DELETE" });
+                                     await fetch(`/api/plans/${pid}`, { method: "DELETE" });
                                      syncAdminStore();
                                   } catch(e) { alert("Deletion failed."); }
                                 }
@@ -1396,14 +1396,14 @@ function AdminDashboard() {
                           try {
                              if (editingOffer) {
                                 const oid = editingOffer._id || editingOffer.id;
-                                await fetch(`http://localhost:5000/api/offers/${oid}`, {
+                                await fetch(`/api/offers/${oid}`, {
                                    method: "PATCH",
                                    headers: { "Content-Type": "application/json" },
                                    body: JSON.stringify(offerForm)
                                 });
                                 setEditingOffer(null);
                              } else {
-                                await fetch("http://localhost:5000/api/offers", {
+                                await fetch("/api/offers", {
                                    method: "POST",
                                    headers: { "Content-Type": "application/json" },
                                    body: JSON.stringify(offerForm)
@@ -1459,7 +1459,7 @@ function AdminDashboard() {
                                 if (window.confirm("Permanently remove this seasonal physical coupon?")) {
                                   try {
                                      const oid = o._id || o.id;
-                                     await fetch(`http://localhost:5000/api/offers/${oid}`, { method: "DELETE" });
+                                     await fetch(`/api/offers/${oid}`, { method: "DELETE" });
                                      syncAdminStore();
                                   } catch(e) { alert("Deletion reject."); }
                                 }
@@ -1525,7 +1525,7 @@ function AdminDashboard() {
                                 onClick={async () => {
                                   if(window.confirm(`Verify completion and release ₹${b.price} directly to the Worker account now?`)) {
                                      try {
-                                       const respAction = await fetch(`http://localhost:5000/api/bookings/${b._id}/release`, {
+                                       const respAction = await fetch(`/api/bookings/${b._id}/release`, {
                                          method: "POST"
                                        });
                                        if (!respAction.ok) {
@@ -1538,7 +1538,7 @@ function AdminDashboard() {
                                        setLiveRealTimeBookings(prev => prev.map(item => item._id === b._id ? { ...item, status: "Paid Out" } : item));
                                        
                                        // Verify with central registry refresh
-                                       const resp = await fetch("http://localhost:5000/api/bookings");
+                                       const resp = await fetch("/api/bookings");
                                        if (resp.ok) setLiveRealTimeBookings(await resp.json());
                                      } catch(err) { alert(`🛑 Release Failed: ${err.message}`); }
                                   }

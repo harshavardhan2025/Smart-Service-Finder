@@ -26,7 +26,7 @@ function BookingPage() {
         try {
            const id = selectedWorker._id || selectedWorker.mongoId;
            if (!id) return;
-           const r = await fetch(`http://localhost:5000/api/bookings?worker_id=${id}`);
+           const r = await fetch(`/api/bookings?worker_id=${id}`);
            const data = await r.json();
            if (Array.isArray(data)) setBusyBookings(data);
         } catch(e) { console.error("Collision engine load fail."); }
@@ -135,7 +135,7 @@ function BookingPage() {
       if (bookErr) throw new Error(bookErr);
 
       // Fire authoritative Physical cloud transaction record instantly flawlessly!
-      await fetch("http://localhost:5000/api/transactions", {
+      await fetch("/api/transactions", {
          method: "POST",
          headers: { "Content-Type": "application/json" },
          body: JSON.stringify({

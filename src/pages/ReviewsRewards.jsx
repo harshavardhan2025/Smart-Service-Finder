@@ -83,8 +83,8 @@ function ReviewsRewards() {
         try {
            // 🔥 FETCH AUTHENTIC HISTORY: Load physical reviews & validated completed bookings!
            const [rResp, bResp] = await Promise.all([
-              fetch(`http://localhost:5000/api/reviews?customer_name=${encodeURIComponent(cName)}`),
-              fetch(`http://localhost:5000/api/bookings?customer_id=${cId}`)
+              fetch(`/api/reviews?customer_name=${encodeURIComponent(cName)}`),
+              fetch(`/api/bookings?customer_id=${cId}`)
            ]);
            
            const rData = await rResp.json();
@@ -122,7 +122,7 @@ function ReviewsRewards() {
 
     try {
        // 🔥 LIVE CLOUD COMMITMENT: Write hard record to MongoDB!
-       const resp = await fetch("http://localhost:5000/api/reviews", {
+       const resp = await fetch("/api/reviews", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -142,7 +142,7 @@ function ReviewsRewards() {
        setReviews((prev) => [savedReview, ...prev]);
 
        // Record absolute physical cash-back award in cloud instantly flawlessly!
-       await fetch("http://localhost:5000/api/transactions", {
+       await fetch("/api/transactions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -176,7 +176,7 @@ function ReviewsRewards() {
     if (reward.title.includes("Cashback") || reward.title.includes("Off")) {
       const amount = reward.title.includes("100") ? 100 : 50;
       // Dispatch hard physical redemption write effortlessly seamlessly flawlessly instantly!
-      await fetch("http://localhost:5000/api/transactions", {
+      await fetch("/api/transactions", {
          method: "POST",
          headers: { "Content-Type": "application/json" },
          body: JSON.stringify({

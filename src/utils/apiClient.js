@@ -2,7 +2,7 @@
  * 🚀 UNIFIED API GATEWAY
  * Standardized client that dynamically injects auth telemetry and executes robust try-catch cycles.
  */
-const BASE_URL = "http://localhost:5000/api";
+const BASE_URL = "/api";
 
 const apiClient = async (endpoint, options = {}) => {
   // Automatic Header Construction

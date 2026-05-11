@@ -21,8 +21,8 @@ function AiChatBot() {
      const primeAIPercepts = async () => {
         try {
            const [oResp, pResp] = await Promise.all([
-              fetch("http://localhost:5000/api/offers"),
-              fetch("http://localhost:5000/api/plans")
+              fetch("/api/offers"),
+              fetch("/api/plans")
            ]);
            if (oResp.ok) setActiveOffers(await oResp.json());
            if (pResp.ok) setActivePlans(await pResp.json());
@@ -311,7 +311,7 @@ function AiChatBot() {
     // 🚀 INTEGRATED INTELLIGENT CLOUD DISCOVERY! Fetches authenticated database entities seamlessly.
     const fetchDynamicWorkers = async (category) => {
       try {
-        let url = `http://localhost:5000/api/workers?service=${encodeURIComponent(category)}`;
+        let url = `/api/workers?service=${encodeURIComponent(category)}`;
         const storedCity = localStorage.getItem("userCity") || (userLocation !== "Unknown Location" ? userLocation.split(",")[0].trim() : "");
         if (storedCity) {
            url += `&city=${encodeURIComponent(storedCity)}`;

@@ -26,7 +26,7 @@ function UserDashboard() {
         if (!currentUserId) return;
 
         // A. Fetch Real Bookings
-        const bookingResp = await fetch(`http://localhost:5000/api/bookings?customer_id=${currentUserId}`);
+        const bookingResp = await fetch(`/api/bookings?customer_id=${currentUserId}`);
         if (bookingResp.ok) {
           const bookingsData = await bookingResp.json();
           setBookings(bookingsData.slice(0, 5)); // Top 5 recent
@@ -34,7 +34,7 @@ function UserDashboard() {
 
         // B. Fetch Real Transactions via Authoritative Username String
         const currentUserName = sessionStorage.getItem("userName") || "Verified User";
-        const txnResp = await fetch(`http://localhost:5000/api/transactions?customer=${encodeURIComponent(currentUserName)}`);
+        const txnResp = await fetch(`/api/transactions?customer=${encodeURIComponent(currentUserName)}`);
         if (txnResp.ok) {
           const txnData = await txnResp.json();
           setTransactions(txnData.slice(0, 5)); // Top 5 recent

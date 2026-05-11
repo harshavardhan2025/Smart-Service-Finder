@@ -26,9 +26,9 @@ function PlansOffers() {
     const loadCloudData = async () => {
       try {
          const [pResp, oResp, wResp] = await Promise.all([
-            fetch("http://localhost:5000/api/plans"),
-            fetch("http://localhost:5000/api/offers"),
-            fetch("http://localhost:5000/api/workers")
+            fetch("/api/plans"),
+            fetch("/api/offers"),
+            fetch("/api/workers")
          ]);
          
          if (pResp.ok) setPlans(await pResp.json());
@@ -107,7 +107,7 @@ function PlansOffers() {
          }
 
          // Execute Hard Physical Cloud Record instantly seamlessly flawlessly!
-         await fetch("http://localhost:5000/api/transactions", {
+         await fetch("/api/transactions", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

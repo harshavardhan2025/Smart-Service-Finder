@@ -25,8 +25,8 @@ function MyBookings() {
     try {
        // 🛰️ COMPOSITE SYNCHRONIZATION: Load Bookings & Real Reviews simultaneously!
        const [bResp, rResp] = await Promise.all([
-          fetch(`http://localhost:5000/api/bookings?customer_id=${customerId}`),
-          fetch(`http://localhost:5000/api/reviews?customer_name=${encodeURIComponent(cName)}`)
+          fetch(`/api/bookings?customer_id=${customerId}`),
+          fetch(`/api/reviews?customer_name=${encodeURIComponent(cName)}`)
        ]);
        const bData = await bResp.json();
        const rData = await rResp.json();

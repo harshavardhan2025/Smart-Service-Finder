@@ -134,7 +134,7 @@ function NearbyWorkers({ searchedLocation }) {
     const fetchLiveWorkers = async () => {
        try {
          // 🚀 DYNAMIC BACKEND LOCATION STREAM! Leverages remote AI cluster analysis!
-         let url = "http://localhost:5000/api/workers";
+         let url = "/api/workers";
          if (locationKey) {
             url += `?city=${encodeURIComponent(locationKey)}`;
          }

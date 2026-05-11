@@ -39,7 +39,7 @@ function WorkerDashboard() {
       let targetWorkerMongoId = null;
 
       // 1. DISCOVER AUTHENTIC WORKER ID VIA EMAIL INDEXING FIRST
-      const workerResp = await fetch(`http://localhost:5000/api/workers`);
+      const workerResp = await fetch(`/api/workers`);
       if (workerResp.ok) {
         const allWorkers = await workerResp.json();
         const match = allWorkers.find(w => w.email === userEmail || w._id === currentUserId);
@@ -64,7 +64,7 @@ function WorkerDashboard() {
 
       // 2. EXECUTE RELATIONAL QUERY USING AUTHENTIC PRIMARY KEY
       if (targetWorkerMongoId) {
-        const bookingResp = await fetch(`http://localhost:5000/api/bookings?worker_id=${targetWorkerMongoId}`);
+        const bookingResp = await fetch(`/api/bookings?worker_id=${targetWorkerMongoId}`);
         if (bookingResp.ok) {
           const data = await bookingResp.json();
           setBookings(data);
@@ -77,7 +77,7 @@ function WorkerDashboard() {
 
   const handleAcceptOrder = async (bookingId) => {
     try {
-      await fetch(`http://localhost:5000/api/bookings/${bookingId}`, {
+      await fetch(`/api/bookings/${bookingId}`, {
          method: "PATCH",
          headers: { "Content-Type": "application/json" },
          body: JSON.stringify({ status: "Accepted" })
@@ -89,7 +89,7 @@ function WorkerDashboard() {
 
   const handleStatusChange = async (bookingId, newStatus) => {
     try {
-      await fetch(`http://localhost:5000/api/bookings/${bookingId}`, {
+      await fetch(`/api/bookings/${bookingId}`, {
          method: "PATCH",
          headers: { "Content-Type": "application/json" },
          body: JSON.stringify({ status: newStatus })
@@ -102,7 +102,7 @@ function WorkerDashboard() {
   const handleRejectOrder = async (bookingId) => {
     if (window.confirm("Are you sure you want to reject this customer order?")) {
        try {
-          await fetch(`http://localhost:5000/api/bookings/${bookingId}`, {
+          await fetch(`/api/bookings/${bookingId}`, {
              method: "PATCH",
              headers: { "Content-Type": "application/json" },
              body: JSON.stringify({ status: "Rejected" })
@@ -236,7 +236,7 @@ function WorkerDashboard() {
                     const newStatus = !isActive ? "Active" : "Inactive";
                     if (profile.mongoId) {
                       try {
-                        await fetch(`http://localhost:5000/api/workers/${profile.mongoId}`, {
+                        await fetch(`/api/workers/${profile.mongoId}`, {
                           method: "PATCH",
                           headers: { "Content-Type": "application/json" },
                           body: JSON.stringify({ status: newStatus })

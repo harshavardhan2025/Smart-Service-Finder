@@ -86,7 +86,7 @@ function Home() {
   useEffect(() => {
     const syncOnline = async () => {
       try {
-        let url = "http://localhost:5000/api/workers";
+        let url = "/api/workers";
         let extractedKey = "";
 
         if (searchedLocation) {

@@ -15,7 +15,7 @@ function TopWorkers({ searchedLocation }) {
   useEffect(() => {
     const fetchWorkers = async () => {
        try {
-         const resp = await fetch("http://localhost:5000/api/workers");
+         const resp = await fetch("/api/workers");
          if (resp.ok) setCloudWorkers(await resp.json());
        } catch(e) { console.error("Top workers fail"); }
     };

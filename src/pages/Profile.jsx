@@ -33,7 +33,7 @@ function Profile() {
       try {
          const currentUsr = sessionStorage.getItem("userName") || "Harsha User";
          // Fetch physical transactions assigned to this user!
-         const resp = await fetch(`http://localhost:5000/api/transactions?user=${encodeURIComponent(currentUsr)}`);
+         const resp = await fetch(`/api/transactions?user=${encodeURIComponent(currentUsr)}`);
          if (resp.ok) {
             const data = await resp.json();
             // Filter client-side just to be doubly safe if API returns total dump
