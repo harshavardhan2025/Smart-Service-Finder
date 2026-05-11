@@ -63,11 +63,11 @@ function Login() {
 
     if (emailRegex.test(input.trim())) {
       sessionStorage.setItem("userRole", "user");
-      alert(`Google account verified successfully! ✅\nEmail: ${input.trim()}\nWelcome to ServiceHub! 🎉`);
+      alert(`Google account verified successfully! ✅\nEmail: ${input.trim()}\nWelcome to Workzy! 🎉`);
       navigate("/");
     } else if (phoneRegex.test(input.trim())) {
       sessionStorage.setItem("userRole", "user");
-      alert(`Google account verified successfully! ✅\nMobile: ${input.trim()}\nWelcome to ServiceHub! 🎉`);
+      alert(`Google account verified successfully! ✅\nMobile: ${input.trim()}\nWelcome to Workzy! 🎉`);
       navigate("/");
     } else {
       alert(

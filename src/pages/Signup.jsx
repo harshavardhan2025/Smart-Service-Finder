@@ -116,7 +116,7 @@ function Signup() {
               Create Account
             </h1>
             <p style={{ margin: 0, color: "#64748b", fontSize: "14px" }}>
-              Join ServiceHub and explore local professionals
+              Join Workzy and explore local professionals
             </p>
           </div>
 

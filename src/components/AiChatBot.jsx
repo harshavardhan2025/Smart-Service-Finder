@@ -261,7 +261,7 @@ function AiChatBot() {
     }
     
     if (lowercaseText.includes("who are you") || lowercaseText.includes("your name") || lowercaseText.includes("what are you")) {
-      return "I am your personal ServiceHub AI Assistant! 🤖✨\nI specialize in helping you discover, select, and book the perfect local professionals for any task, from home repairs to event management.";
+      return "I am your personal Workzy AI Assistant! 🤖✨\nI specialize in helping you discover, select, and book the perfect local professionals for any task, from home repairs to event management.";
     }
 
     if (lowercaseText.includes("thank you") || lowercaseText.includes("thanks")) {
@@ -285,7 +285,7 @@ function AiChatBot() {
     }
 
     if (lowercaseText.includes("namaste") || lowercaseText.includes("hello") || lowercaseText.includes("hi") || lowercaseText.includes("hey")) {
-      return "Hello there! 👋 Welcome to ServiceHub. It's wonderful to chat with you today.\n\nHow can I help make your life easier? (e.g., 'fix my leaking tap', 'need mehandi design', or 'house cleaning')";
+      return "Hello there! 👋 Welcome to Workzy. It's wonderful to chat with you today.\n\nHow can I help make your life easier? (e.g., 'fix my leaking tap', 'need mehandi design', or 'house cleaning')";
     }
 
     if (lowercaseText.includes("bye") || lowercaseText.includes("good night") || lowercaseText.includes("see ya")) {
@@ -345,7 +345,7 @@ function AiChatBot() {
           messages: [
             {
               role: "system",
-              content: `You are the ServiceHub AI Assistant. The user is currently located near: ${userLocation}. 
+              content: `You are the Workzy AI Assistant. The user is currently located near: ${userLocation}. 
               Your job is to help them with home services (plumbing, carpentry, beauty, cleaning, mechanics, doctors, etc). 
               Available Special Subscription Plans: ${plansText}.
               Available Promo Codes/Offers: ${offersText}.

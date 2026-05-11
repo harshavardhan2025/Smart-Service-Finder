@@ -45,7 +45,7 @@ const seedDatabase = async () => {
     
     const admin = await User.create({
       name: "Super Admin",
-      email: "admin@servicehub.com",
+      email: "admin@workzy.com",
       password: "password123",
       role: "admin",
       phone: "9999999999",

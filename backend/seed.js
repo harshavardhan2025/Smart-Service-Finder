@@ -107,7 +107,7 @@ const seedDynamicEcosystem = async () => {
     const fullPopulation = initialWorkers.map((w, idx) => ({
       ...w,
       location: w.city, // Explicitly mapping location keyword so logic never breaks
-      email: w.email || `provider_${idx}_${Date.now()}@servicehub.com`
+      email: w.email || `provider_${idx}_${Date.now()}@workzy.com`
     }));
 
     // Add worker user accounts automatically for ALL generated accounts

@@ -144,7 +144,7 @@ function Sidebar() {
 
         {/* Footer */}
         <p style={{ fontSize: "11px", color: "#64748b", textAlign: "center", margin: 0, paddingTop: "20px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-          ServiceHub © 2026
+          Workzy © 2026
         </p>
       </div>
     </div>
