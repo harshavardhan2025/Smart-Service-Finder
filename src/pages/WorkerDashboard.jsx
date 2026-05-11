@@ -9,29 +9,29 @@ function WorkerDashboard() {
   const [editMode, setEditMode] = useState(false);
 
   // Load the logged-in worker ID dynamically from localStorage, fallback to 1 (Rahul Sharma)
-  const selectedWorkerId = Number(localStorage.getItem("loggedInWorkerId")) || 1;
+  const selectedWorkerId = Number(sessionStorage.getItem("loggedInWorkerId")) || 1;
 
   const [bookings, setBookings] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [complaints, setComplaints] = useState([]);
   const [sysNotifications, setSysNotifications] = useState([]);
   const [profile, setProfile] = useState({
-    name: "Rahul Sharma",
-    profession: "Carpentry",
-    phone: "9876543210",
-    email: "worker@gmail.com",
-    city: "Mumbai",
-    rating: 4.8,
-    totalReviews: 45,
-    joinedDate: "Jan 2024",
+    name: sessionStorage.getItem("userName") || "Worker",
+    profession: "...",
+    phone: "...",
+    email: sessionStorage.getItem("userEmail") || "",
+    city: "...",
+    rating: 5.0,
+    totalReviews: 0,
+    joinedDate: "...",
     photo: "👷"
   });
   const [editProfile, setEditProfile] = useState({ ...profile });
 
   // Pull real runtime data directly from active Mongo Cloud Backend
   const syncStore = async () => {
-    const currentUserId = localStorage.getItem("userId");
-    const userEmail = localStorage.getItem("userEmail");
+    const currentUserId = sessionStorage.getItem("userId");
+    const userEmail = sessionStorage.getItem("userEmail");
     if (!currentUserId || !userEmail) return;
 
     try {

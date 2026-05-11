@@ -38,7 +38,8 @@ const analyzeLocationWithAi = async (cityName) => {
             content: `Analyze the 40km radius surroundings of the following location: ${normName}`
           }
         ]
-      })
+      }),
+      signal: AbortSignal.timeout(2500) // ⚡ INSTANT FALLBACK: Never freeze frontend UX!
     });
 
     const data = await response.json();

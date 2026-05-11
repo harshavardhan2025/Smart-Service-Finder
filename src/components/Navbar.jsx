@@ -6,8 +6,8 @@ function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const isAuthPage = location.pathname === "/login" || location.pathname === "/signup";
-  const isLoggedIn = !!localStorage.getItem("userRole") && !isAuthPage;
-  const userRole = localStorage.getItem("userRole") || "user";
+  const isLoggedIn = !!sessionStorage.getItem("userRole") && !isAuthPage;
+  const userRole = sessionStorage.getItem("userRole") || "user";
 
   // Sync state with localStorage and document body attribute
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
@@ -22,7 +22,7 @@ function Navbar() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("userRole");
+    sessionStorage.removeItem("userRole");
     alert("Logged out successfully! 👋");
     navigate("/");
   };
@@ -112,7 +112,7 @@ function Navbar() {
         {isLoggedIn ? (
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
             {/* Worker Dashboard Quick Link */}
-            {localStorage.getItem("userRole") === "worker" && (
+            {sessionStorage.getItem("userRole") === "worker" && (
               <Link to="/worker-dashboard" style={{ textDecoration: "none" }}>
                 <button
                   style={{
@@ -131,7 +131,7 @@ function Navbar() {
             )}
 
             {/* User Dashboard Quick Link */}
-            {localStorage.getItem("userRole") === "user" && (
+            {sessionStorage.getItem("userRole") === "user" && (
               <Link to="/user-dashboard" style={{ textDecoration: "none" }}>
                 <button
                   style={{
@@ -150,7 +150,7 @@ function Navbar() {
             )}
 
             {/* Admin Dashboard Quick Link */}
-            {localStorage.getItem("userRole") === "admin" && (
+            {sessionStorage.getItem("userRole") === "admin" && (
               <Link to="/admin-dashboard" style={{ textDecoration: "none" }}>
                 <button
                   style={{

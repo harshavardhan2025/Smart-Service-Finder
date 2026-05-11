@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getWorkers } from "../data/sharedStore";
 
 const SERVICES = [
   { id: "carpentry", name: "Carpentry", icon: "🪚" },
@@ -128,7 +127,7 @@ function NearbyWorkers({ searchedLocation }) {
   const [selectedService, setSelectedService] = useState(null);
   const [cloudWorkers, setCloudWorkers] = useState([]);
 
-  const locationKey = getShortLocation(searchedLocation) || "mumbai";
+  const locationKey = getShortLocation(searchedLocation) || "kakinada";
   const displayCity = locationKey.charAt(0).toUpperCase() + locationKey.slice(1).toLowerCase();
 
   useEffect(() => {

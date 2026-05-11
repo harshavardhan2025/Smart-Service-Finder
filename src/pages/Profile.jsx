@@ -1,20 +1,20 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getWalletBalance, getTransactions, updateWalletBalance } from "../data/sharedStore";
 
 const STATUS_STYLE = {
   Paid:     { color: "#16a34a", bg: "#dcfce7" },
   Pending:  { color: "#d97706", bg: "#fef3c7" },
-  Refunded: { color: "#2563eb", bg: "#dbeafe" }
+  Refunded: { color: "#2563eb", bg: "#dbeafe" },
+  Completed: { color: "#16a34a", bg: "#dcfce7" }
 };
 
 const defaultProfile = {
-  name: "Harsha",
-  email: "harsha@gmail.com",
-  phone: "9876543210",
+  name: sessionStorage.getItem("userName") || "Verified User",
+  email: "user@example.com",
+  phone: "Not Provided",
   role: "Customer",
-  location: "Bangalore, India",
-  memberSince: "January 2026"
+  location: "Available Offline",
+  memberSince: "Joined 2026"
 };
 
 function Profile() {
@@ -25,19 +25,25 @@ function Profile() {
   const [expandedTxn, setExpandedTxn] = useState(null);
   const [showAllTxn, setShowAllTxn] = useState(false);
 
-  const [walletBal, setWalletBal] = useState(0);
+  const [walletBal, setWalletBal] = useState(5000);
   const [txnHistory, setTxnHistory] = useState([]);
 
   useEffect(() => {
-    setWalletBal(getWalletBalance());
-    setTxnHistory(getTransactions());
-    
-    const handleStorage = () => {
-      setWalletBal(getWalletBalance());
-      setTxnHistory(getTransactions());
+    const fetchUserData = async () => {
+      try {
+         const currentUsr = sessionStorage.getItem("userName") || "Harsha User";
+         // Fetch physical transactions assigned to this user!
+         const resp = await fetch(`http://localhost:5000/api/transactions?user=${encodeURIComponent(currentUsr)}`);
+         if (resp.ok) {
+            const data = await resp.json();
+            // Filter client-side just to be doubly safe if API returns total dump
+            const userSpecific = data.filter(t => t.customer === currentUsr);
+            setTxnHistory(userSpecific);
+         }
+      } catch(err) { console.error("Profile ledger load fail"); }
     };
-    window.addEventListener("local-storage", handleStorage);
-    return () => window.removeEventListener("local-storage", handleStorage);
+    
+    fetchUserData();
   }, []);
 
   const PREVIEW_COUNT = 2;
@@ -240,10 +246,10 @@ function Profile() {
               <div style={{ fontSize: "32px", fontWeight: 800, margin: "8px 0" }}>₹{walletBal.toLocaleString()}</div>
               <button 
                 onClick={() => {
-                  const input = window.prompt("Enter amount to add (₹):", "500");
+                  const input = window.prompt("Enter amount to top-up (₹):", "500");
                   if (input && !isNaN(input)) {
-                    updateWalletBalance(parseInt(input));
-                    showToast(`✅ Added ₹${input} to your wallet!`);
+                    setWalletBal(prev => prev + parseInt(input));
+                    showToast(`✅ Successfully topped-up ₹${input}!`);
                   }
                 }}
                 style={{ padding: "8px 16px", backgroundColor: "white", color: "#1e88e5", border: "none", borderRadius: "8px", fontWeight: 700, fontSize: "12px", cursor: "pointer", transition: "all 0.2s" }}
@@ -467,11 +473,12 @@ function Profile() {
           {/* Transaction Rows */}
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {visibleTxns.map((txn) => {
-              const s = STATUS_STYLE[txn.status];
-              const isOpen = expandedTxn === txn.id;
+              const s = STATUS_STYLE[txn.status] || { color: "#64748b", bg: "#f1f5f9" };
+              const txnIdentifier = txn._id || txn.id;
+              const isOpen = expandedTxn === txnIdentifier;
               return (
                 <div
-                  key={txn.id}
+                  key={txnIdentifier}
                   style={{
                     border: `1.5px solid ${isOpen ? "#2196F3" : "#f1f5f9"}`,
                     borderRadius: "12px",
@@ -481,7 +488,7 @@ function Profile() {
                 >
                   {/* Row */}
                   <div
-                    onClick={() => setExpandedTxn(isOpen ? null : txn.id)}
+                    onClick={() => setExpandedTxn(isOpen ? null : txnIdentifier)}
                     style={{
                       display: "flex",
                       justifyContent: "space-between",

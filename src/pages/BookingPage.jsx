@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { useNavigate } from "react-router-dom";
-import { addBooking, getWalletBalance, updateWalletBalance, addTransaction } from "../data/sharedStore";
 
 function BookingPage() {
   const [date, setDate] = useState(new Date());
@@ -16,10 +15,8 @@ function BookingPage() {
   const [busyBookings, setBusyBookings] = useState([]);
 
   useEffect(() => {
-    setWalletBal(getWalletBalance());
-    const handleStorage = () => setWalletBal(getWalletBalance());
-    window.addEventListener("local-storage", handleStorage);
-    return () => window.removeEventListener("local-storage", handleStorage);
+    // Hard baseline static balance for testing phase. Ideally fetched from User Context/ledger.
+    setWalletBal(5000);
   }, []);
 
   // 🛡️ Authoritative Live Collision Check: Fetch worker's dynamic calendar
@@ -100,11 +97,11 @@ function BookingPage() {
         alert(`Insufficient Wallet Balance! (Current: ₹${walletBal}, Required: ₹${calculatedPrice})`);
         return;
       }
-      updateWalletBalance(-calculatedPrice);
+      setWalletBal(prev => prev - calculatedPrice);
     }
 
-    const customerId = localStorage.getItem("userId");
-    const customerName = localStorage.getItem("userName") || "Verified Client";
+    const customerId = sessionStorage.getItem("userId");
+    const customerName = sessionStorage.getItem("userName") || "Verified Client";
     
     if (!customerId) {
        alert("Authentication lost. Please log in again.");
@@ -141,13 +138,18 @@ function BookingPage() {
          throw new Error(errData.error || "Cloud Submission Denied");
       }
 
-      // Record redundant local historical audit if present for UI backwards compatibility
-      addTransaction({
-        service: selectedWorker.service,
-        worker: selectedWorker.name,
-        amount: calculatedPrice,
-        method: paymentMethod,
-        icon: "🛠️"
+      // Fire authoritative Physical cloud transaction record instantly flawlessly!
+      await fetch("http://localhost:5000/api/transactions", {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({
+            customer: sessionStorage.getItem("userName") || "Verified Client",
+            worker: selectedWorker.name,
+            service: selectedWorker.service,
+            amount: calculatedPrice,
+            status: "Paid",
+            method: paymentMethod
+         })
       });
 
       alert(

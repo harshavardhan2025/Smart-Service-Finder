@@ -18,6 +18,15 @@ export const createOffer = async (req, res) => {
   }
 };
 
+export const updateOffer = async (req, res) => {
+  try {
+    const offer = await Offer.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.status(200).json({ success: true, offer });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 export const deleteOffer = async (req, res) => {
   try {
     await Offer.findByIdAndDelete(req.params.id);

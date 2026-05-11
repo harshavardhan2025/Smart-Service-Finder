@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { getWorkers, getPlans, getOffers } from "../data/sharedStore";
 
 function AiChatBot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,6 +13,24 @@ function AiChatBot() {
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef(null);
 
+  // Context containers for AI intelligence
+  const [activeOffers, setActiveOffers] = useState([]);
+  const [activePlans, setActivePlans] = useState([]);
+
+  useEffect(() => {
+     const primeAIPercepts = async () => {
+        try {
+           const [oResp, pResp] = await Promise.all([
+              fetch("http://localhost:5000/api/offers"),
+              fetch("http://localhost:5000/api/plans")
+           ]);
+           if (oResp.ok) setActiveOffers(await oResp.json());
+           if (pResp.ok) setActivePlans(await pResp.json());
+        } catch(e) { console.error("AI catalog loading error"); }
+     };
+     primeAIPercepts();
+  }, []);
+
   const SUGGESTED_PROMPTS = [
     { text: "AC not cooling ❄️", query: "AC is not cooling" },
     { text: "Check Offers 🎁", query: "What are the latest offers?" },
@@ -26,8 +43,6 @@ function AiChatBot() {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
-
-  // Dynamic workers will be fetched from getWorkers() now
 
   const parseProblem = (text) => {
     const lowercaseText = text.toLowerCase();
@@ -211,14 +226,14 @@ function AiChatBot() {
     }
 
     if (lowercaseText.includes("discount") || lowercaseText.includes("offer") || lowercaseText.includes("coupon") || lowercaseText.includes("promo")) {
-      const active = getOffers().map(o => `• Code **${o.code}**: ${o.discount} (${o.desc})`).join("\n");
+      const active = activeOffers.map(o => `• Code **${o.code}**: ${o.discount} (${o.desc})`).join("\n");
       return active.length > 0 
         ? `🎉 Yes, we have dynamic offers running right now!\n\n${active}\n\nApply code during checkout to claim benefits!` 
         : "🎉 We currently don't have any active sitewide promo codes, but our workers frequently list highly discounted budget rates on the home map page!";
     }
 
     if (lowercaseText.includes("plan") || lowercaseText.includes("subscribe")) {
-      const activeP = getPlans().map(p => `• **${p.title}** for ${p.price}`).join("\n");
+      const activeP = activePlans.map(p => `• **${p.title}** for ${p.price}`).join("\n");
       return activeP.length > 0 
         ? `💎 Check out our exclusive Annual & Premium Plans:\n\n${activeP}\n\nHead to the 'Plans & Offers' page to unlock full premium features!`
         : "💎 Premium membership programs periodically rotate. Keep checking the Plans tab for seasonal launches!";
@@ -312,8 +327,8 @@ function AiChatBot() {
       }
     };
 
-    const activePlans = getPlans().map(p => `${p.title} for ${p.price}`).join("; ");
-    const activeOffers = getOffers().map(o => `${o.code} (${o.discount})`).join("; ");
+    const plansText = activePlans.map(p => `${p.title} for ${p.price}`).join("; ");
+    const offersText = activeOffers.map(o => `${o.code} (${o.discount})`).join("; ");
 
     try {
       // Ensure usage matches standard CRA context. Hard fallback applied to fix validation 401 errors.
@@ -332,8 +347,8 @@ function AiChatBot() {
               role: "system",
               content: `You are the ServiceHub AI Assistant. The user is currently located near: ${userLocation}. 
               Your job is to help them with home services (plumbing, carpentry, beauty, cleaning, mechanics, doctors, etc). 
-              Available Special Subscription Plans: ${activePlans}.
-              Available Promo Codes/Offers: ${activeOffers}.
+              Available Special Subscription Plans: ${plansText}.
+              Available Promo Codes/Offers: ${offersText}.
               Be extremely friendly, concise (1-2 sentences max), and use emojis. 
               If users ask about pricing or discounts, MENTION the available offers and plans.
               If they ask about safety, say all workers are verified.`

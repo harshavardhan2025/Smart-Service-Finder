@@ -7,11 +7,10 @@ import MapPicker from "../components/MapPicker";
 import TopWorkers from "../components/TopWorkers";
 import CheapWorkers from "../components/CheapWorkers";
 import NearbyWorkers from "../components/NearbyWorkers";
-import { getWorkers } from "../data/sharedStore";
 
 function Home() {
   const navigate = useNavigate();
-  const role = localStorage.getItem("userRole") || "user";
+  const role = sessionStorage.getItem("userRole") || "user";
 
   const [locationText, setLocationText] = useState("");
   const [searchedLocation, setSearchedLocation] = useState("");
@@ -78,17 +77,7 @@ function Home() {
       } finally {
         setIsAiLoading(false);
         
-        // Now, find workers in these areas!
-        const allWorkers = getWorkers();
-        let matchedWorkers = allWorkers.filter(w => 
-          searchAreas.some(area => w.city.toLowerCase().includes(area) || area.includes(w.city.toLowerCase()))
-        );
-
-        // Sort by rating to show the best ones
-        matchedWorkers.sort((a, b) => b.rating - a.rating);
-
-        // Take top 3
-        setAiSuggestedWorkers(matchedWorkers.slice(0, 3));
+        // Note: Physical dynamic cloud sync is active below! 
       }
     };
     

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { addReview, updateWalletBalance, addTransaction } from "../data/sharedStore";
 
 const POINTS_PER_REVIEW = 50;
 
@@ -78,8 +77,8 @@ function ReviewsRewards() {
 
   useEffect(() => {
      const loadData = async () => {
-        const cId = localStorage.getItem("userId");
-        const cName = localStorage.getItem("userName") || "Verified Client";
+        const cId = sessionStorage.getItem("userId");
+        const cName = sessionStorage.getItem("userName") || "Verified Client";
         if (!cId) return;
         try {
            // 🔥 FETCH AUTHENTIC HISTORY: Load physical reviews & validated completed bookings!
@@ -130,7 +129,7 @@ function ReviewsRewards() {
              booking_id: bid,
              service: bookingObj.service,
              worker_id: bookingObj.worker_id,
-             customer_name: localStorage.getItem("userName") || "Verified Client",
+             customer_name: sessionStorage.getItem("userName") || "Verified Client",
              rating: draft.rating,
              comment: draft.comment || ""
           })
@@ -142,16 +141,18 @@ function ReviewsRewards() {
        // 🏆 Hydrate Live State natively flawlessly!
        setReviews((prev) => [savedReview, ...prev]);
 
-       // Give actual wallet money for the review
-       updateWalletBalance(POINTS_PER_REVIEW);
-       
-       addTransaction({
-         service: `Review Earned - ${bookingObj.service}`,
-         worker: bookingObj.worker_id,
-         amount: POINTS_PER_REVIEW,
-         method: "Cashback",
-         status: "Paid",
-         icon: "🎁"
+       // Record absolute physical cash-back award in cloud instantly flawlessly!
+       await fetch("http://localhost:5000/api/transactions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+             customer: sessionStorage.getItem("userName") || "Verified Client",
+             worker: bookingObj.worker_id,
+             service: `Review Reward - ${bookingObj.service}`,
+             amount: POINTS_PER_REVIEW,
+             status: "Paid",
+             method: "Cashback"
+          })
        });
 
        showToast(`✅ Review submitted! ₹${POINTS_PER_REVIEW} added to Wallet & Rewards increased!`);
@@ -160,7 +161,7 @@ function ReviewsRewards() {
 
 
 
-  const redeemReward = (reward) => {
+  const redeemReward = async (reward) => {
     if (availablePoints < reward.points) {
       showToast(`❌ Not enough points! You need ${reward.points} pts (you have ${availablePoints}).`);
       return;
@@ -174,14 +175,18 @@ function ReviewsRewards() {
     // If it's the cashback reward, actually add it to the wallet
     if (reward.title.includes("Cashback") || reward.title.includes("Off")) {
       const amount = reward.title.includes("100") ? 100 : 50;
-      updateWalletBalance(amount);
-      addTransaction({
-        service: `Redeemed: ${reward.title}`,
-        worker: "Loyalty Program",
-        amount: amount,
-        method: "Reward",
-        status: "Paid",
-        icon: reward.icon
+      // Dispatch hard physical redemption write effortlessly seamlessly flawlessly instantly!
+      await fetch("http://localhost:5000/api/transactions", {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({
+            customer: sessionStorage.getItem("userName") || "Verified Client",
+            worker: "Loyalty Portal",
+            service: `Redeemed: ${reward.title}`,
+            amount: amount,
+            status: "Paid",
+            method: "Reward"
+         })
       });
       showToast(`✅ "${reward.title}" redeemed! ₹${amount} was added to your wallet.`);
     } else {

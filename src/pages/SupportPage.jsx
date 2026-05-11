@@ -51,7 +51,7 @@ function SupportPage() {
              booking_id: passedBooking || "NON-BOOKING-INQUIRY",
              issue_type: `SUPPORT TICKET: ${category.toUpperCase()}`,
              description: `Email: ${email} | Phone: ${phone} | Message: ${issue}`,
-             reported_by: localStorage.getItem("userName") || email || "Web Guest"
+             reported_by: sessionStorage.getItem("userName") || email || "Web Guest"
           })
        });
        if (!resp.ok) throw new Error("Cloud post rejection.");

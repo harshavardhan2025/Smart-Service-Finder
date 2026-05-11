@@ -18,6 +18,15 @@ export const createPlan = async (req, res) => {
   }
 };
 
+export const updatePlan = async (req, res) => {
+  try {
+    const plan = await Plan.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.status(200).json({ success: true, plan });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 export const deletePlan = async (req, res) => {
   try {
     await Plan.findByIdAndDelete(req.params.id);

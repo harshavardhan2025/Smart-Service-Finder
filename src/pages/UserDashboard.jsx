@@ -12,8 +12,8 @@ function UserDashboard() {
 
   useEffect(() => {
     // 1. Check Authorization
-    const role = localStorage.getItem("userRole");
-    const currentUserId = localStorage.getItem("userId");
+    const role = sessionStorage.getItem("userRole");
+    const currentUserId = sessionStorage.getItem("userId");
     
     if (role !== "user") {
       navigate("/login");
@@ -32,8 +32,9 @@ function UserDashboard() {
           setBookings(bookingsData.slice(0, 5)); // Top 5 recent
         }
 
-        // B. Fetch Real Transactions
-        const txnResp = await fetch(`http://localhost:5000/api/transactions?customer=${currentUserId}`);
+        // B. Fetch Real Transactions via Authoritative Username String
+        const currentUserName = sessionStorage.getItem("userName") || "Verified User";
+        const txnResp = await fetch(`http://localhost:5000/api/transactions?customer=${encodeURIComponent(currentUserName)}`);
         if (txnResp.ok) {
           const txnData = await txnResp.json();
           setTransactions(txnData.slice(0, 5)); // Top 5 recent

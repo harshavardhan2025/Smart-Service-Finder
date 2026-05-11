@@ -30,14 +30,14 @@ function Login() {
 
       // Save user session details consistently
       const user = data.user;
-      localStorage.setItem("userRole", user.role);
-      localStorage.setItem("userName", user.name);
-      localStorage.setItem("userEmail", user.email);
-      localStorage.setItem("userId", user.id || user._id);
-      localStorage.setItem("authToken", data.token); // For future auth requests
+      sessionStorage.setItem("userRole", user.role);
+      sessionStorage.setItem("userName", user.name);
+      sessionStorage.setItem("userEmail", user.email);
+      sessionStorage.setItem("userId", user.id || user._id);
+      sessionStorage.setItem("authToken", data.token); // For future auth requests
 
       if (user.role === "worker") {
-        localStorage.setItem("loggedInWorkerId", user.id);
+        sessionStorage.setItem("loggedInWorkerId", user.id);
         alert(`Welcome Professional ${user.name}! You are logged in successfully! 🛠️`);
         navigate("/worker-dashboard");
       } else if (user.role === "admin") {
@@ -63,11 +63,11 @@ function Login() {
     const phoneRegex = /^[0-9]{10}$/;
 
     if (emailRegex.test(input.trim())) {
-      localStorage.setItem("userRole", "user");
+      sessionStorage.setItem("userRole", "user");
       alert(`Google account verified successfully! ✅\nEmail: ${input.trim()}\nWelcome to ServiceHub! 🎉`);
       navigate("/");
     } else if (phoneRegex.test(input.trim())) {
-      localStorage.setItem("userRole", "user");
+      sessionStorage.setItem("userRole", "user");
       alert(`Google account verified successfully! ✅\nMobile: ${input.trim()}\nWelcome to ServiceHub! 🎉`);
       navigate("/");
     } else {

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getBookings, updateWalletBalance, addTransaction } from "../data/sharedStore";
 
 const serviceIcons = {
   "Carpentry": "🪚",
@@ -19,8 +18,8 @@ function MyBookings() {
   const navigate = useNavigate();
 
   const syncBookings = async () => {
-    const customerId = localStorage.getItem("userId");
-    const cName = localStorage.getItem("userName") || "Verified Client";
+    const customerId = sessionStorage.getItem("userId");
+    const cName = sessionStorage.getItem("userName") || "Verified Client";
     if (!customerId) return;
 
     try {

@@ -54,28 +54,7 @@ const DEFAULT_COMPLAINTS = [];
 
 const DEFAULT_WORKERS = [];
 
-const DEFAULT_TRANSACTIONS = [
-  {
-    id: "TXN-001",
-    service: "Electrician Service",
-    worker: "Ramesh K.",
-    date: "20 May 2026",
-    amount: 450,
-    method: "UPI",
-    status: "Paid",
-    icon: "⚡"
-  },
-  {
-    id: "TXN-003",
-    service: "House Cleaning",
-    worker: "Sunita D.",
-    date: "15 Apr 2026",
-    amount: 200,
-    method: "Wallet",
-    status: "Paid",
-    icon: "🧹"
-  }
-];
+const DEFAULT_TRANSACTIONS = [];
 
 const DEFAULT_NOTIFICATIONS = [];
 
@@ -288,60 +267,9 @@ export function saveWorkers(list) { save(KEYS.WORKERS, list); }
 
 // Duplicate getTransactions removed here to fix SyntaxError
 // ─── PLANS & OFFERS SEEDS & ACCESSORS ──────────────────────────────
-const DEFAULT_PLANS = [
-  {
-    id: "PLN001",
-    title: "🩺 Doctors Annual Family Plan",
-    price: "₹2,999",
-    period: "year",
-    features: [
-      "Unlimited doctor home consultations",
-      "24/7 dedicated medical helpdesk access",
-      "Free monthly general checkups for elderly",
-      "Emergency instant dispatch within 10-20 mins"
-    ],
-    color: "#0284c7",
-    bgColor: "#f0f9ff",
-    btnText: "Subscribe to Health Plan"
-  },
-  {
-    id: "PLN002",
-    title: "🚗 Unlimited Annual Car Wash Plan",
-    price: "₹1,499",
-    period: "year",
-    features: [
-      "2 Detailed exterior car washes per month",
-      "1 Full interior premium vacuuming session",
-      "Complimentary tire shine & wax detailing finish",
-      "Dispatched directly to your home garage"
-    ],
-    color: "#16a34a",
-    bgColor: "#f0fdf4",
-    btnText: "Subscribe to Car Wash Plan 🚀",
-    popular: true
-  },
-  {
-    id: "PLN003",
-    title: "✨ Complete Home Cleaning Plan",
-    price: "₹3,499",
-    period: "year",
-    features: [
-      "2 Full-house deep cleaning sessions",
-      "Complete kitchen & bathroom sanitization",
-      "Sofa, upholstery & carpet shampoo treatment",
-      "Priority festive season dispatch reservation"
-    ],
-    color: "#4f46e5",
-    bgColor: "#e0e7ff",
-    btnText: "Subscribe to Cleaning Plan"
-  }
-];
+const DEFAULT_PLANS = [];
 
-const DEFAULT_OFFERS = [
-  { id: "OFR001", code: "DOCFREE", discount: "Flat ₹150 Off", desc: "Valid on all Doctor & Medical consult bookings.", expiry: "Ends May 31" },
-  { id: "OFR002", code: "EMERGE100", discount: "₹100 Cashback", desc: "Applicable on your first Emergency Instant booking.", expiry: "Ends June 15" },
-  { id: "OFR003", code: "FESTIVE25", discount: "25% Discount", desc: "Enjoy savings on Carpentry, Plumbing & Painting.", expiry: "Ends June 30" }
-];
+const DEFAULT_OFFERS = [];
 
 export function getPlans() { return load(KEYS.PLANS, DEFAULT_PLANS); }
 export function savePlans(list) { save(KEYS.PLANS, list); }

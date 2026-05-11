@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import { getComplaints, getWorkers, saveWorkers, getTransactions, verdictComplaint, getBookings, getPlans, savePlans, getOffers, saveOffers } from "../data/sharedStore";
+
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -146,16 +146,20 @@ function AdminDashboard() {
        if (wResp.ok) setWorkers(await wResp.json());
 
        const bResp = await fetch("http://localhost:5000/api/bookings");
-       if (bResp.ok) setLiveRealTimeBookings(await bResp.json());
+       if (bResp.ok) {
+           const bData = await bResp.json();
+           setLiveRealTimeBookings(bData);
+           setBookings(bData);
+       }
        const cResp = await fetch("http://localhost:5000/api/complaints");
        if (cResp.ok) setComplaints(await cResp.json());
+       const pResp = await fetch("http://localhost:5000/api/plans");
+       if (pResp.ok) setAdminPlans(await pResp.json());
+       const oResp = await fetch("http://localhost:5000/api/offers");
+       if (oResp.ok) setAdminOffers(await oResp.json());
+       const tResp = await fetch("http://localhost:5000/api/transactions");
+       if (tResp.ok) setTransactions(await tResp.json());
     } catch(err) { console.error("Background sync fail", err); }
-
-    // Retain internal operational caches for logic continuity
-    setTransactions(getTransactions());
-    setBookings(getBookings());
-    setAdminPlans(getPlans());
-    setAdminOffers(getOffers());
 
     // Dynamic Customer Sync
     const staticCustomers = [
@@ -179,7 +183,7 @@ function AdminDashboard() {
 
   useEffect(() => {
     // Rigid Firewall Check: Enforce Admin Identity Exclusivity instantly
-    const role = localStorage.getItem("userRole");
+    const role = sessionStorage.getItem("userRole");
     if (role !== "admin") {
        navigate("/login");
        return;
@@ -1257,20 +1261,30 @@ function AdminDashboard() {
                     </select>
                     <div style={{ display: "flex", gap: "10px" }}>
                       <button 
-                        onClick={() => {
+                        onClick={async () => {
                           if (!planForm.title || !planForm.price) { alert("Please fill in Title and Price!"); return; }
-                          const currentPlans = getPlans();
                           const featuresArray = typeof planForm.features === "string" ? planForm.features.split(",").map(f => f.trim()).filter(Boolean) : planForm.features;
-                          if (editingPlan) {
-                            const updated = currentPlans.map(p => p.id === editingPlan.id ? { ...p, ...planForm, features: featuresArray } : p);
-                            savePlans(updated);
-                            setEditingPlan(null);
-                          } else {
-                            const newPlan = { id: "PLN" + Date.now(), ...planForm, features: featuresArray };
-                            savePlans([...currentPlans, newPlan]);
-                          }
-                          setPlanForm({ title: "", price: "", features: "", color: "#4f46e5", btnText: "Subscribe Now", workerId: "" });
-                          syncAdminStore();
+                          const payload = { ...planForm, features: featuresArray };
+
+                          try {
+                             if (editingPlan) {
+                                const pid = editingPlan._id || editingPlan.id;
+                                await fetch(`http://localhost:5000/api/plans/${pid}`, {
+                                   method: "PATCH",
+                                   headers: { "Content-Type": "application/json" },
+                                   body: JSON.stringify(payload)
+                                });
+                                setEditingPlan(null);
+                             } else {
+                                await fetch("http://localhost:5000/api/plans", {
+                                   method: "POST",
+                                   headers: { "Content-Type": "application/json" },
+                                   body: JSON.stringify(payload)
+                                });
+                             }
+                             setPlanForm({ title: "", price: "", features: "", color: "#4f46e5", btnText: "Subscribe Now", workerId: "" });
+                             syncAdminStore();
+                          } catch(err) { alert("🛑 Database Sync Error: Failed to modify Plan ledger."); }
                         }}
                         style={{ backgroundColor: "var(--primary)", color: "white", border: "none", padding: "12px 20px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", flex: 1 }}
                       >
@@ -1301,7 +1315,7 @@ function AdminDashboard() {
                     </thead>
                     <tbody>
                       {adminPlans.map(p => (
-                        <tr key={p.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                        <tr key={p._id || p.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
                           <td style={{ padding: "8px", fontWeight: "bold" }}>{p.title}</td>
                           <td style={{ padding: "8px" }}>{p.price}/{p.period || "year"}</td>
                           <td style={{ padding: "8px", fontWeight: "600", color: "#475569" }}>
@@ -1318,10 +1332,13 @@ function AdminDashboard() {
                               Edit
                             </button>
                             <button 
-                              onClick={() => {
-                                if (window.confirm("Delete this plan?")) {
-                                  savePlans(getPlans().filter(pl => pl.id !== p.id));
-                                  syncAdminStore();
+                              onClick={async () => {
+                                if (window.confirm("Permanently erase this physical plan?")) {
+                                  try {
+                                     const pid = p._id || p.id;
+                                     await fetch(`http://localhost:5000/api/plans/${pid}`, { method: "DELETE" });
+                                     syncAdminStore();
+                                  } catch(e) { alert("Deletion failed."); }
                                 }
                               }}
                               style={{ backgroundColor: "#ef4444", color: "white", border: "none", padding: "4px 8px", borderRadius: "4px", fontSize: "11px", cursor: "pointer" }}
@@ -1373,19 +1390,28 @@ function AdminDashboard() {
                     />
                     <div style={{ display: "flex", gap: "10px" }}>
                       <button 
-                        onClick={() => {
+                        onClick={async () => {
                           if (!offerForm.code || !offerForm.discount) { alert("Please fill in Coupon Code and Discount!"); return; }
-                          const currentOffers = getOffers();
-                          if (editingOffer) {
-                            const updated = currentOffers.map(o => o.id === editingOffer.id ? { ...o, ...offerForm } : o);
-                            saveOffers(updated);
-                            setEditingOffer(null);
-                          } else {
-                            const newOffer = { id: "OFR" + Date.now(), ...offerForm };
-                            saveOffers([...currentOffers, newOffer]);
-                          }
-                          setOfferForm({ code: "", discount: "", desc: "", expiry: "" });
-                          syncAdminStore();
+                          
+                          try {
+                             if (editingOffer) {
+                                const oid = editingOffer._id || editingOffer.id;
+                                await fetch(`http://localhost:5000/api/offers/${oid}`, {
+                                   method: "PATCH",
+                                   headers: { "Content-Type": "application/json" },
+                                   body: JSON.stringify(offerForm)
+                                });
+                                setEditingOffer(null);
+                             } else {
+                                await fetch("http://localhost:5000/api/offers", {
+                                   method: "POST",
+                                   headers: { "Content-Type": "application/json" },
+                                   body: JSON.stringify(offerForm)
+                                });
+                             }
+                             setOfferForm({ code: "", discount: "", desc: "", expiry: "" });
+                             syncAdminStore();
+                          } catch(e) { alert("🛑 Database Offer Sync Error."); }
                         }}
                         style={{ backgroundColor: "var(--primary)", color: "white", border: "none", padding: "12px 20px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", flex: 1 }}
                       >
@@ -1415,7 +1441,7 @@ function AdminDashboard() {
                     </thead>
                     <tbody>
                       {adminOffers.map(o => (
-                        <tr key={o.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                        <tr key={o._id || o.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
                           <td style={{ padding: "8px", fontWeight: "bold" }}>{o.code}</td>
                           <td style={{ padding: "8px" }}>{o.discount}</td>
                           <td style={{ padding: "8px", textAlign: "right" }}>
@@ -1429,10 +1455,13 @@ function AdminDashboard() {
                               Edit
                             </button>
                             <button 
-                              onClick={() => {
-                                if (window.confirm("Delete this coupon?")) {
-                                  saveOffers(getOffers().filter(of => of.id !== o.id));
-                                  syncAdminStore();
+                              onClick={async () => {
+                                if (window.confirm("Permanently remove this seasonal physical coupon?")) {
+                                  try {
+                                     const oid = o._id || o.id;
+                                     await fetch(`http://localhost:5000/api/offers/${oid}`, { method: "DELETE" });
+                                     syncAdminStore();
+                                  } catch(e) { alert("Deletion reject."); }
                                 }
                               }}
                               style={{ backgroundColor: "#ef4444", color: "white", border: "none", padding: "4px 8px", borderRadius: "4px", fontSize: "11px", cursor: "pointer" }}
