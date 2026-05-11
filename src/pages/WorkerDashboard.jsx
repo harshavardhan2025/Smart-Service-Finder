@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
+import RouteMap from "../components/RouteMap";
 // Dynamically enhanced to consume real Mongo cloud telemetry
 
 function WorkerDashboard() {
@@ -409,14 +410,7 @@ function WorkerDashboard() {
                                 <span>📍 From: <strong>{n.workerAddr}</strong></span>
                                 <span>🏠 To: <strong>{n.customerAddr}</strong></span>
                               </div>
-                              <iframe
-                                title={`route-map-${n.id}`}
-                                width="100%"
-                                height="260"
-                                frameBorder="0"
-                                style={{ display: "block" }}
-                                src={`https://www.openstreetmap.org/export/embed.html?bbox=72.7,18.9,72.95,19.15&layer=mapnik&marker=19.05,72.83`}
-                              />
+                              <RouteMap startAddress={n.workerAddr} endAddress={n.customerAddr} />
                               <div style={{ padding: "10px 16px", backgroundColor: "#f8fafc", fontSize: 12, color: "#64748b", display: "flex", gap: 16 }}>
                                 <span>🛣️ Est. Distance: ~5-8 km</span>
                                 <span>⏱️ Est. Time: ~15-25 mins</span>

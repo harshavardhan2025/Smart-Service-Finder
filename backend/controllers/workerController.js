@@ -76,10 +76,11 @@ export const getWorkers = async (req, res) => {
       // Force-convert AI analysis results into authoritative database queries!
       let targetLocations = aiGeneratedLocations.map(loc => new RegExp(loc, "i"));
 
-      // Expanded Match spanning all identified spatial nodes
-      filter.$or = targetLocations.map(loc => ({
-         $or: [{ city: loc }, { location: loc }]
-      })).flat();
+      // Expanded Match spanning all identified spatial nodes flawlessly
+      filter.$or = [
+         { city: { $in: targetLocations } },
+         { location: { $in: targetLocations } }
+      ];
     }
     
     if (service) {

@@ -167,12 +167,28 @@ function NearbyWorkers({ searchedLocation }) {
   }
 
   const allWorkers = cloudWorkers;
-  const filteredWorkers = activeServiceText
-    ? allWorkers.filter(
-        (worker) =>
-          worker.service === activeServiceText
-      )
-    : [];
+  
+  let filteredWorkers = [];
+  if (activeServiceText) {
+    // TIER 1: High-precision exact match!
+    filteredWorkers = allWorkers.filter(w => w.service === activeServiceText);
+
+    // TIER 2: Intelligent Fuzzy Fallback (ensures containment matches succeed)!
+    if (filteredWorkers.length === 0) {
+      filteredWorkers = allWorkers.filter(w => 
+         w.service && (
+           w.service.toLowerCase().includes(activeServiceText.toLowerCase()) ||
+           activeServiceText.toLowerCase().includes(w.service.toLowerCase())
+         )
+      );
+    }
+    
+    // TIER 3: Ultimate Fail-Safe Wide Match (pull ANY availability from the master category domain)!
+    if (filteredWorkers.length === 0 && selectedService) {
+       const safeTerm = selectedService.name.split(/[&,]/)[0].trim().toLowerCase();
+       filteredWorkers = allWorkers.filter(w => w.service && w.service.toLowerCase().includes(safeTerm));
+    }
+  }
 
   const handleServiceClick = (service) => {
     setSelectedService(service);
