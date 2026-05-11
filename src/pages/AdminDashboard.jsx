@@ -101,13 +101,8 @@ function AdminDashboard() {
   const [newSubIcon, setNewSubIcon] = useState("");
   const [editingSub, setEditingSub] = useState(null); // { svcId, subId, name, icon } if editing
 
-  // Initial Customers Mock State
-  const [customers, setCustomers] = useState([
-    { id: 1, name: "Harsha Vardhan", email: "harsha@gmail.com", phone: "9876543210", bookings: 12, status: "Active" },
-    { id: 2, name: "Amit Khanna", email: "amit@gmail.com", phone: "9988776655", bookings: 5, status: "Active" },
-    { id: 3, name: "Anjali Sen", email: "anjali@gmail.com", phone: "9122334455", bookings: 8, status: "Active" },
-    { id: 4, name: "Sanjay Dutt", email: "sanjay@gmail.com", phone: "9888877777", bookings: 3, status: "Suspended" }
-  ]);
+  // Initial Customers State initialized as blank to await live cloud population
+  const [customers, setCustomers] = useState([]);
 
   const [workerSearch, setWorkerSearch] = useState("");
   const [workerFilterStatus, setWorkerFilterStatus] = useState("All");
@@ -159,26 +154,19 @@ function AdminDashboard() {
        if (oResp.ok) setAdminOffers(await oResp.json());
        const tResp = await fetch("/api/transactions");
        if (tResp.ok) setTransactions(await tResp.json());
+       const uResp = await fetch("/api/users?role=user");
+       if (uResp.ok) {
+           const usersData = await uResp.json();
+           // Map from backend schema to frontend display expectations seamlessly
+           setCustomers(usersData.map(u => ({
+               id: u._id,
+               name: u.name,
+               email: u.email,
+               phone: u.phone || "N/A",
+               status: u.status || "Active"
+           })));
+       }
     } catch(err) { console.error("Background sync fail", err); }
-
-    // Dynamic Customer Sync
-    const staticCustomers = [
-      { id: "CUST-01", name: "Harsha Vardhan", email: "harsha@gmail.com", phone: "9876543210", status: "Active" },
-      { id: "CUST-02", name: "Amit Khanna", email: "amit@gmail.com", phone: "9988776655", status: "Active" },
-      { id: "CUST-03", name: "Anjali Sen", email: "anjali@gmail.com", phone: "9122334455", status: "Active" },
-      { id: "CUST-04", name: "Sanjay Dutt", email: "sanjay@gmail.com", phone: "9888877777", status: "Suspended" }
-    ];
-    
-    const registered = JSON.parse(localStorage.getItem("sh_registered_users") || "[]")
-                        .filter(u => u.role === "user")
-                        .map(u => ({ id: u.id || u.email, name: u.name, email: u.email, phone: u.phone, status: "Active" }));
-
-    // Dedup logic based on emails
-    const combinedMap = new Map();
-    staticCustomers.forEach(c => combinedMap.set(c.email, c));
-    registered.forEach(c => combinedMap.set(c.email, c));
-
-    setCustomers(Array.from(combinedMap.values()));
   };
 
   useEffect(() => {
@@ -226,10 +214,15 @@ function AdminDashboard() {
     return "₹0";
   };
 
-  const handleDeleteCustomer = (id, name) => {
-    if (window.confirm(`Are you sure you want to permanently delete customer account "${name}"?`)) {
-      setCustomers(customers.filter(c => c.id !== id));
-      alert(`Customer account "${name}" deleted successfully.`);
+  const handleDeleteCustomer = async (id, name) => {
+    if (window.confirm(`Are you sure you want to permanently delete customer account "${name}"? This is destructive and irreversible.`)) {
+      try {
+         const resp = await fetch(`/api/users/${id}`, { method: "DELETE" });
+         if (!resp.ok) throw new Error("Server rejected request");
+         
+         setCustomers(customers.filter(c => c.id !== id));
+         alert(`Customer account "${name}" permanently deleted from the ledger.`);
+      } catch(err) { alert("Failed to purge customer account from cloud database."); }
     }
   };
 
