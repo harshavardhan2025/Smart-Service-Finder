@@ -39,11 +39,19 @@ function WorkerDashboard() {
       let targetWorkerMongoId = null;
 
       // 1. DISCOVER AUTHENTIC WORKER ID VIA EMAIL INDEXING FIRST
-      const workerResp = await fetch(`/api/workers`);
+      const workerResp = await fetch(`/api/workers?adminView=true`);
       if (workerResp.ok) {
         const allWorkers = await workerResp.json();
         const match = allWorkers.find(w => w.email === userEmail || w._id === currentUserId);
         if (match) {
+          // 🛑 CRITICAL SECURITY FIREWALL: Eject instantly if admin has issued a block verdict!
+          if (match.status === "Blocked") {
+             alert("🚨 CRITICAL ALERT: Access Revoked.\n\nYour professional account has been permanently BLOCKED by administration due to platform violations. Logging out now.");
+             sessionStorage.clear();
+             window.location.href = "/login";
+             return;
+          }
+
           targetWorkerMongoId = match._id; // Authentic Primary Key established
           setProfile({
             name: match.name,

@@ -95,8 +95,9 @@ export const getWorkers = async (req, res) => {
       }
     }
 
-    // 🔒 CRITICAL AVAILABILITY CONTAINMENT: Only expose Active professionals globally!
-    const workers = await Worker.find({ ...filter, status: "Active" });
+    // 🔒 CRITICAL AVAILABILITY CONTAINMENT: Default to exposing only Active professionals unless explicit request!
+    const statusFilter = req.query.adminView === "true" ? {} : { status: "Active" };
+    const workers = await Worker.find({ ...filter, ...statusFilter });
     res.status(200).json(workers);
   } catch (error) {
     res.status(400).json({ error: error.message });

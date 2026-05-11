@@ -142,7 +142,7 @@ function AdminDashboard() {
   const syncAdminStore = async () => {
     // Stop reliance on static dummy stores and continuously pulse the real cloud!
     try {
-       const wResp = await fetch("/api/workers");
+       const wResp = await fetch("/api/workers?adminView=true");
        if (wResp.ok) setWorkers(await wResp.json());
 
        const bResp = await fetch("/api/bookings");
@@ -200,7 +200,7 @@ function AdminDashboard() {
     };
     const fetchCloudWorkers = async () => {
        try {
-          const resp = await fetch("/api/workers");
+          const resp = await fetch("/api/workers?adminView=true");
           if (resp.ok) {
              const data = await resp.json();
              setWorkers(data);

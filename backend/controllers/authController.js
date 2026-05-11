@@ -58,6 +58,14 @@ export const loginUser = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (user && (await user.comparePassword(password))) {
+      // 🛑 SECURITY INTERCEPT: Instantly terminate authentication for Blocked Workers!
+      if (user.role === "worker") {
+        const associatedWorker = await Worker.findOne({ email: user.email });
+        if (associatedWorker && associatedWorker.status === "Blocked") {
+           return res.status(403).json({ error: "CRITICAL: Your worker account has been PERMANENTLY BLOCKED by admin control." });
+        }
+      }
+
       res.json({
         success: true,
         message: "Login successful",
