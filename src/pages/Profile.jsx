@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const STATUS_STYLE = {
   Paid:     { color: "#16a34a", bg: "#dcfce7" },
@@ -18,6 +18,7 @@ const defaultProfile = {
 };
 
 function Profile() {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(defaultProfile);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(defaultProfile);
@@ -253,32 +254,7 @@ function Profile() {
               <div style={{ fontSize: "12px", opacity: 0.9, fontWeight: 600, textTransform: "uppercase" }}>Available Wallet Balance</div>
               <div style={{ fontSize: "32px", fontWeight: 800, margin: "8px 0" }}>₹{walletBal.toLocaleString()}</div>
               <button 
-                onClick={async () => {
-                  const input = window.prompt("Enter amount to top-up (₹):", "500");
-                  if (input && !isNaN(input) && parseInt(input) > 0) {
-                    const addedVal = parseInt(input);
-                    try {
-                       // 🚀 FIRE AUTHORITATIVE CLOUD COMMITMENT: Anchor new funds permanently!
-                       await fetch("/api/transactions", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({
-                             customer: currentUsr,
-                             worker: "System Re-fill",
-                             service: "Wallet Top-up Deposit",
-                             amount: addedVal,
-                             status: "Added",
-                             method: "Wallet Topup",
-                             icon: "💳"
-                          })
-                       });
-                       
-                       // Force UI rehydration from active ledger seamlessly!
-                       await fetchUserData();
-                       showToast(`✅ Successfully topped-up ₹${addedVal}! Funds secured in cloud vault.`);
-                    } catch (e) { showToast("🛑 Cloud rejection. Please retry."); }
-                  }
-                }}
+                onClick={() => navigate("/payment")}
                 style={{ padding: "8px 16px", backgroundColor: "white", color: "#1e88e5", border: "none", borderRadius: "8px", fontWeight: 700, fontSize: "12px", cursor: "pointer", transition: "all 0.2s" }}
                 onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
                 onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
