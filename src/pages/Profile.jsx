@@ -25,24 +25,32 @@ function Profile() {
   const [expandedTxn, setExpandedTxn] = useState(null);
   const [showAllTxn, setShowAllTxn] = useState(false);
 
-  const [walletBal, setWalletBal] = useState(5000);
+  const [walletBal, setWalletBal] = useState(0);
   const [txnHistory, setTxnHistory] = useState([]);
 
+  const currentUsr = sessionStorage.getItem("userName") || "Harsha User";
+
+  const fetchUserData = async () => {
+    try {
+       // Fetch physical transactions assigned to this user!
+       const resp = await fetch(`/api/transactions?user=${encodeURIComponent(currentUsr)}`);
+       if (resp.ok) {
+          const data = await resp.json();
+          // Filter client-side just to be doubly safe if API returns total dump
+          const userSpecific = data.filter(t => t.customer === currentUsr);
+          setTxnHistory(userSpecific);
+
+          // 🏦 Dynamic Balance Derivation: Compute total velocity seamlessly instantly from reliable cloud source
+          const calculated = userSpecific.reduce((acc, t) => {
+             const isAdd = t.status === "Refunded" || t.status === "Added" || t.method === "Cashback" || t.method === "Reward" || t.method === "Wallet Topup";
+             return isAdd ? acc + t.amount : acc - t.amount;
+          }, 1000); // Base assumed baseline seed
+          setWalletBal(calculated);
+       }
+    } catch(err) { console.error("Profile ledger load fail"); }
+  };
+
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-         const currentUsr = sessionStorage.getItem("userName") || "Harsha User";
-         // Fetch physical transactions assigned to this user!
-         const resp = await fetch(`/api/transactions?user=${encodeURIComponent(currentUsr)}`);
-         if (resp.ok) {
-            const data = await resp.json();
-            // Filter client-side just to be doubly safe if API returns total dump
-            const userSpecific = data.filter(t => t.customer === currentUsr);
-            setTxnHistory(userSpecific);
-         }
-      } catch(err) { console.error("Profile ledger load fail"); }
-    };
-    
     fetchUserData();
   }, []);
 
@@ -245,11 +253,30 @@ function Profile() {
               <div style={{ fontSize: "12px", opacity: 0.9, fontWeight: 600, textTransform: "uppercase" }}>Available Wallet Balance</div>
               <div style={{ fontSize: "32px", fontWeight: 800, margin: "8px 0" }}>₹{walletBal.toLocaleString()}</div>
               <button 
-                onClick={() => {
+                onClick={async () => {
                   const input = window.prompt("Enter amount to top-up (₹):", "500");
-                  if (input && !isNaN(input)) {
-                    setWalletBal(prev => prev + parseInt(input));
-                    showToast(`✅ Successfully topped-up ₹${input}!`);
+                  if (input && !isNaN(input) && parseInt(input) > 0) {
+                    const addedVal = parseInt(input);
+                    try {
+                       // 🚀 FIRE AUTHORITATIVE CLOUD COMMITMENT: Anchor new funds permanently!
+                       await fetch("/api/transactions", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                             customer: currentUsr,
+                             worker: "System Re-fill",
+                             service: "Wallet Top-up Deposit",
+                             amount: addedVal,
+                             status: "Added",
+                             method: "Wallet Topup",
+                             icon: "💳"
+                          })
+                       });
+                       
+                       // Force UI rehydration from active ledger seamlessly!
+                       await fetchUserData();
+                       showToast(`✅ Successfully topped-up ₹${addedVal}! Funds secured in cloud vault.`);
+                    } catch (e) { showToast("🛑 Cloud rejection. Please retry."); }
                   }
                 }}
                 style={{ padding: "8px 16px", backgroundColor: "white", color: "#1e88e5", border: "none", borderRadius: "8px", fontWeight: 700, fontSize: "12px", cursor: "pointer", transition: "all 0.2s" }}

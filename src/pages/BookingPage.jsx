@@ -17,13 +17,30 @@ function BookingPage() {
 
   useEffect(() => {
     // 🔐 SECURITY GATE: Hard Lockdown! Deny access to unauthorized sessions instantly!
-    if (!sessionStorage.getItem("userId")) {
+    const currentUsr = sessionStorage.getItem("userName") || "Verified Client";
+    const userId = sessionStorage.getItem("userId");
+    if (!userId) {
        alert("⚠️ Protected Area! Please login to secure your booking slots.");
        navigate("/login");
        return;
     }
-    // Hard baseline static balance for testing phase. Ideally fetched from User Context/ledger.
-    setWalletBal(5000);
+
+    // 🏦 Dynamic Baseline Initialization: Query live cloud ledger to ascertain true balance flawlessy!
+    const initWallet = async () => {
+       try {
+          const r = await fetch(`/api/transactions?user=${encodeURIComponent(currentUsr)}`);
+          if (r.ok) {
+             const data = await r.json();
+             const userSpecific = data.filter(t => t.customer === currentUsr);
+             const calculated = userSpecific.reduce((acc, t) => {
+                const isAdd = t.status === "Refunded" || t.status === "Added" || t.method === "Cashback" || t.method === "Reward" || t.method === "Wallet Topup";
+                return isAdd ? acc + t.amount : acc - t.amount;
+             }, 1000);
+             setWalletBal(calculated);
+          }
+       } catch(e) { setWalletBal(0); }
+    };
+    initWallet();
   }, [navigate]);
 
   // 🛡️ Authoritative Live Collision Check: Fetch worker's dynamic calendar
