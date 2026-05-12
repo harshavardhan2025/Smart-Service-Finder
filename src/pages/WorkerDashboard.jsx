@@ -138,7 +138,7 @@ function WorkerDashboard() {
   // Dynamically compute physical earnings directly from active database bookings instantly
   const dynamicRevenueTotal = bookings
     .filter(b => b.status === "Completed" || b.status === "Paid Out")
-    .reduce((sum, b) => sum + (Number(b.price) || 0), 0);
+    .reduce((sum, b) => sum + (parseFloat(b.price) || parseFloat(b.amount) || 0), 0);
 
   // Combine real DB notifications with the bookings map
   const notifications = [
@@ -169,7 +169,7 @@ function WorkerDashboard() {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const activeValidBookings = bookings.filter(b => !["Rejected", "Cancelled"].includes(b.status));
-  const totalEarnings = activeValidBookings.reduce((sum, b) => sum + (Number(b.price) || Number(b.amount) || 0), 0);
+  const totalEarnings = activeValidBookings.reduce((sum, b) => sum + (parseFloat(b.price) || parseFloat(b.amount) || 0), 0);
   const complaintsRatingDeduction = complaints.filter(c => c.adminVerdict === "Valid").reduce((sum, c) => sum + (c.ratingDeducted || 0.2), 0);
   const finalRating = Math.max(1, (profile.rating - complaintsRatingDeduction)).toFixed(1);
 
