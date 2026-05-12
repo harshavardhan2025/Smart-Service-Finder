@@ -4,6 +4,36 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+// 🔒 GLOBAL AUTONOMOUS FETCH INTERCEPTOR
+// Transparently upgrade every native fetch across the entire runtime cluster to satisfy Backend Security Protocols!
+const originalFetch = window.fetch;
+window.fetch = function() {
+  let [resource, config] = arguments;
+  
+  // Only inject into internal API traffic to prevent token leakage to external domain partners!
+  const isInternalApi = typeof resource === 'string' && (resource.includes('/api') || resource.startsWith('/'));
+  
+  if (isInternalApi) {
+    const token = sessionStorage.getItem("authToken");
+    if (token) {
+      config = config || {};
+      config.headers = config.headers || {};
+      
+      // Standardize map vs object headers recursively
+      if (config.headers instanceof Headers) {
+         if (!config.headers.has('Authorization')) {
+            config.headers.set('Authorization', `Bearer ${token}`);
+         }
+      } else {
+         if (!config.headers['Authorization']) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+         }
+      }
+    }
+  }
+  return originalFetch(resource, config);
+};
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>

@@ -2,7 +2,7 @@ export const proxyChat = async (req, res) => {
   try {
     const { messages } = req.body;
     // Safely load key from secure environment container
-    const apiKey = process.env.AI_API_KEY || "3cf5a055ccb74539badfef7b0e0c0276.uxCJ42_eO7zlu0EImzr816cG";
+    const apiKey = process.env.AI_API_KEY || "";
 
     const response = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
       method: "POST",

@@ -44,17 +44,13 @@ function Home() {
 
       try {
         // CRA prefers process.env over import.meta.env. Standard fallback inserted.
-        const apiKey = process.env.REACT_APP_AI_API_KEY || "3cf5a055ccb74539badfef7b0e0c0276.uxCJ42_eO7zlu0EImzr816cG";
-        
-        // ZhipuAI / GLM standard endpoint (which matches the ID.SECRET key format)
-        const response = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
+        // 🔐 ENFORCED ARCHITECTURE LOCKDOWN: Redirect to internal proxy endpoint instantly!
+        const response = await fetch("/api/chat", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${apiKey}`
+            "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            model: "glm-3-turbo",
             messages: [
               {
                 role: "user",
