@@ -137,7 +137,7 @@ function WorkerDashboard() {
 
   // Dynamically compute physical earnings directly from active database bookings instantly
   const dynamicRevenueTotal = bookings
-    .filter(b => b.status === "Paid Out")
+    .filter(b => b.status === "Completed" || b.status === "Paid Out")
     .reduce((sum, b) => sum + (Number(b.price) || 0), 0);
 
   // Combine real DB notifications with the bookings map
@@ -168,7 +168,8 @@ function WorkerDashboard() {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const totalEarnings = bookings.filter(b => b.status === "Completed" || b.status === "Upcoming" || b.status === "Accepted").reduce((sum, b) => sum + b.amount, 0);
+  const activeValidBookings = bookings.filter(b => !["Rejected", "Cancelled"].includes(b.status));
+  const totalEarnings = activeValidBookings.reduce((sum, b) => sum + (Number(b.price) || Number(b.amount) || 0), 0);
   const complaintsRatingDeduction = complaints.filter(c => c.adminVerdict === "Valid").reduce((sum, c) => sum + (c.ratingDeducted || 0.2), 0);
   const finalRating = Math.max(1, (profile.rating - complaintsRatingDeduction)).toFixed(1);
 
@@ -449,28 +450,30 @@ function WorkerDashboard() {
                 </div>
                 <div className="premium-card" style={{ textAlign: "center" }}>
                   <div style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 700, textTransform: "uppercase" }}>Jobs Received</div>
-                  <div style={{ fontSize: 38, fontWeight: 900, color: "var(--secondary)", marginTop: 8 }}>{bookings.length}</div>
+                  <div style={{ fontSize: 38, fontWeight: 900, color: "var(--secondary)", marginTop: 8 }}>{activeValidBookings.length}</div>
                 </div>
                 <div className="premium-card" style={{ textAlign: "center" }}>
                   <div style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 700, textTransform: "uppercase" }}>Avg Per Job</div>
                   <div style={{ fontSize: 38, fontWeight: 900, color: "#f59e0b", marginTop: 8 }}>
-                    ₹{bookings.length > 0 ? Math.round(totalEarnings / bookings.length) : 0}
+                    ₹{activeValidBookings.length > 0 ? Math.round(totalEarnings / activeValidBookings.length) : 0}
                   </div>
                 </div>
               </div>
 
               <div className="premium-card">
                 <h3 style={{ margin: "0 0 18px", fontWeight: 800, color: "var(--text-primary)" }}>Completed & Incoming Payments</h3>
-                {bookings.length === 0 ? (
-                  <p style={{ color: "var(--text-secondary)", textAlign: "center" }}>No payment transactions found.</p>
+                {activeValidBookings.length === 0 ? (
+                  <p style={{ color: "var(--text-secondary)", textAlign: "center" }}>No valid payment projections or records found.</p>
                 ) : (
-                  bookings.map(b => (
+                  activeValidBookings.map(b => (
                     <div key={b.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 0", borderBottom: "1px solid #f1f5f9" }}>
                       <div>
                         <div style={{ fontWeight: 700, color: "#1e293b" }}>{b.service}</div>
                         <div style={{ fontSize: 13, color: "#64748b" }}>{b.customer} · {b.date}</div>
                       </div>
-                      <div style={{ fontWeight: 800, fontSize: 18, color: "var(--primary)" }}>+₹{b.amount}</div>
+                      <div style={{ fontWeight: 800, fontSize: 18, color: b.status === "Completed" || b.status === "Paid Out" ? "var(--primary)" : "#d97706" }}>
+                        {b.status === "Completed" || b.status === "Paid Out" ? "✅" : "⌛"} ₹{b.price || b.amount}
+                      </div>
                     </div>
                   ))
                 )}
