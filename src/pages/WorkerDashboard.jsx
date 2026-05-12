@@ -131,7 +131,7 @@ function WorkerDashboard() {
   }, [selectedWorkerId]);
 
   useEffect(() => {
-    const interval = setInterval(syncStore, 3000);
+    const interval = setInterval(syncStore, 10000); // Tuned throttling to 10 seconds for operational stability
     return () => clearInterval(interval);
   }, [selectedWorkerId]);
 

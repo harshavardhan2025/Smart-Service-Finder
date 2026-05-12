@@ -3,7 +3,10 @@ import Worker from "../models/Worker.js";
 import jwt from "jsonwebtoken";
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || "secret_key_123", {
+  if (!process.env.JWT_SECRET) {
+    console.error("🚨 CRITICAL SYSTEM ERROR: JWT_SECRET environment variable IS NOT CONFIGURED!");
+  }
+  return jwt.sign({ id }, process.env.JWT_SECRET || "TEMPORARY_EMERGENCY_KEY_PLEASE_CONFIGURE_ENV", {
     expiresIn: "30d",
   });
 };

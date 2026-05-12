@@ -331,17 +331,13 @@ function AiChatBot() {
     const offersText = activeOffers.map(o => `${o.code} (${o.discount})`).join("; ");
 
     try {
-      // Ensure usage matches standard CRA context. Hard fallback applied to fix validation 401 errors.
-      const apiKey = process.env.REACT_APP_AI_API_KEY || "3cf5a055ccb74539badfef7b0e0c0276.uxCJ42_eO7zlu0EImzr816cG";
-      
-      const response = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
+      // 🛡️ SECURITY LOCKDOWN: Diverted insecure client-side requests to protected server-side relay!
+      const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${apiKey}`
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "glm-3-turbo",
           messages: [
             {
               role: "system",

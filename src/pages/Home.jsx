@@ -108,7 +108,7 @@ function Home() {
       } catch(e) { console.error("Home cloud workers fail"); }
     };
     syncOnline();
-    const interval = setInterval(syncOnline, 5000);
+    const interval = setInterval(syncOnline, 10000); // Adjusted for optimal background cache persistence
     return () => clearInterval(interval);
   }, [searchedLocation]);
 

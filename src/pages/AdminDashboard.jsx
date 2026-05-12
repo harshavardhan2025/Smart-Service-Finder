@@ -200,7 +200,7 @@ function AdminDashboard() {
     fetchCloudWorkers();
     syncAdminStore();
     // Poll every 3 seconds to ensure instant real-time data sync across modules
-    const interval = setInterval(syncAdminStore, 3000);
+    const interval = setInterval(syncAdminStore, 10000); // Optimised load scaling from 3s to 10s
     return () => clearInterval(interval);
   }, []);
 

@@ -43,7 +43,7 @@ function MyBookings() {
   useEffect(() => {
     syncBookings();
     // Poll every 3 seconds for real-time synchronization
-    const interval = setInterval(syncBookings, 3000);
+    const interval = setInterval(syncBookings, 10000); // Scaled sync cycle to 10 seconds to reduce network overhead
     return () => clearInterval(interval);
   }, []);
 

@@ -19,6 +19,7 @@ import complaintRoutes from "./routes/complaintRoutes.js";
 import serviceRoutes from "./routes/serviceRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ app.use("/api/complaints", complaintRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/chat", chatRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend Running");
