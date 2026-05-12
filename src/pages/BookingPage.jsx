@@ -89,15 +89,23 @@ function BookingPage() {
 
   const isSlotPast = (h) => isToday(date) && h <= new Date().getHours();
 
+  // 🕰️ Timezone Fortress: Guarantees robust, zero-drift string conversion immune to UTC rollback bugs!
+  const formatSafeYMD = (d) => {
+     const y = d.getFullYear();
+     const m = String(d.getMonth() + 1).padStart(2, '0');
+     const day = String(d.getDate()).padStart(2, '0');
+     return `${y}-${m}-${day}`;
+  };
+
   // 🛑 COLLISION GUARD A: Check if the specific slot is physically occupied
   const isSlotAlreadyBooked = (hLabel) => {
-     const dStr = date.toISOString().split('T')[0];
+     const dStr = formatSafeYMD(date);
      return busyBookings.some(b => b.date === dStr && b.time === hLabel && b.status !== "Cancelled");
   };
 
   // 🚨 COLLISION GUARD B: Determine if Instant Booking should be hard-locked due to immediate conflicts
   const isBusyForInstant = () => {
-     const todayStr = new Date().toISOString().split('T')[0];
+     const todayStr = formatSafeYMD(new Date());
      const currentHour = new Date().getHours();
      
      const activeToday = busyBookings.filter(b => b.date === todayStr && b.status !== "Cancelled");
@@ -147,7 +155,7 @@ function BookingPage() {
          customer_id: customerId,
          customer_name: customerName,
          worker_id: workerDbId,
-         date: date.toISOString().split('T')[0],
+         date: formatSafeYMD(date),
          time: selectedSlot,
          service: selectedWorker.service,
          price: calculatedPrice,
