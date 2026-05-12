@@ -16,9 +16,15 @@ function BookingPage() {
   const [busyBookings, setBusyBookings] = useState([]);
 
   useEffect(() => {
+    // 🔐 SECURITY GATE: Hard Lockdown! Deny access to unauthorized sessions instantly!
+    if (!sessionStorage.getItem("userId")) {
+       alert("⚠️ Protected Area! Please login to secure your booking slots.");
+       navigate("/login");
+       return;
+    }
     // Hard baseline static balance for testing phase. Ideally fetched from User Context/ledger.
     setWalletBal(5000);
-  }, []);
+  }, [navigate]);
 
   // 🛡️ Authoritative Live Collision Check: Fetch worker's dynamic calendar
   useEffect(() => {

@@ -1,6 +1,7 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function WorkerProfile() {
+  const navigate = useNavigate();
   // Retrieve the selected worker details from localStorage, with a beautiful default fallback
   const worker = JSON.parse(localStorage.getItem("selected_worker")) || {
     name: "Dr. Priya Sen",
@@ -12,6 +13,16 @@ function WorkerProfile() {
   };
 
   const calculatedPrice = worker.price || (worker.service.includes("Carpentry") ? 399 : worker.service.includes("Plumbing") ? 299 : worker.service.includes("Doctors") ? 599 : 349);
+
+  const handleInitiateBooking = () => {
+    // 🛡️ FRONT-LINE FIREWALL: Verify valid user credentials before releasing slots!
+    if (!sessionStorage.getItem("userId")) {
+       alert("🔑 Sign-in Required!\n\nPlease login first to reserve this worker and complete the service schedule.");
+       navigate("/login");
+       return;
+    }
+    navigate("/booking");
+  };
 
   return (
     <div
@@ -157,24 +168,23 @@ function WorkerProfile() {
             </div>
 
             {/* Booking action button */}
-            <Link to="/booking" style={{ textDecoration: "none" }}>
-              <button
-                style={{
-                  width: "100%",
-                  padding: "16px",
-                  background: "var(--primary-grad)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "14px",
-                  fontWeight: 700,
-                  fontSize: "16px",
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                }}
-              >
-                Proceed to Booking & Scheduling →
-              </button>
-            </Link>
+            <button
+              onClick={handleInitiateBooking}
+              style={{
+                width: "100%",
+                padding: "16px",
+                background: "var(--primary-grad)",
+                color: "white",
+                border: "none",
+                borderRadius: "14px",
+                fontWeight: 700,
+                fontSize: "16px",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
+              Proceed to Booking & Scheduling →
+            </button>
           </div>
         </div>
       </div>
