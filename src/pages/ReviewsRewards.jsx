@@ -150,7 +150,7 @@ function ReviewsRewards() {
              worker: bookingObj.worker_id,
              service: `Review Reward - ${bookingObj.service}`,
              amount: POINTS_PER_REVIEW,
-             status: "Paid",
+             status: "Added",
              method: "Cashback"
           })
        });
@@ -184,7 +184,7 @@ function ReviewsRewards() {
             worker: "Loyalty Portal",
             service: `Redeemed: ${reward.title}`,
             amount: amount,
-            status: "Paid",
+            status: "Added",
             method: "Reward"
          })
       });

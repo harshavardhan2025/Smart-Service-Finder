@@ -41,7 +41,9 @@ function UserDashboard() {
           
           // Calculate Wallet sum dynamically from authentic transaction ledger
           const total = txnData.reduce((acc, t) => {
-             return t.status === "Paid" ? acc - t.amount : acc + t.amount;
+             // 🏦 Intelligent Accounting: Standard payouts deduct, but Refunding and Cashbacks strictly ADD velocity!
+             const isAdd = t.status === "Refunded" || t.status === "Added" || t.method === "Cashback" || t.method === "Reward";
+             return isAdd ? acc + t.amount : acc - t.amount;
           }, 1000); // Base assumed balance
           setWallet(total > 0 ? total : 650); // Fallback placeholder
         }
@@ -148,8 +150,12 @@ function UserDashboard() {
                         <p style={{ margin: 0, fontSize: "12px", color: "#94a3b8" }}>{t.date} • {t.method}</p>
                       </div>
                     </div>
-                    <p style={{ margin: 0, fontWeight: "600", color: t.status === "Refunded" || t.status === "Added" ? "#16a34a" : "#1e293b" }}>
-                      {t.status === "Refunded" || t.status === "Added" ? "+" : "-"}₹{t.amount}
+                    <p style={{ 
+                      margin: 0, 
+                      fontWeight: "600", 
+                      color: (t.status === "Refunded" || t.status === "Added" || t.method === "Cashback" || t.method === "Reward") ? "#16a34a" : "#1e293b" 
+                    }}>
+                      {(t.status === "Refunded" || t.status === "Added" || t.method === "Cashback" || t.method === "Reward") ? "+" : "-"}₹{t.amount}
                     </p>
                   </div>
                 ))}
