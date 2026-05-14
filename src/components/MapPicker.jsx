@@ -42,6 +42,12 @@ function MapPicker() {
           location.coords.latitude,
           location.coords.longitude
         ]);
+      },
+      (err) => console.error("Map location tracking failed:", err),
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0
       }
     );
   }, []);

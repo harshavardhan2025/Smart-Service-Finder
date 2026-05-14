@@ -13,6 +13,7 @@ function AdminDashboard() {
   const [complaints, setComplaints] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [liveRealTimeBookings, setLiveRealTimeBookings] = useState([]);
+  const [adminNotifications, setAdminNotifications] = useState([]);
 
   // Initial Services Mock State (Category management with Sub-categories matching NearbyWorkers.jsx)
   const [services, setServices] = useState([
@@ -166,6 +167,12 @@ function AdminDashboard() {
                status: u.status || "Active"
            })));
        }
+
+        const nResp = await fetch("/api/notifications?role=admin");
+        if (nResp.ok) {
+            const nData = await nResp.json();
+            setAdminNotifications(nData.filter(n => n.type === "emergency" || n.title.includes("SOS")));
+        }
     } catch(err) { console.error("Background sync fail", err); }
   };
 
@@ -199,8 +206,8 @@ function AdminDashboard() {
     fetchCloudBookings();
     fetchCloudWorkers();
     syncAdminStore();
-    // Poll every 3 seconds to ensure instant real-time data sync across modules
-    const interval = setInterval(syncAdminStore, 10000); // Optimised load scaling from 3s to 10s
+    // Accelerated state tracking to 5 seconds to ensure rapid life-safety responsiveness
+    const interval = setInterval(syncAdminStore, 5000); 
     return () => clearInterval(interval);
   }, []);
 
@@ -424,7 +431,8 @@ function AdminDashboard() {
             { id: "customers", name: "Manage Customers", icon: "👤" },
             { id: "complaints", name: `Complaints (${complaints.filter(c => c.status === "Under Review" || c.adminVerdict === "Pending").length})`, icon: "⚠️" },
             { id: "plans-offers", name: "Manage Plans & Offers", icon: "🏷️" },
-            { id: "escrow-payouts", name: "Escrow Payouts 💰", icon: "💸" }
+            { id: "escrow-payouts", name: "Escrow Payouts 💰", icon: "💸" },
+            { id: "sos-alerts", name: `SOS Alerts 🚨 (${adminNotifications.filter(n => !n.is_read).length})`, icon: "🆘" }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -1548,6 +1556,105 @@ function AdminDashboard() {
                       ))}
                     </tbody>
                   </table>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === "sos-alerts" && (
+            <div className="fade-in">
+              <h2 style={{ margin: "0 0 24px 0", fontSize: "28px", fontWeight: 850, color: "#b91c1c", display: "flex", alignItems: "center", gap: 12 }}>
+                🆘 Worker SOS Emergency Monitor
+              </h2>
+              
+              <div style={{ backgroundColor: "white", padding: "36px", borderRadius: "16px", boxShadow: "0 10px 25px rgba(0,0,0,0.05)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, borderBottom: "2px solid #f1f5f9", paddingBottom: 16 }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#1e293b" }}>Distress Broadcast Stream</h3>
+                    <p style={{ margin: "4px 0 0", fontSize: 13, color: "#64748b" }}>Live incoming telemetry feeds from endangered service providers</p>
+                  </div>
+                  <button 
+                    onClick={async () => {
+                      if(window.confirm("Mark all system emergency notifications read? This will archive existing feeds.")) {
+                         try {
+                           await fetch("/api/notifications/mark-read", {
+                             method: "PATCH",
+                             headers: { "Content-Type": "application/json" },
+                             body: JSON.stringify({ role: "admin" })
+                           });
+                           syncAdminStore();
+                         } catch(e){}
+                      }
+                    }}
+                    style={{ backgroundColor: "#f8fafc", border: "1px solid #e2e8f0", padding: "8px 16px", borderRadius: "8px", cursor: "pointer", fontSize: 12, fontWeight: 700, color: "#475569" }}
+                  >
+                    Archive & Clear Stream
+                  </button>
+                </div>
+
+                {adminNotifications.filter(n => !n.is_read).length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "80px 0", color: "#64748b" }}>
+                    <div style={{ fontSize: "72px", marginBottom: "20px" }}>🛡️</div>
+                    <h3 style={{ fontSize: 20, fontWeight: 800, color: "#334155", margin: "0 0 8px" }}>Security Status: Nominal</h3>
+                    <p style={{ margin: 0, fontSize: 14 }}>No active worker emergency distress telemetry feeds currently detected.</p>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+                    {adminNotifications.filter(n => !n.is_read).map((alertItem) => (
+                      <div 
+                        key={alertItem._id} 
+                        style={{ 
+                          border: alertItem.is_read ? "1px solid #e2e8f0" : "3px solid #ef4444", 
+                          borderRadius: "16px", 
+                          padding: "28px", 
+                          backgroundColor: alertItem.is_read ? "#fafafa" : "#fff5f5",
+                          boxShadow: alertItem.is_read ? "none" : "0 8px 20px rgba(239, 68, 68, 0.15)",
+                          position: "relative",
+                          transition: "all 0.3s"
+                        }}
+                      >
+                        {!alertItem.is_read && (
+                          <span style={{ position: "absolute", top: "16px", right: "16px", backgroundColor: "#ef4444", color: "white", padding: "6px 14px", borderRadius: "20px", fontSize: "12px", fontWeight: 800, textTransform: "uppercase", boxShadow: "0 4px 10px rgba(239,68,68,0.3)" }}>
+                            🔴 Live Emergency
+                          </span>
+                        )}
+                        <div style={{ display: "flex", gap: "24px", alignItems: "flex-start" }}>
+                          <div style={{ fontSize: "48px" }}>🚨</div>
+                          <div style={{ flex: 1 }}>
+                            <h4 style={{ margin: "0 0 12px", fontSize: "20px", fontWeight: 850, color: "#b91c1c" }}>{alertItem.title}</h4>
+                            <div style={{ margin: "0 0 20px", color: "#1e293b", whiteSpace: "pre-wrap", fontSize: "14px", fontWeight: 600, fontFamily: "'JetBrains Mono', Courier, monospace", backgroundColor: "white", padding: "20px", borderRadius: "12px", border: "1.5px solid #e2e8f0", lineHeight: 1.6 }}>
+                              {alertItem.message}
+                            </div>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <div style={{ fontSize: "13px", color: "#64748b", fontWeight: 600 }}>
+                                Broadcast Captured: <strong style={{ color: "#1e293b" }}>{new Date(alertItem.createdAt).toLocaleString()}</strong>
+                              </div>
+                              {!alertItem.is_read && (
+                                <button 
+                                  onClick={async () => {
+                                    if(window.confirm("Log this emergency event as verified, investigated, and fully resolved?")) {
+                                       try {
+                                         await fetch(`/api/notifications/${alertItem._id}`, {
+                                           method: "PATCH",
+                                           headers: { "Content-Type": "application/json" },
+                                           body: JSON.stringify({ is_read: true })
+                                         });
+                                         setAdminNotifications(prev => prev.map(n => n._id === alertItem._id ? { ...n, is_read: true } : n));
+                                         alert("Incident marked as resolved in Cloud Registry.");
+                                       } catch(e) { alert("Failed to update database status."); }
+                                    }
+                                  }}
+                                  style={{ backgroundColor: "#1e293b", color: "white", border: "none", padding: "12px 24px", borderRadius: "10px", fontWeight: 800, fontSize: 13, cursor: "pointer", boxShadow: "0 4px 8px rgba(30,41,59,0.2)" }}
+                                >
+                                  Mark Investigated & Resolve ✅
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>

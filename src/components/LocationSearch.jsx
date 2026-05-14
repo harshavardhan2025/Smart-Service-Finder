@@ -30,6 +30,11 @@ function LocationSearch({ value, onChange, onSearch }) {
       (error) => {
         console.error("Geolocation error:", error);
         setLoading(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0
       }
     );
   }, []);

@@ -100,7 +100,7 @@ function BookingPage() {
   // 🛑 COLLISION GUARD A: Check if the specific slot is physically occupied
   const isSlotAlreadyBooked = (hLabel) => {
      const dStr = formatSafeYMD(date);
-     return busyBookings.some(b => b.date === dStr && b.time === hLabel && !["Cancelled", "Rejected"].includes(b.status));
+     return busyBookings.some(b => b.date === dStr && b.time === hLabel && !["Cancelled", "Rejected", "Completed", "Paid Out"].includes(b.status));
   };
 
   // 🚨 COLLISION GUARD B: Determine if Instant Booking should be hard-locked due to immediate conflicts
@@ -108,7 +108,7 @@ function BookingPage() {
      const todayStr = formatSafeYMD(new Date());
      const currentHour = new Date().getHours();
      
-     const activeToday = busyBookings.filter(b => b.date === todayStr && !["Cancelled", "Rejected"].includes(b.status));
+     const activeToday = busyBookings.filter(b => b.date === todayStr && !["Cancelled", "Rejected", "Completed", "Paid Out"].includes(b.status));
      if (activeToday.some(b => b.time && b.time.includes("Instant"))) return true; // Active instant job!
 
      return activeToday.some(b => {

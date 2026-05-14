@@ -257,6 +257,7 @@ function ReviewsRewards() {
         </p>
       </div>
 
+
       <div style={{ maxWidth: "750px", margin: "0 auto", padding: "28px 20px" }}>
 
         {/* Points Dashboard */}

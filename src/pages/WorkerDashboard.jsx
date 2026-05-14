@@ -8,6 +8,11 @@ function WorkerDashboard() {
   const [isActive, setIsActive] = useState(true);
   const [openMapId, setOpenMapId] = useState(null);
   const [editMode, setEditMode] = useState(false);
+  const [sosCategory, setSosCategory] = useState("General Emergency");
+  const [sosActive, setSosActive] = useState(() => sessionStorage.getItem("sosActive") === "true");
+  const [sosLoading, setSosLoading] = useState(false);
+  const [activeSosNotificationId, setActiveSosNotificationId] = useState(() => sessionStorage.getItem("activeSosNotificationId") || null);
+  const [adminResolvedAlert, setAdminResolvedAlert] = useState(false);
 
   // Load the logged-in worker ID dynamically from localStorage, fallback to 1 (Rahul Sharma)
   const selectedWorkerId = Number(sessionStorage.getItem("loggedInWorkerId")) || 1;
@@ -28,6 +33,16 @@ function WorkerDashboard() {
     photo: "👷"
   });
   const [editProfile, setEditProfile] = useState({ ...profile });
+ 
+  // ── BULLETPROOF SURVIVAL SUBSYSTEM: Persist security indicators across browser refreshes ──
+  useEffect(() => {
+    sessionStorage.setItem("sosActive", sosActive);
+    if (activeSosNotificationId) {
+      sessionStorage.setItem("activeSosNotificationId", activeSosNotificationId);
+    } else {
+      sessionStorage.removeItem("activeSosNotificationId");
+    }
+  }, [sosActive, activeSosNotificationId]);
 
   // Pull real runtime data directly from active Mongo Cloud Backend
   const syncStore = async () => {
@@ -78,12 +93,30 @@ function WorkerDashboard() {
           setBookings(data);
         }
       }
+
+      // 3. REAL-TIME DISPATCH RESOLUTION HOOK: Monitor if administrators resolved active SOS physically
+      if (activeSosNotificationId && sosActive) {
+        const sosCheckResp = await fetch(`/api/notifications/${activeSosNotificationId}`);
+        if (sosCheckResp.ok) {
+           const checkData = await sosCheckResp.json();
+           if (checkData.success && checkData.notification) {
+              // Handshake Protocol: Set indicator rather than forced UI cancellation
+              setAdminResolvedAlert(checkData.notification.is_read);
+           }
+        }
+      }
     } catch (err) {
        console.error("Worker Sync Failed:", err);
     }
   };
 
   const handleAcceptOrder = async (bookingId) => {
+    const currentBusy = bookings.some(b => ["Accepted", "On the Way", "Started"].includes(b.status));
+    if (currentBusy) {
+      alert("❌ CONCURRENCY BLOCKED!\n\nYou are already actively executing an ongoing ride or job order! Complete your current assignment before accepting another task.");
+      return;
+    }
+
     try {
       await fetch(`/api/bookings/${bookingId}`, {
          method: "PATCH",
@@ -121,6 +154,86 @@ function WorkerDashboard() {
     }
   };
 
+  const handleTriggerSOS = async () => {
+    const hasOngoingJob = bookings.some(b => ["Accepted", "On the Way", "Started"].includes(b.status));
+    if (!isActive) {
+      alert("❌ SOS CANCELLED: Emergency Broadcast restricts mobilization to active profiles. Toggle status to 'Active' to initiate.");
+      return;
+    }
+    if (!hasOngoingJob) {
+      alert("❌ SOS BLOCKED: Dispatch telemetry remains dormant in idle times. SOS functions strictly during active, accepted, or ongoing consumer rides.");
+      return;
+    }
+
+    if (!window.confirm("⚠️ WARNING: This will immediately alert emergency responders and platform administrators with your current location. Do you wish to proceed?")) {
+      return;
+    }
+    setSosLoading(true);
+    let locationStr = "Location coordinates unavailable";
+
+    const sendAlert = async (locStr) => {
+      try {
+        const body = {
+          role: "admin",
+          title: `🚨 CRITICAL SOS: ${profile.name} (${profile.profession})`,
+          message: `⚠️ EMERGENCY SOS ACTIVATED! 
+Worker Name: ${profile.name}
+Profession: ${profile.profession}
+Phone: ${profile.phone}
+Email: ${profile.email}
+Incident Type: ${sosCategory}
+Real-time Location: ${locStr}
+Reported At: ${new Date().toLocaleString()}`,
+          type: "emergency",
+          user_id: profile.mongoId || "unknown",
+        };
+
+        const res = await fetch("/api/notifications", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.notification) {
+             setActiveSosNotificationId(data.notification._id);
+          }
+          setSosActive(true);
+          alert("🚨 SOS ALERT BROADCASTED TO ADMIN & EMERGENCY TEAMS! Please stay calm. Assistance is being mobilized.");
+        } else {
+          throw new Error("Failed to broadcast");
+        }
+      } catch(err) {
+        alert("❌ Network fail broadcasting SOS. Please CALL emergency services immediately at 112 or 100.");
+      } finally {
+        setSosLoading(false);
+      }
+    };
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          locationStr = `Latitude: ${latitude}, Longitude: ${longitude}`;
+          sendAlert(locationStr);
+        },
+        (error) => {
+          locationStr = `GPS permission denied / unavailable (Fallback to Profile City: ${profile.city})`;
+          sendAlert(locationStr);
+        },
+        { 
+          enableHighAccuracy: true, 
+          timeout: 15000, 
+          maximumAge: 0 
+        }
+      );
+    } else {
+      locationStr = `Geolocation not supported by browser (Fallback to Profile City: ${profile.city})`;
+      sendAlert(locationStr);
+    }
+  };
+
   const handleMarkNotificationsRead = () => {
     // Placeholder
     alert("Marked all read locally.");
@@ -131,14 +244,27 @@ function WorkerDashboard() {
   }, [selectedWorkerId]);
 
   useEffect(() => {
-    const interval = setInterval(syncStore, 10000); // Tuned throttling to 10 seconds for operational stability
+    const interval = setInterval(syncStore, 5000); // Accelerated update telemetry cadence to 5s for extreme emergency responsiveness
     return () => clearInterval(interval);
   }, [selectedWorkerId]);
 
-  // Dynamically compute physical earnings directly from active database bookings instantly
-  const dynamicRevenueTotal = bookings
-    .filter(b => b.status === "Completed" || b.status === "Paid Out")
+  // ── GRANULAR REVENUE ACCOUNTING SUBSYSTEM ──
+  
+  // 1. Fully Paid Out & Available in physical account (Admin cleared)
+  const releasedEarnings = bookings
+    .filter(b => b.status === "Paid Out")
     .reduce((sum, b) => sum + (parseFloat(b.price) || parseFloat(b.amount) || 0), 0);
+
+  // 2. Job complete, but funds are physically held in platform Escrow awaiting Admin disbursement
+  const pendingEscrow = bookings
+    .filter(b => b.status === "Completed")
+    .reduce((sum, b) => sum + (parseFloat(b.price) || parseFloat(b.amount) || 0), 0);
+
+  // 3. Ongoing, accepted, or queued jobs representing future pipeline value
+  const upcomingProjected = bookings
+    .filter(b => ["Pending", "Accepted", "On the Way", "Started"].includes(b.status))
+    .reduce((sum, b) => sum + (parseFloat(b.price) || parseFloat(b.amount) || 0), 0);
+
 
   // Combine real DB notifications with the bookings map
   const notifications = [
@@ -161,6 +287,8 @@ function WorkerDashboard() {
       message: `Request for ${b.service} on ${b.date} at ${b.time}. Customer location details included below.`,
       customerAddr: b.address || "Client Location",
       workerAddr: profile.city || "Worker Area",
+      bookingDate: b.date,
+      bookingTime: b.time,
       time: "Real-time",
       read: false
     }))
@@ -169,7 +297,6 @@ function WorkerDashboard() {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const activeValidBookings = bookings.filter(b => !["Rejected", "Cancelled"].includes(b.status));
-  const totalEarnings = activeValidBookings.reduce((sum, b) => sum + (parseFloat(b.price) || parseFloat(b.amount) || 0), 0);
   const complaintsRatingDeduction = complaints.filter(c => c.adminVerdict === "Valid").reduce((sum, c) => sum + (c.ratingDeducted || 0.2), 0);
   const finalRating = Math.max(1, (profile.rating - complaintsRatingDeduction)).toFixed(1);
 
@@ -179,6 +306,7 @@ function WorkerDashboard() {
     { id: "notifications", label: `Alerts (${unreadCount})`, icon: "🔔" },
     { id: "earnings", label: "My Earnings", icon: "💰" },
     { id: "profile", label: "My Profile", icon: "👤" },
+    { id: "sos", label: "SOS Emergency", icon: "🚨" },
   ];
 
   const statusStyle = (s) => ({
@@ -208,21 +336,41 @@ function WorkerDashboard() {
             </div>
           </div>
 
-          {sidebarTabs.map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              style={{
-                display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", width: "100%",
-                borderRadius: 8, border: "none", textAlign: "left", fontSize: 14, fontWeight: 600, cursor: "pointer",
-                backgroundColor: activeTab === tab.id ? "var(--primary)" : "transparent",
-                color: activeTab === tab.id ? "white" : "var(--text-secondary)",
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-              }}
-              onMouseEnter={e => { if (activeTab !== tab.id) { e.currentTarget.style.backgroundColor = "var(--primary-glow)"; e.currentTarget.style.color = "var(--primary)"; e.currentTarget.style.transform = "translateX(5px)"; } }}
-              onMouseLeave={e => { if (activeTab !== tab.id) { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "var(--text-secondary)"; e.currentTarget.style.transform = "translateX(0)"; } }}
-            >
-              <span style={{ fontSize: 18 }}>{tab.icon}</span>{tab.label}
-            </button>
-          ))}
+          {sidebarTabs.map(tab => {
+            const isSosTab = tab.id === "sos";
+            return (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", width: "100%",
+                  borderRadius: 8, border: isSosTab ? "1.5px solid #ef4444" : "none", textAlign: "left", fontSize: 14, fontWeight: 700, cursor: "pointer",
+                  backgroundColor: activeTab === tab.id 
+                    ? (isSosTab ? "#b91c1c" : "var(--primary)") 
+                    : (isSosTab ? "#fff5f5" : "transparent"),
+                  color: activeTab === tab.id 
+                    ? "white" 
+                    : (isSosTab ? "#ef4444" : "var(--text-secondary)"),
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  boxShadow: isSosTab && activeTab !== tab.id ? "0 2px 4px rgba(239,68,68,0.1)" : "none"
+                }}
+                onMouseEnter={e => { 
+                  if (activeTab !== tab.id) { 
+                    e.currentTarget.style.backgroundColor = isSosTab ? "#fee2e2" : "var(--primary-glow)"; 
+                    e.currentTarget.style.color = isSosTab ? "#ef4444" : "var(--primary)"; 
+                    e.currentTarget.style.transform = "translateX(5px)"; 
+                  } 
+                }}
+                onMouseLeave={e => { 
+                  if (activeTab !== tab.id) { 
+                    e.currentTarget.style.backgroundColor = isSosTab ? "#fff5f5" : "transparent"; 
+                    e.currentTarget.style.color = isSosTab ? "#ef4444" : "var(--text-secondary)"; 
+                    e.currentTarget.style.transform = "translateX(0)"; 
+                  } 
+                }}
+              >
+                <span style={{ fontSize: 18 }}>{tab.icon}</span>{tab.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* ── MAIN CONTENT ── */}
@@ -285,6 +433,7 @@ function WorkerDashboard() {
                         <th style={{ padding: "12px 8px" }}>Address</th>
                         <th style={{ padding: "12px 8px" }}>Payment</th>
                         <th style={{ padding: "12px 8px" }}>Status</th>
+                        <th style={{ padding: "12px 8px" }}>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -297,6 +446,32 @@ function WorkerDashboard() {
                           <td style={{ padding: "14px 8px", fontWeight: 700, color: "var(--primary)" }}>₹{b.price}</td>
                           <td style={{ padding: "14px 8px" }}>
                             <span style={statusStyle(b.status)}>{b.status}</span>
+                          </td>
+                          <td style={{ padding: "14px 8px" }}>
+                            {["Accepted", "On the Way", "Started"].includes(b.status) && (
+                              <button 
+                                onClick={() => {
+                                  setSosCategory(`Ongoing Emergency during Job with ${b.customer_name || 'Customer'}`);
+                                  setActiveTab("sos");
+                                }}
+                                style={{ 
+                                  padding: "6px 14px", 
+                                  backgroundColor: "#ef4444", 
+                                  color: "white", 
+                                  border: "none", 
+                                  borderRadius: "8px", 
+                                  fontSize: "12px", 
+                                  fontWeight: 800, 
+                                  cursor: "pointer",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                  boxShadow: "0 2px 8px rgba(239,68,68,0.2)"
+                                }}
+                              >
+                                🚨 SOS
+                              </button>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -375,10 +550,21 @@ function WorkerDashboard() {
                             )}
 
                             {n.bookingStatus === "Accepted" && (
-                              <button onClick={() => handleStatusChange(n.bookingId, "On the Way")}
-                                style={{ padding: "10px 20px", backgroundColor: "#3b82f6", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", display: "inline-flex", gap: 6, alignItems: "center" }}>
-                                Mark as 'On the Way' 🛵
-                              </button>
+                              (() => {
+                                const now = new Date();
+                                const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                                const isFuture = n.bookingDate && n.bookingDate > todayStr && !(n.bookingTime && n.bookingTime.includes("Instant"));
+                                return isFuture ? (
+                                  <span style={{ fontSize: 13, backgroundColor: "#f8fafc", color: "#64748b", padding: "10px 16px", borderRadius: 8, fontWeight: 800, border: "1.5px dashed #cbd5e1", display: "inline-flex", gap: 6, alignItems: "center" }}>
+                                    ⏳ Dispatch Locked: Arriving on {n.bookingDate} ({n.bookingTime})
+                                  </span>
+                                ) : (
+                                  <button onClick={() => handleStatusChange(n.bookingId, "On the Way")}
+                                    style={{ padding: "10px 20px", backgroundColor: "#3b82f6", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", display: "inline-flex", gap: 6, alignItems: "center" }}>
+                                    Mark as 'On the Way' 🛵
+                                  </button>
+                                );
+                              })()
                             )}
 
                             {n.bookingStatus === "On the Way" && (
@@ -411,6 +597,28 @@ function WorkerDashboard() {
                               style={{ padding: "10px 20px", backgroundColor: "var(--primary)", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", marginLeft: "auto" }}>
                               {openMapId === n.id ? "Hide Map Route 🗺️" : "Show Route to Customer 🗺️"}
                             </button>
+
+                            {["Accepted", "On the Way", "Started"].includes(n.bookingStatus) && (
+                              <button onClick={() => { 
+                                setSosCategory(`Dangerous incident during Job #${n.bookingId} with customer`);
+                                setActiveTab("sos"); 
+                              }}
+                                style={{ 
+                                  padding: "10px 24px", 
+                                  backgroundColor: "#ef4444", 
+                                  color: "white", 
+                                  border: "none", 
+                                  borderRadius: 8, 
+                                  fontWeight: 850, 
+                                  cursor: "pointer",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "8px",
+                                  boxShadow: "0 6px 15px rgba(239,68,68,0.3)"
+                                }}>
+                                🚨 EMERGENCY SOS
+                              </button>
+                            )}
                           </div>
 
                           {openMapId === n.id && (
@@ -442,40 +650,66 @@ function WorkerDashboard() {
           {/* EARNINGS TAB */}
           {activeTab === "earnings" && (
             <div className="fade-in">
-              <h2 style={{ margin: "0 0 24px", fontWeight: 800, color: "var(--text-primary)" }}>My Earnings</h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 20, marginBottom: 32 }}>
-                <div className="premium-card" style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 700, textTransform: "uppercase" }}>Total Earned</div>
-                  <div style={{ fontSize: 38, fontWeight: 900, color: "var(--primary)", marginTop: 8 }}>₹{dynamicRevenueTotal}</div>
+              <h2 style={{ margin: "0 0 24px", fontWeight: 800, color: "var(--text-primary)" }}>My Earnings Ledger</h2>
+              
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 24, marginBottom: 36 }}>
+                <div className="premium-card" style={{ borderTop: "6px solid #16a34a", textAlign: "center", padding: "28px 20px", boxShadow: "0 10px 20px rgba(22,163,74,0.05)" }}>
+                  <div style={{ fontSize: 11, color: "#16a34a", fontWeight: 850, textTransform: "uppercase", letterSpacing: "0.8px" }}>✓ Released Balance</div>
+                  <div style={{ fontSize: 40, fontWeight: 900, color: "#16a34a", marginTop: 10 }}>₹{releasedEarnings}</div>
+                  <div style={{ fontSize: 12, color: "#64748b", marginTop: 6, fontWeight: 600 }}>Funds disemburdened to account</div>
                 </div>
-                <div className="premium-card" style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 700, textTransform: "uppercase" }}>Jobs Received</div>
-                  <div style={{ fontSize: 38, fontWeight: 900, color: "var(--secondary)", marginTop: 8 }}>{activeValidBookings.length}</div>
+                <div className="premium-card" style={{ borderTop: "6px solid #ea580c", textAlign: "center", padding: "28px 20px", boxShadow: "0 10px 20px rgba(234,88,12,0.05)" }}>
+                  <div style={{ fontSize: 11, color: "#ea580c", fontWeight: 850, textTransform: "uppercase", letterSpacing: "0.8px" }}>🔒 Held In Escrow</div>
+                  <div style={{ fontSize: 40, fontWeight: 900, color: "#ea580c", marginTop: 10 }}>₹{pendingEscrow}</div>
+                  <div style={{ fontSize: 12, color: "#64748b", marginTop: 6, fontWeight: 600 }}>Awaiting admin disbursement</div>
                 </div>
-                <div className="premium-card" style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 700, textTransform: "uppercase" }}>Avg Per Job</div>
-                  <div style={{ fontSize: 38, fontWeight: 900, color: "#f59e0b", marginTop: 8 }}>
-                    ₹{activeValidBookings.length > 0 ? Math.round(totalEarnings / activeValidBookings.length) : 0}
-                  </div>
+                <div className="premium-card" style={{ borderTop: "6px solid #2563eb", textAlign: "center", padding: "28px 20px", boxShadow: "0 10px 20px rgba(37,99,235,0.05)" }}>
+                  <div style={{ fontSize: 11, color: "#2563eb", fontWeight: 850, textTransform: "uppercase", letterSpacing: "0.8px" }}>⏳ Projected Intake</div>
+                  <div style={{ fontSize: 40, fontWeight: 900, color: "#2563eb", marginTop: 10 }}>₹{upcomingProjected}</div>
+                  <div style={{ fontSize: 12, color: "#64748b", marginTop: 6, fontWeight: 600 }}>Active outstanding workflows</div>
+                </div>
+                <div className="premium-card" style={{ borderTop: "6px solid #64748b", textAlign: "center", padding: "28px 20px" }}>
+                  <div style={{ fontSize: 11, color: "var(--text-secondary)", fontWeight: 850, textTransform: "uppercase", letterSpacing: "0.8px" }}>📊 Total Services</div>
+                  <div style={{ fontSize: 40, fontWeight: 900, color: "#1e293b", marginTop: 10 }}>{activeValidBookings.length}</div>
+                  <div style={{ fontSize: 12, color: "#64748b", marginTop: 6, fontWeight: 600 }}>Aggregate service count</div>
                 </div>
               </div>
 
               <div className="premium-card">
-                <h3 style={{ margin: "0 0 18px", fontWeight: 800, color: "var(--text-primary)" }}>Completed & Incoming Payments</h3>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, borderBottom: "1.5px solid var(--border-color)", paddingBottom: 14 }}>
+                  <h3 style={{ margin: 0, fontWeight: 800, color: "var(--text-primary)" }}>Transactional Payments Matrix</h3>
+                  <span style={{ fontSize: 12, color: "#64748b", fontWeight: 700 }}>Automatic physical ledger sync</span>
+                </div>
                 {activeValidBookings.length === 0 ? (
-                  <p style={{ color: "var(--text-secondary)", textAlign: "center" }}>No valid payment projections or records found.</p>
+                  <p style={{ color: "var(--text-secondary)", textAlign: "center", padding: 32 }}>No valid payment projections or records discovered.</p>
                 ) : (
-                  activeValidBookings.map(b => (
-                    <div key={b.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 0", borderBottom: "1px solid #f1f5f9" }}>
-                      <div>
-                        <div style={{ fontWeight: 700, color: "#1e293b" }}>{b.service}</div>
-                        <div style={{ fontSize: 13, color: "#64748b" }}>{b.customer} · {b.date}</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    {activeValidBookings.map(b => (
+                      <div key={b.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 0", borderBottom: "1px solid #f1f5f9" }}>
+                        <div>
+                          <div style={{ fontWeight: 750, color: "#1e293b", fontSize: 15 }}>{b.service}</div>
+                          <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>👤 Client: <strong style={{ color: "#334155" }}>{b.customer}</strong> · 📅 {b.date}</div>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+                          <div style={{ fontWeight: 900, fontSize: 20, color: b.status === "Paid Out" ? "#16a34a" : b.status === "Completed" ? "#c2410c" : "#475569" }}>
+                            ₹{b.price || b.amount}
+                          </div>
+                          <span style={{ 
+                            fontSize: 10, 
+                            padding: "4px 10px", 
+                            borderRadius: 20, 
+                            fontWeight: 850, 
+                            textTransform: "uppercase",
+                            letterSpacing: "0.5px",
+                            backgroundColor: b.status === "Paid Out" ? "#dcfce7" : b.status === "Completed" ? "#ffedd5" : "#f1f5f9",
+                            color: b.status === "Paid Out" ? "#16a34a" : b.status === "Completed" ? "#c2410c" : "#475569"
+                          }}>
+                            {b.status === "Paid Out" ? "✓ Paid Out" : b.status === "Completed" ? "🔒 Locked Escrow" : "⌛ Pipeline"}
+                          </span>
+                        </div>
                       </div>
-                      <div style={{ fontWeight: 800, fontSize: 18, color: b.status === "Completed" || b.status === "Paid Out" ? "var(--primary)" : "#d97706" }}>
-                        {b.status === "Completed" || b.status === "Paid Out" ? "✅" : "⌛"} ₹{b.price || b.amount}
-                      </div>
-                    </div>
-                  ))
+                    ))}
+                  </div>
                 )}
               </div>
             </div>
@@ -563,6 +797,263 @@ function WorkerDashboard() {
                       )}
                     </div>
                   )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SOS EMERGENCY TAB */}
+          {activeTab === "sos" && (
+            <div className="fade-in" style={{ maxWidth: 800, margin: "0 auto" }}>
+              <style>{`
+                @keyframes pulse-sos {
+                  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); transform: scale(1); }
+                  70% { box-shadow: 0 0 0 25px rgba(239, 68, 68, 0); transform: scale(1.06); }
+                  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); transform: scale(1); }
+                }
+                @keyframes siren-flash {
+                  0% { background-color: rgba(239, 68, 68, 0.08); }
+                  50% { background-color: rgba(239, 68, 68, 0.25); }
+                  100% { background-color: rgba(239, 68, 68, 0.08); }
+                }
+              `}</style>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 28 }}>
+                <span style={{ fontSize: 36 }}>🚨</span>
+                <h2 style={{ margin: 0, fontWeight: 850, color: "#ef4444", fontSize: 28 }}>Emergency & Worker Safety Center</h2>
+              </div>
+
+              {(!sosActive && !(isActive && bookings.some(b => ["Accepted", "On the Way", "Started"].includes(b.status)))) ? (
+                <div className="premium-card" style={{ 
+                  borderTop: "8px solid #64748b", 
+                  padding: "60px 40px", 
+                  textAlign: "center", 
+                  backgroundColor: "var(--bg-card)",
+                  border: "2px dashed var(--border-color)",
+                  boxShadow: "none"
+                }}>
+                  <div style={{ fontSize: 72, marginBottom: 20 }}>🔒</div>
+                  <h3 style={{ margin: "0 0 12px", fontSize: 22, fontWeight: 900, color: "var(--text-primary)" }}>SOS EMERGENCY CONSOLE LOCKED</h3>
+                  <p style={{ color: "var(--text-secondary)", fontSize: 15, maxWidth: 560, margin: "0 auto 24px", lineHeight: 1.6, fontWeight: 600 }}>
+                    To ensure resource protection and prevent accidental mobilize alerts, the dispatcher emergency console remains dormant during offline periods.
+                  </p>
+                  <div style={{ 
+                    display: "inline-block", 
+                    padding: "12px 24px", 
+                    backgroundColor: "#fee2e2", 
+                    color: "#b91c1c", 
+                    borderRadius: "10px", 
+                    fontSize: "14px", 
+                    fontWeight: 800 
+                  }}>
+                    🚨 REQUIRED: You must have 'Active' Status & an Ongoing Assigned Booking to broadcast.
+                  </div>
+                </div>
+              ) : sosActive ? (
+                <div style={{
+                  animation: "siren-flash 1.5s infinite",
+                  border: "4px solid #ef4444",
+                  borderRadius: 20,
+                  padding: 48,
+                  textAlign: "center",
+                  boxShadow: "0 15px 40px rgba(239, 68, 68, 0.25)",
+                  backgroundColor: "white",
+                  marginBottom: 32
+                }}>
+                  <div style={{ fontSize: 88, animation: "pulse 1s infinite" }}>🚨</div>
+                  <h1 style={{ color: "#b91c1c", fontSize: 32, fontWeight: 900, marginTop: 16, textTransform: "uppercase", letterSpacing: "1.5px" }}>SOS ACTIVATED</h1>
+                  <p style={{ fontSize: 18, fontWeight: 700, color: "#1e293b", maxWidth: 600, margin: "16px auto", lineHeight: 1.6 }}>
+                    Distress alert sent! Workzy platform administrators have been notified with your current coordinates. Emergency systems activated.
+                  </p>
+
+                  {adminResolvedAlert && (
+                    <div className="fade-in" style={{ 
+                      backgroundColor: "#fff7ed", 
+                      border: "3px solid #ea580c", 
+                      borderRadius: 16, 
+                      padding: "24px", 
+                      margin: "24px auto", 
+                      maxWidth: 640, 
+                      textAlign: "center",
+                      boxShadow: "0 10px 25px rgba(234, 88, 12, 0.15)",
+                      animation: "pulse-sos 2.5s infinite"
+                    }}>
+                      <h3 style={{ color: "#ea580c", margin: "0 0 10px", fontWeight: 900, fontSize: 20, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                        <span>⚠️</span> ADMIN LOGGED INCIDENT AS RESOLVED
+                      </h3>
+                      <p style={{ color: "#7c2d12", fontSize: 15, margin: "0 0 20px", fontWeight: 700, lineHeight: 1.5 }}>
+                        Platform dispatchers have flagged this investigation complete. Are you fully secure at this moment?
+                      </p>
+                      <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
+                        <button 
+                          onClick={() => {
+                            setSosActive(false);
+                            setActiveSosNotificationId(null);
+                            setAdminResolvedAlert(false);
+                            alert("🟢 Physical safety verified. Distress siren permanently stood down.");
+                          }}
+                          style={{ backgroundColor: "#16a34a", color: "white", border: "none", padding: "14px 24px", borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: "pointer", flex: 1, boxShadow: "0 4px 12px rgba(22,163,74,0.3)" }}
+                        >
+                          ✅ Yes, I Am Safe Now
+                        </button>
+                        <button 
+                          onClick={async () => {
+                            try {
+                              await fetch(`/api/notifications/${activeSosNotificationId}`, {
+                                method: "PATCH",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ 
+                                  is_read: false,
+                                  title: `🔥 CRITICAL RE-ALERT: ${profile.name} STILL UNRESOLVED!`,
+                                  message: `🚨 EMERGENCY RE-ESCALATED BY FIELD AGENT!\n\n` +
+                                           `Worker explicitly REJECTED the administration resolution status.\n` +
+                                           `Worker asserts they are STILL IN PHYSICAL INCONVENIENCE / DANGER at ${new Date().toLocaleString()}.\n` +
+                                           `Send emergency responders immediately.`
+                                })
+                              });
+                              setAdminResolvedAlert(false);
+                              alert("🔥 RE-ALERT DISPATCHED! Admin telemetry updated to MAXIMUM urgency. Stand by for immediate physical contact.");
+                            } catch(e) { alert("Failed to dispatch escalation signal."); }
+                          }}
+                          style={{ backgroundColor: "#dc2626", color: "white", border: "none", padding: "14px 24px", borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: "pointer", flex: 1, boxShadow: "0 4px 12px rgba(220,38,38,0.3)" }}
+                        >
+                          🚨 NO, RE-ALERT ADMIN!
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{ display: "flex", justifyContent: "center", gap: 20, margin: "36px 0" }}>
+                    <a href="tel:112" style={{ textDecoration: "none", flex: 1, maxWidth: 260 }}>
+                      <div style={{ backgroundColor: "#ef4444", color: "white", padding: "18px", borderRadius: 14, fontWeight: 800, fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 10px 20px rgba(239,68,68,0.3)" }}>
+                        📞 Call 112
+                      </div>
+                    </a>
+                    <a href="tel:100" style={{ textDecoration: "none", flex: 1, maxWidth: 260 }}>
+                      <div style={{ backgroundColor: "#1e293b", color: "white", padding: "18px", borderRadius: 14, fontWeight: 800, fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 10px 20px rgba(30,41,59,0.3)" }}>
+                        🚓 Police (100)
+                      </div>
+                    </a>
+                  </div>
+
+                  <button 
+                    onClick={async () => {
+                      if(window.confirm("Are you absolutely sure you want to stand down the SOS? Clear this only if your physical safety is assured.")) {
+                        try {
+                          if (activeSosNotificationId) {
+                            await fetch(`/api/notifications/${activeSosNotificationId}`, {
+                              method: "PATCH",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ 
+                                is_read: true,
+                                title: `🟢 STAND-DOWN: ${profile.name} is Safe`,
+                                message: `✅ DISTRESS EVENT MANUALLY DISARMED.\n\nWorker confirmed all-clear at ${new Date().toLocaleString()}. Safety restoration successful.`
+                              })
+                            });
+                          }
+                        } catch(e) { console.error("Failed to stand down server-side", e); }
+                        
+                        setSosActive(false);
+                        setActiveSosNotificationId(null);
+                        alert("SOS disarmed. Platform administrators informed that you are safe!");
+                      }
+                    }} 
+                    style={{ border: "2px solid #cbd5e1", backgroundColor: "transparent", color: "#475569", padding: "12px 28px", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer", transition: "all 0.2s" }}
+                  >
+                    Cancel & Clear Warning
+                  </button>
+                </div>
+              ) : (
+                <div className="premium-card" style={{ borderTop: "8px solid #ef4444", padding: 40, marginBottom: 32 }}>
+                  <h3 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 800, color: "var(--text-primary)" }}>Instant Emergency Broadcast</h3>
+                  <p style={{ margin: "0 0 30px", color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.6 }}>
+                    Felt unsafe, had an accident, or threatened? Activate the SOS immediately. We capture your exact telemetry coordinates and broadcast an instantaneous visual alert to platform security.
+                  </p>
+
+                  <div style={{ marginBottom: 32 }}>
+                    <label style={{ display: "block", fontWeight: 700, fontSize: 13, color: "var(--text-secondary)", marginBottom: 10, textTransform: "uppercase", letterSpacing: 0.5 }}>Select Safety Classification:</label>
+                    <select 
+                      value={sosCategory} 
+                      onChange={(e) => setSosCategory(e.target.value)} 
+                      style={{ width: "100%", padding: 16, borderRadius: 10, border: "2px solid var(--border-color)", fontWeight: 700, fontSize: 15, backgroundColor: "var(--bg-card)", color: "var(--text-primary)" }}
+                    >
+                      <option value="General Safety Emergency">🚨 General Incident Emergency</option>
+                      <option value="Unsafe customer behavior / Threat">👤 Dangerous customer environment</option>
+                      <option value="Physical Assault / Aggressive Contact">🚫 Verbal or Physical Harassment</option>
+                      <option value="Accident / Injury during service">🩹 Serious Injury/Accident on Site</option>
+                      <option value="Urgent Medical Trauma">🏥 Immediate Medical Trauma Crisis</option>
+                    </select>
+                  </div>
+
+                  <div style={{ display: "flex", justifyContent: "center", margin: "40px 0" }}>
+                    <button 
+                      onClick={handleTriggerSOS} 
+                      disabled={sosLoading}
+                      style={{
+                        width: 190,
+                        height: 190,
+                        borderRadius: "50%",
+                        backgroundColor: "#ef4444",
+                        color: "white",
+                        border: "none",
+                        fontSize: 32,
+                        fontWeight: 900,
+                        cursor: sosLoading ? "wait" : "pointer",
+                        animation: "pulse-sos 2s infinite",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 4,
+                        boxShadow: "0 12px 32px rgba(239,68,68,0.3)",
+                        letterSpacing: "1px"
+                      }}
+                    >
+                      {sosLoading ? "⌛" : (
+                        <>
+                          <span style={{ fontSize: 40 }}>🆘</span>
+                          <span>SOS</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <p style={{ textAlign: "center", fontSize: 13, color: "var(--text-secondary)", fontWeight: 700 }}>TAP TO TRIGGER EMERGENCY BROADCAST</p>
+                </div>
+              )}
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: 24 }}>
+                <div className="premium-card">
+                  <h3 style={{ margin: "0 0 18px", fontSize: 16, fontWeight: 800, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 8 }}>
+                    <span>🚑</span> National Quick-Dial Helplines
+                  </h3>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                    {[
+                      ["All-in-One Emergency", "112", "🚔"],
+                      ["Police Direct", "100", "🚓"],
+                      ["Medical Ambulances", "102", "🚑"],
+                      ["Women Safety Helpline", "1091", "👮‍♀️"],
+                    ].map(([name, num, icon]) => (
+                      <div key={name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: 12, borderBottom: "1px solid var(--border-color)" }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>{icon} {name}</span>
+                        <a href={`tel:${num}`} style={{ fontWeight: 800, color: "#b91c1c", fontSize: 14, textDecoration: "none", backgroundColor: "#fff5f5", padding: "6px 14px", borderRadius: 8, border: "1px solid #fee2e2" }}>
+                          {num}
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="premium-card">
+                  <h3 style={{ margin: "0 0 18px", fontSize: 16, fontWeight: 800, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 8 }}>
+                    <span>🛡️</span> On-Site Defensive Measures
+                  </h3>
+                  <ul style={{ margin: 0, paddingLeft: 18, color: "var(--text-secondary)", fontSize: 13, lineHeight: 1.8, display: "flex", flexDirection: "column", gap: 8 }}>
+                    <li>Maintain constant awareness of entry and exit egress routes.</li>
+                    <li>Ensure personal portable devices remain charged and readily operational.</li>
+                    <li>Pre-evaluate high-risk geographic environments prior to job commitment.</li>
+                    <li>If a situation intensifies, prioritize physical extraction over professional gear.</li>
+                    <li>Trigger the digital SOS as early as possible if security risk is perceived.</li>
+                  </ul>
                 </div>
               </div>
             </div>

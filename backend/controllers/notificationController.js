@@ -36,3 +36,21 @@ export const markAllRead = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+export const updateNotification = async (req, res) => {
+  try {
+    const updated = await Notification.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.status(200).json({ success: true, notification: updated });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+export const getNotificationById = async (req, res) => {
+  try {
+    const alert = await Notification.findById(req.params.id);
+    res.status(200).json({ success: true, notification: alert });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
