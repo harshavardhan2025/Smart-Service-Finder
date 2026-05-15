@@ -31,10 +31,20 @@ function Home() {
     if (!searchedLocation) {
       setAiSuggestedWorkers([]);
       localStorage.removeItem("userLocation");
+      localStorage.removeItem("userCity");
       return;
     }
     
     localStorage.setItem("userLocation", searchedLocation);
+
+    // 🔍 ADAPTIVE LOCALIZER: Ensure userCity is properly resolved for downstream payment and scheduling components!
+    const lower = searchedLocation.toLowerCase();
+    let resolvedCity = lower.includes("kakinada") ? "Kakinada" : lower.includes("rajahmundry") ? "Rajahmundry" : "";
+    if (!resolvedCity) {
+      const parts = searchedLocation.split(",");
+      resolvedCity = parts[0].trim();
+    }
+    localStorage.setItem("userCity", resolvedCity);
 
     
     const fetchAILocationsAndSuggestWorkers = async () => {

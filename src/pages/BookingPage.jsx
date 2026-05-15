@@ -11,6 +11,7 @@ function BookingPage() {
   const [paymentMethod, setPaymentMethod] = useState("UPI");
   const [paying, setPaying] = useState(false);
   const [walletBal, setWalletBal] = useState(0);
+  const [dispatchAddress, setDispatchAddress] = useState("");
   const navigate = useNavigate();
 
   const [busyBookings, setBusyBookings] = useState([]);
@@ -41,6 +42,17 @@ function BookingPage() {
        } catch(e) { setWalletBal(0); }
     };
     initWallet();
+
+    // 🗺️ Address Hydration: Prioritize precise GPS/ReverseGeocoded location!
+    const storedLoc = localStorage.getItem("userLocation");
+    const storedCity = localStorage.getItem("userCity");
+    if (storedLoc) {
+       setDispatchAddress(storedLoc);
+    } else if (storedCity) {
+       setDispatchAddress(`Downtown Area, ${storedCity}`);
+    } else {
+       setDispatchAddress("Standard Client Address, Rajahmundry");
+    }
   }, [navigate]);
 
   // 🛡️ Authoritative Live Collision Check: Fetch worker's dynamic calendar
@@ -159,7 +171,7 @@ function BookingPage() {
          time: selectedSlot,
          service: selectedWorker.service,
          price: calculatedPrice,
-         address: localStorage.getItem("userCity") ? `Downtown Area, ${localStorage.getItem("userCity")}` : "Standard Client Address, Rajahmundry",
+         address: dispatchAddress || "Standard Client Address, Rajahmundry",
          status: "Pending"
       });
       
@@ -388,6 +400,29 @@ function BookingPage() {
           }}>
             <h3 style={{ margin: "0 0 20px", color: "#1e293b", fontSize: 20, fontWeight: 800 }}>💳 Checkout</h3>
             
+            {/* 📍 DYNAMIC ADDRESS SELECTOR FOR PRECISE ARRIVAL */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ fontSize: 14, fontWeight: 700, color: "#475569", display: "block", marginBottom: 8 }}>📍 Service Dispatch Address</label>
+              <textarea 
+                value={dispatchAddress} 
+                onChange={e => setDispatchAddress(e.target.value)}
+                placeholder="Enter detailed house number, street, and landmarks..."
+                rows={3}
+                style={{ 
+                  width: "100%", 
+                  padding: "14px", 
+                  borderRadius: 12, 
+                  border: "2px solid #e2e8f0", 
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: "#1e293b",
+                  fontFamily: "inherit",
+                  resize: "vertical",
+                  boxSizing: "border-box"
+                }}
+              />
+            </div>
+
             <div style={{ marginBottom: 20 }}>
               <label style={{ fontSize: 14, fontWeight: 700, color: "#475569", display: "block", marginBottom: 8 }}>Select Payment Gateway</label>
               <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)}

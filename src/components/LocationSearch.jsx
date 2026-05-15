@@ -16,11 +16,22 @@ function LocationSearch({ value, onChange, onSearch }) {
           const detected = data?.display_name
             ? data.display_name
             : `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+          
+          // 🌐 PERSISTENT LOCATION STORE: Save state for global app consistency!
+          localStorage.setItem("userLocation", detected);
+          if (data?.address) {
+             const city = data.address.city || data.address.town || data.address.village || data.address.suburb || data.address.county || "";
+             if (city) {
+                localStorage.setItem("userCity", city);
+             }
+          }
+
           onChange(detected);
           onSearch(detected); // auto-search on load
         } catch (error) {
           console.error("Reverse geocoding error:", error);
           const fallback = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+          localStorage.setItem("userLocation", fallback);
           onChange(fallback);
           onSearch(fallback);
         } finally {
