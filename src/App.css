@@ -158,8 +158,6 @@ body,
   overflow: hidden;
 
   box-shadow: var(--shadow-3d);
-
-  transform-style: preserve-3d;
 }
 
 /* 3D LIGHT REFLECTION */
@@ -228,7 +226,7 @@ body,
 .section:hover {
 
   transform:
-    translateY(-8px) rotateX(4deg) rotateY(-4deg) scale(1.01);
+    translateY(-8px);
 
   background: var(--bg-card-hover);
 

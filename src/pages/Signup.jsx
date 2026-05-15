@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import authBg from "../assets/auth-bg.jpg";
 
 
 function Signup() {
@@ -90,7 +91,16 @@ function Signup() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", backgroundColor: "#f8fafc" }}>
+    <div style={{ 
+      minHeight: "100vh", 
+      display: "flex", 
+      flexDirection: "column", 
+      backgroundImage: `url(${authBg})`, 
+      backgroundSize: "cover", 
+      backgroundPosition: "center", 
+      backgroundRepeat: "no-repeat", 
+      backgroundAttachment: "fixed" 
+    }}>
       <Navbar />
 
       <div

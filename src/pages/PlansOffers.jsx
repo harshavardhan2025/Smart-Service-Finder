@@ -227,8 +227,8 @@ function PlansOffers() {
                   width: "100%", padding: "14px", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer",
                   backgroundColor: plan.color, color: "white", transition: "all 0.2s", boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.02)"; e.currentTarget.style.filter = "brightness(1.1)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.filter = "none"; }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.filter = "brightness(1.1)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.filter = "none"; }}
               >
                 {plan.btnText}
               </button>
