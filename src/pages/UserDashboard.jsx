@@ -9,6 +9,7 @@ function UserDashboard() {
   const [wallet, setWallet] = useState(0);
   const [bookings, setBookings] = useState([]);
   const [transactions, setTransactions] = useState([]);
+  const [activePlans, setActivePlans] = useState([]);
 
   useEffect(() => {
     // 1. Check Authorization
@@ -38,6 +39,10 @@ function UserDashboard() {
         if (txnResp.ok) {
           const txnData = await txnResp.json();
           setTransactions(txnData.slice(0, 5)); // Top 5 recent
+          
+          // Extract active plans from transactions
+          const plans = txnData.filter(t => t.service && t.service.includes("Plan Subscription"));
+          setActivePlans(plans);
           
           // Calculate Wallet sum dynamically from authentic transaction ledger
           const total = txnData.reduce((acc, t) => {
@@ -107,7 +112,7 @@ function UserDashboard() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "30px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "30px" }}>
           <div className="premium-card" style={{ backgroundColor: "white", padding: "24px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
               <h3 style={{ margin: 0, fontSize: "18px", color: "#1e293b" }}>Recent Bookings</h3>
@@ -162,6 +167,35 @@ function UserDashboard() {
               </div>
             ) : (
               <p style={{ color: "#64748b", fontSize: "14px" }}>No recent transactions.</p>
+            )}
+          </div>
+
+          <div className="premium-card" style={{ backgroundColor: "white", padding: "24px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <h3 style={{ margin: 0, fontSize: "18px", color: "#1e293b" }}>Manage Plans</h3>
+              <Link to="/plans" style={{ color: "var(--primary)", fontSize: "14px", fontWeight: "500", textDecoration: "none" }}>Explore Plans</Link>
+            </div>
+            {activePlans.length > 0 ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                {activePlans.map(p => (
+                  <div key={p._id || p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "16px", borderBottom: "1px solid #f1f5f9" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      <div style={{ width: "40px", height: "40px", borderRadius: "50%", backgroundColor: "#fef3c7", display: "flex", justifyContent: "center", alignItems: "center", fontSize: "18px" }}>
+                        ⭐
+                      </div>
+                      <div>
+                        <p style={{ margin: "0 0 4px 0", fontWeight: "600", color: "#334155" }}>{p.service.replace("Plan Subscription: ", "")}</p>
+                        <p style={{ margin: 0, fontSize: "12px", color: "#64748b" }}>Subscribed on {p.date}</p>
+                      </div>
+                    </div>
+                    <span style={{ padding: "6px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: "600", backgroundColor: "#dcfce7", color: "#16a34a" }}>
+                      Active
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p style={{ color: "#64748b", fontSize: "14px" }}>You have not subscribed to any plans yet.</p>
             )}
           </div>
         </div>

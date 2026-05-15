@@ -11,13 +11,19 @@ function Signup() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
   const [profession, setProfession] = useState("Carpentry");
-  const [city, setCity] = useState("Mumbai"); // New Location State
+  const [city, setCity] = useState(""); // Free text location
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const navigate = useNavigate();
 
   const handleSignup = async (e) => {
     e.preventDefault();
     if (!name || !email || !password || !phone) {
       alert("Please fill in all fields!");
+      return;
+    }
+
+    if (role === "worker" && !city.trim()) {
+      alert("Please enter your serving location!");
       return;
     }
 
@@ -62,6 +68,35 @@ function Signup() {
       navigate("/login");
     } catch (err) {
       alert(`❌ Registration Error: ${err.message}`);
+    }
+  };
+
+  const handleGetCurrentLocation = () => {
+    if (navigator.geolocation) {
+      setIsDetectingLocation(true);
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const { latitude, longitude } = position.coords;
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+            const data = await response.json();
+            const cityName = data.address.city || data.address.town || data.address.village || data.address.county || data.address.state_district || "Unknown Location";
+            setCity(cityName);
+          } catch (error) {
+            console.error("Error fetching location details:", error);
+            alert("Could not determine city from coordinates.");
+          } finally {
+            setIsDetectingLocation(false);
+          }
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          alert("Please allow location access to use this feature.");
+          setIsDetectingLocation(false);
+        }
+      );
+    } else {
+      alert("Geolocation is not supported by this browser.");
     }
   };
 
@@ -249,19 +284,34 @@ function Signup() {
             {role === "worker" && (
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 <label style={{ fontSize: "14px", fontWeight: 600, color: "#475569" }}>Serving Location (City)</label>
-                <select
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  style={{ width: "100%", boxSizing: "border-box" }}
-                >
-                  <option value="Mumbai">Mumbai</option>
-                  <option value="Bangalore">Bangalore</option>
-                  <option value="Hyderabad">Hyderabad</option>
-                  <option value="Chennai">Chennai</option>
-                  <option value="Delhi">Delhi</option>
-                  <option value="Kakinada">Kakinada</option>
-                  <option value="Tirupati">Tirupati</option>
-                </select>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <input
+                    type="text"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="Enter your city or location"
+                    style={{ flex: 1, boxSizing: "border-box" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleGetCurrentLocation}
+                    disabled={isDetectingLocation}
+                    title="Get Current Location"
+                    style={{
+                      backgroundColor: "var(--primary-light)",
+                      color: "var(--primary-dark)",
+                      padding: "0 16px",
+                      fontSize: "14px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      whiteSpace: "nowrap",
+                      opacity: isDetectingLocation ? 0.7 : 1
+                    }}
+                  >
+                    {isDetectingLocation ? "⏳ Detecting..." : "📍 Detect"}
+                  </button>
+                </div>
               </div>
             )}
 
