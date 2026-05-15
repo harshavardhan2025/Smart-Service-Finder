@@ -173,6 +173,7 @@ function SupportPage() {
                     <option value="billing">💳 Billing & Payments Inquiry</option>
                     <option value="worker">👷 Issue with Professional Worker</option>
                     <option value="booking">📅 Booking & Rescheduling</option>
+                    <optin valut="Booking cancellation">Booking cancellation related</optin>
                     <option value="bug">📱 Technical App Bug</option>
                     <option value="other">❓ Other General Inquiry</option>
                   </select>

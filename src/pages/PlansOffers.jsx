@@ -8,6 +8,7 @@ function PlansOffers() {
   const [plans, setPlans] = useState([]);
   const [offers, setOffers] = useState([]);
   const [workers, setWorkers] = useState([]);
+  const [userPlans, setUserPlans] = useState([]);
 
   // Payment gateway states
   const [payingPlan, setPayingPlan] = useState(null); 
@@ -35,15 +36,24 @@ function PlansOffers() {
 
     const loadCloudData = async () => {
       try {
-         const [pResp, oResp, wResp] = await Promise.all([
+         const currentUserName = sessionStorage.getItem("userName") || "Verified Subscriber";
+         const [pResp, oResp, wResp, tResp] = await Promise.all([
             fetch("/api/plans"),
             fetch("/api/offers"),
-            fetch("/api/workers")
+            fetch("/api/workers"),
+            fetch(`/api/transactions?customer=${encodeURIComponent(currentUserName)}`)
          ]);
          
          if (pResp.ok) setPlans(await pResp.json());
          if (oResp.ok) setOffers(await oResp.json());
          if (wResp.ok) setWorkers(await wResp.json());
+         if (tResp.ok) {
+           const txns = await tResp.json();
+           const subbed = txns
+             .filter(t => t.service && t.service.startsWith("Plan Subscription:"))
+             .map(t => t.service.replace("Plan Subscription:", "").trim());
+           setUserPlans(subbed);
+         }
          
       } catch(err) { console.error("Physical Data Load Failure: ", err); }
     };
@@ -134,6 +144,7 @@ function PlansOffers() {
       setPaymentProcessing(false);
 
       alert(`🎉 Payment of ₹${finalPaidAmount} Successful!\n\nYou have subscribed to "${payingPlan.title}" successfully. All premium benefits are now active on your account.`);
+      setUserPlans(prev => [...prev, payingPlan.title]);
       setPayingPlan(null);
       // Reset forms
       setUpiId("");
@@ -209,29 +220,41 @@ function PlansOffers() {
                   </div>
                 )}
               </div>
-              <button 
-                onClick={() => {
-                  const userId = sessionStorage.getItem("userId");
-                  if (!userId) {
-                     alert("🔒 Security Guard: Verification Required!\n\nPlease log in or create an account to subscribe to premium service plans and unlock exclusive platform benefits. Redirecting you to the portal now.");
-                     navigate("/login");
-                     return;
-                  }
-                  setPayingPlan(plan);
-                  setAppliedCoupon("");
-                  setCouponSuccess("");
-                  setCouponError("");
-                  setDiscountAmount(0);
-                }}
-                style={{
-                  width: "100%", padding: "14px", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer",
-                  backgroundColor: plan.color, color: "white", transition: "all 0.2s", boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.filter = "brightness(1.1)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.filter = "none"; }}
-              >
-                {plan.btnText}
-              </button>
+              {userPlans.includes(plan.title) ? (
+                <button 
+                  disabled
+                  style={{
+                    width: "100%", padding: "14px", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700,
+                    backgroundColor: "rgba(255, 255, 255, 0.1)", color: "#94a3b8", cursor: "not-allowed"
+                  }}
+                >
+                  Subscribed ✅
+                </button>
+              ) : (
+                <button 
+                  onClick={() => {
+                    const userId = sessionStorage.getItem("userId");
+                    if (!userId) {
+                       alert("🔒 Security Guard: Verification Required!\n\nPlease log in or create an account to subscribe to premium service plans and unlock exclusive platform benefits. Redirecting you to the portal now.");
+                       navigate("/login");
+                       return;
+                    }
+                    setPayingPlan(plan);
+                    setAppliedCoupon("");
+                    setCouponSuccess("");
+                    setCouponError("");
+                    setDiscountAmount(0);
+                  }}
+                  style={{
+                    width: "100%", padding: "14px", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer",
+                    backgroundColor: plan.color, color: "white", transition: "all 0.2s", boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.filter = "brightness(1.1)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.filter = "none"; }}
+                >
+                  {plan.btnText}
+                </button>
+              )}
             </div>
           ))}
         </div>
