@@ -25,6 +25,14 @@ function PlansOffers() {
   const [walletBal, setWalletBal] = useState(5000); // Default or load from actual user profile API if available
 
   useEffect(() => {
+    // 🔐 HARD LOCKDOWN GATEWAY: Eject guest users to login portal instantly!
+    const userId = sessionStorage.getItem("userId");
+    if (!userId) {
+       alert("⚠️ Exclusive Access! Please log in to view, compare, and secure premium subscription packages.");
+       navigate("/login");
+       return;
+    }
+
     const loadCloudData = async () => {
       try {
          const [pResp, oResp, wResp] = await Promise.all([
