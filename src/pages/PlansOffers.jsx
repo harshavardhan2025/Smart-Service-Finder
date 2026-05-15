@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 
 function PlansOffers() {
+  const navigate = useNavigate();
   const [copiedCode, setCopiedCode] = useState(null);
   const [plans, setPlans] = useState([]);
   const [offers, setOffers] = useState([]);
@@ -201,6 +203,12 @@ function PlansOffers() {
               </div>
               <button 
                 onClick={() => {
+                  const userId = sessionStorage.getItem("userId");
+                  if (!userId) {
+                     alert("🔒 Security Guard: Verification Required!\n\nPlease log in or create an account to subscribe to premium service plans and unlock exclusive platform benefits. Redirecting you to the portal now.");
+                     navigate("/login");
+                     return;
+                  }
                   setPayingPlan(plan);
                   setAppliedCoupon("");
                   setCouponSuccess("");
@@ -248,7 +256,15 @@ function PlansOffers() {
                 <p style={{ margin: 0, fontSize: 12, color: "#94a3b8" }}>{offer.expiry}</p>
               </div>
               <button 
-                onClick={() => handleCopy(offer.code)}
+                onClick={() => {
+                  const userId = sessionStorage.getItem("userId");
+                  if (!userId) {
+                     alert("🔒 Security Guard: Verification Required!\n\nPlease log in to claim, copy, and redeem active promotional coupons on your account. Redirecting you to the portal now.");
+                     navigate("/login");
+                     return;
+                  }
+                  handleCopy(offer.code);
+                }}
                 style={{
                   padding: "10px 16px", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: 8, 
                   backgroundColor: copiedCode === offer.code ? "rgba(52, 211, 153, 0.2)" : "rgba(255, 255, 255, 0.05)",
