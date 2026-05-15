@@ -12,7 +12,7 @@ function SupportPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [success, setSuccess] = useState(false);
-  
+
   // Dynamic FAQ Accordion State
   const [activeFaq, setActiveFaq] = useState(null);
 
@@ -22,8 +22,8 @@ function SupportPage() {
   const fetchHistory = async () => {
     if (!userName) return;
     try {
-       const resp = await fetch(`/api/complaints?reported_by=${encodeURIComponent(userName)}`);
-       if (resp.ok) setHistory(await resp.json());
+      const resp = await fetch(`/api/complaints?reported_by=${encodeURIComponent(userName)}`);
+      if (resp.ok) setHistory(await resp.json());
     } catch (e) { console.error(e); }
   };
 
@@ -58,28 +58,28 @@ function SupportPage() {
     }
 
     try {
-       // 🚀 PHYSICAL CLOUD WRITE: Commit support ticket directly to MongoDB grievance node!
-       const resp = await fetch("/api/complaints", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-             booking_id: passedBooking || "NON-BOOKING-INQUIRY",
-             issue_type: `SUPPORT TICKET: ${category.toUpperCase()}`,
-             description: `Email: ${email} | Phone: ${phone} | Message: ${issue}`,
-             reported_by: sessionStorage.getItem("userName") || email || "Web Guest"
-          })
-       });
-       if (!resp.ok) throw new Error("Cloud post rejection.");
+      // 🚀 PHYSICAL CLOUD WRITE: Commit support ticket directly to MongoDB grievance node!
+      const resp = await fetch("/api/complaints", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          booking_id: passedBooking || "NON-BOOKING-INQUIRY",
+          issue_type: `SUPPORT TICKET: ${category.toUpperCase()}`,
+          description: `Email: ${email} | Phone: ${phone} | Message: ${issue}`,
+          reported_by: sessionStorage.getItem("userName") || email || "Web Guest"
+        })
+      });
+      if (!resp.ok) throw new Error("Cloud post rejection.");
 
-       setSuccess(true);
-       fetchHistory(); // Live sync newly posted ticket immediately!
-       setTimeout(() => {
-         setSuccess(false);
-         setIssue("");
-         setEmail("");
-         setPhone("");
-       }, 4000);
-    } catch(err) { alert("🛑 Submission Fail: Database synchronization issue. Please try again later."); }
+      setSuccess(true);
+      fetchHistory(); // Live sync newly posted ticket immediately!
+      setTimeout(() => {
+        setSuccess(false);
+        setIssue("");
+        setEmail("");
+        setPhone("");
+      }, 4000);
+    } catch (err) { alert("🛑 Submission Fail: Database synchronization issue. Please try again later."); }
   };
 
   return (
@@ -102,7 +102,7 @@ function SupportPage() {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "40px" }}>
-          
+
           {/* LEFT COLUMN: FAQ SECTION */}
           <div>
             <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#ffffff", marginBottom: "24px", display: "flex", alignItems: "center", gap: "10px" }}>
@@ -271,43 +271,43 @@ function SupportPage() {
         {/* 📜 TICKET HISTORY SECTION: SHOW PAST GRIEVANCES */}
         {userName && (
           <div style={{ marginTop: "60px", backgroundColor: "#1e293b", padding: "35px", borderRadius: "16px", border: "1px solid #334155" }}>
-             <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#ffffff", marginBottom: "20px", display: "flex", alignItems: "center", gap: "10px" }}>
-               <span>📜</span> Your Complaint & Ticket History
-             </h2>
-             {history.length === 0 ? (
-               <p style={{ color: "#94a3b8", fontStyle: "italic" }}>No previously submitted support tickets found under your account name.</p>
-             ) : (
-               <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-                     <thead>
-                        <tr style={{ borderBottom: "1px solid #334155", color: "#94a3b8", fontSize: "13px", textTransform: "uppercase" }}>
-                           <th style={{ padding: "12px 10px" }}>Date</th>
-                           <th style={{ padding: "12px 10px" }}>Issue Category</th>
-                           <th style={{ padding: "12px 10px" }}>Details</th>
-                           <th style={{ padding: "12px 10px" }}>Status</th>
-                        </tr>
-                     </thead>
-                     <tbody>
-                        {history.map(item => (
-                           <tr key={item._id} style={{ borderBottom: "1px solid #0f172a", color: "#e2e8f0", fontSize: "14px" }}>
-                              <td style={{ padding: "14px 10px" }}>{new Date(item.createdAt).toLocaleDateString()}</td>
-                              <td style={{ padding: "14px 10px", fontWeight: 600 }}>{item.issue_type}</td>
-                              <td style={{ padding: "14px 10px", opacity: 0.8 }}>{item.description?.substring(0, 50)}...</td>
-                              <td style={{ padding: "14px 10px" }}>
-                                 <span style={{
-                                    padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700,
-                                    backgroundColor: item.status === "Resolved" ? "var(--success)" : item.status === "Cancelled" ? "#ef4444" : "#eab308",
-                                    color: "white"
-                                 }}>
-                                    {item.status.toUpperCase()}
-                                 </span>
-                              </td>
-                           </tr>
-                        ))}
-                     </tbody>
-                  </table>
-               </div>
-             )}
+            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#ffffff", marginBottom: "20px", display: "flex", alignItems: "center", gap: "10px" }}>
+              <span>📜</span> Your Complaint & Ticket History
+            </h2>
+            {history.length === 0 ? (
+              <p style={{ color: "#94a3b8", fontStyle: "italic" }}>No previously submitted support tickets found under your account name.</p>
+            ) : (
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid #334155", color: "#94a3b8", fontSize: "13px", textTransform: "uppercase" }}>
+                      <th style={{ padding: "12px 10px" }}>Date</th>
+                      <th style={{ padding: "12px 10px" }}>Issue Category</th>
+                      <th style={{ padding: "12px 10px" }}>Details</th>
+                      <th style={{ padding: "12px 10px" }}>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {history.map(item => (
+                      <tr key={item._id} style={{ borderBottom: "1px solid #0f172a", color: "#e2e8f0", fontSize: "14px" }}>
+                        <td style={{ padding: "14px 10px" }}>{new Date(item.createdAt).toLocaleDateString()}</td>
+                        <td style={{ padding: "14px 10px", fontWeight: 600 }}>{item.issue_type}</td>
+                        <td style={{ padding: "14px 10px", opacity: 0.8 }}>{item.description?.substring(0, 50)}...</td>
+                        <td style={{ padding: "14px 10px" }}>
+                          <span style={{
+                            padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700,
+                            backgroundColor: item.status === "Resolved" ? "var(--success)" : item.status === "Cancelled" ? "#ef4444" : "#eab308",
+                            color: "white"
+                          }}>
+                            {item.status.toUpperCase()}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
       </div>

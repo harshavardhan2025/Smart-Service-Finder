@@ -68,33 +68,35 @@ function Navbar() {
         
         {/* PLANS & OFFERS NAV LINK */}
         {/* PLANS & OFFERS NAV LINK INTERCEPTOR */}
-        <div 
-          onClick={() => {
-            const user = sessionStorage.getItem("userRole");
-            if (!user) {
-              alert("🔒 Verification Required!\n\nPlease log in to access premium service plans and exclusive discount offers.");
-              navigate("/login");
-            } else {
-              navigate("/plans-offers");
-            }
-          }}
-          style={{ 
-            textDecoration: "none", 
-            color: "var(--text-secondary)", 
-            fontWeight: 700, 
-            fontSize: "14px", 
-            display: "flex", 
-            alignItems: "center", 
-            gap: "6px",
-            marginRight: "8px",
-            cursor: "pointer",
-            transition: "color 0.2s"
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.color = "var(--primary)"}
-          onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-secondary)"}
-        >
-          🏷️ Plans & Offers
-        </div>
+        {isCustomerView && (
+          <div 
+            onClick={() => {
+              const user = sessionStorage.getItem("userRole");
+              if (!user) {
+                alert("🔒 Verification Required!\n\nPlease log in to access premium service plans and exclusive discount offers.");
+                navigate("/login");
+              } else {
+                navigate("/plans-offers");
+              }
+            }}
+            style={{ 
+              textDecoration: "none", 
+              color: "var(--text-secondary)", 
+              fontWeight: 700, 
+              fontSize: "14px", 
+              display: "flex", 
+              alignItems: "center", 
+              gap: "6px",
+              marginRight: "8px",
+              cursor: "pointer",
+              transition: "color 0.2s"
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = "var(--primary)"}
+            onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-secondary)"}
+          >
+            🏷️ Plans & Offers
+          </div>
+        )}
 
         {/* PREMIUM SUN/MOON THEME TOGGLE BUTTON */}
         <button
