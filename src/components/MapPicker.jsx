@@ -6,6 +6,7 @@ import {
   Marker,
   Popup,
   useMap,
+  useMapEvents,
 } from "react-leaflet";
 
 import "leaflet/dist/leaflet.css";
@@ -88,8 +89,72 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
     );
   };
 
+  const handleMapInteraction = async (lat, lng) => {
+    setPosition([lat, lng]);
+    
+    // Determine short readable location name or coordinate fallback
+    let label = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    
+    // Check if near our key cities
+    const localMatches = [
+      { name: "Kakinada, Andhra Pradesh, India", coords: { lat: 16.989062, lon: 82.243878 } },
+      { name: "Rajahmundry, Andhra Pradesh, India", coords: { lat: 17.000538, lon: 81.804034 } },
+      { name: "New Delhi, Delhi, India", coords: { lat: 28.613939, lon: 77.209021 } },
+      { name: "Hyderabad, Telangana, India", coords: { lat: 17.385044, lon: 78.486671 } }
+    ];
+    
+    // Simple Euclidean distance approximation for instant selection
+    const getDist = (lat1, lon1, lat2, lon2) => {
+      return Math.sqrt((lat1 - lat2) ** 2 + (lon1 - lon2) ** 2);
+    };
+    
+    const nearest = localMatches.find(city => getDist(lat, lng, city.coords.lat, city.coords.lon) < 0.25); // ~25km
+    if (nearest) {
+      label = nearest.name;
+    }
+    
+    setSearch(label);
+    setDetectedLabel(label);
+    localStorage.setItem("userLocation", label);
+    if (onLocationChange) onLocationChange(label);
+    if (onCoordsChange) onCoordsChange({ lat, lng });
+  };
+
+  const MapEventsHandler = () => {
+    useMapEvents({
+      click(e) {
+        handleMapInteraction(e.latlng.lat, e.latlng.lng);
+      },
+    });
+    return null;
+  };
+
   const searchLocation = async () => {
     if (!search.trim()) return;
+    
+    const query = search.toLowerCase().trim();
+    
+    // High-performance local coordinate dictionary (matching seeded cities)
+    const LOCAL_GEO_DB = {
+      "kakinada": { lat: 16.989062, lon: 82.243878, label: "Kakinada, Andhra Pradesh, India" },
+      "rajahmundry": { lat: 17.000538, lon: 81.804034, label: "Rajahmundry, Andhra Pradesh, India" },
+      "new delhi": { lat: 28.613939, lon: 77.209021, label: "New Delhi, Delhi, India" },
+      "hyderabad": { lat: 17.385044, lon: 78.486671, label: "Hyderabad, Telangana, India" }
+    };
+    
+    // 1. Check exact or fuzzy local match
+    const localMatch = Object.keys(LOCAL_GEO_DB).find(k => query.includes(k) || k.includes(query));
+    if (localMatch) {
+      const { lat, lon, label } = LOCAL_GEO_DB[localMatch];
+      setPosition([lat, lon]);
+      setSearch(label);
+      localStorage.setItem("userLocation", label);
+      if (onLocationChange) onLocationChange(label);
+      if (onCoordsChange) onCoordsChange({ lat, lng: lon });
+      return;
+    }
+    
+    // 2. Remote fallback
     try {
       const results = await provider.search({ query: search });
       if (results.length > 0) {
@@ -104,7 +169,16 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
       }
     } catch (err) {
       console.error("Location search failed:", err);
-      alert("Could not search location. Please check your internet connection and try again.");
+      // Coordinate direct input fallback if Nominatim is blocked/offline
+      const coordParts = search.split(",").map(p => parseFloat(p.trim()));
+      if (coordParts.length === 2 && !isNaN(coordParts[0]) && !isNaN(coordParts[1])) {
+        const [lat, lng] = coordParts;
+        setPosition([lat, lng]);
+        if (onLocationChange) onLocationChange(search);
+        if (onCoordsChange) onCoordsChange({ lat, lng });
+      } else {
+        alert("Could not search location. Please check your internet connection and try again.");
+      }
     }
   };
 
@@ -193,11 +267,25 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
           style={{ height: "360px", width: "100%" }}
         >
           <ChangeMapView center={position} />
+          <MapEventsHandler />
           <TileLayer
             attribution="&copy; OpenStreetMap contributors"
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <Marker position={position} icon={pinIcon}>
+          <Marker 
+            position={position} 
+            icon={pinIcon}
+            draggable={true}
+            eventHandlers={{
+              dragend(e) {
+                const marker = e.target;
+                if (marker) {
+                  const latlng = marker.getLatLng();
+                  handleMapInteraction(latlng.lat, latlng.lng);
+                }
+              }
+            }}
+          >
             <Popup>
               {detectedLabel || search || "Selected Location"}
             </Popup>
