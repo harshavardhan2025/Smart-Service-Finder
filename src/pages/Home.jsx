@@ -14,6 +14,7 @@ function Home() {
 
   const [locationText, setLocationText] = useState("");
   const [searchedLocation, setSearchedLocation] = useState("");
+  const [serviceQuery, setServiceQuery] = useState("");
   const [onlineWorkers, setOnlineWorkers] = useState([]);
   const [aiSuggestedWorkers, setAiSuggestedWorkers] = useState([]);
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -154,7 +155,7 @@ function Home() {
         <LocationSearch
           value={locationText}
           onChange={setLocationText}
-          onSearch={(loc) => setSearchedLocation(loc)}
+          onSearch={(query) => setServiceQuery(query)}
         />
 
         {/* Location context banner */}
@@ -209,7 +210,7 @@ function Home() {
           </div>
         )}
 
-        <MapPicker />
+        <MapPicker onLocationChange={(loc) => setSearchedLocation(loc)} />
 
         {/* 🚨 Instant Booking Services (Active Online Workers) */}
         <div className="fade-in" style={{ padding: "20px", marginBottom: "10px" }}>
@@ -226,7 +227,13 @@ function Home() {
             The following certified professionals are currently online, active, and dispatched instantly for emergency assistance.
           </p>
 
-          {onlineWorkers.length === 0 ? (
+          {(serviceQuery
+              ? onlineWorkers.filter((w) =>
+                  w.service &&
+                  w.service.toLowerCase().includes(serviceQuery.toLowerCase())
+                )
+              : onlineWorkers
+            ).length === 0 ? (
             <div className="premium-card" style={{ padding: "30px", textAlign: "center", color: "var(--text-secondary)" }}>
               <span style={{ fontSize: "28px", display: "block", marginBottom: "8px", filter: "grayscale(1)" }}>💤</span>
               <p style={{ margin: 0, fontSize: "14px", fontWeight: "bold" }}>No emergency professionals are online right now.</p>
@@ -234,7 +241,13 @@ function Home() {
             </div>
           ) : (
             <div style={{ display: "flex", overflowX: "auto", gap: "16px", paddingBottom: "10px" }}>
-              {onlineWorkers.map((worker) => (
+              {(serviceQuery
+                ? onlineWorkers.filter((w) =>
+                    w.service &&
+                    w.service.toLowerCase().includes(serviceQuery.toLowerCase())
+                  )
+                : onlineWorkers
+              ).map((worker) => (
                 <div
                   key={worker.id}
                   className="premium-card"
