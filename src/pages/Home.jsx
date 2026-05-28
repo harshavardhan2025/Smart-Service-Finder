@@ -14,6 +14,7 @@ function Home() {
 
   const [locationText, setLocationText] = useState("");
   const [searchedLocation, setSearchedLocation] = useState("");
+  const [userCoords, setUserCoords] = useState(null); // { lat, lng }
   const [serviceQuery, setServiceQuery] = useState("");
   const [onlineWorkers, setOnlineWorkers] = useState([]);
   const [aiSuggestedWorkers, setAiSuggestedWorkers] = useState([]);
@@ -93,13 +94,17 @@ function Home() {
   useEffect(() => {
     const syncOnline = async () => {
       try {
-        let url = "/api/workers";
-        let extractedKey = "";
-
-        if (searchedLocation) {
-           const lower = searchedLocation.toLowerCase();
-           extractedKey = lower.includes("kakinada") ? "kakinada" : lower.includes("rajahmundry") ? "rajahmundry" : searchedLocation.split(",")[0].trim().toLowerCase();
-           url += `?city=${encodeURIComponent(extractedKey)}`;
+        let url;
+        // Prefer real coordinates for radius-based matching
+        if (userCoords) {
+          url = `/api/workers/nearby?lat=${userCoords.lat}&lng=${userCoords.lng}&radius=40`;
+        } else {
+          url = "/api/workers";
+          if (searchedLocation) {
+            const lower = searchedLocation.toLowerCase();
+            const extractedKey = lower.includes("kakinada") ? "kakinada" : lower.includes("rajahmundry") ? "rajahmundry" : searchedLocation.split(",")[0].trim().toLowerCase();
+            url += `?city=${encodeURIComponent(extractedKey)}`;
+          }
         }
 
         // 🤖 RECURSIVELY TETHERED TO BACKEND AI SPATIAL INTELLIGENCE!
@@ -117,7 +122,7 @@ function Home() {
     syncOnline();
     const interval = setInterval(syncOnline, 10000); // Adjusted for optimal background cache persistence
     return () => clearInterval(interval);
-  }, [searchedLocation]);
+  }, [searchedLocation, userCoords]);
 
   // Extract a short readable city/area name from the full address string
   const getShortLocation = (fullAddress) => {
@@ -210,7 +215,10 @@ function Home() {
           </div>
         )}
 
-        <MapPicker onLocationChange={(loc) => setSearchedLocation(loc)} />
+        <MapPicker
+          onLocationChange={(loc) => setSearchedLocation(loc)}
+          onCoordsChange={(coords) => setUserCoords(coords)}
+        />
 
         {/* 🚨 Instant Booking Services (Active Online Workers) */}
         <div className="fade-in" style={{ padding: "20px", marginBottom: "10px" }}>
@@ -279,9 +287,9 @@ function Home() {
           )}
         </div>
 
-        <TopWorkers searchedLocation={searchedLocation} />
-        <CheapWorkers searchedLocation={searchedLocation} />
-        <NearbyWorkers searchedLocation={searchedLocation} />
+        <TopWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
+        <CheapWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
+        <NearbyWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
       </div>
 
       {/* Modern Footer */}

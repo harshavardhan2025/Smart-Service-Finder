@@ -1,4 +1,5 @@
 import Worker from "../models/Worker.js";
+import { haversineKm, geocodeCity } from "../utils/geoUtils.js";
 
 // 🧠 AI SPATIAL CACHE: Prevents redundant LLM hits, accelerating repeat searches flawlessly!
 const aiRadiusCache = {};
@@ -101,6 +102,53 @@ export const getWorkers = async (req, res) => {
     res.status(200).json(workers);
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+};
+
+/**
+ * GET /api/workers/nearby?lat=XX&lng=YY&radius=40&service=Plumber
+ * Returns workers within `radius` km (default 40) of the given coordinates.
+ * Each worker gets a `distanceKm` field and results are sorted nearest-first.
+ */
+export const getNearbyWorkers = async (req, res) => {
+  try {
+    const userLat = parseFloat(req.query.lat);
+    const userLng = parseFloat(req.query.lng);
+    const radius  = parseFloat(req.query.radius) || 40; // km
+    const service  = req.query.service || "";
+
+    if (isNaN(userLat) || isNaN(userLng)) {
+      return res.status(400).json({ error: "lat and lng query params are required." });
+    }
+
+    // Build service filter
+    const filter = { status: "Active" };
+    if (service) filter.service = new RegExp(service, "i");
+
+    const allWorkers = await Worker.find(filter).lean();
+
+    // Geocode each worker's city in parallel (cached after first call)
+    const withCoords = await Promise.all(
+      allWorkers.map(async (w) => {
+        const cityStr = w.location || w.city || "";
+        if (!cityStr) return null;
+        const coords = await geocodeCity(cityStr);
+        if (!coords) return null;
+        const distanceKm = haversineKm(userLat, userLng, coords.lat, coords.lon);
+        return { ...w, lat: coords.lat, lng: coords.lon, distanceKm: Math.round(distanceKm * 10) / 10 };
+      })
+    );
+
+    // Filter to radius and sort by distance
+    const nearby = withCoords
+      .filter((w) => w !== null && w.distanceKm <= radius)
+      .sort((a, b) => a.distanceKm - b.distanceKm);
+
+    console.log(`[NearbyWorkers] ${nearby.length} workers within ${radius}km of (${userLat},${userLng})`);
+    res.status(200).json(nearby);
+  } catch (error) {
+    console.error("[getNearbyWorkers] Error:", error);
+    res.status(500).json({ error: error.message });
   }
 };
 

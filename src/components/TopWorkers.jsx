@@ -9,31 +9,32 @@ function getShortLocation(fullAddress) {
   return fullAddress.split(",")[0].trim().toLowerCase();
 }
 
-function TopWorkers({ searchedLocation }) {
+function TopWorkers({ searchedLocation, userCoords }) {
   const [cloudWorkers, setCloudWorkers] = useState([]);
-  
+
   useEffect(() => {
     const fetchWorkers = async () => {
-       try {
-         const resp = await fetch("/api/workers");
-         if (resp.ok) setCloudWorkers(await resp.json());
-       } catch(e) { console.error("Top workers fail"); }
+      try {
+        let url;
+        if (userCoords) {
+          url = `/api/workers/nearby?lat=${userCoords.lat}&lng=${userCoords.lng}&radius=40`;
+        } else {
+          const locationKey = getShortLocation(searchedLocation);
+          url = locationKey ? `/api/workers?city=${encodeURIComponent(locationKey)}` : "/api/workers";
+        }
+        const resp = await fetch(url);
+        if (resp.ok) setCloudWorkers(await resp.json());
+      } catch (e) {
+        console.error("Top workers fail");
+      }
     };
     fetchWorkers();
-  }, []);
-
-  const locationKey = getShortLocation(searchedLocation);
-  
-  // Filter by location if available, else show all sorted by rating
-  const candidates = searchedLocation
-    ? cloudWorkers.filter((w) =>
-        w.city.toLowerCase().includes(locationKey) ||
-        locationKey.includes(w.city.toLowerCase())
-      )
-    : cloudWorkers;
+  }, [searchedLocation, userCoords]);
 
   // Always show top 4 by rating
-  const topWorkers = [...candidates].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 4);
+  const topWorkers = [...cloudWorkers]
+    .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+    .slice(0, 4);
 
   return (
     <div className="fade-in" style={{ padding: "20px" }}>
@@ -42,34 +43,49 @@ function TopWorkers({ searchedLocation }) {
       </h2>
       {searchedLocation && (
         <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: "0 0 15px 0" }}>
-          Near <strong style={{ color: "var(--primary)" }}>{searchedLocation.split(",")[0]}</strong>
+          Within <strong style={{ color: "var(--primary)" }}>40 km</strong> of{" "}
+          <strong style={{ color: "var(--primary)" }}>{searchedLocation.split(",")[0]}</strong>
         </p>
       )}
 
       {topWorkers.length === 0 ? (
         <p style={{ color: "gray", fontStyle: "italic" }}>
-          Scanning cloud for top professionals...
+          Scanning for top professionals within 40km...
         </p>
       ) : (
-        <div
-          style={{
-            display: "flex",
-            overflowX: "auto",
-            gap: "15px",
-            paddingBottom: "10px"
-          }}
-        >
+        <div style={{ display: "flex", overflowX: "auto", gap: "15px", paddingBottom: "10px" }}>
           {topWorkers.map((worker) => (
             <div
               key={worker._id}
               className="premium-card"
               style={{ minWidth: "220px", flex: "0 0 auto" }}
             >
-              <h3 style={{ margin: "0 0 5px 0", fontSize: "18px", color: "var(--text-primary)" }}>{worker.name}</h3>
-              <p style={{ color: "var(--text-secondary)", margin: "5px 0", fontWeight: 500 }}>{worker.service}</p>
+              <h3 style={{ margin: "0 0 5px 0", fontSize: "18px", color: "var(--text-primary)" }}>
+                {worker.name}
+              </h3>
+              <p style={{ color: "var(--text-secondary)", margin: "5px 0", fontWeight: 500 }}>
+                {worker.service}
+              </p>
               <p style={{ margin: "5px 0", fontSize: "13px", color: "var(--primary)", fontWeight: "bold" }}>
                 📍 {worker.city}
               </p>
+              {worker.distanceKm !== undefined && (
+                <span
+                  style={{
+                    display: "inline-block",
+                    backgroundColor: "#eff6ff",
+                    color: "#1d4ed8",
+                    border: "1px solid #bfdbfe",
+                    borderRadius: "12px",
+                    padding: "2px 10px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    marginBottom: "4px",
+                  }}
+                >
+                  🗺️ {worker.distanceKm} km away
+                </span>
+              )}
               <p style={{ margin: "8px 0", fontWeight: "bold", fontSize: "14px" }}>
                 <span style={{ color: "#f59e0b" }}>⭐</span> {worker.rating}
               </p>
@@ -77,10 +93,10 @@ function TopWorkers({ searchedLocation }) {
                 ₹{worker.price || 350}
               </p>
 
-              <Link 
-                to="/worker" 
+              <Link
+                to="/worker"
                 onClick={() => localStorage.setItem("selected_worker", JSON.stringify(worker))}
-                style={{ textDecoration: 'none' }}
+                style={{ textDecoration: "none" }}
               >
                 <button
                   style={{
@@ -92,7 +108,7 @@ function TopWorkers({ searchedLocation }) {
                     borderRadius: "8px",
                     padding: "10px",
                     fontWeight: "bold",
-                    cursor: "pointer"
+                    cursor: "pointer",
                   }}
                 >
                   View Profile

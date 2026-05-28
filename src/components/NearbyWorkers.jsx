@@ -123,7 +123,7 @@ function getShortLocation(fullAddress) {
   return fullAddress.split(",")[0].trim().toLowerCase();
 }
 
-function NearbyWorkers({ searchedLocation }) {
+function NearbyWorkers({ searchedLocation, userCoords }) {
   const [selectedService, setSelectedService] = useState(null);
   const [cloudWorkers, setCloudWorkers] = useState([]);
 
@@ -133,17 +133,20 @@ function NearbyWorkers({ searchedLocation }) {
   useEffect(() => {
     const fetchLiveWorkers = async () => {
        try {
-         // 🚀 DYNAMIC BACKEND LOCATION STREAM! Leverages remote AI cluster analysis!
-         let url = "/api/workers";
-         if (locationKey) {
-            url += `?city=${encodeURIComponent(locationKey)}`;
+         let url;
+         if (userCoords) {
+           // Real coordinate-based radius search
+           url = `/api/workers/nearby?lat=${userCoords.lat}&lng=${userCoords.lng}&radius=40`;
+         } else {
+           url = "/api/workers";
+           if (locationKey) url += `?city=${encodeURIComponent(locationKey)}`;
          }
          const resp = await fetch(url);
          if (resp.ok) setCloudWorkers(await resp.json());
        } catch(e) { console.error("Nearby fetch fail"); }
     };
     fetchLiveWorkers();
-  }, [locationKey]); // ⚡ Re-runs every time location changes!
+  }, [locationKey, userCoords]); // ⚡ Re-runs every time location or coords change!
   
   // Generic Subservice State
   const [activeSubService, setActiveSubService] = useState(null);
@@ -514,9 +517,27 @@ function NearbyWorkers({ searchedLocation }) {
                       <p style={{ margin: "14px 0 4px 0", fontSize: "14px", color: "var(--primary)", fontWeight: "bold" }}>
                         🏙️ {worker.city}
                       </p>
-                      <p style={{ margin: "4px 0 4px 0", fontSize: "14px", color: "var(--text-secondary)", fontWeight: 600 }}>
-                        📍 {worker.distance} Away
-                      </p>
+                      {worker.distanceKm !== undefined ? (
+                        <p style={{ margin: "4px 0", fontSize: "13px", display: "flex", alignItems: "center", gap: "6px" }}>
+                          <span
+                            style={{
+                              backgroundColor: "#eff6ff",
+                              color: "#1d4ed8",
+                              border: "1px solid #bfdbfe",
+                              borderRadius: "12px",
+                              padding: "2px 10px",
+                              fontSize: "12px",
+                              fontWeight: 700,
+                            }}
+                          >
+                            🗺️ {worker.distanceKm} km away
+                          </span>
+                        </p>
+                      ) : (
+                        <p style={{ margin: "4px 0 4px 0", fontSize: "14px", color: "var(--text-secondary)", fontWeight: 600 }}>
+                          📍 {worker.distance} Away
+                        </p>
+                      )}
                       <p style={{ margin: "4px 0 4px 0", fontSize: "14px", color: "#eab308", fontWeight: "bold" }}>
                         ⭐ {worker.rating}
                       </p>

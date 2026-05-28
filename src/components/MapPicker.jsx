@@ -27,7 +27,7 @@ function ChangeMapView({ center }) {
   return null;
 }
 
-function MapPicker({ onLocationChange }) {
+function MapPicker({ onLocationChange, onCoordsChange }) {
   const [position, setPosition] = useState([17.385, 78.4867]);
   const [search, setSearch] = useState("");
   const [detecting, setDetecting] = useState(false);
@@ -69,6 +69,7 @@ function MapPicker({ onLocationChange }) {
             if (city) localStorage.setItem("userCity", city);
           }
           if (onLocationChange) onLocationChange(label);
+          if (onCoordsChange) onCoordsChange({ lat: latitude, lng: longitude });
         } catch (err) {
           console.error("Reverse geocode failed:", err);
           const fallback = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
@@ -96,6 +97,7 @@ function MapPicker({ onLocationChange }) {
       setSearch(label);
       localStorage.setItem("userLocation", label);
       if (onLocationChange) onLocationChange(label);
+      if (onCoordsChange) onCoordsChange({ lat: y, lng: x });
     }
   };
 
