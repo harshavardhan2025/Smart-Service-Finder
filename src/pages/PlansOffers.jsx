@@ -2,13 +2,28 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 
+const BASE_URL = "http://localhost:5000";
+
 function PlansOffers() {
   const navigate = useNavigate();
+  const CACHE_VERSION = "v3";
   const [copiedCode, setCopiedCode] = useState(null);
-  const [plans, setPlans] = useState([]);
-  const [offers, setOffers] = useState([]);
+  // 🚀 Initialize from cache for instant display
+  const [plans, setPlans] = useState(() => {
+    try {
+      if (localStorage.getItem("cache_version") !== CACHE_VERSION) return [];
+      return JSON.parse(localStorage.getItem("cached_plans") || "[]");
+    } catch { return []; }
+  });
+  const [offers, setOffers] = useState(() => {
+    try {
+      if (localStorage.getItem("cache_version") !== CACHE_VERSION) return [];
+      return JSON.parse(localStorage.getItem("cached_offers") || "[]");
+    } catch { return []; }
+  });
   const [workers, setWorkers] = useState([]);
   const [userPlans, setUserPlans] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Payment gateway states
   const [payingPlan, setPayingPlan] = useState(null); 
@@ -25,39 +40,48 @@ function PlansOffers() {
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [walletBal, setWalletBal] = useState(5000); // Default or load from actual user profile API if available
 
-  useEffect(() => {
-    // 🔐 HARD LOCKDOWN GATEWAY: Eject guest users to login portal instantly!
-    const userId = sessionStorage.getItem("userId");
-    if (!userId) {
-       alert("⚠️ Exclusive Access! Please log in to view, compare, and secure premium subscription packages.");
-       navigate("/login");
-       return;
-    }
+  const isLoggedIn = !!sessionStorage.getItem("userId");
 
+  useEffect(() => {
     const loadCloudData = async () => {
       try {
-         const currentUserName = sessionStorage.getItem("userName") || "Verified Subscriber";
-         const [pResp, oResp, wResp, tResp] = await Promise.all([
-            fetch("/api/plans"),
-            fetch("/api/offers"),
-            fetch("/api/workers"),
-            fetch(`/api/transactions?customer=${encodeURIComponent(currentUserName)}`)
+         // Plans, offers & workers are public — no login needed
+         const [pResp, oResp, wResp] = await Promise.all([
+            fetch(`${BASE_URL}/api/plans`),
+            fetch(`${BASE_URL}/api/offers`),
+            fetch(`${BASE_URL}/api/workers`),
          ]);
-         
-         if (pResp.ok) setPlans(await pResp.json());
-         if (oResp.ok) setOffers(await oResp.json());
-         if (wResp.ok) setWorkers(await wResp.json());
-         if (tResp.ok) {
-           const txns = await tResp.json();
-           const subbed = txns
-             .filter(t => t.service && t.service.startsWith("Plan Subscription:"))
-             .map(t => t.service.replace("Plan Subscription:", "").trim());
-           setUserPlans(subbed);
+
+         if (pResp.ok) {
+           const plansData = await pResp.json();
+           setPlans(plansData);
+           localStorage.setItem("cached_plans", JSON.stringify(plansData));
+           localStorage.setItem("cache_version", CACHE_VERSION);
          }
-         
-      } catch(err) { console.error("Physical Data Load Failure: ", err); }
+         if (oResp.ok) {
+           const offersData = await oResp.json();
+           setOffers(offersData);
+           localStorage.setItem("cached_offers", JSON.stringify(offersData));
+           localStorage.setItem("cache_version", CACHE_VERSION);
+         }
+         if (wResp.ok) setWorkers(await wResp.json());
+
+         // Only fetch subscriptions for logged-in users
+         if (isLoggedIn) {
+           const currentUserName = sessionStorage.getItem("userName") || "Verified Subscriber";
+           const tResp = await fetch(`${BASE_URL}/api/transactions?customer=${encodeURIComponent(currentUserName)}`);
+           if (tResp.ok) {
+             const txns = await tResp.json();
+             const subbed = txns
+               .filter(t => t.service && t.service.startsWith("Plan Subscription:"))
+               .map(t => t.service.replace("Plan Subscription:", "").trim());
+             setUserPlans(subbed);
+           }
+         }
+      } catch(err) { console.error("Data Load Failure: ", err); }
+      finally { setLoading(false); }
     };
-    
+
     loadCloudData();
   }, []);
 
@@ -127,7 +151,7 @@ function PlansOffers() {
          }
 
          // Execute Hard Physical Cloud Record instantly seamlessly flawlessly!
-         await fetch("/api/transactions", {
+         await fetch(`${BASE_URL}/api/transactions`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -157,6 +181,37 @@ function PlansOffers() {
     }, 1500);
   };
 
+  // Skeleton card for loading state
+  const SkeletonPlanCard = () => (
+    <div style={{
+      backgroundColor: "rgba(30, 41, 59, 0.4)", borderRadius: 16, padding: 32,
+      border: "1px solid rgba(255,255,255,0.06)", animation: "pulse 1.4s ease-in-out infinite"
+    }}>
+      <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }`}</style>
+      <div style={{ height: 20, width: "60%", backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 8, marginBottom: 16 }} />
+      <div style={{ height: 40, width: "40%", backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 8, marginBottom: 24 }} />
+      {[1,2,3,4].map(i => (
+        <div key={i} style={{ height: 14, backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 6, marginBottom: 10, width: `${70 + i * 5}%` }} />
+      ))}
+      <div style={{ height: 46, backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 10, marginTop: 24 }} />
+    </div>
+  );
+
+  const SkeletonOfferCard = () => (
+    <div style={{
+      backgroundColor: "rgba(30, 41, 59, 0.3)", borderRadius: 14, padding: 24,
+      border: "1px dashed rgba(255,255,255,0.08)", display: "flex", justifyContent: "space-between",
+      alignItems: "center", animation: "pulse 1.4s ease-in-out infinite"
+    }}>
+      <div style={{ flex: 1 }}>
+        <div style={{ height: 24, width: "30%", backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 8, marginBottom: 12 }} />
+        <div style={{ height: 16, width: "70%", backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 6, marginBottom: 8 }} />
+        <div style={{ height: 12, width: "40%", backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 6 }} />
+      </div>
+      <div style={{ height: 40, width: 90, backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 8, marginLeft: 16 }} />
+    </div>
+  );
+
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", color: "#f8fafc", fontFamily: "'Inter', sans-serif" }}>
       <Navbar />
@@ -177,7 +232,9 @@ function PlansOffers() {
           Choose Your Service Plan
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 30, marginBottom: 56 }}>
-          {plans.map((plan, i) => (
+          {loading && plans.length === 0
+            ? [1, 2, 3].map(i => <SkeletonPlanCard key={i} />)
+            : plans.map((plan, i) => (
             <div 
               key={i}
               style={{
@@ -230,15 +287,9 @@ function PlansOffers() {
                 >
                   Subscribed ✅
                 </button>
-              ) : (
+              ) : isLoggedIn ? (
                 <button 
                   onClick={() => {
-                    const userId = sessionStorage.getItem("userId");
-                    if (!userId) {
-                       alert("🔒 Security Guard: Verification Required!\n\nPlease log in or create an account to subscribe to premium service plans and unlock exclusive platform benefits. Redirecting you to the portal now.");
-                       navigate("/login");
-                       return;
-                    }
                     setPayingPlan(plan);
                     setAppliedCoupon("");
                     setCouponSuccess("");
@@ -254,6 +305,20 @@ function PlansOffers() {
                 >
                   {plan.btnText}
                 </button>
+              ) : (
+                <button 
+                  onClick={() => {
+                    navigate("/login");
+                  }}
+                  style={{
+                    width: "100%", padding: "14px", border: "1.5px solid rgba(255,255,255,0.2)", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer",
+                    backgroundColor: "transparent", color: "#cbd5e1", transition: "all 0.2s"
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "white"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#cbd5e1"; }}
+                >
+                  🔒 Login to Subscribe
+                </button>
               )}
             </div>
           ))}
@@ -264,7 +329,9 @@ function PlansOffers() {
           Active Promo Coupons
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 24 }}>
-          {offers.map((offer, i) => (
+          {loading && offers.length === 0
+            ? [1, 2, 3, 4].map(i => <SkeletonOfferCard key={i} />)
+            : offers.map((offer, i) => (
             <div 
               key={i}
               style={{
@@ -286,25 +353,32 @@ function PlansOffers() {
                 <h4 style={{ margin: "12px 0 4px 0", color: "#ffffff", fontSize: 16, fontWeight: 600 }}>{offer.desc}</h4>
                 <p style={{ margin: 0, fontSize: 12, color: "#94a3b8" }}>{offer.expiry}</p>
               </div>
-              <button 
-                onClick={() => {
-                  const userId = sessionStorage.getItem("userId");
-                  if (!userId) {
-                     alert("🔒 Security Guard: Verification Required!\n\nPlease log in to claim, copy, and redeem active promotional coupons on your account. Redirecting you to the portal now.");
-                     navigate("/login");
-                     return;
-                  }
-                  handleCopy(offer.code);
-                }}
-                style={{
-                  padding: "10px 16px", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: 8, 
-                  backgroundColor: copiedCode === offer.code ? "rgba(52, 211, 153, 0.2)" : "rgba(255, 255, 255, 0.05)",
-                  color: copiedCode === offer.code ? "#34d399" : "#cbd5e1", cursor: "pointer", fontWeight: 700, fontSize: 13, minWidth: 90,
-                  transition: "all 0.2s"
-                }}
-              >
-                {copiedCode === offer.code ? "Copied! ✅" : offer.code}
-              </button>
+              {isLoggedIn ? (
+                <button 
+                  onClick={() => handleCopy(offer.code)}
+                  style={{
+                    padding: "10px 16px", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: 8, 
+                    backgroundColor: copiedCode === offer.code ? "rgba(52, 211, 153, 0.2)" : "rgba(255, 255, 255, 0.05)",
+                    color: copiedCode === offer.code ? "#34d399" : "#cbd5e1", cursor: "pointer", fontWeight: 700, fontSize: 13, minWidth: 90,
+                    transition: "all 0.2s"
+                  }}
+                >
+                  {copiedCode === offer.code ? "Copied! ✅" : offer.code}
+                </button>
+              ) : (
+                <button
+                  onClick={() => navigate("/login")}
+                  style={{
+                    padding: "10px 16px", border: "1px dashed rgba(255,255,255,0.2)", borderRadius: 8,
+                    backgroundColor: "transparent", color: "#94a3b8", cursor: "pointer",
+                    fontWeight: 700, fontSize: 12, minWidth: 110, transition: "all 0.2s"
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = "white"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.4)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = "#94a3b8"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)"; }}
+                >
+                  🔒 Login to Copy
+                </button>
+              )}
             </div>
           ))}
         </div>

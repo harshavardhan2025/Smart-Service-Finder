@@ -90,14 +90,21 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
 
   const searchLocation = async () => {
     if (!search.trim()) return;
-    const results = await provider.search({ query: search });
-    if (results.length > 0) {
-      const { x, y, label } = results[0];
-      setPosition([y, x]);
-      setSearch(label);
-      localStorage.setItem("userLocation", label);
-      if (onLocationChange) onLocationChange(label);
-      if (onCoordsChange) onCoordsChange({ lat: y, lng: x });
+    try {
+      const results = await provider.search({ query: search });
+      if (results.length > 0) {
+        const { x, y, label } = results[0];
+        setPosition([y, x]);
+        setSearch(label);
+        localStorage.setItem("userLocation", label);
+        if (onLocationChange) onLocationChange(label);
+        if (onCoordsChange) onCoordsChange({ lat: y, lng: x });
+      } else {
+        alert("Location not found. Please try a different search term.");
+      }
+    } catch (err) {
+      console.error("Location search failed:", err);
+      alert("Could not search location. Please check your internet connection and try again.");
     }
   };
 

@@ -67,18 +67,9 @@ function Navbar() {
       <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
         
         {/* PLANS & OFFERS NAV LINK */}
-        {/* PLANS & OFFERS NAV LINK INTERCEPTOR */}
         {isCustomerView && (
-          <div 
-            onClick={() => {
-              const user = sessionStorage.getItem("userRole");
-              if (!user) {
-                alert("🔒 Verification Required!\n\nPlease log in to access premium service plans and exclusive discount offers.");
-                navigate("/login");
-              } else {
-                navigate("/plans-offers");
-              }
-            }}
+          <Link
+            to="/plans-offers"
             style={{ 
               textDecoration: "none", 
               color: "var(--text-secondary)", 
@@ -95,7 +86,7 @@ function Navbar() {
             onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-secondary)"}
           >
             🏷️ Plans & Offers
-          </div>
+          </Link>
         )}
 
         {/* PREMIUM SUN/MOON THEME TOGGLE BUTTON */}
