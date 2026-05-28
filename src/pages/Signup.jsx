@@ -80,11 +80,14 @@ function Signup() {
             const { latitude, longitude } = position.coords;
             const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
             const data = await response.json();
-            const cityName = data.address.city || data.address.town || data.address.village || data.address.county || data.address.state_district || "Unknown Location";
-            setCity(cityName);
+            const address = data.address || {};
+            const district = address.state_district || address.county || address.district || address.city || address.town || "Unknown District";
+            const state = address.state || "Unknown State";
+            const locationStr = `${district}, ${state}`;
+            setCity(locationStr);
           } catch (error) {
             console.error("Error fetching location details:", error);
-            alert("Could not determine city from coordinates.");
+            alert("Could not determine location from coordinates.");
           } finally {
             setIsDetectingLocation(false);
           }
@@ -283,13 +286,13 @@ function Signup() {
             {/* Explicit Location Column Injection requested for Workers */}
             {role === "worker" && (
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <label style={{ fontSize: "14px", fontWeight: 600, color: "#475569" }}>Serving Location (City)</label>
+                <label style={{ fontSize: "14px", fontWeight: 600, color: "#475569" }}>Serving Location (District, State)</label>
                 <div style={{ display: "flex", gap: "8px" }}>
                   <input
                     type="text"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    placeholder="Enter your city or location"
+                    placeholder="e.g. East Godavari, Andhra Pradesh"
                     style={{ flex: 1, boxSizing: "border-box" }}
                   />
                   <button
