@@ -368,7 +368,20 @@ function AiChatBot() {
 
       setIsTyping(false);
 
-      if (matchedCategory) {
+      const backendWorkers = data.workers;
+      const backendCategory = data.category;
+
+      if (backendWorkers && backendWorkers.length > 0) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            sender: "ai",
+            text: aiReply + `\n\nBased on your location, I found these local experts near you for **${backendCategory}**:`,
+            workersList: backendWorkers,
+            category: backendCategory
+          }
+        ]);
+      } else if (matchedCategory) {
         const workers = await fetchDynamicWorkers(matchedCategory);
         setMessages((prev) => [
           ...prev,
