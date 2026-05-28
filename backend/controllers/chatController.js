@@ -39,7 +39,7 @@ const localAIEngine = (userQuery, userLocation) => {
     { name: "Mehandi", keywords: ["mehandi", "henna"] },
     { name: "Makeup", keywords: ["makeup", "bridal makeup"] },
     { name: "Beauty, Salon & Spa", keywords: ["salon", "parlor", "beauty", "haircut", "facial", "spa", "nail"] },
-    { name: "Doctors", keywords: ["doctor", "medical", "consultation", "physician", "clinic"] }
+    { name: "Doctors", keywords: ["doctor", "medical", "consultation", "physician", "clinic", "sick", "health", "ill", "fever", "pain", "injury", "medicine", "cough", "cold", "flu", "hospital", "patient"] }
   ];
 
   for (const s of servicesList) {

@@ -200,6 +200,9 @@ function AiChatBot() {
     if (lowercaseText.includes("baby") || lowercaseText.includes("child") || lowercaseText.includes("nanny") || lowercaseText.includes("care")) {
       return "Care takers (baby)";
     }
+    if (lowercaseText.includes("doctor") || lowercaseText.includes("sick") || lowercaseText.includes("health") || lowercaseText.includes("ill") || lowercaseText.includes("fever") || lowercaseText.includes("medical") || lowercaseText.includes("pain") || lowercaseText.includes("cough") || lowercaseText.includes("cold") || lowercaseText.includes("clinic") || lowercaseText.includes("hospital")) {
+      return "Doctors";
+    }
 
     return null;
   };
@@ -383,15 +386,25 @@ function AiChatBot() {
         ]);
       } else if (matchedCategory) {
         const workers = await fetchDynamicWorkers(matchedCategory);
-        setMessages((prev) => [
-          ...prev,
-          {
-            sender: "ai",
-            text: aiReply + `\n\nBased on your location, I found these local experts near you for **${matchedCategory}**:`,
-            workersList: workers,
-            category: matchedCategory
-          }
-        ]);
+        if (workers && workers.length > 0) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              sender: "ai",
+              text: aiReply + `\n\nBased on your location, I found these local experts near you for **${matchedCategory}**:`,
+              workersList: workers,
+              category: matchedCategory
+            }
+          ]);
+        } else {
+          setMessages((prev) => [
+            ...prev,
+            {
+              sender: "ai",
+              text: aiReply + `\n\nI couldn't find any active local experts in our database specializing in **${matchedCategory}** in your immediate area at the moment. 🔍 Please try another service or check back later!`
+            }
+          ]);
+        }
       } else {
         setMessages((prev) => [
           ...prev,
@@ -406,15 +419,25 @@ function AiChatBot() {
       // Fallback local logic
       if (matchedCategory) {
         const workers = await fetchDynamicWorkers(matchedCategory);
-        setMessages((prev) => [
-          ...prev,
-          {
-            sender: "ai",
-            text: `Based on your request and location, I've matched the best available experts specializing in ${matchedCategory}! 🛠️`,
-            workersList: workers,
-            category: matchedCategory
-          }
-        ]);
+        if (workers && workers.length > 0) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              sender: "ai",
+              text: `Based on your request and location, I've matched the best available experts specializing in ${matchedCategory}! 🛠️`,
+              workersList: workers,
+              category: matchedCategory
+            }
+          ]);
+        } else {
+          setMessages((prev) => [
+            ...prev,
+            {
+              sender: "ai",
+              text: `I've analyzed your description and matched it to **${matchedCategory}**, but I couldn't find any active professionals in your immediate area at the moment. 🔍 Please try another service or check back later!`
+            }
+          ]);
+        }
       } else {
         const replyText = getSupportReply(textToSend);
         setMessages((prev) => [
