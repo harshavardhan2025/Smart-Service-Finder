@@ -299,6 +299,7 @@ function AiChatBot() {
   };
 
   const handleSendMessage = async (overrideText) => {
+    if (isTyping) return;
     const textToSend = typeof overrideText === "string" ? overrideText : inputText;
     if (!textToSend.trim()) return;
 
@@ -639,7 +640,7 @@ function AiChatBot() {
             <div ref={chatEndRef} />
           </div>
 
-          {/* Suggested Prompts Chips */}
+           {/* Suggested Prompts Chips */}
           <div
             style={{
               display: "flex",
@@ -654,16 +655,17 @@ function AiChatBot() {
             {SUGGESTED_PROMPTS.map((prompt, pIdx) => (
               <button
                 key={pIdx}
+                disabled={isTyping}
                 onClick={() => handleSendMessage(prompt.query)}
                 style={{
-                  backgroundColor: "white",
+                  backgroundColor: isTyping ? "#f1f5f9" : "white",
                   border: "1.5px solid #cbd5e1",
                   borderRadius: "20px",
                   padding: "5px 12px",
                   fontSize: "11px",
                   fontWeight: 700,
-                  color: "#475569",
-                  cursor: "pointer",
+                  color: isTyping ? "#94a3b8" : "#475569",
+                  cursor: isTyping ? "not-allowed" : "pointer",
                   boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
                   transition: "all 0.15s ease",
                   outline: "none"
@@ -686,28 +688,33 @@ function AiChatBot() {
           >
             <input
               type="text"
-              placeholder="Describe your issue..."
+              placeholder={isTyping ? "AI is typing, please wait..." : "Describe your issue..."}
+              disabled={isTyping}
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+              onKeyDown={(e) => e.key === "Enter" && !isTyping && handleSendMessage()}
               style={{
                 flex: 1,
                 padding: "10px",
                 borderRadius: "8px",
                 border: "1px solid #ccc",
                 outline: "none",
-                fontSize: "14px"
+                fontSize: "14px",
+                backgroundColor: isTyping ? "#f1f5f9" : "white",
+                color: isTyping ? "#94a3b8" : "#333",
+                cursor: isTyping ? "not-allowed" : "text"
               }}
             />
             <button
               onClick={handleSendMessage}
+              disabled={isTyping}
               style={{
                 padding: "10px 15px",
-                backgroundColor: "#8b5cf6",
-                color: "white",
+                backgroundColor: isTyping ? "#cbd5e1" : "#8b5cf6",
+                color: isTyping ? "#94a3b8" : "white",
                 border: "none",
                 borderRadius: "8px",
-                cursor: "pointer",
+                cursor: isTyping ? "not-allowed" : "pointer",
                 fontWeight: "bold"
               }}
             >
