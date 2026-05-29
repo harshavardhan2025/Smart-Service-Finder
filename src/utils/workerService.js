@@ -74,9 +74,15 @@ export const filterWorkersClientSide = async (userCoords, locationKey) => {
   if (userCoords) {
     // Perform coordinate-based 40km matching client-side instantly!
     const results = allWorkers.map(w => {
-      const cityStr = w.location || w.city || "";
-      const coords = geocodeCityLocal(cityStr);
+      let coords = null;
+      if (w.location) {
+        coords = geocodeCityLocal(w.location);
+      }
+      if (!coords && w.city) {
+        coords = geocodeCityLocal(w.city);
+      }
       if (!coords) return null;
+
       const distance = haversineKm(userCoords.lat, userCoords.lng, coords.lat, coords.lon);
       return { ...w, distanceKm: Math.round(distance * 10) / 10 };
     })

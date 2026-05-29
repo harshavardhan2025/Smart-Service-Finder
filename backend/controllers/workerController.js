@@ -183,7 +183,10 @@ export const getNearbyWorkers = async (req, res) => {
         }
 
         if (!cityStr) return null;
-        const coords = await geocodeCity(cityStr);
+        let coords = await geocodeCity(cityStr);
+        if (!coords && w.city) {
+          coords = await geocodeCity(w.city);
+        }
         if (!coords) return null;
         const distanceKm = haversineKm(userLat, userLng, coords.lat, coords.lon);
         return { ...w, lat: coords.lat, lng: coords.lon, distanceKm: Math.round(distanceKm * 10) / 10 };
