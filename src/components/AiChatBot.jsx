@@ -6,15 +6,6 @@ function AiChatBot() {
   const role = sessionStorage.getItem("userRole");
   const path = location.pathname;
 
-  if (
-    role === "admin" ||
-    role === "worker" ||
-    path.includes("admin") ||
-    path.includes("worker")
-  ) {
-    return null;
-  }
-
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
@@ -465,6 +456,15 @@ function AiChatBot() {
       sendingRef.current = false;
     }
   };
+
+  if (
+    role === "admin" ||
+    role === "worker" ||
+    path.includes("admin") ||
+    path.includes("worker")
+  ) {
+    return null;
+  }
 
   return (
     <div>
