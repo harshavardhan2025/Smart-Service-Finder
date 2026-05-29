@@ -1,7 +1,20 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 function AiChatBot() {
+  const location = useLocation();
+  const role = sessionStorage.getItem("userRole");
+  const path = location.pathname;
+
+  if (
+    role === "admin" ||
+    role === "worker" ||
+    path.includes("admin") ||
+    path.includes("worker")
+  ) {
+    return null;
+  }
+
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
