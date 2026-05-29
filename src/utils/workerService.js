@@ -51,21 +51,49 @@ function geocodeCityLocal(cityName) {
 }
 
 let cachedAllWorkers = null;
+let lastFetchTime = 0;
+let fetchPromise = null;
+const CACHE_TTL = 10000; // 10 seconds cache validity
 
 export const fetchAllWorkersCached = async () => {
-  if (cachedAllWorkers) return cachedAllWorkers;
+  const now = Date.now();
   
-  try {
-    const resp = await fetch("/api/workers");
-    if (resp.ok) {
-      const data = await resp.json();
-      cachedAllWorkers = data.filter(w => w.status === "Active");
-      return cachedAllWorkers;
-    }
-  } catch (e) {
-    console.error("Failed to fetch all workers", e);
+  // If cache is fresh, return it instantly!
+  if (cachedAllWorkers && (now - lastFetchTime < CACHE_TTL)) {
+    return cachedAllWorkers;
   }
-  return [];
+  
+  // If there is already an ongoing request, return the cached version immediately (SWR) or await the promise
+  if (fetchPromise) {
+    if (cachedAllWorkers) return cachedAllWorkers; // Serve stale immediately
+    return fetchPromise;
+  }
+  
+  fetchPromise = new Promise(async (resolve) => {
+    try {
+      const resp = await fetch("/api/workers");
+      if (resp.ok) {
+        const data = await resp.json();
+        cachedAllWorkers = data.filter(w => w.status === "Active");
+        lastFetchTime = Date.now();
+        resolve(cachedAllWorkers);
+      } else {
+        resolve(cachedAllWorkers || []);
+      }
+    } catch (e) {
+      console.error("Failed to fetch all workers", e);
+      resolve(cachedAllWorkers || []);
+    } finally {
+      fetchPromise = null;
+    }
+  });
+  
+  // Stale-While-Revalidate: Return stale cache instantly if available while revalidation runs in the background
+  if (cachedAllWorkers) {
+    return cachedAllWorkers;
+  }
+  
+  return fetchPromise;
 };
 
 export const filterWorkersClientSide = async (userCoords, locationKey) => {
