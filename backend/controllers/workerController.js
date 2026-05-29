@@ -4,6 +4,15 @@ import { haversineKm, geocodeCity } from "../utils/geoUtils.js";
 // 🧠 AI SPATIAL CACHE: Prevents redundant LLM hits, accelerating repeat searches flawlessly!
 const aiRadiusCache = {};
 
+// 🚀 HIGH-PERFORMANCE LOCAL GEOSPATIAL CLUSTER DICTIONARY
+// Provides instant offline/timeout fallback cluster expansion for seeded locations.
+const LOCAL_CLUSTER_FALLBACKS = {
+  "rajahmundry": ["rajahmundry", "kovvur", "dowleswaram", "diwancheruvu", "hukumpeeta", "kadiam", "morampudi", "bomuru", "lalacheruvu", "pidimgoyyi"],
+  "kakinada": ["kakinada", "samalkot", "peddapuram", "pithapuram", "karanampetta", "sarpavaram", "chollangi", "ramanayyapeta", "turangi", "yanam"],
+  "new delhi": ["new delhi", "noida", "gurugram", "ghaziabad", "faridabad", "dwarka", "rohini", "saket", "vasant kunj", "connaught place", "karol bagh"],
+  "hyderabad": ["hyderabad", "secunderabad", "gachibowli", "hitech city", "madhapur", "kondapur", "kukatpally", "begumpet", "banjara hills", "jubilee hills"]
+};
+
 // 🤖 ACTIVE AI SPATIAL ANALYSIS ENGINE
 // Dynamically consults the LLM to reveal all vicinities within a 40km radius unconditionally!
 const analyzeLocationWithAi = async (cityName) => {
@@ -16,8 +25,17 @@ const analyzeLocationWithAi = async (cityName) => {
   }
 
   try {
-    console.log("🛰️ [AI LIVE QUERY] Interrogating LLM for 40km radius around:", normName);
     const apiKey = process.env.AI_API_KEY;
+    if (!apiKey || apiKey.trim().length < 10) {
+       console.warn("⚠️ [AI LOCATION ENGINE] No valid AI_API_KEY configured. Serving local cluster fallback.");
+       if (LOCAL_CLUSTER_FALLBACKS[normName]) {
+          aiRadiusCache[normName] = LOCAL_CLUSTER_FALLBACKS[normName];
+          return LOCAL_CLUSTER_FALLBACKS[normName];
+       }
+       return [normName];
+    }
+
+    console.log("🛰️ [AI LIVE QUERY] Interrogating LLM for 40km radius around:", normName);
     
     const response = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
       method: "POST",
@@ -43,6 +61,15 @@ const analyzeLocationWithAi = async (cityName) => {
       signal: AbortSignal.timeout(2500) // ⚡ INSTANT FALLBACK: Never freeze frontend UX!
     });
 
+    if (!response.ok) {
+       console.error(`⚠️ [AI LOCATION ENGINE FAIL] Endpoint returned HTTP ${response.status}. Serving local cluster fallback.`);
+       if (LOCAL_CLUSTER_FALLBACKS[normName]) {
+          aiRadiusCache[normName] = LOCAL_CLUSTER_FALLBACKS[normName];
+          return LOCAL_CLUSTER_FALLBACKS[normName];
+       }
+       return [normName];
+    }
+
     const data = await response.json();
     if (data.choices && data.choices.length > 0) {
        const aiContent = data.choices[0].message.content;
@@ -57,9 +84,19 @@ const analyzeLocationWithAi = async (cityName) => {
        console.log("✅ [AI ANALYSIS COMPLETE] Cluster Constructed:", aiRadiusCache[normName]);
        return aiRadiusCache[normName];
     }
+    
+    if (LOCAL_CLUSTER_FALLBACKS[normName]) {
+       aiRadiusCache[normName] = LOCAL_CLUSTER_FALLBACKS[normName];
+       return LOCAL_CLUSTER_FALLBACKS[normName];
+    }
     return [normName];
   } catch (e) {
-    console.error("⚠️ [AI LOCATION ENGINE FAIL]", e);
+    console.error("⚠️ [AI LOCATION ENGINE FAIL] Activating Local Geospatial Cluster Fallback:", e.message);
+    if (LOCAL_CLUSTER_FALLBACKS[normName]) {
+       console.log("✅ [LOCAL CLUSTER FALLBACK] Serving offline cluster for:", normName);
+       aiRadiusCache[normName] = LOCAL_CLUSTER_FALLBACKS[normName];
+       return LOCAL_CLUSTER_FALLBACKS[normName];
+    }
     return [normName]; // Fallback to simple exact match if LLM times out
   }
 };
@@ -169,3 +206,13 @@ export const deleteWorker = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+export const createWorker = async (req, res) => {
+  try {
+    const worker = await Worker.create(req.body);
+    res.status(201).json(worker);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
