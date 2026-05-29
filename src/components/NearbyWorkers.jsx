@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { filterWorkersClientSide } from "../utils/workerService";
 
 const SERVICES = [
   { id: "carpentry", name: "Carpentry", icon: "🪚" },
@@ -141,17 +142,9 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
 
     const fetchLiveWorkers = async () => {
        try {
-         let url;
-         if (userCoords) {
-           // Real coordinate-based radius search
-           url = `/api/workers/nearby?lat=${userCoords.lat}&lng=${userCoords.lng}&radius=15`;
-         } else {
-           url = "/api/workers";
-           if (locationKey) url += `?city=${encodeURIComponent(locationKey)}`;
-         }
-         const resp = await fetch(url);
-         if (resp.ok) setCloudWorkers(await resp.json());
-       } catch(e) { console.error("Nearby fetch fail"); }
+         const results = await filterWorkersClientSide(userCoords, locationKey);
+         setCloudWorkers(results);
+       } catch(e) { console.error("Nearby fetch fail", e); }
     };
     fetchLiveWorkers();
   }, [locationKey, userCoords, searchedLocation]); 

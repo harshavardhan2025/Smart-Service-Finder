@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { filterWorkersClientSide } from "../utils/workerService";
 
 function getShortLocation(fullAddress) {
   if (!fullAddress) return "";
@@ -23,17 +24,11 @@ function TopWorkers({ searchedLocation, userCoords }) {
 
     const fetchWorkers = async () => {
       try {
-        let url;
-        if (userCoords) {
-          url = `/api/workers/nearby?lat=${userCoords.lat}&lng=${userCoords.lng}&radius=15`;
-        } else {
-          const locationKey = getShortLocation(searchedLocation);
-          url = locationKey ? `/api/workers?city=${encodeURIComponent(locationKey)}` : "/api/workers";
-        }
-        const resp = await fetch(url);
-        if (resp.ok) setCloudWorkers(await resp.json());
+        const locationKey = getShortLocation(searchedLocation);
+        const results = await filterWorkersClientSide(userCoords, locationKey);
+        setCloudWorkers(results);
       } catch (e) {
-        console.error("Top workers fail");
+        console.error("Top workers fail", e);
       }
     };
     fetchWorkers();

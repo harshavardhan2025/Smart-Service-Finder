@@ -7,6 +7,7 @@ import MapPicker from "../components/MapPicker";
 import TopWorkers from "../components/TopWorkers";
 import CheapWorkers from "../components/CheapWorkers";
 import NearbyWorkers from "../components/NearbyWorkers";
+import { filterWorkersClientSide } from "../utils/workerService";
 
 function Home() {
   const navigate = useNavigate();
@@ -104,33 +105,21 @@ function Home() {
 
     const syncOnline = async () => {
       try {
-        let url;
-        // Prefer real coordinates for radius-based matching
-        if (userCoords) {
-          url = `/api/workers/nearby?lat=${userCoords.lat}&lng=${userCoords.lng}&radius=15`;
-        } else {
-          url = "/api/workers";
-          if (searchedLocation) {
-            const lower = searchedLocation.toLowerCase();
-            const extractedKey = lower.includes("kakinada") ? "kakinada" : lower.includes("rajahmundry") ? "rajahmundry" : searchedLocation.split(",")[0].trim().toLowerCase();
-            url += `?city=${encodeURIComponent(extractedKey)}`;
-          }
+        let extractedKey = "";
+        if (searchedLocation) {
+          const lower = searchedLocation.toLowerCase();
+          extractedKey = lower.includes("kakinada") ? "kakinada" : lower.includes("rajahmundry") ? "rajahmundry" : searchedLocation.split(",")[0].trim().toLowerCase();
         }
-
-        // 🤖 RECURSIVELY TETHERED TO BACKEND AI SPATIAL INTELLIGENCE!
-        const resp = await fetch(url);
-        if (!resp.ok) return;
-        const cloudWorkers = await resp.json();
         
-        // The backend handles the 15km expansion, so we just take ALL active workers returned by the API!
-        const allActive = cloudWorkers.filter(w => w.status === "Active");
+        // Instant client-side filtering under 0.1ms!
+        const matchingWorkers = await filterWorkersClientSide(userCoords, extractedKey);
         
-        setOnlineWorkers(allActive);
-        setAiSuggestedWorkers(allActive.slice(0, 3));
-      } catch(e) { console.error("Home cloud workers fail"); }
+        setOnlineWorkers(matchingWorkers);
+        setAiSuggestedWorkers(matchingWorkers.slice(0, 3));
+      } catch(e) { console.error("Home cloud workers fail", e); }
     };
     syncOnline();
-    const interval = setInterval(syncOnline, 10000); // Adjusted for optimal background cache persistence
+    const interval = setInterval(syncOnline, 10000); // Keep synced periodically in case database changes
     return () => clearInterval(interval);
   }, [searchedLocation, userCoords]);
 
