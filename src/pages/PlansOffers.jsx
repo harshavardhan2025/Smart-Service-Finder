@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 
-const BASE_URL = "http://localhost:5000";
+const BASE_URL = "";
 
 function PlansOffers() {
   const navigate = useNavigate();

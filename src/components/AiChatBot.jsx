@@ -12,6 +12,7 @@ function AiChatBot() {
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef(null);
+  const sendingRef = useRef(false);
 
   // Context containers for AI intelligence
   const [activeOffers, setActiveOffers] = useState([]);
@@ -299,10 +300,11 @@ function AiChatBot() {
   };
 
   const handleSendMessage = async (overrideText) => {
-    if (isTyping) return;
+    if (isTyping || sendingRef.current) return;
     const textToSend = typeof overrideText === "string" ? overrideText : inputText;
     if (!textToSend.trim()) return;
 
+    sendingRef.current = true;
     const userMsg = { sender: "user", text: textToSend };
     setMessages((prev) => [...prev, userMsg]);
     setInputText("");
@@ -413,6 +415,7 @@ function AiChatBot() {
         ]);
       }
 
+      sendingRef.current = false;
     } catch (err) {
       console.error("ChatBot API Fetch Failed, using local fallback", err);
       setIsTyping(false);
@@ -446,7 +449,7 @@ function AiChatBot() {
           { sender: "ai", text: replyText }
         ]);
       }
-    }
+      sendingRef.current = false;
   };
 
   return (
