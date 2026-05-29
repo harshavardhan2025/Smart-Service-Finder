@@ -97,7 +97,7 @@ function Home() {
         let url;
         // Prefer real coordinates for radius-based matching
         if (userCoords) {
-          url = `/api/workers/nearby?lat=${userCoords.lat}&lng=${userCoords.lng}&radius=40`;
+          url = `/api/workers/nearby?lat=${userCoords.lat}&lng=${userCoords.lng}&radius=15`;
         } else {
           url = "/api/workers";
           if (searchedLocation) {
@@ -112,7 +112,7 @@ function Home() {
         if (!resp.ok) return;
         const cloudWorkers = await resp.json();
         
-        // The backend handles the 40km expansion, so we just take ALL active workers returned by the API!
+        // The backend handles the 15km expansion, so we just take ALL active workers returned by the API!
         const allActive = cloudWorkers.filter(w => w.status === "Active");
         
         setOnlineWorkers(allActive);

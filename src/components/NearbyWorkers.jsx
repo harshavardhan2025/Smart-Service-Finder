@@ -136,7 +136,7 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
          let url;
          if (userCoords) {
            // Real coordinate-based radius search
-           url = `/api/workers/nearby?lat=${userCoords.lat}&lng=${userCoords.lng}&radius=40`;
+           url = `/api/workers/nearby?lat=${userCoords.lat}&lng=${userCoords.lng}&radius=15`;
          } else {
            url = "/api/workers";
            if (locationKey) url += `?city=${encodeURIComponent(locationKey)}`;

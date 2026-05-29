@@ -17,7 +17,7 @@ function CheapWorkers({ searchedLocation, userCoords }) {
       try {
         let url;
         if (userCoords) {
-          url = `/api/workers/nearby?lat=${userCoords.lat}&lng=${userCoords.lng}&radius=40`;
+          url = `/api/workers/nearby?lat=${userCoords.lat}&lng=${userCoords.lng}&radius=15`;
         } else {
           const locationKey = getShortLocation(searchedLocation);
           url = locationKey ? `/api/workers?city=${encodeURIComponent(locationKey)}` : "/api/workers";
@@ -45,7 +45,7 @@ function CheapWorkers({ searchedLocation, userCoords }) {
       </div>
       <p style={{ color: "var(--text-secondary)", marginBottom: "15px" }}>
         Highly rated professionals at great value rates within{" "}
-        <strong style={{ color: "var(--primary)" }}>40 km</strong> of your location!
+        <strong style={{ color: "var(--primary)" }}>15 km</strong> of your location!
       </p>
 
       {cheapWorkers.length === 0 ? (
