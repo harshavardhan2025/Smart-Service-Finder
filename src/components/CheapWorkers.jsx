@@ -7,7 +7,17 @@ function getShortLocation(fullAddress) {
   const lower = fullAddress.toLowerCase();
   if (lower.includes("kakinada")) return "kakinada";
   if (lower.includes("rajahmundry")) return "rajahmundry";
-  return fullAddress.split(",")[0].trim().toLowerCase();
+  if (lower.includes("new delhi") || lower.includes("delhi")) return "new delhi";
+  if (lower.includes("hyderabad")) return "hyderabad";
+  
+  // Fall back to stored userCity if the first segment is a raw coordinate number
+  const firstSegment = fullAddress.split(",")[0].trim();
+  if (!isNaN(parseFloat(firstSegment))) {
+    const storedCity = localStorage.getItem("userCity");
+    if (storedCity) return storedCity.toLowerCase().trim();
+  }
+  
+  return firstSegment.toLowerCase();
 }
 
 function CheapWorkers({ searchedLocation, userCoords }) {

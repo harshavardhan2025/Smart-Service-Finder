@@ -42,10 +42,65 @@ function Home() {
 
     // 🔍 ADAPTIVE LOCALIZER: Ensure userCity is properly resolved for downstream payment and scheduling components!
     const lower = searchedLocation.toLowerCase();
-    let resolvedCity = lower.includes("kakinada") ? "Kakinada" : lower.includes("rajahmundry") ? "Rajahmundry" : "";
-    if (!resolvedCity) {
-      const parts = searchedLocation.split(",");
-      resolvedCity = parts[0].trim();
+    let resolvedCity = "";
+    
+    if (lower.includes("kakinada")) {
+      resolvedCity = "Kakinada";
+    } else if (lower.includes("rajahmundry")) {
+      resolvedCity = "Rajahmundry";
+    } else if (lower.includes("new delhi") || lower.includes("delhi")) {
+      resolvedCity = "New Delhi";
+    } else if (lower.includes("hyderabad")) {
+      resolvedCity = "Hyderabad";
+    } else {
+      // Check if searchedLocation is raw coordinates
+      const coordParts = searchedLocation.split(",").map(p => parseFloat(p.trim()));
+      const isCoords = coordParts.length === 2 && !isNaN(coordParts[0]) && !isNaN(coordParts[1]);
+      
+      const KEY_CITIES = [
+        { name: "Kakinada", lat: 16.989062, lon: 82.243878 },
+        { name: "Rajahmundry", lat: 17.000538, lon: 81.804034 },
+        { name: "New Delhi", lat: 28.613939, lon: 77.209021 },
+        { name: "Hyderabad", lat: 17.385044, lon: 78.486671 }
+      ];
+      
+      const getDist = (lat1, lon1, lat2, lon2) => Math.sqrt((lat1 - lat2) ** 2 + (lon1 - lon2) ** 2);
+      
+      if (isCoords) {
+        const [lat, lng] = coordParts;
+        let nearestCity = KEY_CITIES[0];
+        let minDist = getDist(lat, lng, KEY_CITIES[0].lat, KEY_CITIES[0].lon);
+        for (let i = 1; i < KEY_CITIES.length; i++) {
+          const dist = getDist(lat, lng, KEY_CITIES[i].lat, KEY_CITIES[i].lon);
+          if (dist < minDist) {
+            minDist = dist;
+            nearestCity = KEY_CITIES[i];
+          }
+        }
+        resolvedCity = nearestCity.name;
+      } else {
+        const parts = searchedLocation.split(",");
+        const possibleCity = parts[0].trim();
+        // If the possibleCity is a latitude float segment, try using userCoords if available, or run Euclidean
+        if (!isNaN(parseFloat(possibleCity))) {
+          if (userCoords && userCoords.lat && userCoords.lng) {
+            let nearestCity = KEY_CITIES[0];
+            let minDist = getDist(userCoords.lat, userCoords.lng, KEY_CITIES[0].lat, KEY_CITIES[0].lon);
+            for (let i = 1; i < KEY_CITIES.length; i++) {
+              const dist = getDist(userCoords.lat, userCoords.lng, KEY_CITIES[i].lat, KEY_CITIES[i].lon);
+              if (dist < minDist) {
+                minDist = dist;
+                nearestCity = KEY_CITIES[i];
+              }
+            }
+            resolvedCity = nearestCity.name;
+          } else {
+            resolvedCity = "Rajahmundry"; // Default backup
+          }
+        } else {
+          resolvedCity = possibleCity;
+        }
+      }
     }
     localStorage.setItem("userCity", resolvedCity);
 
@@ -108,7 +163,19 @@ function Home() {
         let extractedKey = "";
         if (searchedLocation) {
           const lower = searchedLocation.toLowerCase();
-          extractedKey = lower.includes("kakinada") ? "kakinada" : lower.includes("rajahmundry") ? "rajahmundry" : searchedLocation.split(",")[0].trim().toLowerCase();
+          extractedKey = lower.includes("kakinada") ? "kakinada" :
+                         lower.includes("rajahmundry") ? "rajahmundry" :
+                         (lower.includes("new delhi") || lower.includes("delhi")) ? "new delhi" :
+                         lower.includes("hyderabad") ? "hyderabad" : "";
+          if (!extractedKey) {
+            // Fall back to resolved userCity from localStorage
+            const storedCity = localStorage.getItem("userCity");
+            if (storedCity) {
+              extractedKey = storedCity.toLowerCase().trim();
+            } else {
+              extractedKey = searchedLocation.split(",")[0].trim().toLowerCase();
+            }
+          }
         }
         
         // Instant client-side filtering under 0.1ms!

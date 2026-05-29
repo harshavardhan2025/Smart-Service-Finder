@@ -46,37 +46,84 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
       async (loc) => {
         const { latitude, longitude } = loc.coords;
         setPosition([latitude, longitude]);
+        
+        // Define key seeded cities for Euclidean proximity fallback
+        const localMatches = [
+          { name: "Kakinada, Andhra Pradesh, India", city: "Kakinada", coords: { lat: 16.989062, lon: 82.243878 } },
+          { name: "Rajahmundry, Andhra Pradesh, India", city: "Rajahmundry", coords: { lat: 17.000538, lon: 81.804034 } },
+          { name: "New Delhi, Delhi, India", city: "New Delhi", coords: { lat: 28.613939, lon: 77.209021 } },
+          { name: "Hyderabad, Telangana, India", city: "Hyderabad", coords: { lat: 17.385044, lon: 78.486671 } }
+        ];
+        
+        const getDist = (lat1, lon1, lat2, lon2) => Math.sqrt((lat1 - lat2) ** 2 + (lon1 - lon2) ** 2);
+        
+        const getNearestCity = (lat, lon) => {
+          let nearest = localMatches[0];
+          let minDist = getDist(lat, lon, nearest.coords.lat, nearest.coords.lon);
+          for (let i = 1; i < localMatches.length; i++) {
+            const dist = getDist(lat, lon, localMatches[i].coords.lat, localMatches[i].coords.lon);
+            if (dist < minDist) {
+              minDist = dist;
+              nearest = localMatches[i];
+            }
+          }
+          return nearest;
+        };
+
         try {
           const res = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
           );
           const data = await res.json();
-          const label = data?.display_name
-            ? data.display_name
-            : `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-
-          setSearch(label);
-          setDetectedLabel(label);
-
-          localStorage.setItem("userLocation", label);
+          
+          let label = data?.display_name;
+          let city = "";
+          
           if (data?.address) {
-            const city =
+            city =
               data.address.city ||
               data.address.town ||
               data.address.village ||
               data.address.suburb ||
               data.address.county ||
               "";
-            if (city) localStorage.setItem("userCity", city);
           }
+          
+          // If Nominatim reverse geocode succeeded but didn't return a valid display name or city, resolve to nearest key city
+          if (!label || label.includes(latitude.toFixed(3)) || !city) {
+            const nearest = getNearestCity(latitude, longitude);
+            if (!label || label.includes(latitude.toFixed(3))) {
+              label = nearest.name;
+            }
+            if (!city) {
+              city = nearest.city;
+            }
+          }
+
+          setSearch(label);
+          setDetectedLabel(label);
+
+          localStorage.setItem("userLocation", label);
+          localStorage.setItem("userCity", city);
+          
           if (onLocationChange) onLocationChange(label);
           if (onCoordsChange) onCoordsChange({ lat: latitude, lng: longitude });
         } catch (err) {
           console.error("Reverse geocode failed:", err);
-          const fallback = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-          setSearch(fallback);
-          setDetectedLabel(fallback);
-          if (onLocationChange) onLocationChange(fallback);
+          
+          // Geocoding completely failed (offline/throttled). Run Euclidean proximity lookup.
+          const nearest = getNearestCity(latitude, longitude);
+          const fallbackLabel = nearest.name;
+          const fallbackCity = nearest.city;
+          
+          setSearch(fallbackLabel);
+          setDetectedLabel(fallbackLabel);
+          
+          localStorage.setItem("userLocation", fallbackLabel);
+          localStorage.setItem("userCity", fallbackCity);
+          
+          if (onLocationChange) onLocationChange(fallbackLabel);
+          if (onCoordsChange) onCoordsChange({ lat: latitude, lng: longitude });
         } finally {
           setDetecting(false);
         }
@@ -92,30 +139,35 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
   const handleMapInteraction = async (lat, lng) => {
     setPosition([lat, lng]);
     
-    // Determine short readable location name or coordinate fallback
-    let label = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-    
-    // Check if near our key cities
     const localMatches = [
-      { name: "Kakinada, Andhra Pradesh, India", coords: { lat: 16.989062, lon: 82.243878 } },
-      { name: "Rajahmundry, Andhra Pradesh, India", coords: { lat: 17.000538, lon: 81.804034 } },
-      { name: "New Delhi, Delhi, India", coords: { lat: 28.613939, lon: 77.209021 } },
-      { name: "Hyderabad, Telangana, India", coords: { lat: 17.385044, lon: 78.486671 } }
+      { name: "Kakinada, Andhra Pradesh, India", city: "Kakinada", coords: { lat: 16.989062, lon: 82.243878 } },
+      { name: "Rajahmundry, Andhra Pradesh, India", city: "Rajahmundry", coords: { lat: 17.000538, lon: 81.804034 } },
+      { name: "New Delhi, Delhi, India", city: "New Delhi", coords: { lat: 28.613939, lon: 77.209021 } },
+      { name: "Hyderabad, Telangana, India", city: "Hyderabad", coords: { lat: 17.385044, lon: 78.486671 } }
     ];
     
-    // Simple Euclidean distance approximation for instant selection
-    const getDist = (lat1, lon1, lat2, lon2) => {
-      return Math.sqrt((lat1 - lat2) ** 2 + (lon1 - lon2) ** 2);
-    };
+    const getDist = (lat1, lon1, lat2, lon2) => Math.sqrt((lat1 - lat2) ** 2 + (lon1 - lon2) ** 2);
     
-    const nearest = localMatches.find(city => getDist(lat, lng, city.coords.lat, city.coords.lon) < 0.25); // ~25km
-    if (nearest) {
-      label = nearest.name;
+    let nearest = localMatches.find(city => getDist(lat, lng, city.coords.lat, city.coords.lon) < 0.25); // ~25km
+    if (!nearest) {
+      // Find absolute nearest even if outside 25km
+      let minD = Infinity;
+      localMatches.forEach(item => {
+        const d = getDist(lat, lng, item.coords.lat, item.coords.lon);
+        if (d < minD) {
+          minD = d;
+          nearest = item;
+        }
+      });
     }
+    
+    const label = nearest.name;
+    const city = nearest.city;
     
     setSearch(label);
     setDetectedLabel(label);
     localStorage.setItem("userLocation", label);
+    localStorage.setItem("userCity", city);
     if (onLocationChange) onLocationChange(label);
     if (onCoordsChange) onCoordsChange({ lat, lng });
   };
@@ -136,19 +188,20 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
     
     // High-performance local coordinate dictionary (matching seeded cities)
     const LOCAL_GEO_DB = {
-      "kakinada": { lat: 16.989062, lon: 82.243878, label: "Kakinada, Andhra Pradesh, India" },
-      "rajahmundry": { lat: 17.000538, lon: 81.804034, label: "Rajahmundry, Andhra Pradesh, India" },
-      "new delhi": { lat: 28.613939, lon: 77.209021, label: "New Delhi, Delhi, India" },
-      "hyderabad": { lat: 17.385044, lon: 78.486671, label: "Hyderabad, Telangana, India" }
+      "kakinada": { lat: 16.989062, lon: 82.243878, label: "Kakinada, Andhra Pradesh, India", city: "Kakinada" },
+      "rajahmundry": { lat: 17.000538, lon: 81.804034, label: "Rajahmundry, Andhra Pradesh, India", city: "Rajahmundry" },
+      "new delhi": { lat: 28.613939, lon: 77.209021, label: "New Delhi, Delhi, India", city: "New Delhi" },
+      "hyderabad": { lat: 17.385044, lon: 78.486671, label: "Hyderabad, Telangana, India", city: "Hyderabad" }
     };
     
     // 1. Check exact or fuzzy local match
     const localMatch = Object.keys(LOCAL_GEO_DB).find(k => query.includes(k) || k.includes(query));
     if (localMatch) {
-      const { lat, lon, label } = LOCAL_GEO_DB[localMatch];
+      const { lat, lon, label, city } = LOCAL_GEO_DB[localMatch];
       setPosition([lat, lon]);
       setSearch(label);
       localStorage.setItem("userLocation", label);
+      localStorage.setItem("userCity", city);
       if (onLocationChange) onLocationChange(label);
       if (onCoordsChange) onCoordsChange({ lat, lng: lon });
       return;
@@ -162,6 +215,35 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
         setPosition([y, x]);
         setSearch(label);
         localStorage.setItem("userLocation", label);
+        
+        // Resolve city name
+        const labelLower = label.toLowerCase();
+        let city = labelLower.includes("kakinada") ? "Kakinada" :
+                   labelLower.includes("rajahmundry") ? "Rajahmundry" :
+                   (labelLower.includes("new delhi") || labelLower.includes("delhi")) ? "New Delhi" :
+                   labelLower.includes("hyderabad") ? "Hyderabad" : "";
+        if (!city) {
+          const localMatches = [
+            { city: "Kakinada", coords: { lat: 16.989062, lon: 82.243878 } },
+            { city: "Rajahmundry", coords: { lat: 17.000538, lon: 81.804034 } },
+            { city: "New Delhi", coords: { lat: 28.613939, lon: 77.209021 } },
+            { city: "Hyderabad", coords: { lat: 17.385044, lon: 78.486671 } }
+          ];
+          const getDist = (lat1, lon1, lat2, lon2) => Math.sqrt((lat1 - lat2) ** 2 + (lon1 - lon2) ** 2);
+          
+          let nearest = localMatches[0];
+          let minDist = getDist(y, x, nearest.coords.lat, nearest.coords.lon);
+          for (let i = 1; i < localMatches.length; i++) {
+            const dist = getDist(y, x, localMatches[i].coords.lat, localMatches[i].coords.lon);
+            if (dist < minDist) {
+              minDist = dist;
+              nearest = localMatches[i];
+            }
+          }
+          city = nearest.city;
+        }
+        localStorage.setItem("userCity", city);
+        
         if (onLocationChange) onLocationChange(label);
         if (onCoordsChange) onCoordsChange({ lat: y, lng: x });
       } else {
@@ -174,7 +256,34 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
       if (coordParts.length === 2 && !isNaN(coordParts[0]) && !isNaN(coordParts[1])) {
         const [lat, lng] = coordParts;
         setPosition([lat, lng]);
-        if (onLocationChange) onLocationChange(search);
+        
+        const localMatches = [
+          { name: "Kakinada, Andhra Pradesh, India", city: "Kakinada", coords: { lat: 16.989062, lon: 82.243878 } },
+          { name: "Rajahmundry, Andhra Pradesh, India", city: "Rajahmundry", coords: { lat: 17.000538, lon: 81.804034 } },
+          { name: "New Delhi, Delhi, India", city: "New Delhi", coords: { lat: 28.613939, lon: 77.209021 } },
+          { name: "Hyderabad, Telangana, India", city: "Hyderabad", coords: { lat: 17.385044, lon: 78.486671 } }
+        ];
+        const getDist = (lat1, lon1, lat2, lon2) => Math.sqrt((lat1 - lat2) ** 2 + (lon1 - lon2) ** 2);
+        
+        let nearest = localMatches[0];
+        let minDist = getDist(lat, lng, nearest.coords.lat, nearest.coords.lon);
+        for (let i = 1; i < localMatches.length; i++) {
+          const dist = getDist(lat, lng, localMatches[i].coords.lat, localMatches[i].coords.lon);
+          if (dist < minDist) {
+            minDist = dist;
+            nearest = localMatches[i];
+          }
+        }
+        
+        const label = nearest.name;
+        const city = nearest.city;
+        
+        setSearch(label);
+        setDetectedLabel(label);
+        localStorage.setItem("userLocation", label);
+        localStorage.setItem("userCity", city);
+        
+        if (onLocationChange) onLocationChange(label);
         if (onCoordsChange) onCoordsChange({ lat, lng });
       } else {
         alert("Could not search location. Please check your internet connection and try again.");

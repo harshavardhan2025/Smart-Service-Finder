@@ -120,8 +120,17 @@ function getShortLocation(fullAddress) {
   // 🧠 SMART ADAPTIVE RESOLVER: Scan entire address instead of just the first comma segment!
   if (lower.includes("kakinada")) return "kakinada";
   if (lower.includes("rajahmundry")) return "rajahmundry";
+  if (lower.includes("new delhi") || lower.includes("delhi")) return "new delhi";
+  if (lower.includes("hyderabad")) return "hyderabad";
   
-  return fullAddress.split(",")[0].trim().toLowerCase();
+  // Fall back to stored userCity if the first segment is a raw coordinate number
+  const firstSegment = fullAddress.split(",")[0].trim();
+  if (!isNaN(parseFloat(firstSegment))) {
+    const storedCity = localStorage.getItem("userCity");
+    if (storedCity) return storedCity.toLowerCase().trim();
+  }
+  
+  return firstSegment.toLowerCase();
 }
 
 function NearbyWorkers({ searchedLocation, userCoords }) {
