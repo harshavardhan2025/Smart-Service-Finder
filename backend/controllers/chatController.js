@@ -124,14 +124,19 @@ You must reply with ONLY a valid JSON object matching the following keys:
 
 Do not include any markdown formatting, no \`\`\`json wrappers. Respond with ONLY the raw JSON.`;
 
-        const response = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
+        const apiUrl = process.env.AI_API_URL || "https://open.bigmodel.cn/api/paas/v4/chat/completions";
+        const modelName = process.env.AI_MODEL_NAME || "glm-3-turbo";
+
+        console.log(`🛰️ [AI LIVE QUERY] Querying LLM API at ${apiUrl} using model ${modelName}...`);
+
+        const response = await fetch(apiUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${apiKey}`
           },
           body: JSON.stringify({
-            model: "glm-3-turbo",
+            model: modelName,
             messages: [
               { role: "system", content: systemPrompt },
               { role: "user", content: userQuery }

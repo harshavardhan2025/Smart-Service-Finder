@@ -35,16 +35,19 @@ const analyzeLocationWithAi = async (cityName) => {
        return [normName];
     }
 
-    console.log("🛰️ [AI LIVE QUERY] Interrogating LLM for 40km radius around:", normName);
+    const apiUrl = process.env.AI_API_URL || "https://open.bigmodel.cn/api/paas/v4/chat/completions";
+    const modelName = process.env.AI_MODEL_NAME || "glm-3-turbo";
+
+    console.log(`🛰️ [AI LIVE QUERY] Querying LLM API at ${apiUrl} using model ${modelName} for 40km radius around: ${normName}...`);
     
-    const response = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
+    const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: "glm-3-turbo",
+        model: modelName,
         messages: [
           {
             role: "system",
