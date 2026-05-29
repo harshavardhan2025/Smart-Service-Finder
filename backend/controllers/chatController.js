@@ -141,8 +141,10 @@ Do not include any markdown formatting, no \`\`\`json wrappers. Respond with ONL
           signal: AbortSignal.timeout(3000) // ⚡ 3 second limit: never freeze the UI!
         });
 
+        const data = await response.json();
+        console.log("🛰️ [ZHIPU AI API RESPONSE]:", JSON.stringify(data, null, 2));
+
         if (response.ok) {
-          const data = await response.json();
           if (data.choices && data.choices.length > 0) {
             rawResponseText = data.choices[0].message.content;
             try {

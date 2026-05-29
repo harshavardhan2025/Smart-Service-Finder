@@ -61,6 +61,9 @@ const analyzeLocationWithAi = async (cityName) => {
       signal: AbortSignal.timeout(2500) // ⚡ INSTANT FALLBACK: Never freeze frontend UX!
     });
 
+    const data = await response.json();
+    console.log("🛰️ [AI LOCATION ENGINE RESPONSE]:", JSON.stringify(data, null, 2));
+
     if (!response.ok) {
        console.error(`⚠️ [AI LOCATION ENGINE FAIL] Endpoint returned HTTP ${response.status}. Serving local cluster fallback.`);
        if (LOCAL_CLUSTER_FALLBACKS[normName]) {
@@ -69,8 +72,6 @@ const analyzeLocationWithAi = async (cityName) => {
        }
        return [normName];
     }
-
-    const data = await response.json();
     if (data.choices && data.choices.length > 0) {
        const aiContent = data.choices[0].message.content;
        // Clean up potential conversational leakage and split by comma
