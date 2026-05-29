@@ -93,7 +93,7 @@ function CheapWorkers({ searchedLocation, userCoords }) {
                     marginBottom: "4px",
                   }}
                 >
-                  🗺️ {worker.distanceKm} km away
+                  🗺️ {worker.distanceKm < 0.5 ? "below 0.5 km" : `${worker.distanceKm} km away`}
                 </span>
               )}
               <p style={{ fontWeight: 800, color: "var(--success)", margin: "8px 0", fontSize: "16px" }}>

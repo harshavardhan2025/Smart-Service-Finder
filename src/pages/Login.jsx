@@ -2,11 +2,13 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import authBg from "../assets/auth-bg.jpg";
+import { use3dTilt } from "../utils/use3dTilt";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const loginCardRef = use3dTilt();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -101,6 +103,7 @@ function Login() {
       >
         <div
           className="premium-card"
+          ref={loginCardRef}
           style={{
             width: "100%",
             maxWidth: "400px",

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import authBg from "../assets/auth-bg.jpg";
+import { use3dTilt } from "../utils/use3dTilt";
 
 
 function Signup() {
@@ -14,6 +15,7 @@ function Signup() {
   const [city, setCity] = useState(""); // Free text location
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const navigate = useNavigate();
+  const signupCardRef = use3dTilt();
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -152,6 +154,7 @@ function Signup() {
       >
         <div
           className="premium-card"
+          ref={signupCardRef}
           style={{
             width: "100%",
             maxWidth: "400px",

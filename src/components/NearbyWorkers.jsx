@@ -540,7 +540,7 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
                               fontWeight: 700,
                             }}
                           >
-                            🗺️ {worker.distanceKm} km away
+                            🗺️ {worker.distanceKm < 0.5 ? "below 0.5 km" : `${worker.distanceKm} km away`}
                           </span>
                         </p>
                       ) : (

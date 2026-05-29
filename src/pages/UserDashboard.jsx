@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 // Replaced local simulator with direct Backend API calls
 import { FaWallet, FaCalendarCheck, FaRegClock, FaHeadset } from "react-icons/fa";
+import { use3dTilt } from "../utils/use3dTilt";
 
 function UserDashboard() {
   const navigate = useNavigate();
@@ -10,6 +11,9 @@ function UserDashboard() {
   const [bookings, setBookings] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [activePlans, setActivePlans] = useState([]);
+  const walletCardRef = use3dTilt();
+  const activeCardRef = use3dTilt();
+  const totalCardRef = use3dTilt();
 
   useEffect(() => {
     // 1. Check Authorization
@@ -81,7 +85,7 @@ function UserDashboard() {
         </div>
  
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px", marginBottom: "40px" }}>
-          <div className="premium-card" style={{ padding: "24px", display: "flex", alignItems: "center", gap: "20px" }}>
+          <div className="premium-card" ref={walletCardRef} style={{ padding: "24px", display: "flex", alignItems: "center", gap: "20px" }}>
             <div style={{ width: "60px", height: "60px", borderRadius: "12px", backgroundColor: "var(--border)", display: "flex", justifyContent: "center", alignItems: "center", color: "var(--primary)", fontSize: "24px" }}>
               <FaWallet />
             </div>
@@ -91,7 +95,7 @@ function UserDashboard() {
             </div>
           </div>
           
-          <div className="premium-card" style={{ padding: "24px", display: "flex", alignItems: "center", gap: "20px" }}>
+          <div className="premium-card" ref={activeCardRef} style={{ padding: "24px", display: "flex", alignItems: "center", gap: "20px" }}>
             <div style={{ width: "60px", height: "60px", borderRadius: "12px", backgroundColor: "var(--border)", display: "flex", justifyContent: "center", alignItems: "center", color: "#16a34a", fontSize: "24px" }}>
               <FaCalendarCheck />
             </div>
@@ -101,7 +105,7 @@ function UserDashboard() {
             </div>
           </div>
 
-          <div className="premium-card" style={{ padding: "24px", display: "flex", alignItems: "center", gap: "20px" }}>
+          <div className="premium-card" ref={totalCardRef} style={{ padding: "24px", display: "flex", alignItems: "center", gap: "20px" }}>
             <div style={{ width: "60px", height: "60px", borderRadius: "12px", backgroundColor: "var(--border)", display: "flex", justifyContent: "center", alignItems: "center", color: "#d97706", fontSize: "24px" }}>
               <FaRegClock />
             </div>
