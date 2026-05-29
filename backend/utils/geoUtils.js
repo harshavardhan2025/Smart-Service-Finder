@@ -33,7 +33,19 @@ const LOCAL_GEO_DB = {
   
   "hyderabad central area": { lat: 17.385044, lon: 78.486671 },
   "hyderabad suburbs": { lat: 17.415000, lon: 78.435000 },
-  "hyderabad": { lat: 17.385044, lon: 78.486671 }
+  "hyderabad": { lat: 17.385044, lon: 78.486671 },
+
+  // Pre-computed exact coordinates for seeded worker neighborhoods to prevent Nominatim hits
+  "danavaipeta": { lat: 17.008400, lon: 81.792500 },
+  "main road": { lat: 16.979800, lon: 82.242500 },
+  "bommarillu": { lat: 17.012000, lon: 81.798000 },
+  "rtc complex": { lat: 16.984030, lon: 82.239840 },
+  "pushkar ghat": { lat: 16.995000, lon: 81.776000 },
+  "suryaraopeta": { lat: 16.986500, lon: 82.238900 },
+  "lala cheruvu": { lat: 17.025000, lon: 81.821000 },
+  "bhanugudi junction": { lat: 16.980120, lon: 82.235670 },
+  "jagannaickpur": { lat: 16.968000, lon: 82.245000 },
+  "kovvur sub": { lat: 17.021000, lon: 81.728000 }
 };
 
 /**

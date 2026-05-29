@@ -167,7 +167,21 @@ export const getNearbyWorkers = async (req, res) => {
     // Geocode each worker's city in parallel (cached after first call)
     const withCoords = await Promise.all(
       allWorkers.map(async (w) => {
-        const cityStr = w.location || w.city || "";
+        let cityStr = "";
+        if (w.location && w.city) {
+          // Clean strings for exact matches
+          const locClean = w.location.toLowerCase().trim();
+          const cityClean = w.city.toLowerCase().trim();
+          // If the location is different from the city, fully qualify: "location, city"
+          if (locClean !== cityClean) {
+            cityStr = `${w.location}, ${w.city}`;
+          } else {
+            cityStr = w.city;
+          }
+        } else {
+          cityStr = w.location || w.city || "";
+        }
+
         if (!cityStr) return null;
         const coords = await geocodeCity(cityStr);
         if (!coords) return null;
