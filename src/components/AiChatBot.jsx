@@ -450,6 +450,7 @@ function AiChatBot() {
         ]);
       }
       sendingRef.current = false;
+    }
   };
 
   return (
