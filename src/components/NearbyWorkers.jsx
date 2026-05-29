@@ -127,10 +127,18 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
   const [selectedService, setSelectedService] = useState(null);
   const [cloudWorkers, setCloudWorkers] = useState([]);
 
-  const locationKey = getShortLocation(searchedLocation) || "kakinada";
-  const displayCity = locationKey.charAt(0).toUpperCase() + locationKey.slice(1).toLowerCase();
+  const locationKey = getShortLocation(searchedLocation);
+  const displayCity = locationKey ? locationKey.charAt(0).toUpperCase() + locationKey.slice(1).toLowerCase() : "";
 
   useEffect(() => {
+    if (!searchedLocation && !userCoords) {
+      setCloudWorkers([]);
+      return;
+    }
+
+    // Immediately clear previous list to prevent showing wrong or stale data while loading new location
+    setCloudWorkers([]);
+
     const fetchLiveWorkers = async () => {
        try {
          let url;
@@ -146,7 +154,7 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
        } catch(e) { console.error("Nearby fetch fail"); }
     };
     fetchLiveWorkers();
-  }, [locationKey, userCoords]); // ⚡ Re-runs every time location or coords change!
+  }, [locationKey, userCoords, searchedLocation]); 
   
   // Generic Subservice State
   const [activeSubService, setActiveSubService] = useState(null);

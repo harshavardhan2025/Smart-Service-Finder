@@ -13,6 +13,14 @@ function TopWorkers({ searchedLocation, userCoords }) {
   const [cloudWorkers, setCloudWorkers] = useState([]);
 
   useEffect(() => {
+    if (!searchedLocation && !userCoords) {
+      setCloudWorkers([]);
+      return;
+    }
+
+    // Immediately clear previous list to prevent showing wrong or stale data while loading new location
+    setCloudWorkers([]);
+
     const fetchWorkers = async () => {
       try {
         let url;

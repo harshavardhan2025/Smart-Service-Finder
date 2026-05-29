@@ -92,6 +92,16 @@ function Home() {
   }, [searchedLocation]);
 
   useEffect(() => {
+    if (!searchedLocation && !userCoords) {
+      setOnlineWorkers([]);
+      setAiSuggestedWorkers([]);
+      return;
+    }
+
+    // Immediately clear previous lists to prevent showing wrong or stale data while loading new location
+    setOnlineWorkers([]);
+    setAiSuggestedWorkers([]);
+
     const syncOnline = async () => {
       try {
         let url;
