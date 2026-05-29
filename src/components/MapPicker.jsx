@@ -41,6 +41,12 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
   }, []);
 
   const autoDetect = async (showLoader = true) => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by this browser.");
+      if (showLoader) setDetecting(false);
+      return;
+    }
+
     if (showLoader) setDetecting(true);
     navigator.geolocation.getCurrentPosition(
       async (loc) => {
@@ -72,7 +78,12 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
 
         try {
           const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`,
+            {
+              headers: {
+                "Accept": "application/json"
+              }
+            }
           );
           const data = await res.json();
           
@@ -110,6 +121,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
           if (onCoordsChange) onCoordsChange({ lat: latitude, lng: longitude });
         } catch (err) {
           console.error("Reverse geocode failed:", err);
+          console.error("Full Error:", err);
           
           // Geocoding completely failed (offline/throttled). Run Euclidean proximity lookup.
           const nearest = getNearestCity(latitude, longitude);
@@ -130,6 +142,8 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
       },
       (err) => {
         console.error("Geolocation error:", err);
+        console.error("Full Error:", err);
+        alert(`Location Error: ${err.message}`);
         setDetecting(false);
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
@@ -251,6 +265,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
       }
     } catch (err) {
       console.error("Location search failed:", err);
+      console.error("Full Error:", err);
       // Coordinate direct input fallback if Nominatim is blocked/offline
       const coordParts = search.split(",").map(p => parseFloat(p.trim()));
       if (coordParts.length === 2 && !isNaN(coordParts[0]) && !isNaN(coordParts[1])) {
