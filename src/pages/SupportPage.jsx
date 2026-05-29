@@ -29,6 +29,7 @@ function SupportPage() {
 
   useEffect(() => {
     fetchHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userName]);
 
   const faqs = [
@@ -83,20 +84,20 @@ function SupportPage() {
   };
 
   return (
-    <div style={{ backgroundColor: "#0f172a", minHeight: "100vh", color: "#f8fafc", fontFamily: "'Outfit', sans-serif" }}>
+    <div style={{ minHeight: "100vh", fontFamily: "'Outfit', sans-serif" }}>
       {/* Dynamic Navbar */}
       <Navbar />
 
       <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "60px 20px" }}>
         {/* Support Header */}
         <div style={{ textAlign: "center", marginBottom: "50px" }}>
-          <span style={{ backgroundColor: "#1e293b", color: "var(--success)", padding: "6px 16px", borderRadius: "20px", fontSize: "12px", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>
+          <span style={{ backgroundColor: "var(--border)", color: "var(--primary)", padding: "6px 16px", borderRadius: "20px", fontSize: "12px", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>
             24/7 Customer Help Center
           </span>
-          <h1 style={{ fontSize: "42px", fontWeight: 800, margin: "16px 0 8px 0", background: "linear-gradient(to right, #ffffff, #94a3b8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+          <h1 style={{ fontSize: "42px", fontWeight: 800, margin: "16px 0 8px 0", background: "linear-gradient(to right, var(--text-main), var(--text-muted))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
             How Can We Assist You Today?
           </h1>
-          <p style={{ color: "#94a3b8", fontSize: "16px", maxWidth: "600px", margin: "0 auto" }}>
+          <p style={{ color: "var(--text-muted)", fontSize: "16px", maxWidth: "600px", margin: "0 auto" }}>
             Submit a billing inquiry, report an issue with a professional, or browse our frequently asked questions below.
           </p>
         </div>
@@ -105,7 +106,7 @@ function SupportPage() {
 
           {/* LEFT COLUMN: FAQ SECTION */}
           <div>
-            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#ffffff", marginBottom: "24px", display: "flex", alignItems: "center", gap: "10px" }}>
+            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-main)", marginBottom: "24px", display: "flex", alignItems: "center", gap: "10px" }}>
               <span>💡</span> Frequently Asked Questions
             </h2>
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -114,22 +115,22 @@ function SupportPage() {
                   key={idx}
                   onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
                   style={{
-                    backgroundColor: "#1e293b",
+                    backgroundColor: "var(--bg-card)",
                     padding: "20px",
                     borderRadius: "12px",
                     cursor: "pointer",
                     transition: "all 0.3s ease",
-                    border: activeFaq === idx ? "1px solid var(--success)" : "1px solid #334155"
+                    border: activeFaq === idx ? "1px solid var(--primary)" : "1px solid var(--border)"
                   }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <h3 style={{ fontSize: "15px", fontWeight: 700, color: "#f1f5f9", margin: 0 }}>{faq.q}</h3>
-                    <span style={{ fontSize: "18px", color: "var(--success)", transform: activeFaq === idx ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.3s" }}>
+                    <h3 style={{ fontSize: "15px", fontWeight: 700, color: "var(--text-main)", margin: 0 }}>{faq.q}</h3>
+                    <span style={{ fontSize: "18px", color: "var(--primary)", transform: activeFaq === idx ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.3s" }}>
                       ▼
                     </span>
                   </div>
                   {activeFaq === idx && (
-                    <p style={{ marginTop: "12px", fontSize: "14px", color: "#94a3b8", lineHeight: "1.6", borderTop: "1px solid #334155", paddingTop: "12px" }}>
+                    <p style={{ marginTop: "12px", fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.6", borderTop: "1px solid var(--border)", paddingTop: "12px" }}>
                       {faq.a}
                     </p>
                   )}
@@ -139,23 +140,23 @@ function SupportPage() {
           </div>
 
           {/* RIGHT COLUMN: SUBMIT TICKET FORM */}
-          <div style={{ backgroundColor: "#1e293b", padding: "40px", borderRadius: "16px", border: "1px solid #334155", boxShadow: "0 10px 25px -5px rgba(0,0,0,0.3)" }}>
-            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#ffffff", marginBottom: "24px", display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="premium-card" style={{ padding: "40px" }}>
+            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-main)", marginBottom: "24px", display: "flex", alignItems: "center", gap: "10px" }}>
               <span>✉️</span> Submit a Support Ticket
             </h2>
 
             {success ? (
               <div style={{ textAlign: "center", padding: "40px 10px" }}>
                 <div style={{ fontSize: "56px", marginBottom: "16px" }}>🎉</div>
-                <h3 style={{ fontSize: "20px", fontWeight: 800, color: "var(--success)", marginBottom: "8px" }}>Ticket Submitted!</h3>
-                <p style={{ color: "#94a3b8", fontSize: "14px", lineHeight: "1.6" }}>
+                <h3 style={{ fontSize: "20px", fontWeight: 800, color: "var(--primary)", marginBottom: "8px" }}>Ticket Submitted!</h3>
+                <p style={{ color: "var(--text-muted)", fontSize: "14px", lineHeight: "1.6" }}>
                   Your inquiry has been successfully logged. Our dedicated support team will contact you via email within 24 hours.
                 </p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#94a3b8", marginBottom: "8px" }}>Select Issue Category</label>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "var(--text-muted)", marginBottom: "8px" }}>Select Issue Category</label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
@@ -163,9 +164,9 @@ function SupportPage() {
                       width: "100%",
                       padding: "12px",
                       borderRadius: "8px",
-                      backgroundColor: "#0f172a",
-                      border: "1px solid #334155",
-                      color: "#ffffff",
+                      backgroundColor: "var(--bg-card)",
+                      border: "1px solid var(--border)",
+                      color: "var(--text-main)",
                       fontSize: "14px",
                       outline: "none"
                     }}
@@ -173,14 +174,13 @@ function SupportPage() {
                     <option value="billing">💳 Billing & Payments Inquiry</option>
                     <option value="worker">👷 Issue with Professional Worker</option>
                     <option value="booking">📅 Booking & Rescheduling</option>
-                    <optin valut="Booking cancellation">Booking cancellation related</optin>
                     <option value="bug">📱 Technical App Bug</option>
                     <option value="other">❓ Other General Inquiry</option>
                   </select>
                 </div>
 
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#94a3b8", marginBottom: "8px" }}>Email Address</label>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "var(--text-muted)", marginBottom: "8px" }}>Email Address</label>
                   <input
                     type="email"
                     required
@@ -191,9 +191,9 @@ function SupportPage() {
                       width: "100%",
                       padding: "12px",
                       borderRadius: "8px",
-                      backgroundColor: "#0f172a",
-                      border: "1px solid #334155",
-                      color: "#ffffff",
+                      backgroundColor: "var(--bg-card)",
+                      border: "1px solid var(--border)",
+                      color: "var(--text-main)",
                       fontSize: "14px",
                       outline: "none",
                       boxSizing: "border-box"
@@ -202,7 +202,7 @@ function SupportPage() {
                 </div>
 
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#94a3b8", marginBottom: "8px" }}>Phone Number</label>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "var(--text-muted)", marginBottom: "8px" }}>Phone Number</label>
                   <input
                     type="tel"
                     required
@@ -213,9 +213,9 @@ function SupportPage() {
                       width: "100%",
                       padding: "12px",
                       borderRadius: "8px",
-                      backgroundColor: "#0f172a",
-                      border: "1px solid #334155",
-                      color: "#ffffff",
+                      backgroundColor: "var(--bg-card)",
+                      border: "1px solid var(--border)",
+                      color: "var(--text-main)",
                       fontSize: "14px",
                       outline: "none",
                       boxSizing: "border-box"
@@ -224,7 +224,7 @@ function SupportPage() {
                 </div>
 
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "#94a3b8", marginBottom: "8px" }}>Describe Your Issue</label>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "var(--text-muted)", marginBottom: "8px" }}>Describe Your Issue</label>
                   <textarea
                     rows="4"
                     required
@@ -235,9 +235,9 @@ function SupportPage() {
                       width: "100%",
                       padding: "12px",
                       borderRadius: "8px",
-                      backgroundColor: "#0f172a",
-                      border: "1px solid #334155",
-                      color: "#ffffff",
+                      backgroundColor: "var(--bg-card)",
+                      border: "1px solid var(--border)",
+                      color: "var(--text-main)",
                       fontSize: "14px",
                       outline: "none",
                       resize: "none",
@@ -248,16 +248,15 @@ function SupportPage() {
 
                 <button
                   type="submit"
+                  className="btn-primary"
                   style={{
-                    background: "linear-gradient(to right, var(--success), #059669)",
-                    color: "#ffffff",
-                    border: "none",
                     padding: "14px",
                     borderRadius: "8px",
                     fontWeight: 700,
                     fontSize: "14px",
                     cursor: "pointer",
-                    transition: "all 0.2s ease"
+                    transition: "all 0.2s ease",
+                    width: "100%"
                   }}
                 >
                   Submit Support Ticket
@@ -270,17 +269,17 @@ function SupportPage() {
 
         {/* 📜 TICKET HISTORY SECTION: SHOW PAST GRIEVANCES */}
         {userName && (
-          <div style={{ marginTop: "60px", backgroundColor: "#1e293b", padding: "35px", borderRadius: "16px", border: "1px solid #334155" }}>
-            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#ffffff", marginBottom: "20px", display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="premium-card" style={{ marginTop: "60px", padding: "35px" }}>
+            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-main)", marginBottom: "20px", display: "flex", alignItems: "center", gap: "10px" }}>
               <span>📜</span> Your Complaint & Ticket History
             </h2>
             {history.length === 0 ? (
-              <p style={{ color: "#94a3b8", fontStyle: "italic" }}>No previously submitted support tickets found under your account name.</p>
+              <p style={{ color: "var(--text-muted)", fontStyle: "italic" }}>No previously submitted support tickets found under your account name.</p>
             ) : (
               <div style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                   <thead>
-                    <tr style={{ borderBottom: "1px solid #334155", color: "#94a3b8", fontSize: "13px", textTransform: "uppercase" }}>
+                    <tr style={{ borderBottom: "1px solid var(--border)", color: "var(--text-muted)", fontSize: "13px", textTransform: "uppercase" }}>
                       <th style={{ padding: "12px 10px" }}>Date</th>
                       <th style={{ padding: "12px 10px" }}>Issue Category</th>
                       <th style={{ padding: "12px 10px" }}>Details</th>
@@ -289,15 +288,15 @@ function SupportPage() {
                   </thead>
                   <tbody>
                     {history.map(item => (
-                      <tr key={item._id} style={{ borderBottom: "1px solid #0f172a", color: "#e2e8f0", fontSize: "14px" }}>
+                      <tr key={item._id} style={{ borderBottom: "1px solid var(--border)", color: "var(--text-main)", fontSize: "14px" }}>
                         <td style={{ padding: "14px 10px" }}>{new Date(item.createdAt).toLocaleDateString()}</td>
                         <td style={{ padding: "14px 10px", fontWeight: 600 }}>{item.issue_type}</td>
                         <td style={{ padding: "14px 10px", opacity: 0.8 }}>{item.description?.substring(0, 50)}...</td>
                         <td style={{ padding: "14px 10px" }}>
                           <span style={{
                             padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700,
-                            backgroundColor: item.status === "Resolved" ? "var(--success)" : item.status === "Cancelled" ? "#ef4444" : "#eab308",
-                            color: "white"
+                            backgroundColor: item.status === "Resolved" ? "var(--primary-light)" : item.status === "Cancelled" ? "#ef4444" : "#eab308",
+                            color: item.status === "Resolved" ? "var(--primary-dark)" : "white"
                           }}>
                             {item.status.toUpperCase()}
                           </span>

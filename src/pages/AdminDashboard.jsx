@@ -428,7 +428,7 @@ function AdminDashboard() {
   const areaPath = `M ${chartPts[0].x} 140 L ${chartPts[0].x} ${chartPts[0].y} L ${chartPts[1].x} ${chartPts[1].y} L ${chartPts[2].x} ${chartPts[2].y} L ${chartPts[3].x} ${chartPts[3].y} L ${chartPts[4].x} ${chartPts[4].y} L ${chartPts[4].x} 140 Z`;
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#f1f5f9", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Navbar />
 
       <div style={{ display: "flex", flex: 1 }}>
@@ -500,43 +500,43 @@ function AdminDashboard() {
           {/* TAB 1: OVERVIEW & REVENUE */}
           {activeTab === "overview" && (
             <div>
-              <h2 style={{ margin: "0 0 24px 0", fontSize: "28px", fontWeight: 800, color: "#1e293b" }}>
+              <h2 style={{ margin: "0 0 24px 0", fontSize: "28px", fontWeight: 800, color: "var(--text-main)" }}>
                 System Overview & Revenue
               </h2>
 
               {/* Stats Card Grid */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "20px", marginBottom: "40px" }}>
-                <div style={{ backgroundColor: "white", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
-                  <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>Total Payments Volume</span>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+                  <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Total Payments Volume</span>
                   <h2 style={{ margin: "10px 0 0 0", fontSize: "32px", fontWeight: 800, color: "var(--primary)" }}>₹{totalRevenue}</h2>
                 </div>
-                <div style={{ backgroundColor: "white", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
-                  <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>Average Booking Value</span>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+                  <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Average Booking Value</span>
                   <h2 style={{ margin: "10px 0 0 0", fontSize: "32px", fontWeight: 800, color: "#3b82f6" }}>₹{averageBookingValue.toFixed(0)}</h2>
                 </div>
-                <div style={{ backgroundColor: "white", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
-                  <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>Total Registered Workers</span>
-                  <h2 style={{ margin: "10px 0 0 0", fontSize: "32px", fontWeight: 800, color: "#1e293b" }}>{workers.length}</h2>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+                  <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Total Registered Workers</span>
+                  <h2 style={{ margin: "10px 0 0 0", fontSize: "32px", fontWeight: 800, color: "var(--text-main)" }}>{workers.length}</h2>
                 </div>
-                <div style={{ backgroundColor: "white", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
-                  <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>Total Registered Customers</span>
-                  <h2 style={{ margin: "10px 0 0 0", fontSize: "32px", fontWeight: 800, color: "#1e293b" }}>{customers.length}</h2>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+                  <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Total Registered Customers</span>
+                  <h2 style={{ margin: "10px 0 0 0", fontSize: "32px", fontWeight: 800, color: "var(--text-main)" }}>{customers.length}</h2>
                 </div>
               </div>
 
               {/* Graphical Statistics Section */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "25px", marginBottom: "40px" }}>
                 {/* Bookings Status Distribution Chart */}
-                <div style={{ backgroundColor: "white", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
-                  <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", fontWeight: 800, color: "#1e293b" }}>Bookings & Order Dynamics</h3>
-                  <p style={{ margin: "0 0 24px 0", fontSize: "13px", color: "#64748b" }}>Real-time service request allocation and order statuses</p>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+                  <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", fontWeight: 800, color: "var(--text-main)" }}>Bookings & Order Dynamics</h3>
+                  <p style={{ margin: "0 0 24px 0", fontSize: "13px", color: "var(--text-muted)" }}>Real-time service request allocation and order statuses</p>
                   
                   <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
                     {/* Active/Upcoming Requests */}
                     <div>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "14px", fontWeight: 700 }}>
                         <span style={{ color: "#3b82f6" }}>🔵 Active & Upcoming Bookings</span>
-                        <span style={{ color: "#1e293b" }}>
+                        <span style={{ color: "var(--text-main)" }}>
                           {bookings.filter(b => ["Upcoming", "Accepted", "Pending"].includes(b.status)).length} orders ({Math.round((bookings.filter(b => ["Upcoming", "Accepted", "Pending"].includes(b.status)).length / (bookings.length || 1)) * 100)}%)
                         </span>
                       </div>
@@ -555,7 +555,7 @@ function AdminDashboard() {
                     <div>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "14px", fontWeight: 700 }}>
                         <span style={{ color: "var(--success)" }}>🟢 Completed Bookings</span>
-                        <span style={{ color: "#1e293b" }}>
+                        <span style={{ color: "var(--text-main)" }}>
                           {bookings.filter(b => ["Completed", "Paid Out"].includes(b.status)).length} orders ({Math.round((bookings.filter(b => ["Completed", "Paid Out"].includes(b.status)).length / (bookings.length || 1)) * 100)}%)
                         </span>
                       </div>
@@ -574,7 +574,7 @@ function AdminDashboard() {
                     <div>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "14px", fontWeight: 700 }}>
                         <span style={{ color: "#ef4444" }}>🔴 Cancelled & Rejected Orders</span>
-                        <span style={{ color: "#1e293b" }}>
+                        <span style={{ color: "var(--text-main)" }}>
                           {bookings.filter(b => ["Rejected", "Cancelled"].includes(b.status)).length} orders ({Math.round((bookings.filter(b => ["Rejected", "Cancelled"].includes(b.status)).length / (bookings.length || 1)) * 100)}%)
                         </span>
                       </div>
@@ -592,9 +592,9 @@ function AdminDashboard() {
                 </div>
 
                 {/* Revenue Growth Trend SVG Chart */}
-                <div style={{ backgroundColor: "white", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
-                  <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", fontWeight: 800, color: "#1e293b" }}>Revenue & Transactions History</h3>
-                  <p style={{ margin: "0 0 24px 0", fontSize: "13px", color: "#64748b" }}>Cumulative system transaction volume over time</p>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+                  <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", fontWeight: 800, color: "var(--text-main)" }}>Revenue & Transactions History</h3>
+                  <p style={{ margin: "0 0 24px 0", fontSize: "13px", color: "var(--text-muted)" }}>Cumulative system transaction volume over time</p>
                   
                   <div style={{ position: "relative", width: "100%", height: "160px" }}>
                     <svg viewBox="0 0 400 150" style={{ width: "100%", height: "100%", overflow: "visible" }}>
@@ -632,7 +632,7 @@ function AdminDashboard() {
                     </svg>
                   </div>
                   
-                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: "12px", fontSize: "11px", color: "#64748b", fontWeight: 700 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: "12px", fontSize: "11px", color: "var(--text-muted)", fontWeight: 700 }}>
                     <span>JAN</span>
                     <span>FEB</span>
                     <span>MAR</span>
@@ -643,11 +643,11 @@ function AdminDashboard() {
               </div>
 
               {/* Transactions Table */}
-              <div style={{ backgroundColor: "white", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
-                <h3 style={{ margin: "0 0 20px 0", fontSize: "18px", fontWeight: 800, color: "#1e293b" }}>Recent Payment Transactions</h3>
+              <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+                <h3 style={{ margin: "0 0 20px 0", fontSize: "18px", fontWeight: 800, color: "var(--text-main)" }}>Recent Payment Transactions</h3>
                 <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "14px" }}>
                   <thead>
-                    <tr style={{ borderBottom: "2px solid #e2e8f0", color: "#64748b" }}>
+                    <tr style={{ borderBottom: "2px solid #e2e8f0", color: "var(--text-muted)" }}>
                       <th style={{ padding: "12px" }}>Transaction ID</th>
                       <th style={{ padding: "12px" }}>Customer</th>
                       <th style={{ padding: "12px" }}>Professional</th>
@@ -695,14 +695,14 @@ function AdminDashboard() {
           {/* TAB 2: MANAGE SERVICES */}
           {activeTab === "services" && (
             <div>
-              <h2 style={{ margin: "0 0 24px 0", fontSize: "28px", fontWeight: 800, color: "#1e293b" }}>
+              <h2 style={{ margin: "0 0 24px 0", fontSize: "28px", fontWeight: 800, color: "var(--text-main)" }}>
                 Manage Service Categories
               </h2>
 
               <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: "30px", alignItems: "start" }}>
                 {/* Form to add service */}
-                <div style={{ backgroundColor: "white", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
-                  <h3 style={{ margin: "0 0 16px 0", fontSize: "16px", fontWeight: 700, color: "#1e293b" }}>Add New Service</h3>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+                  <h3 style={{ margin: "0 0 16px 0", fontSize: "16px", fontWeight: 700, color: "var(--text-main)" }}>Add New Service</h3>
                   <form onSubmit={handleAddService} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                       <label style={{ fontSize: "13px", fontWeight: 600, color: "#475569" }}>Service Name</label>
@@ -743,8 +743,8 @@ function AdminDashboard() {
                 </div>
 
                 {/* Active Services Grid */}
-                <div style={{ backgroundColor: "white", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
-                  <h3 style={{ margin: "0 0 20px 0", fontSize: "18px", fontWeight: 800, color: "#1e293b" }}>Active Service Offerings</h3>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+                  <h3 style={{ margin: "0 0 20px 0", fontSize: "18px", fontWeight: 800, color: "var(--text-main)" }}>Active Service Offerings</h3>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}>
                     {services.map((svc) => (
                       <div
@@ -759,7 +759,7 @@ function AdminDashboard() {
                         }}
                       >
                         <div style={{ fontSize: "36px", marginBottom: "8px" }}>{svc.icon}</div>
-                        <div style={{ fontWeight: 700, color: "#1e293b", fontSize: "14px", marginBottom: "12px" }}>{svc.name}</div>
+                        <div style={{ fontWeight: 700, color: "var(--text-main)", fontSize: "14px", marginBottom: "12px" }}>{svc.name}</div>
                         <button
                           onClick={() => handleRemoveService(svc.id)}
                           style={{
@@ -783,15 +783,15 @@ function AdminDashboard() {
                   <div style={{ marginTop: "40px", borderTop: "2px dashed #e2e8f0", paddingTop: "30px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
                       <div>
-                        <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 800, color: "#1e293b" }}>Manage All Sub-Categories</h3>
-                        <p style={{ margin: "4px 0 0 0", fontSize: "13px", color: "#64748b" }}>Add, edit and remove sub-services across all main service categories at once</p>
+                        <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 800, color: "var(--text-main)" }}>Manage All Sub-Categories</h3>
+                        <p style={{ margin: "4px 0 0 0", fontSize: "13px", color: "var(--text-muted)" }}>Add, edit and remove sub-services across all main service categories at once</p>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         <span style={{ fontSize: "13px", fontWeight: 700, color: "#475569" }}>Add To Category:</span>
                         <select 
                           value={selectedMainSvc} 
                           onChange={(e) => setSelectedMainSvc(e.target.value)}
-                          style={{ padding: "8px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", backgroundColor: "white", fontWeight: "bold" }}
+                          style={{ padding: "8px 12px", borderRadius: "8px", border: "1px solid #cbd5e1", backgroundColor: "var(--bg-card)", fontWeight: "bold" }}
                         >
                           {services.map(s => <option key={s.id} value={s.id}>{s.icon} {s.name}</option>)}
                         </select>
@@ -865,13 +865,13 @@ function AdminDashboard() {
                           key={svc.id} 
                           style={{ 
                             padding: "20px", border: "1px solid #e2e8f0", borderRadius: "10px", 
-                            backgroundColor: "white", boxShadow: "0 2px 4px rgba(0,0,0,0.02)" 
+                            backgroundColor: "var(--bg-card)", boxShadow: "0 2px 4px rgba(0,0,0,0.02)" 
                           }}
                         >
-                          <h4 style={{ margin: "0 0 16px 0", fontSize: "15px", fontWeight: 800, color: "#1e293b", display: "flex", alignItems: "center", gap: "8px" }}>
+                          <h4 style={{ margin: "0 0 16px 0", fontSize: "15px", fontWeight: 800, color: "var(--text-main)", display: "flex", alignItems: "center", gap: "8px" }}>
                             <span style={{ fontSize: "20px" }}>{svc.icon}</span>
                             <span>{svc.name} Sub-Categories</span>
-                            <span style={{ fontSize: "11px", color: "#64748b", fontWeight: 600, backgroundColor: "#f1f5f9", padding: "2px 8px", borderRadius: "20px" }}>
+                            <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 600, backgroundColor: "#f1f5f9", padding: "2px 8px", borderRadius: "20px" }}>
                               {((svc.subServices) || []).length} active
                             </span>
                           </h4>
@@ -925,11 +925,11 @@ function AdminDashboard() {
           {/* TAB 3: MANAGE WORKERS */}
           {activeTab === "workers" && (
             <div>
-              <h2 style={{ margin: "0 0 24px 0", fontSize: "28px", fontWeight: 800, color: "#1e293b" }}>
+              <h2 style={{ margin: "0 0 24px 0", fontSize: "28px", fontWeight: 800, color: "var(--text-main)" }}>
                 Manage Service Professionals
               </h2>
 
-              <div style={{ backgroundColor: "white", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+              <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
                 {/* Workers Filter Bar */}
                 <div style={{ display: "flex", gap: "16px", marginBottom: "24px", flexWrap: "wrap", alignItems: "center" }}>
                   <div style={{ flex: 1, minWidth: "240px" }}>
@@ -958,7 +958,7 @@ function AdminDashboard() {
                         borderRadius: "10px",
                         border: "1.5px solid #e2e8f0",
                         fontSize: "14px",
-                        backgroundColor: "white",
+                        backgroundColor: "var(--bg-card)",
                         cursor: "pointer",
                         outline: "none"
                       }}
@@ -968,14 +968,14 @@ function AdminDashboard() {
                       <option value="Blocked">🔴 Blocked</option>
                     </select>
                   </div>
-                  <div style={{ fontSize: "13px", color: "#64748b", fontWeight: 600 }}>
+                  <div style={{ fontSize: "13px", color: "var(--text-muted)", fontWeight: 600 }}>
                     Found: {filteredWorkers.length} workers
                   </div>
                 </div>
 
                 <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "14px" }}>
                   <thead>
-                    <tr style={{ borderBottom: "2px solid #e2e8f0", color: "#64748b" }}>
+                    <tr style={{ borderBottom: "2px solid #e2e8f0", color: "var(--text-muted)" }}>
                       <th style={{ padding: "12px" }}>Name</th>
                       <th style={{ padding: "12px" }}>Specialty</th>
                       <th style={{ padding: "12px" }}>Location</th>
@@ -988,7 +988,7 @@ function AdminDashboard() {
                   <tbody>
                     {filteredWorkers.map((w) => (
                       <tr key={w._id} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                        <td style={{ padding: "12px", fontWeight: 700, color: "#1e293b" }}>{w.name}</td>
+                        <td style={{ padding: "12px", fontWeight: 700, color: "var(--text-main)" }}>{w.name}</td>
                         <td style={{ padding: "12px" }}>{w.service}</td>
                         <td style={{ padding: "12px" }}>📍 {w.city}</td>
                         <td style={{ padding: "12px", fontWeight: "800", color: "var(--success)" }}>₹{w.price || 0}</td>
@@ -1072,11 +1072,11 @@ function AdminDashboard() {
           {/* TAB 4: MANAGE CUSTOMERS */}
           {activeTab === "customers" && (
             <div>
-              <h2 style={{ margin: "0 0 24px 0", fontSize: "28px", fontWeight: 800, color: "#1e293b" }}>
+              <h2 style={{ margin: "0 0 24px 0", fontSize: "28px", fontWeight: 800, color: "var(--text-main)" }}>
                 Manage Registered Customers
               </h2>
 
-              <div style={{ backgroundColor: "white", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+              <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
                 {/* Customers Filter Bar */}
                 <div style={{ display: "flex", gap: "16px", marginBottom: "24px", flexWrap: "wrap", alignItems: "center" }}>
                   <div style={{ flex: 1, minWidth: "240px" }}>
@@ -1096,14 +1096,14 @@ function AdminDashboard() {
                       }}
                     />
                   </div>
-                  <div style={{ fontSize: "13px", color: "#64748b", fontWeight: 600 }}>
+                  <div style={{ fontSize: "13px", color: "var(--text-muted)", fontWeight: 600 }}>
                     Found: {filteredCustomers.length} customers
                   </div>
                 </div>
 
                 <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "14px" }}>
                   <thead>
-                    <tr style={{ borderBottom: "2px solid #e2e8f0", color: "#64748b" }}>
+                    <tr style={{ borderBottom: "2px solid #e2e8f0", color: "var(--text-muted)" }}>
                       <th style={{ padding: "12px" }}>Name</th>
                       <th style={{ padding: "12px" }}>Email</th>
                       <th style={{ padding: "12px" }}>Phone</th>
@@ -1115,7 +1115,7 @@ function AdminDashboard() {
                   <tbody>
                     {filteredCustomers.map((c) => (
                       <tr key={c.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                        <td style={{ padding: "12px", fontWeight: 700, color: "#1e293b" }}>{c.name}</td>
+                        <td style={{ padding: "12px", fontWeight: 700, color: "var(--text-main)" }}>{c.name}</td>
                         <td style={{ padding: "12px" }}>{c.email}</td>
                         <td style={{ padding: "12px" }}>{c.phone}</td>
                         <td style={{ padding: "12px", fontWeight: "bold" }}>{c.bookings} bookings</td>
@@ -1148,17 +1148,17 @@ function AdminDashboard() {
           {/* TAB 5: MANAGE COMPLAINTS */}
           {activeTab === "complaints" && (
             <div>
-              <h2 style={{ margin: "0 0 24px 0", fontSize: "28px", fontWeight: 800, color: "#1e293b" }}>
+              <h2 style={{ margin: "0 0 24px 0", fontSize: "28px", fontWeight: 800, color: "var(--text-main)" }}>
                 Manage Customer Complaints & Moderation
               </h2>
 
-              <div style={{ backgroundColor: "white", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+              <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
                 {complaints.length === 0 ? (
-                  <p style={{ textAlign: "center", color: "#64748b", padding: "20px" }}>No complaints registered yet! All systems clear. ✅</p>
+                  <p style={{ textAlign: "center", color: "var(--text-muted)", padding: "20px" }}>No complaints registered yet! All systems clear. ✅</p>
                 ) : (
                   <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "14px" }}>
                     <thead>
-                      <tr style={{ borderBottom: "2px solid #e2e8f0", color: "#64748b" }}>
+                      <tr style={{ borderBottom: "2px solid #e2e8f0", color: "var(--text-muted)" }}>
                         <th style={{ padding: "12px" }}>ID</th>
                         <th style={{ padding: "12px" }}>Customer</th>
                         <th style={{ padding: "12px" }}>Worker Details (ID & Name)</th>
@@ -1227,14 +1227,14 @@ function AdminDashboard() {
           {/* TAB 6: MANAGE PLANS & OFFERS */}
           {activeTab === "plans-offers" && (
             <div>
-              <h2 style={{ margin: "0 0 24px 0", fontSize: "28px", fontWeight: 800, color: "#1e293b" }}>
+              <h2 style={{ margin: "0 0 24px 0", fontSize: "28px", fontWeight: 800, color: "var(--text-main)" }}>
                 Manage Custom Service Plans & Seasonal Offers
               </h2>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "30px", marginBottom: "40px" }}>
                 {/* 1. PLANS MANAGEMENT */}
-                <div style={{ backgroundColor: "white", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
-                  <h3 style={{ margin: "0 0 20px 0", fontSize: "20px", fontWeight: 700, color: "#1e293b" }}>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+                  <h3 style={{ margin: "0 0 20px 0", fontSize: "20px", fontWeight: 700, color: "var(--text-main)" }}>
                     {editingPlan ? "✏️ Edit Service Plan" : "➕ Create New Service Plan"}
                   </h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "20px" }}>
@@ -1287,7 +1287,7 @@ function AdminDashboard() {
                     <select
                       value={planForm.workerId}
                       onChange={(e) => setPlanForm({ ...planForm, workerId: e.target.value })}
-                      style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1", backgroundColor: "white" }}
+                      style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1", backgroundColor: "var(--bg-card)" }}
                     >
                       <option value="">Assign Worker Based on Plan (Optional)</option>
                       {workers.map(w => (
@@ -1341,7 +1341,7 @@ function AdminDashboard() {
 
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
                     <thead>
-                      <tr style={{ borderBottom: "2px solid #e2e8f0", color: "#64748b", textAlign: "left" }}>
+                      <tr style={{ borderBottom: "2px solid #e2e8f0", color: "var(--text-muted)", textAlign: "left" }}>
                         <th style={{ padding: "8px" }}>Title</th>
                         <th style={{ padding: "8px" }}>Price</th>
                         <th style={{ padding: "8px" }}>Assigned Worker</th>
@@ -1388,8 +1388,8 @@ function AdminDashboard() {
                 </div>
 
                 {/* 2. OFFERS MANAGEMENT */}
-                <div style={{ backgroundColor: "white", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
-                  <h3 style={{ margin: "0 0 20px 0", fontSize: "20px", fontWeight: 700, color: "#1e293b" }}>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+                  <h3 style={{ margin: "0 0 20px 0", fontSize: "20px", fontWeight: 700, color: "var(--text-main)" }}>
                     {editingOffer ? "✏️ Edit Active Coupon" : "➕ Create New Active Coupon"}
                   </h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "20px" }}>
@@ -1468,7 +1468,7 @@ function AdminDashboard() {
 
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
                     <thead>
-                      <tr style={{ borderBottom: "2px solid #e2e8f0", color: "#64748b", textAlign: "left" }}>
+                      <tr style={{ borderBottom: "2px solid #e2e8f0", color: "var(--text-muted)", textAlign: "left" }}>
                         <th style={{ padding: "8px" }}>Code</th>
                         <th style={{ padding: "8px" }}>Discount</th>
                         <th style={{ padding: "8px", textAlign: "right" }}>Actions</th>
@@ -1517,15 +1517,15 @@ function AdminDashboard() {
             <div className="fade-in" style={{ animation: "fadeIn 0.3s ease" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
                 <div>
-                  <h2 style={{ margin: "0 0 6px", fontWeight: 800, color: "#1e293b" }}>Admin Escrow Approvals</h2>
-                  <p style={{ margin: 0, color: "#64748b", fontSize: "14px" }}>Approve & Release locked payments to workers after successful job completion.</p>
+                  <h2 style={{ margin: "0 0 6px", fontWeight: 800, color: "var(--text-main)" }}>Admin Escrow Approvals</h2>
+                  <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14px" }}>Approve & Release locked payments to workers after successful job completion.</p>
                 </div>
                 <div style={{ backgroundColor: "#e0e7ff", padding: "10px 20px", borderRadius: "8px", color: "#4338ca", fontWeight: 700 }}>
                   🔐 System Hold: ₹{liveRealTimeBookings.filter(b => b.status === "Completed").reduce((a, b) => a + b.price, 0)}
                 </div>
               </div>
 
-              <div style={{ backgroundColor: "white", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", padding: "24px" }}>
+              <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", padding: "24px" }}>
                 {liveRealTimeBookings.filter(b => ["Completed", "Paid Out"].includes(b.status)).length === 0 ? (
                   <div style={{ textAlign: "center", color: "#94a3b8", padding: "48px 0" }}>
                     <div style={{ fontSize: "48px", marginBottom: "12px" }}>⚖️</div>
@@ -1535,7 +1535,7 @@ function AdminDashboard() {
                 ) : (
                   <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                     <thead>
-                      <tr style={{ borderBottom: "2px solid #f1f5f9", color: "#64748b", fontSize: "13px" }}>
+                      <tr style={{ borderBottom: "2px solid #f1f5f9", color: "var(--text-muted)", fontSize: "13px" }}>
                         <th style={{ padding: "12px 8px" }}>Booking ID</th>
                         <th style={{ padding: "12px 8px" }}>Service</th>
                         <th style={{ padding: "12px 8px" }}>Locked Amt</th>
@@ -1601,11 +1601,11 @@ function AdminDashboard() {
                 🆘 Worker SOS Emergency Monitor
               </h2>
               
-              <div style={{ backgroundColor: "white", padding: "36px", borderRadius: "16px", boxShadow: "0 10px 25px rgba(0,0,0,0.05)" }}>
+              <div style={{ backgroundColor: "var(--bg-card)", padding: "36px", borderRadius: "16px", boxShadow: "0 10px 25px rgba(0,0,0,0.05)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, borderBottom: "2px solid #f1f5f9", paddingBottom: 16 }}>
                   <div>
-                    <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#1e293b" }}>Distress Broadcast Stream</h3>
-                    <p style={{ margin: "4px 0 0", fontSize: 13, color: "#64748b" }}>Live incoming telemetry feeds from endangered service providers</p>
+                    <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "var(--text-main)" }}>Distress Broadcast Stream</h3>
+                    <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-muted)" }}>Live incoming telemetry feeds from endangered service providers</p>
                   </div>
                   <button 
                     onClick={async () => {
@@ -1627,7 +1627,7 @@ function AdminDashboard() {
                 </div>
 
                 {adminNotifications.filter(n => !n.is_read).length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "80px 0", color: "#64748b" }}>
+                  <div style={{ textAlign: "center", padding: "80px 0", color: "var(--text-muted)" }}>
                     <div style={{ fontSize: "72px", marginBottom: "20px" }}>🛡️</div>
                     <h3 style={{ fontSize: 20, fontWeight: 800, color: "#334155", margin: "0 0 8px" }}>Security Status: Nominal</h3>
                     <p style={{ margin: 0, fontSize: 14 }}>No active worker emergency distress telemetry feeds currently detected.</p>
@@ -1656,12 +1656,12 @@ function AdminDashboard() {
                           <div style={{ fontSize: "48px" }}>🚨</div>
                           <div style={{ flex: 1 }}>
                             <h4 style={{ margin: "0 0 12px", fontSize: "20px", fontWeight: 850, color: "#b91c1c" }}>{alertItem.title}</h4>
-                            <div style={{ margin: "0 0 20px", color: "#1e293b", whiteSpace: "pre-wrap", fontSize: "14px", fontWeight: 600, fontFamily: "'JetBrains Mono', Courier, monospace", backgroundColor: "white", padding: "20px", borderRadius: "12px", border: "1.5px solid #e2e8f0", lineHeight: 1.6 }}>
+                            <div style={{ margin: "0 0 20px", color: "var(--text-main)", whiteSpace: "pre-wrap", fontSize: "14px", fontWeight: 600, fontFamily: "'JetBrains Mono', Courier, monospace", backgroundColor: "var(--bg-card)", padding: "20px", borderRadius: "12px", border: "1.5px solid #e2e8f0", lineHeight: 1.6 }}>
                               {alertItem.message}
                             </div>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                              <div style={{ fontSize: "13px", color: "#64748b", fontWeight: 600 }}>
-                                Broadcast Captured: <strong style={{ color: "#1e293b" }}>{new Date(alertItem.createdAt).toLocaleString()}</strong>
+                              <div style={{ fontSize: "13px", color: "var(--text-muted)", fontWeight: 600 }}>
+                                Broadcast Captured: <strong style={{ color: "var(--text-main)" }}>{new Date(alertItem.createdAt).toLocaleString()}</strong>
                               </div>
                               {!alertItem.is_read && (
                                 <button 

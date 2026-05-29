@@ -488,7 +488,7 @@ Reported At: ${new Date().toLocaleString()}`,
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
                 <h2 style={{ margin: 0, fontWeight: 800, color: "var(--text-primary)" }}>Real-time Alerts Feed</h2>
                 {unreadCount > 0 && (
-                  <button onClick={handleMarkNotificationsRead} style={{ padding: "6px 12px", border: "1px solid #cbd5e1", borderRadius: "6px", backgroundColor: "white", cursor: "pointer", fontWeight: 600 }}>Mark all as read</button>
+                  <button onClick={handleMarkNotificationsRead} className="btn-secondary" style={{ padding: "6px 12px", fontSize: "13px" }}>Mark all as read</button>
                 )}
               </div>
               {notifications.length === 0 ? (
@@ -857,12 +857,12 @@ Reported At: ${new Date().toLocaleString()}`,
                   padding: 48,
                   textAlign: "center",
                   boxShadow: "0 15px 40px rgba(239, 68, 68, 0.25)",
-                  backgroundColor: "white",
+                  backgroundColor: "var(--bg-card)",
                   marginBottom: 32
                 }}>
                   <div style={{ fontSize: 88, animation: "pulse 1s infinite" }}>🚨</div>
                   <h1 style={{ color: "#b91c1c", fontSize: 32, fontWeight: 900, marginTop: 16, textTransform: "uppercase", letterSpacing: "1.5px" }}>SOS ACTIVATED</h1>
-                  <p style={{ fontSize: 18, fontWeight: 700, color: "#1e293b", maxWidth: 600, margin: "16px auto", lineHeight: 1.6 }}>
+                  <p style={{ fontSize: 18, fontWeight: 700, color: "var(--text-main)", maxWidth: 600, margin: "16px auto", lineHeight: 1.6 }}>
                     Distress alert sent! Workzy platform administrators have been notified with your current coordinates. Emergency systems activated.
                   </p>
 

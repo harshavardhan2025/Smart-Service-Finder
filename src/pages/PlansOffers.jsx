@@ -83,6 +83,7 @@ function PlansOffers() {
     };
 
     loadCloudData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCopy = (code) => {
@@ -213,22 +214,22 @@ function PlansOffers() {
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", color: "#f8fafc", fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
       <Navbar />
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "40px 20px" }}>
         
         {/* Page Header */}
         <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <h1 style={{ color: "#ffffff", fontWeight: 800, fontSize: "36px", margin: "0 0 10px 0", letterSpacing: "-0.5px" }}>
+          <h1 style={{ color: "var(--text-main)", fontWeight: 800, fontSize: "36px", margin: "0 0 10px 0", letterSpacing: "-0.5px" }}>
             🏷️ Plans & Seasonal Offers
           </h1>
-          <p style={{ color: "#94a3b8", fontSize: "16px", maxWidth: "600px", margin: "0 auto" }}>
+          <p style={{ color: "var(--text-muted)", fontSize: "16px", maxWidth: "600px", margin: "0 auto" }}>
             Save big on your home utilities with customized annual service packages and active promotional discount coupons.
           </p>
         </div>
 
         {/* Pricing Segment */}
-        <h2 style={{ fontSize: "24px", fontWeight: 800, color: "#ffffff", marginBottom: 32, textAlign: "center" }}>
+        <h2 style={{ fontSize: "24px", fontWeight: 800, color: "var(--text-main)", marginBottom: 32, textAlign: "center" }}>
           Choose Your Service Plan
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 30, marginBottom: 56 }}>
@@ -237,13 +238,12 @@ function PlansOffers() {
             : plans.map((plan, i) => (
             <div 
               key={i}
+              className="premium-card"
               style={{
-                backgroundColor: "rgba(30, 41, 59, 0.4)",
-                backdropFilter: "blur(12px)",
+                backgroundColor: "var(--bg-card)",
                 borderRadius: 16,
                 padding: 32,
-                boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
-                border: plan.popular ? "2px solid #eab308" : "1px solid rgba(255, 255, 255, 0.08)",
+                border: plan.popular ? "2px solid #eab308" : "1px solid var(--border)",
                 position: "relative",
                 display: "flex",
                 flexDirection: "column",
@@ -257,19 +257,19 @@ function PlansOffers() {
                 </span>
               )}
               <div>
-                <h3 style={{ margin: "0 0 12px 0", fontSize: 20, fontWeight: 700, color: plan.popular ? "#eab308" : "#ffffff" }}>{plan.title}</h3>
+                <h3 style={{ margin: "0 0 12px 0", fontSize: 20, fontWeight: 700, color: plan.popular ? "#eab308" : "var(--text-main)" }}>{plan.title}</h3>
                 <div style={{ display: "flex", alignItems: "baseline", marginBottom: 24 }}>
-                  <span style={{ fontSize: 36, fontWeight: 800, color: "#ffffff" }}>{plan.price}</span>
-                  <span style={{ color: "#94a3b8", marginLeft: 4 }}>/{plan.period}</span>
+                  <span style={{ fontSize: 36, fontWeight: 800, color: "var(--text-main)" }}>{plan.price}</span>
+                  <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>/{plan.period}</span>
                 </div>
-                <ul style={{ paddingLeft: 20, margin: "0 0 32px 0", color: "#cbd5e1", fontSize: 14, lineHeight: "1.8" }}>
+                <ul style={{ paddingLeft: 20, margin: "0 0 32px 0", color: "var(--text-main)", fontSize: 14, lineHeight: "1.8" }}>
                   {plan.features.map((f, idx) => <li key={idx} style={{ marginBottom: 8 }}>{f}</li>)}
                 </ul>
                 {plan.workerId && (
-                  <div style={{ marginBottom: 20, padding: "10px 14px", backgroundColor: "rgba(255, 255, 255, 0.05)", borderRadius: "8px", border: "1px solid rgba(255, 255, 255, 0.08)", display: "flex", alignItems: "center", gap: "12px" }}>
+                  <div style={{ marginBottom: 20, padding: "10px 14px", backgroundColor: "var(--border)", borderRadius: "8px", border: "1px solid var(--border)", display: "flex", alignItems: "center", gap: "12px" }}>
                     <span style={{ fontSize: "20px" }}>👷</span>
                     <div>
-                      <p style={{ margin: 0, fontSize: "11px", color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Primary Assigned Expert</p>
+                      <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Primary Assigned Expert</p>
                       <p style={{ margin: 0, fontSize: "13px", fontWeight: "bold", color: "#34d399" }}>
                         {workers.find(w => String(w._id || w.id) === String(plan.workerId))?.name || "Expert Professional"}
                       </p>
@@ -282,7 +282,7 @@ function PlansOffers() {
                   disabled
                   style={{
                     width: "100%", padding: "14px", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700,
-                    backgroundColor: "rgba(255, 255, 255, 0.1)", color: "#94a3b8", cursor: "not-allowed"
+                    backgroundColor: "var(--border)", color: "var(--text-muted)", cursor: "not-allowed"
                   }}
                 >
                   Subscribed ✅
@@ -298,7 +298,7 @@ function PlansOffers() {
                   }}
                   style={{
                     width: "100%", padding: "14px", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer",
-                    backgroundColor: plan.color, color: "white", transition: "all 0.2s", boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
+                    backgroundColor: plan.color || "var(--primary)", color: "white", transition: "all 0.2s", boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
                   }}
                   onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.filter = "brightness(1.1)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.filter = "none"; }}
@@ -310,12 +310,10 @@ function PlansOffers() {
                   onClick={() => {
                     navigate("/login");
                   }}
+                  className="btn-secondary"
                   style={{
-                    width: "100%", padding: "14px", border: "1.5px solid rgba(255,255,255,0.2)", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer",
-                    backgroundColor: "transparent", color: "#cbd5e1", transition: "all 0.2s"
+                    width: "100%", padding: "14px", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer"
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "white"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#cbd5e1"; }}
                 >
                   🔒 Login to Subscribe
                 </button>
@@ -325,7 +323,7 @@ function PlansOffers() {
         </div>
 
         {/* Offers Segment */}
-        <h2 style={{ fontSize: "24px", fontWeight: 800, color: "#ffffff", marginBottom: 32, textAlign: "center" }}>
+        <h2 style={{ fontSize: "24px", fontWeight: 800, color: "var(--text-main)", marginBottom: 32, textAlign: "center" }}>
           Active Promo Coupons
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 24 }}>
@@ -334,13 +332,12 @@ function PlansOffers() {
             : offers.map((offer, i) => (
             <div 
               key={i}
+              className="premium-card"
               style={{
-                backgroundColor: "rgba(30, 41, 59, 0.3)",
-                backdropFilter: "blur(8px)",
+                backgroundColor: "var(--bg-card)",
                 borderRadius: 14,
                 padding: 24,
-                boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
-                border: "1px dashed rgba(255, 255, 255, 0.15)",
+                border: "1px dashed var(--border)",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center"
@@ -350,16 +347,17 @@ function PlansOffers() {
                 <span style={{ backgroundColor: "rgba(52, 211, 153, 0.15)", color: "#34d399", border: "1px solid rgba(52, 211, 153, 0.2)", padding: "4px 10px", borderRadius: 8, fontSize: 12, fontWeight: 700 }}>
                   {offer.discount}
                 </span>
-                <h4 style={{ margin: "12px 0 4px 0", color: "#ffffff", fontSize: 16, fontWeight: 600 }}>{offer.desc}</h4>
-                <p style={{ margin: 0, fontSize: 12, color: "#94a3b8" }}>{offer.expiry}</p>
+                <h4 style={{ margin: "12px 0 4px 0", color: "var(--text-main)", fontSize: 16, fontWeight: 600 }}>{offer.desc}</h4>
+                <p style={{ margin: 0, fontSize: 12, color: "var(--text-muted)" }}>{offer.expiry}</p>
               </div>
               {isLoggedIn ? (
                 <button 
                   onClick={() => handleCopy(offer.code)}
+                  className="btn-secondary"
                   style={{
-                    padding: "10px 16px", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: 8, 
-                    backgroundColor: copiedCode === offer.code ? "rgba(52, 211, 153, 0.2)" : "rgba(255, 255, 255, 0.05)",
-                    color: copiedCode === offer.code ? "#34d399" : "#cbd5e1", cursor: "pointer", fontWeight: 700, fontSize: 13, minWidth: 90,
+                    padding: "10px 16px", 
+                    backgroundColor: copiedCode === offer.code ? "rgba(52, 211, 153, 0.2)" : "var(--bg-card)",
+                    color: copiedCode === offer.code ? "#34d399" : "var(--text-main)", cursor: "pointer", fontWeight: 700, fontSize: 13, minWidth: 90,
                     transition: "all 0.2s"
                   }}
                 >
@@ -368,13 +366,11 @@ function PlansOffers() {
               ) : (
                 <button
                   onClick={() => navigate("/login")}
+                  className="btn-secondary"
                   style={{
-                    padding: "10px 16px", border: "1px dashed rgba(255,255,255,0.2)", borderRadius: 8,
-                    backgroundColor: "transparent", color: "#94a3b8", cursor: "pointer",
-                    fontWeight: 700, fontSize: 12, minWidth: 110, transition: "all 0.2s"
+                    padding: "10px 16px", cursor: "pointer",
+                    fontWeight: 700, fontSize: 12, minWidth: 110
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.color = "white"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.4)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = "#94a3b8"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)"; }}
                 >
                   🔒 Login to Copy
                 </button>
@@ -393,20 +389,21 @@ function PlansOffers() {
             }}
           >
             <div 
+              className="premium-card"
               style={{
-                backgroundColor: "#1e293b", border: "1px solid rgba(255,255,255,0.12)", 
+                backgroundColor: "var(--bg-card)", border: "1px solid var(--border)", 
                 borderRadius: "16px", padding: "30px", width: "100%", maxWidth: "460px", 
-                boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)", color: "white", position: "relative"
+                boxShadow: "var(--shadow-3d)", color: "var(--text-main)", position: "relative"
               }}
             >
               <button 
                 onClick={() => setPayingPlan(null)}
                 style={{
                   position: "absolute", top: "16px", right: "16px", backgroundColor: "transparent", 
-                  border: "none", color: "#94a3b8", fontSize: "20px", cursor: "pointer", transition: "color 0.2s"
+                  border: "none", color: "var(--text-muted)", fontSize: "20px", cursor: "pointer", transition: "color 0.2s"
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.color = "white"}
-                onMouseLeave={(e) => e.currentTarget.style.color = "#94a3b8"}
+                onMouseEnter={(e) => e.currentTarget.style.color = "var(--text-main)"}
+                onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-muted)"}
               >
                 ✕
               </button>
@@ -414,25 +411,25 @@ function PlansOffers() {
               <div style={{ textAlign: "center", marginBottom: "24px" }}>
                 <span style={{ fontSize: "36px" }}>💳</span>
                 <h3 style={{ margin: "10px 0 6px 0", fontSize: "20px", fontWeight: 800 }}>Confirm Subscription</h3>
-                <p style={{ margin: 0, fontSize: "14px", color: "#94a3b8" }}>{payingPlan.title}</p>
+                <p style={{ margin: 0, fontSize: "14px", color: "var(--text-muted)" }}>{payingPlan.title}</p>
               </div>
 
               <form onSubmit={handlePayment} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 {/* Promo Code Fields */}
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: 700, color: "#cbd5e1" }}>Apply Promo Code</label>
+                  <label style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-muted)" }}>Apply Promo Code</label>
                   <div style={{ display: "flex", gap: "8px" }}>
                     <input 
                       type="text" 
                       placeholder="e.g. DOCFREE, FESTIVE25" 
                       value={appliedCoupon} 
                       onChange={(e) => setAppliedCoupon(e.target.value)}
-                      style={{ flex: 1, padding: "10px 14px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.15)", backgroundColor: "rgba(15,23,42,0.4)", color: "white" }}
+                      style={{ flex: 1, padding: "10px 14px", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)" }}
                     />
                     <button 
                       type="button" 
                       onClick={applyPromoCode}
-                      style={{ padding: "10px 16px", backgroundColor: "#3b82f6", color: "white", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}
+                      style={{ padding: "10px 16px", backgroundColor: "var(--primary)", color: "white", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}
                     >
                       Apply
                     </button>
@@ -443,16 +440,16 @@ function PlansOffers() {
 
                 {/* Payment Selector */}
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: 700, color: "#cbd5e1" }}>Payment Method</label>
+                  <label style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-muted)" }}>Payment Method</label>
                   <select 
                     value={paymentMethod} 
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.15)", backgroundColor: "rgba(15,23,42,0.4)", color: "white" }}
+                    style={{ padding: "10px 14px", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)" }}
                   >
-                    <option value="UPI" style={{ backgroundColor: "#1e293b" }}>UPI App / ID</option>
-                    <option value="Wallet" style={{ backgroundColor: "#1e293b" }}>Wallet (Balance: ₹{walletBal.toLocaleString()})</option>
-                    <option value="Card" style={{ backgroundColor: "#1e293b" }}>Credit / Debit Card</option>
-                    <option value="Net Banking" style={{ backgroundColor: "#1e293b" }}>Net Banking</option>
+                    <option value="UPI">UPI App / ID</option>
+                    <option value="Wallet">Wallet (Balance: ₹{walletBal.toLocaleString()})</option>
+                    <option value="Card">Credit / Debit Card</option>
+                    <option value="Net Banking">Net Banking</option>
                   </select>
                 </div>
 
@@ -464,7 +461,7 @@ function PlansOffers() {
                     value={upiId} 
                     onChange={(e) => setUpiId(e.target.value)}
                     required
-                    style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.15)", backgroundColor: "rgba(15,23,42,0.4)", color: "white" }}
+                    style={{ padding: "10px 14px", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)" }}
                   />
                 )}
 
@@ -477,7 +474,7 @@ function PlansOffers() {
                       onChange={(e) => setCardNumber(e.target.value)}
                       maxLength="19"
                       required
-                      style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.15)", backgroundColor: "rgba(15,23,42,0.4)", color: "white" }}
+                      style={{ padding: "10px 14px", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)" }}
                     />
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                       <input 
@@ -487,7 +484,7 @@ function PlansOffers() {
                         onChange={(e) => setCardExpiry(e.target.value)}
                         maxLength="5"
                         required
-                        style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.15)", backgroundColor: "rgba(15,23,42,0.4)", color: "white" }}
+                        style={{ padding: "10px 14px", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)" }}
                       />
                       <input 
                         type="password" 
@@ -496,7 +493,7 @@ function PlansOffers() {
                         onChange={(e) => setCardCvv(e.target.value)}
                         maxLength="3"
                         required
-                        style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.15)", backgroundColor: "rgba(15,23,42,0.4)", color: "white" }}
+                        style={{ padding: "10px 14px", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)" }}
                       />
                     </div>
                   </div>
@@ -506,18 +503,18 @@ function PlansOffers() {
                   <select 
                     value={netBank} 
                     onChange={(e) => setNetBank(e.target.value)}
-                    style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.15)", backgroundColor: "rgba(15,23,42,0.4)", color: "white" }}
+                    style={{ padding: "10px 14px", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)" }}
                   >
-                    <option value="SBI" style={{ backgroundColor: "#1e293b" }}>State Bank of India (SBI)</option>
-                    <option value="HDFC" style={{ backgroundColor: "#1e293b" }}>HDFC Bank</option>
-                    <option value="ICICI" style={{ backgroundColor: "#1e293b" }}>ICICI Bank</option>
-                    <option value="AXIS" style={{ backgroundColor: "#1e293b" }}>Axis Bank</option>
+                    <option value="SBI">State Bank of India (SBI)</option>
+                    <option value="HDFC">HDFC Bank</option>
+                    <option value="ICICI">ICICI Bank</option>
+                    <option value="AXIS">Axis Bank</option>
                   </select>
                 )}
 
                 {/* Pricing Summary */}
-                <div style={{ backgroundColor: "rgba(15,23,42,0.4)", borderRadius: "8px", padding: "14px", fontSize: "14px", border: "1px solid rgba(255,255,255,0.06)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", color: "#94a3b8" }}>
+                <div style={{ backgroundColor: "var(--border)", borderRadius: "8px", padding: "14px", fontSize: "14px", border: "1px solid var(--border)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)" }}>
                     <span>Base Price</span>
                     <span>{payingPlan.price}</span>
                   </div>
@@ -527,8 +524,8 @@ function PlansOffers() {
                       <span>- ₹{discountAmount}</span>
                     </div>
                   )}
-                  <div style={{ height: "1px", backgroundColor: "rgba(255,255,255,0.08)", margin: "10px 0" }}></div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "16px", fontWeight: "bold", color: "white" }}>
+                  <div style={{ height: "1px", backgroundColor: "var(--border)", margin: "10px 0" }}></div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "16px", fontWeight: "bold", color: "var(--text-main)" }}>
                     <span>Total Amount</span>
                     <span>₹{Math.max(0, (parseInt(payingPlan.price.replace(/[^\d]/g, ""), 10) || 0) - discountAmount)}</span>
                   </div>

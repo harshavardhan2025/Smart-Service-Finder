@@ -60,8 +60,10 @@ function LocationSearch({ value, onChange, onSearch }) {
             style={{
               width: "350px",
               padding: "10px",
-              borderRadius: "5px",
-              border: "1px solid #ccc",
+              borderRadius: "8px",
+              border: "1.5px solid var(--border)",
+              backgroundColor: "var(--bg-card)",
+              color: "var(--text-main)",
               fontSize: "14px",
               outline: "none",
               boxSizing: "border-box",
@@ -76,16 +78,17 @@ function LocationSearch({ value, onChange, onSearch }) {
                 top: "calc(100% + 4px)",
                 left: 0,
                 right: 0,
-                backgroundColor: "white",
-                border: "1px solid #e2e8f0",
+                backgroundColor: "var(--bg-card)",
+                border: "1px solid var(--border)",
                 borderRadius: "10px",
-                boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                boxShadow: "var(--shadow-3d)",
                 listStyle: "none",
                 margin: 0,
                 padding: "6px 0",
                 zIndex: 1000,
                 maxHeight: "220px",
                 overflowY: "auto",
+                backdropFilter: "var(--blur)",
               }}
             >
               {suggestions.map((s) => (
@@ -96,13 +99,13 @@ function LocationSearch({ value, onChange, onSearch }) {
                     padding: "10px 16px",
                     cursor: "pointer",
                     fontSize: "14px",
-                    color: "#1e293b",
+                    color: "var(--text-main)",
                     display: "flex",
                     alignItems: "center",
                     gap: "8px",
                     transition: "background 0.15s",
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "#f0f9ff")}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "var(--primary-light)")}
                   onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                 >
                   <span style={{ fontSize: "16px" }}>🛠️</span>
@@ -116,13 +119,12 @@ function LocationSearch({ value, onChange, onSearch }) {
         <button
           id="service-search-btn"
           onClick={handleSearch}
+          className="btn-primary"
           style={{
             marginLeft: "10px",
             padding: "10px 20px",
-            borderRadius: "5px",
+            borderRadius: "8px",
             border: "none",
-            backgroundColor: "#2196F3",
-            color: "white",
             cursor: "pointer",
             fontWeight: "bold",
           }}

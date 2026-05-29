@@ -157,7 +157,7 @@ function MyBookings() {
               style={{
                 textAlign: "center",
                 padding: "40px",
-                backgroundColor: "white",
+                backgroundColor: "var(--bg-card)",
                 borderRadius: "16px",
                 border: "1.5px dashed #cbd5e1"
               }}
@@ -176,7 +176,7 @@ function MyBookings() {
                 <div
                   key={bid}
                   style={{
-                    backgroundColor: "white",
+                    backgroundColor: "var(--bg-card)",
                     borderRadius: "14px",
                     padding: "20px",
                     boxShadow: "0 2px 12px rgba(0,0,0,0.07)",

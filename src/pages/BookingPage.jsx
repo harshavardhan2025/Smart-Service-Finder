@@ -297,7 +297,7 @@ function BookingPage() {
 
         {/* 🗓️ PREMIUM CALENDAR WRAPPER */}
         <div style={{ 
-          backgroundColor: "white", 
+          backgroundColor: "var(--bg-card)", 
           borderRadius: 20, 
           padding: 20, 
           boxShadow: "0 4px 20px rgba(0,0,0,0.05)", 
@@ -318,7 +318,7 @@ function BookingPage() {
 
         {/* ⏰ PREMIUM TIME SLOTS */}
         <div style={{ 
-          backgroundColor: "white", 
+          backgroundColor: "var(--bg-card)", 
           borderRadius: 20, 
           padding: 24, 
           boxShadow: "0 4px 20px rgba(0,0,0,0.05)", 

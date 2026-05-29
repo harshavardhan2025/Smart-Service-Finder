@@ -149,7 +149,7 @@ function Profile() {
       <div style={{ maxWidth: "680px", margin: "-36px auto 0 auto", padding: "0 20px" }}>
         <div
           style={{
-            backgroundColor: "white",
+            backgroundColor: "var(--bg-card)",
             borderRadius: "20px",
             padding: "28px",
             boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
@@ -238,7 +238,7 @@ function Profile() {
         {/* ── INTERACTIVE PREMIUM WALLET & LOYALTY CARD ── */}
         <div
           style={{
-            backgroundColor: "white",
+            backgroundColor: "var(--bg-card)",
             borderRadius: "20px",
             padding: "28px",
             boxShadow: "0 8px 32px rgba(0,0,0,0.05)",
@@ -255,7 +255,7 @@ function Profile() {
               <div style={{ fontSize: "32px", fontWeight: 800, margin: "8px 0" }}>₹{walletBal.toLocaleString()}</div>
               <button 
                 onClick={() => navigate("/payment")}
-                style={{ padding: "8px 16px", backgroundColor: "white", color: "#1e88e5", border: "none", borderRadius: "8px", fontWeight: 700, fontSize: "12px", cursor: "pointer", transition: "all 0.2s" }}
+                style={{ padding: "8px 16px", backgroundColor: "var(--bg-card)", color: "#1e88e5", border: "none", borderRadius: "8px", fontWeight: 700, fontSize: "12px", cursor: "pointer", transition: "all 0.2s" }}
                 onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
                 onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
               >
@@ -272,7 +272,7 @@ function Profile() {
               {/* Progress bar to Platinum */}
               <div style={{ fontSize: "12px", opacity: 0.9, marginBottom: "6px" }}>750 / 1,000 Points (250 more to Platinum)</div>
               <div style={{ width: "100%", height: "8px", backgroundColor: "rgba(255,255,255,0.3)", borderRadius: "4px", overflow: "hidden" }}>
-                <div style={{ width: "75%", height: "100%", backgroundColor: "white", borderRadius: "4px" }} />
+                <div style={{ width: "75%", height: "100%", backgroundColor: "var(--bg-card)", borderRadius: "4px" }} />
               </div>
             </div>
           </div>
@@ -281,7 +281,7 @@ function Profile() {
         {/* Details Card */}
         <div
           style={{
-            backgroundColor: "white",
+            backgroundColor: "var(--bg-card)",
             borderRadius: "20px",
             padding: "28px",
             boxShadow: "0 4px 16px rgba(0,0,0,0.07)",
@@ -388,7 +388,7 @@ function Profile() {
                   style={{
                     flex: 1,
                     padding: "12px",
-                    backgroundColor: "white",
+                    backgroundColor: "var(--bg-card)",
                     color: "#64748b",
                     border: "1.5px solid #e2e8f0",
                     borderRadius: "10px",
@@ -436,7 +436,7 @@ function Profile() {
         {/* Payment History */}
         <div
           style={{
-            backgroundColor: "white",
+            backgroundColor: "var(--bg-card)",
             borderRadius: "20px",
             padding: "28px",
             boxShadow: "0 4px 16px rgba(0,0,0,0.07)",
@@ -586,7 +586,7 @@ function Profile() {
         {/* Quick Links */}
         <div
           style={{
-            backgroundColor: "white",
+            backgroundColor: "var(--bg-card)",
             borderRadius: "20px",
             padding: "20px 28px",
             boxShadow: "0 4px 16px rgba(0,0,0,0.07)",

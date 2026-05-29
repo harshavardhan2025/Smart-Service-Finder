@@ -155,22 +155,22 @@ function Signup() {
           style={{
             width: "100%",
             maxWidth: "400px",
-            backgroundColor: "white",
+            backgroundColor: "var(--bg-card)",
             padding: "40px"
           }}
         >
           <div style={{ textAlign: "center", marginBottom: "30px" }}>
-            <h1 style={{ margin: "0 0 8px 0", fontSize: "28px", fontWeight: 800, color: "#1e293b" }}>
+            <h1 style={{ margin: "0 0 8px 0", fontSize: "28px", fontWeight: 800, color: "var(--text-main)" }}>
               Create Account
             </h1>
-            <p style={{ margin: 0, color: "#64748b", fontSize: "14px" }}>
+            <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14px" }}>
               Join Workzy and explore local professionals
             </p>
           </div>
 
           <form onSubmit={handleSignup} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontSize: "14px", fontWeight: 600, color: "#475569" }}>Full Name</label>
+              <label style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-main)" }}>Full Name</label>
               <input
                 type="text"
                 placeholder="John Doe"
@@ -181,7 +181,7 @@ function Signup() {
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontSize: "14px", fontWeight: 600, color: "#475569" }}>Phone Number</label>
+              <label style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-main)" }}>Phone Number</label>
               <input
                 type="tel"
                 placeholder="9876543210"
@@ -192,7 +192,7 @@ function Signup() {
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontSize: "14px", fontWeight: 600, color: "#475569" }}>Email Address</label>
+              <label style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-main)" }}>Email Address</label>
               <input
                 type="email"
                 placeholder="name@example.com"
@@ -203,7 +203,7 @@ function Signup() {
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontSize: "14px", fontWeight: 600, color: "#475569" }}>Password</label>
+              <label style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-main)" }}>Password</label>
               <input
                 type="password"
                 placeholder="••••••••"
@@ -214,7 +214,7 @@ function Signup() {
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontSize: "14px", fontWeight: 600, color: "#475569" }}>Register As</label>
+              <label style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-main)" }}>Register As</label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
@@ -228,7 +228,7 @@ function Signup() {
             {/* Dynamic Profession Selection for Professional Worker Signup */}
             {role === "worker" && (
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <label style={{ fontSize: "14px", fontWeight: 600, color: "#475569" }}>Select Profession</label>
+                <label style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-main)" }}>Select Profession</label>
                 <select
                   value={profession}
                   onChange={(e) => setProfession(e.target.value)}
@@ -286,7 +286,7 @@ function Signup() {
             {/* Explicit Location Column Injection requested for Workers */}
             {role === "worker" && (
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <label style={{ fontSize: "14px", fontWeight: 600, color: "#475569" }}>Serving Location (District, State)</label>
+                <label style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-main)" }}>Serving Location (District, State)</label>
                 <div style={{ display: "flex", gap: "8px" }}>
                   <input
                     type="text"
@@ -303,6 +303,8 @@ function Signup() {
                     style={{
                       backgroundColor: "var(--primary-light)",
                       color: "var(--primary-dark)",
+                      border: "none",
+                      borderBottom: "2px solid var(--primary-dark)",
                       padding: "0 16px",
                       fontSize: "14px",
                       display: "flex",
@@ -320,9 +322,8 @@ function Signup() {
 
             <button
               type="submit"
+              className="btn-primary"
               style={{
-                backgroundColor: "var(--primary)",
-                color: "white",
                 padding: "12px",
                 fontSize: "15px",
                 marginTop: "10px",
@@ -335,19 +336,17 @@ function Signup() {
 
           {/* Social Divider */}
           <div style={{ display: "flex", alignItems: "center", margin: "20px 0" }}>
-            <div style={{ flex: 1, height: "1px", backgroundColor: "#e2e8f0" }}></div>
-            <span style={{ padding: "0 10px", color: "#94a3b8", fontSize: "13px" }}>or continue with</span>
-            <div style={{ flex: 1, height: "1px", backgroundColor: "#e2e8f0" }}></div>
+            <div style={{ flex: 1, height: "1px", backgroundColor: "var(--border)" }}></div>
+            <span style={{ padding: "0 10px", color: "var(--text-muted)", fontSize: "13px" }}>or continue with</span>
+            <div style={{ flex: 1, height: "1px", backgroundColor: "var(--border)" }}></div>
           </div>
 
           {/* Google Sign-In Button */}
           <button
             type="button"
             onClick={handleGoogleSignUp}
+            className="btn-secondary"
             style={{
-              backgroundColor: "white",
-              color: "#1e293b",
-              border: "1px solid #cbd5e1",
               padding: "12px",
               fontSize: "15px",
               width: "100%",
@@ -366,7 +365,7 @@ function Signup() {
             Sign Up with Google
           </button>
 
-          <p style={{ textAlign: "center", marginTop: "24px", margin: "24px 0 0 0", fontSize: "14px", color: "#64748b" }}>
+          <p style={{ textAlign: "center", marginTop: "24px", margin: "24px 0 0 0", fontSize: "14px", color: "var(--text-muted)" }}>
             Already have an account?{" "}
             <Link to="/login" style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>
               Sign in

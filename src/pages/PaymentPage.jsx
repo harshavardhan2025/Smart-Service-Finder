@@ -68,7 +68,7 @@ function PaymentPage() {
       fontFamily: "'Inter', system-ui, sans-serif"
     }}>
       <div style={{
-         backgroundColor: "white",
+         backgroundColor: "var(--bg-card)",
          width: "100%",
          maxWidth: "480px",
          borderRadius: "24px",

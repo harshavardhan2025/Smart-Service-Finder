@@ -498,26 +498,25 @@ function AiChatBot() {
       {/* Chat Window */}
       {isOpen && (
         <div
+          className="premium-card"
           style={{
             position: "fixed",
             bottom: "90px",
             right: "20px",
             width: "360px",
             height: "500px",
-            backgroundColor: "white",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
-            borderRadius: "15px",
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
             zIndex: 1000,
-            border: "1px solid #eee"
+            padding: 0,
+            borderRadius: "20px",
           }}
         >
           {/* Header */}
           <div
             style={{
-              background: "linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)",
+              background: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)",
               color: "white",
               padding: "15px",
               fontWeight: "bold",
@@ -547,7 +546,7 @@ function AiChatBot() {
               flex: 1,
               padding: "15px",
               overflowY: "auto",
-              backgroundColor: "#f5f7fb",
+              backgroundColor: "rgba(0,0,0,0.02)",
               display: "flex",
               flexDirection: "column",
               gap: "12px"
@@ -565,14 +564,14 @@ function AiChatBot() {
               >
                 <div
                   style={{
-                    backgroundColor: msg.sender === "user" ? "#8b5cf6" : "white",
-                    color: msg.sender === "user" ? "white" : "#333",
+                    backgroundColor: msg.sender === "user" ? "var(--primary)" : "var(--border)",
+                    color: msg.sender === "user" ? "white" : "var(--text-main)",
                     padding: "10px 14px",
                     borderRadius: msg.sender === "user" ? "12px 12px 0 12px" : "12px 12px 12px 0",
                     boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
                     fontSize: "14px",
                     whiteSpace: "pre-line",
-                    border: msg.sender === "user" ? "none" : "1px solid #eef"
+                    border: msg.sender === "user" ? "none" : "1px solid var(--border)"
                   }}
                 >
                   {msg.text}
@@ -592,20 +591,21 @@ function AiChatBot() {
                       <div
                         key={wIdx}
                         style={{
-                          backgroundColor: "white",
-                          border: "1px solid #e0e0e0",
-                          borderRadius: "8px",
+                          backgroundColor: "var(--bg-card)",
+                          border: "1.5px solid var(--border)",
+                          borderRadius: "12px",
                           padding: "12px",
-                          boxShadow: "0 2px 4px rgba(0,0,0,0.05)"
+                          boxShadow: "var(--shadow-3d)",
+                          backdropFilter: "var(--blur)",
                         }}
                       >
-                        <h4 style={{ margin: "0 0 4px 0", fontSize: "14px" }}>
+                        <h4 style={{ margin: "0 0 4px 0", fontSize: "14px", color: "var(--text-main)" }}>
                           {worker.name}
                         </h4>
-                        <div style={{ display: "flex", gap: "10px", fontSize: "12px", color: "gray", margin: "4px 0" }}>
+                        <div style={{ display: "flex", gap: "10px", fontSize: "12px", color: "var(--text-muted)", margin: "4px 0" }}>
                           <span>⭐ {worker.rating}</span>
                           <span>🛠️ {worker.experience}</span>
-                          <span style={{ color: "green", fontWeight: "bold" }}>💰 ₹{worker.price || 350}</span>
+                          <span style={{ color: "var(--success)", fontWeight: "bold" }}>💰 ₹{worker.price || 350}</span>
                         </div>
                         <Link 
                           to="/worker"
@@ -615,16 +615,12 @@ function AiChatBot() {
                           }}
                         >
                           <button
+                            className="btn-primary"
                             style={{
                               width: "100%",
-                              padding: "6px",
-                              backgroundColor: "#2196F3",
-                              color: "white",
-                              border: "none",
-                              borderRadius: "4px",
+                              padding: "8px",
+                              borderRadius: "8px",
                               fontSize: "12px",
-                              cursor: "pointer",
-                              fontWeight: "bold",
                               marginTop: "6px"
                             }}
                           >
@@ -642,13 +638,13 @@ function AiChatBot() {
               <div
                 style={{
                   alignSelf: "flex-start",
-                  backgroundColor: "white",
+                  backgroundColor: "var(--border)",
                   padding: "10px 14px",
                   borderRadius: "12px 12px 12px 0",
                   boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
                   fontSize: "12px",
-                  color: "gray",
-                  border: "1px solid #eef"
+                  color: "var(--text-muted)",
+                  border: "1px solid var(--border)"
                 }}
               >
                 AI is typing... 🤖
@@ -663,8 +659,8 @@ function AiChatBot() {
               display: "flex",
               gap: "8px",
               padding: "8px 12px",
-              backgroundColor: "#f8fafc",
-              borderTop: "1px solid #eef2f6",
+              backgroundColor: "rgba(0, 0, 0, 0.01)",
+              borderTop: "1.5px solid var(--border)",
               overflowX: "auto",
               whiteSpace: "nowrap"
             }}
@@ -675,13 +671,13 @@ function AiChatBot() {
                 disabled={isTyping}
                 onClick={() => handleSendMessage(prompt.query)}
                 style={{
-                  backgroundColor: isTyping ? "#f1f5f9" : "white",
-                  border: "1.5px solid #cbd5e1",
+                  backgroundColor: isTyping ? "var(--border)" : "var(--bg-card)",
+                  border: "1.5px solid var(--border)",
                   borderRadius: "20px",
                   padding: "5px 12px",
                   fontSize: "11px",
                   fontWeight: 700,
-                  color: isTyping ? "#94a3b8" : "#475569",
+                  color: isTyping ? "var(--text-muted)" : "var(--text-main)",
                   cursor: isTyping ? "not-allowed" : "pointer",
                   boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
                   transition: "all 0.15s ease",
@@ -697,10 +693,10 @@ function AiChatBot() {
           <div
             style={{
               padding: "10px",
-              borderTop: "1px solid #eee",
+              borderTop: "1.5px solid var(--border)",
               display: "flex",
               gap: "8px",
-              backgroundColor: "white"
+              backgroundColor: "transparent"
             }}
           >
             <input
@@ -714,25 +710,22 @@ function AiChatBot() {
                 flex: 1,
                 padding: "10px",
                 borderRadius: "8px",
-                border: "1px solid #ccc",
+                border: "1.5px solid var(--border)",
                 outline: "none",
                 fontSize: "14px",
-                backgroundColor: isTyping ? "#f1f5f9" : "white",
-                color: isTyping ? "#94a3b8" : "#333",
+                backgroundColor: isTyping ? "var(--border)" : "var(--bg-card)",
+                color: isTyping ? "var(--text-muted)" : "var(--text-main)",
                 cursor: isTyping ? "not-allowed" : "text"
               }}
             />
             <button
               onClick={handleSendMessage}
               disabled={isTyping}
+              className="btn-primary"
               style={{
                 padding: "10px 15px",
-                backgroundColor: isTyping ? "#cbd5e1" : "#8b5cf6",
-                color: isTyping ? "#94a3b8" : "white",
-                border: "none",
                 borderRadius: "8px",
-                cursor: isTyping ? "not-allowed" : "pointer",
-                fontWeight: "bold"
+                fontSize: "13px"
               }}
             >
               Send

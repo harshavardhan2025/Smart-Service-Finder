@@ -334,7 +334,7 @@ function ReviewsRewards() {
                   <div
                     key={bid}
                     style={{
-                      backgroundColor: "white",
+                      backgroundColor: "var(--bg-card)",
                       borderRadius: "14px",
                       padding: "20px",
                       border: "2px dashed #c4b5fd",
@@ -504,7 +504,7 @@ function ReviewsRewards() {
                 <div
                   key={r._id}
                   style={{
-                    backgroundColor: "white",
+                    backgroundColor: "var(--bg-card)",
                     borderRadius: "12px",
                     padding: "16px 20px",
                     border: "1px solid #f1f5f9",

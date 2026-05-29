@@ -104,22 +104,22 @@ function Login() {
           style={{
             width: "100%",
             maxWidth: "400px",
-            backgroundColor: "white",
+            backgroundColor: "var(--bg-card)",
             padding: "40px"
           }}
         >
           <div style={{ textAlign: "center", marginBottom: "30px" }}>
-            <h1 style={{ margin: "0 0 8px 0", fontSize: "28px", fontWeight: 800, color: "#1e293b" }}>
+            <h1 style={{ margin: "0 0 8px 0", fontSize: "28px", fontWeight: 800, color: "var(--text-main)" }}>
               Welcome Back
             </h1>
-            <p style={{ margin: 0, color: "#64748b", fontSize: "14px" }}>
+            <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14px" }}>
               Login to manage your bookings and services
             </p>
           </div>
 
           <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontSize: "14px", fontWeight: 600, color: "#475569" }}>Email Address</label>
+              <label style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-main)" }}>Email Address</label>
               <input
                 type="email"
                 placeholder="name@example.com"
@@ -130,7 +130,7 @@ function Login() {
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontSize: "14px", fontWeight: 600, color: "#475569" }}>Password</label>
+              <label style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-main)" }}>Password</label>
               <input
                 type="password"
                 placeholder="••••••••"
@@ -142,9 +142,8 @@ function Login() {
 
             <button
               type="submit"
+              className="btn-primary"
               style={{
-                backgroundColor: "var(--primary)",
-                color: "white",
                 padding: "12px",
                 fontSize: "15px",
                 marginTop: "10px",
@@ -157,19 +156,17 @@ function Login() {
 
           {/* Social Divider */}
           <div style={{ display: "flex", alignItems: "center", margin: "20px 0" }}>
-            <div style={{ flex: 1, height: "1px", backgroundColor: "#e2e8f0" }}></div>
-            <span style={{ padding: "0 10px", color: "#94a3b8", fontSize: "13px" }}>or continue with</span>
-            <div style={{ flex: 1, height: "1px", backgroundColor: "#e2e8f0" }}></div>
+            <div style={{ flex: 1, height: "1px", backgroundColor: "var(--border)" }}></div>
+            <span style={{ padding: "0 10px", color: "var(--text-muted)", fontSize: "13px" }}>or continue with</span>
+            <div style={{ flex: 1, height: "1px", backgroundColor: "var(--border)" }}></div>
           </div>
 
           {/* Google Sign-In Button */}
           <button
             type="button"
             onClick={handleGoogleSignIn}
+            className="btn-secondary"
             style={{
-              backgroundColor: "white",
-              color: "#1e293b",
-              border: "1px solid #cbd5e1",
               padding: "12px",
               fontSize: "15px",
               width: "100%",
@@ -188,7 +185,7 @@ function Login() {
             Sign In with Google
           </button>
 
-          <p style={{ textAlign: "center", marginTop: "24px", margin: "24px 0 0 0", fontSize: "14px", color: "#64748b" }}>
+          <p style={{ textAlign: "center", marginTop: "24px", margin: "24px 0 0 0", fontSize: "14px", color: "var(--text-muted)" }}>
             Don't have an account?{" "}
             <Link to="/signup" style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>
               Sign up
