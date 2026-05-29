@@ -51,7 +51,6 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
     navigator.geolocation.getCurrentPosition(
       async (loc) => {
         const { latitude, longitude } = loc.coords;
-        setPosition([latitude, longitude]);
         
         // Define key seeded cities for Euclidean proximity fallback
         const localMatches = [
@@ -75,6 +74,12 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
           }
           return nearest;
         };
+
+        const nearest = getNearestCity(latitude, longitude);
+        const snapLat = nearest.coords.lat;
+        const snapLng = nearest.coords.lon;
+        
+        setPosition([snapLat, snapLng]);
 
         try {
           const res = await fetch(
@@ -100,15 +105,10 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
               "";
           }
           
-          // If Nominatim reverse geocode succeeded but didn't return a valid display name or city, resolve to nearest key city
-          if (!label || label.includes(latitude.toFixed(3)) || !city) {
-            const nearest = getNearestCity(latitude, longitude);
-            if (!label || label.includes(latitude.toFixed(3))) {
-              label = nearest.name;
-            }
-            if (!city) {
-              city = nearest.city;
-            }
+          // Snaps coordinates & name to our key regions if it falls outside our core database targets
+          if (!city || !["kakinada", "rajahmundry", "new delhi", "hyderabad"].includes(city.toLowerCase())) {
+            label = nearest.name;
+            city = nearest.city;
           }
 
           setSearch(label);
@@ -118,13 +118,11 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
           localStorage.setItem("userCity", city);
           
           if (onLocationChange) onLocationChange(label);
-          if (onCoordsChange) onCoordsChange({ lat: latitude, lng: longitude });
+          if (onCoordsChange) onCoordsChange({ lat: snapLat, lng: snapLng });
         } catch (err) {
           console.error("Reverse geocode failed:", err);
           console.error("Full Error:", err);
           
-          // Geocoding completely failed (offline/throttled). Run Euclidean proximity lookup.
-          const nearest = getNearestCity(latitude, longitude);
           const fallbackLabel = nearest.name;
           const fallbackCity = nearest.city;
           
@@ -135,7 +133,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
           localStorage.setItem("userCity", fallbackCity);
           
           if (onLocationChange) onLocationChange(fallbackLabel);
-          if (onCoordsChange) onCoordsChange({ lat: latitude, lng: longitude });
+          if (onCoordsChange) onCoordsChange({ lat: snapLat, lng: snapLng });
         } finally {
           setDetecting(false);
         }
@@ -151,8 +149,6 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
   };
 
   const handleMapInteraction = async (lat, lng) => {
-    setPosition([lat, lng]);
-    
     const localMatches = [
       { name: "Kakinada, Andhra Pradesh, India", city: "Kakinada", coords: { lat: 16.989062, lon: 82.243878 } },
       { name: "Rajahmundry, Andhra Pradesh, India", city: "Rajahmundry", coords: { lat: 17.000538, lon: 81.804034 } },
@@ -175,6 +171,10 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
       });
     }
     
+    const snapLat = nearest.coords.lat;
+    const snapLng = nearest.coords.lon;
+    setPosition([snapLat, snapLng]);
+    
     const label = nearest.name;
     const city = nearest.city;
     
@@ -183,7 +183,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
     localStorage.setItem("userLocation", label);
     localStorage.setItem("userCity", city);
     if (onLocationChange) onLocationChange(label);
-    if (onCoordsChange) onCoordsChange({ lat, lng });
+    if (onCoordsChange) onCoordsChange({ lat: snapLat, lng: snapLng });
   };
 
   const MapEventsHandler = () => {
