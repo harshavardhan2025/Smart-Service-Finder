@@ -18,6 +18,13 @@ const LOCAL_CLUSTER_FALLBACKS = {
 const analyzeLocationWithAi = async (cityName) => {
   const normName = cityName.toLowerCase().trim();
   
+  // 🚀 HIGH-PERFORMANCE INSTANT PRE-COMPUTED LOCAL BYPASS
+  // Instantly serve our complete seeded 40km local clusters, avoiding heavy 2.5s network LLM calls!
+  if (LOCAL_CLUSTER_FALLBACKS[normName]) {
+     aiRadiusCache[normName] = LOCAL_CLUSTER_FALLBACKS[normName];
+     return LOCAL_CLUSTER_FALLBACKS[normName];
+  }
+
   // Return instant cache if previously interrogated!
   if (aiRadiusCache[normName]) {
      console.log("🚀 [AI CACHE HIT] Serving pre-computed 40km grid for:", normName);
@@ -28,10 +35,6 @@ const analyzeLocationWithAi = async (cityName) => {
     const apiKey = process.env.AI_API_KEY;
     if (!apiKey || apiKey.trim().length < 10) {
        console.warn("⚠️ [AI LOCATION ENGINE] No valid AI_API_KEY configured. Serving local cluster fallback.");
-       if (LOCAL_CLUSTER_FALLBACKS[normName]) {
-          aiRadiusCache[normName] = LOCAL_CLUSTER_FALLBACKS[normName];
-          return LOCAL_CLUSTER_FALLBACKS[normName];
-       }
        return [normName];
     }
 
