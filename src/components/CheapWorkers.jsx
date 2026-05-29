@@ -47,8 +47,7 @@ function CheapWorkers({ searchedLocation, userCoords }) {
         </h2>
       </div>
       <p style={{ color: "var(--text-secondary)", marginBottom: "15px" }}>
-        Highly rated professionals at great value rates within{" "}
-        <strong style={{ color: "var(--primary)" }}>15 km</strong> of your location!
+        Highly rated professionals at great value rates near your location!
       </p>
 
       {cheapWorkers.length === 0 ? (

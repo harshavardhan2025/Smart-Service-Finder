@@ -72,7 +72,7 @@ export const filterWorkersClientSide = async (userCoords, locationKey) => {
   const allWorkers = await fetchAllWorkersCached();
   
   if (userCoords) {
-    // Perform coordinate-based 15km matching client-side instantly!
+    // Perform coordinate-based 40km matching client-side instantly!
     const results = allWorkers.map(w => {
       const cityStr = w.location || w.city || "";
       const coords = geocodeCityLocal(cityStr);
@@ -80,7 +80,7 @@ export const filterWorkersClientSide = async (userCoords, locationKey) => {
       const distance = haversineKm(userCoords.lat, userCoords.lng, coords.lat, coords.lon);
       return { ...w, distanceKm: Math.round(distance * 10) / 10 };
     })
-    .filter(w => w !== null && w.distanceKm <= 15)
+    .filter(w => w !== null && w.distanceKm <= 40)
     .sort((a, b) => a.distanceKm - b.distanceKm);
     
     return results;

@@ -46,14 +46,13 @@ function TopWorkers({ searchedLocation, userCoords }) {
       </h2>
       {searchedLocation && (
         <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: "0 0 15px 0" }}>
-          Within <strong style={{ color: "var(--primary)" }}>15 km</strong> of{" "}
-          <strong style={{ color: "var(--primary)" }}>{searchedLocation.split(",")[0]}</strong>
+          Near <strong style={{ color: "var(--primary)" }}>{searchedLocation.split(",")[0]}</strong>
         </p>
       )}
 
       {topWorkers.length === 0 ? (
         <p style={{ color: "gray", fontStyle: "italic" }}>
-          Scanning for top professionals within 15km...
+          Scanning for top professionals near you...
         </p>
       ) : (
         <div style={{ display: "flex", overflowX: "auto", gap: "15px", paddingBottom: "10px" }}>
