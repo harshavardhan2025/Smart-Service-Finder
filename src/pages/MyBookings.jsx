@@ -47,15 +47,75 @@ function MyBookings() {
     return () => clearInterval(interval);
   }, []);
 
+  const [activeComplaintBooking, setActiveComplaintBooking] = useState(null);
+  const [issueType, setIssueType] = useState("Abuse");
+  const [complaintDesc, setComplaintDesc] = useState("");
+  const [submittingComplaint, setSubmittingComplaint] = useState(false);
+
+  const [activeCancelBooking, setActiveCancelBooking] = useState(null);
+  const [cancelReason, setCancelReason] = useState("Scheduler Conflict");
+  const [submittingCancel, setSubmittingCancel] = useState(false);
+
   const handleReview = (booking) => {
      // 🚀 DYNAMIC PASSTHROUGH: The backend auto-filters correctly, simply redirect effortlessly!
      navigate("/reviews");
   };
 
-  const handleComplaint = (booking) => {
-    const bid = booking._id || booking.id;
-    // 🚀 DYNAMIC ESCALATION: Transfer control instantly to physical Support Desk flawlessly!
-    navigate("/support", { state: { bookingId: bid, service: booking.service } });
+  const handleConfirmCancel = async () => {
+    if (!activeCancelBooking) return;
+    setSubmittingCancel(true);
+    const bid = activeCancelBooking._id || activeCancelBooking.id;
+    try {
+      const token = sessionStorage.getItem("authToken");
+      const res = await fetch(`/api/bookings/${bid}/cancel`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ reason: cancelReason })
+      });
+      if (res.ok) {
+        alert(`❌ Booking CANCELLED Successfully!\n\nYour payment has been fully refunded back to your secure Wallet balance! 💵`);
+        setActiveCancelBooking(null);
+        syncBookings();
+      } else {
+        alert("Failed to cancel booking.");
+      }
+    } catch(e) {
+      console.error(e);
+    } finally {
+      setSubmittingCancel(false);
+    }
+  };
+
+  const handleConfirmComplaint = async () => {
+    if (!activeComplaintBooking) return;
+    setSubmittingComplaint(true);
+    const bid = activeComplaintBooking._id || activeComplaintBooking.id;
+    try {
+      const res = await fetch("/api/complaints", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          booking_id: bid,
+          issue_type: issueType,
+          description: complaintDesc,
+          reported_by: sessionStorage.getItem("userName") || "Client"
+        })
+      });
+      if (res.ok) {
+        alert("⚖️ Grievance Formally Recorded!\n\nYour complaint has been logged in the secure database. Administrators will review and take necessary action.");
+        setActiveComplaintBooking(null);
+        setComplaintDesc("");
+      } else {
+        alert("Failed to record grievance.");
+      }
+    } catch(e) {
+      console.error(e);
+    } finally {
+      setSubmittingComplaint(false);
+    }
   };
 
   const getStatusStyles = (status) => {
@@ -266,7 +326,7 @@ function MyBookings() {
                       </button>
 
                       <button 
-                        onClick={() => handleComplaint(booking)}
+                        onClick={() => setActiveComplaintBooking(booking)}
                         style={{
                           backgroundColor: "#fee2e2",
                           color: "#dc2626",
@@ -288,12 +348,223 @@ function MyBookings() {
                       </button>
                     </div>
                   )}
+
+                  {!["Completed", "Paid Out", "Cancelled", "Rejected"].includes(booking.status) && (
+                    <div style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px dashed #cbd5e1" }}>
+                      <button 
+                        onClick={() => setActiveCancelBooking(booking)}
+                        style={{
+                          backgroundColor: "#fee2e2",
+                          color: "#dc2626",
+                          border: "1px solid #fecaca",
+                          padding: "8px 16px",
+                          borderRadius: "8px",
+                          fontWeight: "bold",
+                          cursor: "pointer",
+                          fontSize: "13px",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          transition: "all 0.2s"
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#fecaca"}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#fee2e2"}
+                      >
+                        ❌ Cancel Booking & Refund
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })
           )}
         </div>
       </div>
+
+      {/* ❌ CUSTOM CANCELLATION & WALLET REFUND MODAL */}
+      {activeCancelBooking && (
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(15, 23, 42, 0.75)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+          fontFamily: "'Outfit', sans-serif",
+          backdropFilter: "blur(8px)",
+          animation: "fadeIn 0.2s ease-out forwards"
+        }}>
+          <div style={{
+            maxWidth: "400px",
+            width: "90%",
+            backgroundColor: "white",
+            borderRadius: "20px",
+            padding: "28px",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+            border: "1px solid rgba(0,0,0,0.05)"
+          }}>
+            <h3 style={{ margin: "0 0 8px 0", fontSize: "20px", fontWeight: 800, color: "#1e293b" }}>
+              Cancel Booking Order?
+            </h3>
+            <p style={{ margin: "0 0 20px 0", fontSize: "13px", color: "#64748b", lineHeight: 1.5 }}>
+              Are you sure you want to cancel this booking? The total cost of <strong>₹{activeCancelBooking.price}</strong> will be immediately refunded back to your secure wallet.
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "20px" }}>
+              <label style={{ fontSize: "12px", fontWeight: 700, color: "#475569" }}>Select Cancellation Reason</label>
+              <select 
+                value={cancelReason} 
+                onChange={(e) => setCancelReason(e.target.value)}
+                style={{ width: "100%", padding: "10px", borderRadius: "10px", border: "1px solid #cbd5e1" }}
+              >
+                <option value="Scheduler Conflict">📅 Scheduler Conflict / Change of Plans</option>
+                <option value="Found alternative worker">👷 Found alternative worker</option>
+                <option value="Worker did not arrive">💤 Worker did not arrive</option>
+                <option value="Pricing Dispute">💰 Pricing / Charge Dispute</option>
+                <option value="Other">Other Reason</option>
+              </select>
+            </div>
+
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button
+                disabled={submittingCancel}
+                onClick={handleConfirmCancel}
+                style={{
+                  flex: 1,
+                  backgroundColor: "#ef4444",
+                  color: "white",
+                  border: "none",
+                  padding: "12px",
+                  borderRadius: "10px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  fontSize: "14px"
+                }}
+              >
+                {submittingCancel ? "Cancelling..." : "Confirm & Refund 💵"}
+              </button>
+              <button
+                disabled={submittingCancel}
+                onClick={() => setActiveCancelBooking(null)}
+                style={{
+                  flex: 1,
+                  backgroundColor: "#e2e8f0",
+                  color: "#475569",
+                  border: "none",
+                  padding: "12px",
+                  borderRadius: "10px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  boxShadow: "none",
+                  transform: "none"
+                }}
+              >
+                Go Back
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ⚠️ CUSTOM ABUSE & GRIEVANCE REPORTING MODAL */}
+      {activeComplaintBooking && (
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(15, 23, 42, 0.75)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+          fontFamily: "'Outfit', sans-serif",
+          backdropFilter: "blur(8px)",
+          animation: "fadeIn 0.2s ease-out forwards"
+        }}>
+          <div style={{
+            maxWidth: "440px",
+            width: "90%",
+            backgroundColor: "white",
+            borderRadius: "20px",
+            padding: "28px",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+            border: "1px solid rgba(0,0,0,0.05)"
+          }}>
+            <h3 style={{ margin: "0 0 6px 0", fontSize: "20px", fontWeight: 800, color: "#b91c1c", display: "flex", alignItems: "center", gap: 8 }}>
+              <span>⚠️</span> Report Abuse or Grievance
+            </h3>
+            <p style={{ margin: "0 0 20px 0", fontSize: "13px", color: "#64748b", lineHeight: 1.5 }}>
+              Workzy maintains a zero-tolerance policy for abuse. Please document details of the incident below for administrative review and ledger enforcement.
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "16px" }}>
+              <label style={{ fontSize: "12px", fontWeight: 700, color: "#475569" }}>Incident / Grievance Type</label>
+              <select 
+                value={issueType} 
+                onChange={(e) => setIssueType(e.target.value)}
+                style={{ width: "100%", padding: "10px", borderRadius: "10px", border: "1px solid #cbd5e1" }}
+              >
+                <option value="Abuse & Harassment">🚨 Verbal Abuse & Harassment</option>
+                <option value="Financial Fraud">💰 Overcharging / Financial Fraud</option>
+                <option value="Poor Service Conduct">🧼 Extremely Poor Service Conduct</option>
+                <option value="Safety Threat">🛡️ Physical Threat / Safety Risk</option>
+                <option value="Other">Other Incident</option>
+              </select>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "20px" }}>
+              <label style={{ fontSize: "12px", fontWeight: 700, color: "#475569" }}>Detailed Incident Description</label>
+              <textarea
+                rows={4}
+                value={complaintDesc}
+                onChange={(e) => setComplaintDesc(e.target.value)}
+                placeholder="Please describe exactly what happened (dates, comments, specific actions)..."
+                style={{ width: "100%", padding: "10px", borderRadius: "10px", border: "1px solid #cbd5e1", boxSizing: "border-box", fontSize: "13px", fontFamily: "inherit" }}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button
+                disabled={submittingComplaint}
+                onClick={handleConfirmComplaint}
+                style={{
+                  flex: 1,
+                  backgroundColor: "#dc2626",
+                  color: "white",
+                  border: "none",
+                  padding: "12px",
+                  borderRadius: "10px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  fontSize: "14px"
+                }}
+              >
+                {submittingComplaint ? "Filing Report..." : "Submit Abuse Report ⚖️"}
+              </button>
+              <button
+                disabled={submittingComplaint}
+                onClick={() => setActiveComplaintBooking(null)}
+                style={{
+                  flex: 1,
+                  backgroundColor: "#e2e8f0",
+                  color: "#475569",
+                  border: "none",
+                  padding: "12px",
+                  borderRadius: "10px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  boxShadow: "none",
+                  transform: "none"
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

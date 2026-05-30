@@ -20,6 +20,8 @@ import serviceRoutes from "./routes/serviceRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
+import aiRoutes from "./routes/aiRoutes.js";
+import securityRoutes from "./routes/securityRoutes.js";
 
 dotenv.config();
 
@@ -40,6 +42,8 @@ app.use("/api/services", serviceRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/ai", aiRoutes);
+app.use("/api/security", securityRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend Running");

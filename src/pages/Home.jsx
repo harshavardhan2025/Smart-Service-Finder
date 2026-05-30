@@ -8,6 +8,7 @@ import TopWorkers from "../components/TopWorkers";
 import CheapWorkers from "../components/CheapWorkers";
 import NearbyWorkers from "../components/NearbyWorkers";
 import { filterWorkersClientSide } from "../utils/workerService";
+import SkeletonLoader from "../components/SkeletonLoader";
 
 function Home() {
   const navigate = useNavigate();
@@ -29,6 +30,16 @@ function Home() {
       navigate("/worker-dashboard");
     }
   }, [role, navigate]);
+
+  // Deep-linking AI recommended service bridge
+  useEffect(() => {
+    const savedQuery = localStorage.getItem("voice_query");
+    if (savedQuery) {
+      setServiceQuery(savedQuery);
+      setLocationText(savedQuery);
+      localStorage.removeItem("voice_query");
+    }
+  }, []);
 
   useEffect(() => {
     if (!searchedLocation) {
@@ -255,10 +266,9 @@ function Home() {
               Based on your fetched location <strong>{getShortLocation(searchedLocation)}</strong>, our AI has automatically searched the database to find the Top Rated Professionals, Budget-Friendly Workers, and Instant Bookings in your area and surrounding locations!
             </div>
             
-            {/* Display AI Suggested Workers */}
             {isAiLoading ? (
-              <div style={{ marginTop: "8px", fontSize: "12px", color: "var(--primary)" }}>
-                <em>🧠 AI is analyzing local databases...</em>
+              <div style={{ marginTop: "12px" }}>
+                <SkeletonLoader type="list" count={1} />
               </div>
             ) : aiSuggestedWorkers.length > 0 ? (
               <div style={{ marginTop: "12px" }}>

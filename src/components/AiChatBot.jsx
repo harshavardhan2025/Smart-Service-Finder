@@ -6,6 +6,116 @@ function AiChatBot() {
   const role = sessionStorage.getItem("userRole");
   const path = location.pathname;
 
+  // ── PREMIUM CUSTOM DRAG-AND-RESIZE STATE AND LOGIC ──
+  const [dimensions, setDimensions] = useState(() => {
+    const saved = localStorage.getItem("chat_dimensions");
+    return saved ? JSON.parse(saved) : { width: 360, height: 500, x: window.innerWidth - 380, y: window.innerHeight - 600 };
+  });
+
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const dragStart = useRef({ x: 0, y: 0 });
+  const resizeStart = useRef({ x: 0, y: 0, w: 0, h: 0, startX: 0 });
+
+  const handleHeaderMouseDown = (e) => {
+    if (e.button !== 0) return;
+    setIsDragging(true);
+    dragStart.current = {
+      x: e.clientX - dimensions.x,
+      y: e.clientY - dimensions.y
+    };
+    e.preventDefault();
+  };
+
+  const handleResizeMouseDown = (e) => {
+    if (e.button !== 0) return;
+    setIsResizing(true);
+    resizeStart.current = {
+      x: e.clientX,
+      y: e.clientY,
+      w: dimensions.width,
+      h: dimensions.height,
+      startX: dimensions.x
+    };
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (isDragging) {
+        let newX = e.clientX - dragStart.current.x;
+        let newY = e.clientY - dragStart.current.y;
+        
+        newX = Math.max(0, Math.min(newX, window.innerWidth - dimensions.width));
+        newY = Math.max(0, Math.min(newY, window.innerHeight - dimensions.height));
+        
+        const newCoords = { ...dimensions, x: newX, y: newY };
+        setDimensions(newCoords);
+        localStorage.setItem("chat_dimensions", JSON.stringify(newCoords));
+      } else if (isResizing) {
+        const deltaX = resizeStart.current.x - e.clientX;
+        const deltaY = e.clientY - resizeStart.current.y;
+        
+        let newWidth = resizeStart.current.w + deltaX;
+        let newHeight = resizeStart.current.h + deltaY;
+        let newX = resizeStart.current.startX - deltaX;
+
+        if (newWidth < 280) {
+          newWidth = 280;
+          newX = resizeStart.current.startX + resizeStart.current.w - 280;
+        }
+        if (newWidth > 600) {
+          newWidth = 600;
+          newX = resizeStart.current.startX + resizeStart.current.w - 600;
+        }
+        if (newHeight < 350) newHeight = 350;
+        if (newHeight > 750) newHeight = 750;
+
+        if (newX < 0) {
+          newX = 0;
+          newWidth = resizeStart.current.startX + resizeStart.current.w;
+        }
+
+        const newCoords = {
+          width: newWidth,
+          height: newHeight,
+          x: newX,
+          y: dimensions.y
+        };
+        setDimensions(newCoords);
+        localStorage.setItem("chat_dimensions", JSON.stringify(newCoords));
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      setIsResizing(false);
+    };
+
+    if (isDragging || isResizing) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging, isResizing, dimensions]);
+
+  useEffect(() => {
+    const handleWindowResize = () => {
+      setDimensions(prev => {
+        const x = Math.max(0, Math.min(prev.x, window.innerWidth - prev.width));
+        const y = Math.max(0, Math.min(prev.y, window.innerHeight - prev.height));
+        return { ...prev, x, y };
+      });
+    };
+    window.addEventListener("resize", handleWindowResize);
+    return () => window.removeEventListener("resize", handleWindowResize);
+  }, []);
+
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
@@ -478,19 +588,25 @@ function AiChatBot() {
           width: "60px",
           height: "60px",
           borderRadius: "50%",
-          background: "linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)",
-          boxShadow: "0 8px 24px rgba(139, 92, 246, 0.3)",
+          background: "linear-gradient(135deg, #00dbde 0%, #fc00ff 100%)",
+          boxShadow: "0 8px 24px rgba(0, 219, 222, 0.4)",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
           cursor: "pointer",
           zIndex: 1000,
-          transition: "transform 0.2s ease",
+          transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
           color: "white",
-          fontSize: "24px"
+          fontSize: "26px"
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
-        onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "scale(1.15) rotate(5deg)";
+          e.currentTarget.style.boxShadow = "0 12px 30px rgba(252, 0, 255, 0.5)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "scale(1) rotate(0deg)";
+          e.currentTarget.style.boxShadow = "0 8px 24px rgba(0, 219, 222, 0.4)";
+        }}
       >
         💬
       </div>
@@ -501,28 +617,34 @@ function AiChatBot() {
           className="premium-card"
           style={{
             position: "fixed",
-            bottom: "90px",
-            right: "20px",
-            width: "360px",
-            height: "500px",
+            left: `${dimensions.x}px`,
+            top: `${dimensions.y}px`,
+            width: `${dimensions.width}px`,
+            height: `${dimensions.height}px`,
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
             zIndex: 1000,
             padding: 0,
             borderRadius: "20px",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+            border: "1.5px solid var(--border)",
+            userSelect: isDragging || isResizing ? "none" : "auto"
           }}
         >
           {/* Header */}
           <div
+            onMouseDown={handleHeaderMouseDown}
             style={{
-              background: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)",
+              background: "linear-gradient(135deg, #00dbde 0%, #fc00ff 100%)",
               color: "white",
               padding: "15px",
               fontWeight: "bold",
               display: "flex",
               justifyContent: "space-between",
-              alignItems: "center"
+              alignItems: "center",
+              cursor: "move",
+              userSelect: "none"
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -533,8 +655,11 @@ function AiChatBot() {
               </div>
             </div>
             <span
-              onClick={() => setIsOpen(false)}
-              style={{ cursor: "pointer", fontSize: "20px" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsOpen(false);
+              }}
+              style={{ cursor: "pointer", fontSize: "20px", padding: "0 5px" }}
             >
               ×
             </span>
@@ -721,16 +846,40 @@ function AiChatBot() {
             <button
               onClick={handleSendMessage}
               disabled={isTyping}
-              className="btn-primary"
               style={{
-                padding: "10px 15px",
+                padding: "10px 18px",
                 borderRadius: "8px",
-                fontSize: "13px"
+                fontSize: "13px",
+                background: "linear-gradient(135deg, #00dbde 0%, #fc00ff 100%)",
+                border: "none",
+                color: "white",
+                fontWeight: 700,
+                cursor: "pointer",
+                boxShadow: "0 2px 8px rgba(0, 219, 222, 0.25)",
+                transition: "all 0.2s"
               }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-1px)"}
+              onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
             >
               Send
             </button>
           </div>
+          {/* Resize grip at bottom-left corner */}
+          <div
+            onMouseDown={handleResizeMouseDown}
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              width: "20px",
+              height: "20px",
+              cursor: "nesw-resize",
+              zIndex: 1001,
+              background: "linear-gradient(135deg, transparent 50%, rgba(252, 0, 255, 0.5) 50%)",
+              transform: "rotate(90deg)",
+              borderRadius: "0 0 0 20px"
+            }}
+          />
         </div>
       )}
     </div>

@@ -151,6 +151,8 @@ function WorkerProfile() {
               <div style={{ fontSize: "32px" }}>💰</div>
             </div>
 
+            <div style={{ marginBottom: "28px" }} />
+
             {/* Badges / Guarantees */}
             <div style={{ borderTop: "1.5px solid var(--border-color)", paddingTop: "24px", marginBottom: "32px" }}>
               <h4 style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-primary)", margin: "0 0 12px 0" }}>Hub Guarantees</h4>

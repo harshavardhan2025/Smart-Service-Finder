@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import RouteMap from "../components/RouteMap";
+import SecurityLogs from "../components/SecurityLogs";
+import SkeletonLoader from "../components/SkeletonLoader";
 // Dynamically enhanced to consume real Mongo cloud telemetry
 
 function WorkerDashboard() {
@@ -18,6 +21,9 @@ function WorkerDashboard() {
   const selectedWorkerId = Number(sessionStorage.getItem("loggedInWorkerId")) || 1;
 
   const [bookings, setBookings] = useState([]);
+  const [workerReviews, setWorkerReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [replyTexts, setReplyTexts] = useState({});
   const complaints = [];
   const sysNotifications = [];
 
@@ -30,6 +36,7 @@ function WorkerDashboard() {
     rating: 5.0,
     totalReviews: 0,
     joinedDate: "...",
+    mongoId: null,
     photo: "👷"
   });
   const [editProfile, setEditProfile] = useState({ ...profile });
@@ -43,6 +50,16 @@ function WorkerDashboard() {
       sessionStorage.removeItem("activeSosNotificationId");
     }
   }, [sosActive, activeSosNotificationId]);
+
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state && location.state.resetTab) {
+      setActiveTab(location.state.resetTab);
+      // Clean up state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   // Pull real runtime data directly from active Mongo Cloud Backend
   const syncStore = async () => {
@@ -76,7 +93,7 @@ function WorkerDashboard() {
             city: match.city,
             rating: match.rating || 5.0,
             walletBalance: match.walletBalance || 0,
-            totalReviews: 1,
+            totalReviews: match.reviews || 0,
             joinedDate: "May 2026",
             mongoId: match._id,
             photo: match.service && match.service.includes("Doctors") ? "🩺" : "👷"
@@ -87,10 +104,20 @@ function WorkerDashboard() {
 
       // 2. EXECUTE RELATIONAL QUERY USING AUTHENTIC PRIMARY KEY
       if (targetWorkerMongoId) {
-        const bookingResp = await fetch(`/api/bookings?worker_id=${targetWorkerMongoId}`);
+        const bookingResp = await fetch(`/api/bookings?worker_id=${targetWorkerMongoId}`, {
+          headers: {
+            "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`
+          }
+        });
         if (bookingResp.ok) {
           const data = await bookingResp.json();
           setBookings(data);
+        }
+
+        const reviewResp = await fetch(`/api/reviews?worker_id=${targetWorkerMongoId}`);
+        if (reviewResp.ok) {
+          const data = await reviewResp.json();
+          setWorkerReviews(data);
         }
       }
 
@@ -107,6 +134,8 @@ function WorkerDashboard() {
       }
     } catch (err) {
        console.error("Worker Sync Failed:", err);
+    } finally {
+       setLoading(false);
     }
   };
 
@@ -120,7 +149,10 @@ function WorkerDashboard() {
     try {
       await fetch(`/api/bookings/${bookingId}`, {
          method: "PATCH",
-         headers: { "Content-Type": "application/json" },
+         headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`
+         },
          body: JSON.stringify({ status: "Accepted" })
       });
       alert("✅ Order accepted successfully! The customer has been notified. 🚀");
@@ -132,7 +164,10 @@ function WorkerDashboard() {
     try {
       await fetch(`/api/bookings/${bookingId}`, {
          method: "PATCH",
-         headers: { "Content-Type": "application/json" },
+         headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`
+         },
          body: JSON.stringify({ status: newStatus })
       });
       alert(`Status updated to: ${newStatus}`);
@@ -145,7 +180,10 @@ function WorkerDashboard() {
        try {
           await fetch(`/api/bookings/${bookingId}`, {
              method: "PATCH",
-             headers: { "Content-Type": "application/json" },
+             headers: { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`
+             },
              body: JSON.stringify({ status: "Rejected" })
           });
           alert("❌ Request rejected successfully.");
@@ -303,9 +341,11 @@ Reported At: ${new Date().toLocaleString()}`,
   const sidebarTabs = [
     { id: "status", label: "My Status", icon: "🟢" },
     { id: "bookings", label: "All Bookings", icon: "📋" },
+    { id: "reviews", label: "Reviews & Feedback", icon: "⭐" },
     { id: "notifications", label: `Alerts (${unreadCount})`, icon: "🔔" },
     { id: "earnings", label: "My Earnings", icon: "💰" },
     { id: "profile", label: "My Profile", icon: "👤" },
+    { id: "security-logs", label: "Security Logs", icon: "🛡️" },
     { id: "sos", label: "SOS Emergency", icon: "🚨" },
   ];
 
@@ -395,7 +435,10 @@ Reported At: ${new Date().toLocaleString()}`,
                       try {
                         await fetch(`/api/workers/${profile.mongoId}`, {
                           method: "PATCH",
-                          headers: { "Content-Type": "application/json" },
+                          headers: { 
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`
+                          },
                           body: JSON.stringify({ status: newStatus })
                         });
                         setIsActive(!isActive);
@@ -421,7 +464,9 @@ Reported At: ${new Date().toLocaleString()}`,
             <div className="fade-in">
               <h2 style={{ margin: "0 0 24px", fontWeight: 800, color: "var(--text-primary)" }}>All Job Bookings</h2>
               <div className="premium-card">
-                {bookings.length === 0 ? (
+                {loading ? (
+                  <SkeletonLoader type="list" count={3} />
+                ) : bookings.length === 0 ? (
                   <p style={{ color: "var(--text-secondary)", textAlign: "center", padding: "40px" }}>No jobs booked under your profile yet.</p>
                 ) : (
                   <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
@@ -685,14 +730,14 @@ Reported At: ${new Date().toLocaleString()}`,
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                     {activeValidBookings.map(b => (
-                      <div key={b.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 0", borderBottom: "1px solid #f1f5f9" }}>
+                      <div key={b._id || b.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 0", borderBottom: "1px solid #f1f5f9" }}>
                         <div>
                           <div style={{ fontWeight: 750, color: "#1e293b", fontSize: 15 }}>{b.service}</div>
-                          <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>👤 Client: <strong style={{ color: "#334155" }}>{b.customer}</strong> · 📅 {b.date}</div>
+                          <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>👤 Client: <strong style={{ color: "#334155" }}>{b.customer_name || b.customer}</strong> · 📅 {b.date}</div>
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
                           <div style={{ fontWeight: 900, fontSize: 20, color: b.status === "Paid Out" ? "#16a34a" : b.status === "Completed" ? "#c2410c" : "#475569" }}>
-                            ₹{b.price || b.amount}
+                            ₹{b.price}
                           </div>
                           <span style={{ 
                             fontSize: 10, 
@@ -799,6 +844,183 @@ Reported At: ${new Date().toLocaleString()}`,
                   )}
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* REVIEWS & FEEDBACK TAB */}
+          {activeTab === "reviews" && (
+            <div className="fade-in" style={{ maxWidth: 800, margin: "0 auto" }}>
+              <h2 style={{ margin: "0 0 24px", fontWeight: 800, color: "var(--text-primary)" }}>⭐ Customer Reviews & Feedback</h2>
+              
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 24, marginBottom: 28 }}>
+                {/* Stats Panel */}
+                <div className="premium-card" style={{ padding: 24, textAlign: "center" }}>
+                  <h3 style={{ margin: "0 0 8px", color: "var(--text-secondary)", fontSize: 14 }}>AVERAGE RATING</h3>
+                  <div style={{ fontSize: 48, fontWeight: 900, color: "#f59e0b", margin: "12px 0" }}>
+                    ⭐ {finalRating}
+                  </div>
+                  <p style={{ color: "var(--text-secondary)", fontSize: 13, margin: 0 }}>
+                    Based on {workerReviews.length} customer ratings
+                  </p>
+                </div>
+
+                {/* Sentiment & Quick Stats */}
+                <div className="premium-card" style={{ padding: 24 }}>
+                  <h3 style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 800, color: "var(--text-primary)" }}>Performance Badges</h3>
+                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                    {parseFloat(finalRating) >= 4.5 && (
+                      <span style={{ backgroundColor: "#ecfdf5", color: "#047857", padding: "6px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, border: "1px solid #a7f3d0" }}>
+                        🏆 Top Performer
+                      </span>
+                    )}
+                    {workerReviews.filter(r => r.rating === 5).length > 0 && (
+                      <span style={{ backgroundColor: "#fef3c7", color: "#d97706", padding: "6px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, border: "1px solid #fde68a" }}>
+                        ✨ 5-Star Expert ({workerReviews.filter(r => r.rating === 5).length})
+                      </span>
+                    )}
+                    {workerReviews.some(r => r.comment && r.comment.toLowerCase().includes("punctual")) && (
+                      <span style={{ backgroundColor: "#eff6ff", color: "#1d4ed8", padding: "6px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, border: "1px solid #bfdbfe" }}>
+                        ⏱️ Highly Punctual
+                      </span>
+                    )}
+                    {workerReviews.some(r => r.comment && r.comment.toLowerCase().includes("clean")) && (
+                      <span style={{ backgroundColor: "#f5f3ff", color: "#6d28d9", padding: "6px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, border: "1px solid #ddd6fe" }}>
+                        🧹 Extremely Neat
+                      </span>
+                    )}
+                    <span style={{ backgroundColor: "#f1f5f9", color: "#475569", padding: "6px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, border: "1px solid #cbd5e1" }}>
+                      💬 {workerReviews.filter(r => r.reply).length} Replies Sent
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Reviews List */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {loading ? (
+                  <SkeletonLoader type="list" count={2} />
+                ) : workerReviews.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "48px 0", color: "#64748b" }}>
+                    <div style={{ fontSize: 48 }}>📝</div>
+                    <h3 style={{ margin: "12px 0 4px" }}>No reviews yet</h3>
+                    <p style={{ margin: 0, fontSize: 14 }}>Once customers complete bookings and rate your work, they will show up here.</p>
+                  </div>
+                ) : (
+                  workerReviews.map((r) => {
+                    const rid = r._id || r.id;
+                    const stars = "★".repeat(r.rating || 5) + "☆".repeat(5 - (r.rating || 5));
+                    
+                    // Simple Sentiment Tag Generator based on rating
+                    let sentimentTag = "Punctual";
+                    let tagBg = "#eff6ff", tagColor = "#1d4ed8", tagBorder = "#bfdbfe";
+                    if (r.rating === 5) {
+                      sentimentTag = "Exemplary Professional";
+                      tagBg = "#ecfdf5"; tagColor = "#047857"; tagBorder = "#a7f3d0";
+                    } else if (r.rating <= 3) {
+                      sentimentTag = "Critical Review";
+                      tagBg = "#fff5f5"; tagColor = "#e53e3e"; tagBorder = "#fed7d7";
+                    } else if (r.comment && r.comment.toLowerCase().includes("quick")) {
+                      sentimentTag = "Super Fast Service";
+                      tagBg = "#f5f3ff"; tagColor = "#6d28d9"; tagBorder = "#ddd6fe";
+                    }
+
+                    return (
+                      <div key={rid} className="premium-card" style={{ padding: 24, borderLeft: r.rating >= 4 ? "5px solid #10b981" : "5px solid #ef4444" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+                          <div>
+                            <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
+                              👤 {r.customer_name || "Verified Customer"}
+                            </h4>
+                            <p style={{ margin: "2px 0 0 0", fontSize: 12, color: "#64748b" }}>
+                              💼 {r.service} · 📅 {r.date}
+                            </p>
+                          </div>
+                          
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+                            <span style={{ color: "#f59e0b", fontSize: 18, fontWeight: "bold" }}>{stars}</span>
+                            <span style={{ backgroundColor: tagBg, color: tagColor, border: `1px solid ${tagBorder}`, padding: "2px 8px", borderRadius: 12, fontSize: 10, fontWeight: 700 }}>
+                              {sentimentTag}
+                            </span>
+                          </div>
+                        </div>
+
+                        {r.comment && (
+                          <p style={{ margin: "0 0 16px 0", fontSize: 14, color: "var(--text-secondary)", fontStyle: "italic", lineHeight: 1.5, padding: "10px 14px", backgroundColor: "#f8fafc", borderRadius: 8 }}>
+                            "{r.comment}"
+                          </p>
+                        )}
+
+                        {/* Threaded Reply Segment */}
+                        <div style={{ borderTop: "1.5px dashed var(--border-color)", paddingTop: 16, marginTop: 14 }}>
+                          {r.reply ? (
+                            <div style={{ backgroundColor: "#f5f3ff", border: "1px solid #ddd6fe", borderRadius: 12, padding: "12px 16px", marginLeft: 20 }}>
+                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                                <span style={{ fontSize: 12, fontWeight: 800, color: "#6d28d9" }}>💬 Your Professional Response</span>
+                                <span style={{ fontSize: 11, color: "#8b5cf6" }}>📅 {r.replyDate}</span>
+                              </div>
+                              <p style={{ margin: 0, fontSize: 13, color: "#4c1d95", lineHeight: 1.5 }}>
+                                {r.reply}
+                              </p>
+                            </div>
+                          ) : (
+                            <div style={{ marginLeft: 20 }}>
+                              <textarea
+                                placeholder="Type a polite response to this review..."
+                                value={replyTexts[rid] || ""}
+                                onChange={(e) => setReplyTexts(prev => ({ ...prev, [rid]: e.target.value }))}
+                                rows={2}
+                                style={{
+                                  width: "100%", padding: "10px", borderRadius: 8, border: "1px solid var(--border-color)",
+                                  fontSize: 13, fontFamily: "inherit", resize: "vertical", boxSizing: "border-box", marginBottom: 8
+                                }}
+                              />
+                              <button
+                                onClick={async () => {
+                                  const text = replyTexts[rid];
+                                  if (!text || !text.trim()) {
+                                    alert("Please type a response first!");
+                                    return;
+                                  }
+                                  try {
+                                    const resp = await fetch(`/api/reviews/${rid}/reply`, {
+                                      method: "POST",
+                                      headers: { "Content-Type": "application/json" },
+                                      body: JSON.stringify({ reply: text })
+                                    });
+                                    if (resp.ok) {
+                                      const updatedReview = await resp.json();
+                                      // Sync in-memory reviews state instantly
+                                      setWorkerReviews(prev => prev.map(item => item._id === rid || item.id === rid ? updatedReview : item));
+                                      setReplyTexts(prev => ({ ...prev, [rid]: "" }));
+                                      alert("Response posted successfully!");
+                                    } else {
+                                      alert("Failed to submit response.");
+                                    }
+                                  } catch (e) { console.error("Reply fail:", e); }
+                                }}
+                                style={{
+                                  padding: "6px 14px", backgroundColor: "var(--primary)", color: "white",
+                                  border: "none", borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: "pointer"
+                                }}
+                              >
+                                Post Response
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* SECURITY LOGS TAB */}
+          {activeTab === "security-logs" && (
+            <div className="fade-in" style={{ maxWidth: 800, margin: "0 auto" }}>
+              <h2 style={{ margin: "0 0 24px", fontWeight: 800, color: "var(--text-primary)" }}>My Security Dashboard</h2>
+              <SecurityLogs userId={sessionStorage.getItem("userId")} />
             </div>
           )}
 
@@ -1061,6 +1283,44 @@ Reported At: ${new Date().toLocaleString()}`,
 
         </div>
       </div>
+
+      {/* 🚨 FLOATING SOS IN-APP PANIC TRIGGER */}
+      <div
+        onClick={() => {
+          setActiveTab("sos");
+          handleTriggerSOS();
+        }}
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          left: "20px",
+          width: "60px",
+          height: "60px",
+          borderRadius: "50%",
+          background: "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
+          boxShadow: "0 8px 24px rgba(239, 68, 68, 0.4)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          cursor: "pointer",
+          zIndex: 999,
+          color: "white",
+          fontSize: "22px",
+          fontWeight: "bold",
+          border: "2px solid white",
+          animation: "pulse-sos-btn-worker 1.5s infinite"
+        }}
+      >
+        🆘
+      </div>
+
+      <style>{`
+        @keyframes pulse-sos-btn-worker {
+          0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+          70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+      `}</style>
     </div>
   );
 }

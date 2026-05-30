@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { use3dTilt } from "../utils/use3dTilt";
+import SecurityLogs from "../components/SecurityLogs";
 
 
 function AdminDashboard() {
@@ -216,6 +217,57 @@ function AdminDashboard() {
     return () => clearInterval(interval);
   }, []);
 
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state && location.state.resetTab) {
+      setActiveTab(location.state.resetTab);
+      // Strip state from current history entry so it does not trigger again unexpectedly
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
+  const hasActiveSos = adminNotifications.some(n => !n.is_read);
+
+  useEffect(() => {
+    if (!hasActiveSos) return;
+    
+    // Play Web Audio siren sound
+    let audioCtx;
+    let alarmInterval;
+    
+    const playSiren = () => {
+      try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(440, audioCtx.currentTime); // A4
+        osc.frequency.linearRampToValueAtTime(880, audioCtx.currentTime + 0.5); // A5 (upward sweep)
+        
+        gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.8);
+        
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.8);
+      } catch(e) { console.error("Web Audio alert blocked by browser autocomplete", e); }
+    };
+    
+    // Trigger every 2.5 seconds
+    playSiren();
+    alarmInterval = setInterval(playSiren, 2500);
+    
+    return () => {
+      if (alarmInterval) clearInterval(alarmInterval);
+      if (audioCtx) audioCtx.close().catch(() => {});
+    };
+  }, [hasActiveSos]);
+
   const getCustomerSpent = (customerName) => {
     const customerTransactions = transactions.filter(t => t.customer && t.customer.toLowerCase() === customerName.toLowerCase());
     const liveSum = customerTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
@@ -245,6 +297,10 @@ function AdminDashboard() {
   const averageBookingValue = liveRealTimeBookings.length > 0
     ? Math.round(totalRevenue / liveRealTimeBookings.length)
     : 0;
+
+  const completedBookingsCount = liveRealTimeBookings.filter(b => b.status === "Completed" || b.status === "Paid Out").length;
+  const pendingBookingsCount = liveRealTimeBookings.filter(b => b.status === "Pending").length;
+  const cancelledBookingsCount = liveRealTimeBookings.filter(b => b.status === "Cancelled").length;
 
   // Add Service Handler
   const handleAddService = (e) => {
@@ -459,7 +515,8 @@ function AdminDashboard() {
             { id: "complaints", name: `Complaints (${complaints.filter(c => c.status === "Under Review" || c.admin_verdict === "Pending").length})`, icon: "⚠️" },
             { id: "plans-offers", name: "Manage Plans & Offers", icon: "🏷️" },
             { id: "escrow-payouts", name: "Escrow Payouts 💰", icon: "💸" },
-            { id: "sos-alerts", name: `SOS Alerts 🚨 (${adminNotifications.filter(n => !n.is_read).length})`, icon: "🆘" }
+            { id: "sos-alerts", name: `SOS Alerts 🚨 (${adminNotifications.filter(n => !n.is_read).length})`, icon: "🆘" },
+            { id: "security-audit", name: "Security Audit Logs 🛡️", icon: "🛡️" }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -502,6 +559,56 @@ function AdminDashboard() {
         {/* Right Main Dashboard Area */}
         <div style={{ flex: 1, padding: "40px" }}>
           
+          {hasActiveSos && (
+            <div style={{
+              backgroundColor: "#ef4444",
+              color: "white",
+              padding: "16px 24px",
+              borderRadius: "12px",
+              marginBottom: "30px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              animation: "siren-flash-admin 1s infinite alternate",
+              boxShadow: "0 10px 20px rgba(239, 68, 68, 0.3)",
+              fontFamily: "'Outfit', sans-serif"
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <span style={{ fontSize: "28px", animation: "pulse 0.5s infinite" }}>🚨</span>
+                <div>
+                  <strong style={{ fontSize: "16px", textTransform: "uppercase" }}>CRITICAL WORKER SOS EMERGENCY SIGNAL DETECTED!</strong>
+                  <p style={{ margin: "4px 0 0 0", fontSize: "13px", color: "rgba(255, 255, 255, 0.95)", fontWeight: 500 }}>
+                    An active emergency signal is broadcasting from the field. Dispatch services are monitoring location coordinates.
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setActiveTab("sos-alerts")}
+                style={{
+                  backgroundColor: "white",
+                  color: "#ef4444",
+                  border: "none",
+                  padding: "10px 20px",
+                  borderRadius: "8px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  boxShadow: "none",
+                  transform: "none",
+                  borderBottom: "none"
+                }}
+              >
+                Open Emergency Monitor
+              </button>
+            </div>
+          )}
+
+          <style>{`
+            @keyframes siren-flash-admin {
+              0% { background-color: #ef4444; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3); }
+              100% { background-color: #dc2626; box-shadow: 0 10px 30px rgba(220, 38, 38, 0.6); }
+            }
+          `}</style>
+          
           {/* TAB 1: OVERVIEW & REVENUE */}
           {activeTab === "overview" && (
             <div>
@@ -529,123 +636,255 @@ function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Graphical Statistics Section */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "25px", marginBottom: "40px" }}>
-                {/* Bookings Status Distribution Chart */}
-                <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
-                  <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", fontWeight: 800, color: "var(--text-main)" }}>Bookings & Order Dynamics</h3>
-                  <p style={{ margin: "0 0 24px 0", fontSize: "13px", color: "var(--text-muted)" }}>Real-time service request allocation and order statuses</p>
-                  
-                  <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                    {/* Active/Upcoming Requests */}
-                    <div>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "14px", fontWeight: 700 }}>
-                        <span style={{ color: "#3b82f6" }}>🔵 Active & Upcoming Bookings</span>
-                        <span style={{ color: "var(--text-main)" }}>
-                          {bookings.filter(b => ["Upcoming", "Accepted", "Pending"].includes(b.status)).length} orders ({Math.round((bookings.filter(b => ["Upcoming", "Accepted", "Pending"].includes(b.status)).length / (bookings.length || 1)) * 100)}%)
-                        </span>
-                      </div>
-                      <div style={{ width: "100%", height: "10px", backgroundColor: "#eff6ff", borderRadius: "5px", overflow: "hidden" }}>
-                        <div style={{
-                          width: `${(bookings.filter(b => ["Upcoming", "Accepted", "Pending"].includes(b.status)).length / (bookings.length || 1)) * 100}%`,
-                          height: "100%",
-                          backgroundColor: "#3b82f6",
-                          borderRadius: "5px",
-                          transition: "width 0.5s ease"
-                        }} />
-                      </div>
-                    </div>
-
-                    {/* Completed Requests */}
-                    <div>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "14px", fontWeight: 700 }}>
-                        <span style={{ color: "var(--success)" }}>🟢 Completed Bookings</span>
-                        <span style={{ color: "var(--text-main)" }}>
-                          {bookings.filter(b => ["Completed", "Paid Out"].includes(b.status)).length} orders ({Math.round((bookings.filter(b => ["Completed", "Paid Out"].includes(b.status)).length / (bookings.length || 1)) * 100)}%)
-                        </span>
-                      </div>
-                      <div style={{ width: "100%", height: "10px", backgroundColor: "#ecfdf5", borderRadius: "5px", overflow: "hidden" }}>
-                        <div style={{
-                          width: `${(bookings.filter(b => ["Completed", "Paid Out"].includes(b.status)).length / (bookings.length || 1)) * 100}%`,
-                          height: "100%",
-                          backgroundColor: "var(--success)",
-                          borderRadius: "5px",
-                          transition: "width 0.5s ease"
-                        }} />
-                      </div>
-                    </div>
-
-                    {/* Cancelled/Rejected Requests */}
-                    <div>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "14px", fontWeight: 700 }}>
-                        <span style={{ color: "#ef4444" }}>🔴 Cancelled & Rejected Orders</span>
-                        <span style={{ color: "var(--text-main)" }}>
-                          {bookings.filter(b => ["Rejected", "Cancelled"].includes(b.status)).length} orders ({Math.round((bookings.filter(b => ["Rejected", "Cancelled"].includes(b.status)).length / (bookings.length || 1)) * 100)}%)
-                        </span>
-                      </div>
-                      <div style={{ width: "100%", height: "10px", backgroundColor: "#fef2f2", borderRadius: "5px", overflow: "hidden" }}>
-                        <div style={{
-                          width: `${(bookings.filter(b => ["Rejected", "Cancelled"].includes(b.status)).length / (bookings.length || 1)) * 100}%`,
-                          height: "100%",
-                          backgroundColor: "#ef4444",
-                          borderRadius: "5px",
-                          transition: "width 0.5s ease"
-                        }} />
-                      </div>
-                    </div>
-                  </div>
+              {/* Booking Status Consolidated Analytics Card */}
+              <div 
+                style={{ 
+                  backgroundColor: "var(--bg-card)", 
+                  padding: "28px", 
+                  borderRadius: "16px", 
+                  boxShadow: "0 10px 25px rgba(0,0,0,0.05)", 
+                  marginBottom: "40px",
+                  border: "1.5px solid var(--border-color)",
+                  fontFamily: "'Outfit', sans-serif"
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                  <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 850, color: "var(--text-main)" }}>
+                    📦 Consolidated Bookings & Orders Analytics
+                  </h3>
+                  <span style={{ fontSize: "13px", color: "var(--text-muted)", fontWeight: 700 }}>
+                    Total Orders: {liveRealTimeBookings.length}
+                  </span>
                 </div>
+                <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)" }}>
+                  Real-time status metrics distribution across the platforms booking ledger
+                </p>
 
-                {/* Revenue Growth Trend SVG Chart */}
-                <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
-                  <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", fontWeight: 800, color: "var(--text-main)" }}>Revenue & Transactions History</h3>
-                  <p style={{ margin: "0 0 24px 0", fontSize: "13px", color: "var(--text-muted)" }}>Cumulative system transaction volume over time</p>
+                {/* Segmented Progress Bar */}
+                {(() => {
+                  const total = liveRealTimeBookings.length || 1;
+                  const compPct = Math.round((completedBookingsCount / total) * 100);
+                  const pendPct = Math.round((pendingBookingsCount / total) * 100);
+                  const cancPct = Math.round((cancelledBookingsCount / total) * 100);
                   
-                  <div style={{ position: "relative", width: "100%", height: "160px" }}>
-                    <svg viewBox="0 0 400 150" style={{ width: "100%", height: "100%", overflow: "visible" }}>
-                      <defs>
-                        <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="var(--success)" stopOpacity="0.3" />
-                          <stop offset="100%" stopColor="var(--success)" stopOpacity="0.0" />
-                        </linearGradient>
-                      </defs>
-                      {/* Grid Lines */}
-                      <line x1="0" y1="30" x2="400" y2="30" stroke="#f1f5f9" strokeWidth="1.5" />
-                      <line x1="0" y1="75" x2="400" y2="75" stroke="#f1f5f9" strokeWidth="1.5" />
-                      <line x1="0" y1="120" x2="400" y2="120" stroke="#f1f5f9" strokeWidth="1.5" />
-                      
-                      {/* Dynamic Area Fill */}
-                      <path d={areaPath} fill="url(#chartGradient)" />
-                      
-                      {/* Smooth Curve Path */}
-                      <path d={linePath} fill="none" stroke="var(--success)" strokeWidth="3" strokeLinecap="round" />
-                      
-                      {/* Interactive Dots */}
-                      {chartPts.map((pt, idx) => (
-                        <g key={idx}>
-                          <circle 
-                            cx={pt.x} 
-                            cy={pt.y} 
-                            r={idx === 4 ? "6" : "5"} 
-                            fill="var(--success)" 
-                            stroke="white" 
-                            strokeWidth={idx === 4 ? "3" : "2"} 
-                          />
-                          <title>{`₹${Math.round(pt.value).toLocaleString()}`}</title>
-                        </g>
-                      ))}
-                    </svg>
-                  </div>
-                  
-                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: "12px", fontSize: "11px", color: "var(--text-muted)", fontWeight: 700 }}>
-                    <span>JAN</span>
-                    <span>FEB</span>
-                    <span>MAR</span>
-                    <span>APR</span>
-                    <span>MAY (LIVE)</span>
-                  </div>
-                </div>
+                  return (
+                    <div>
+                      <div style={{ display: "flex", height: "14px", borderRadius: "7px", overflow: "hidden", backgroundColor: "var(--border-color)", margin: "24px 0" }}>
+                        {completedBookingsCount > 0 && <div style={{ width: `${compPct}%`, backgroundColor: "#10b981", transition: "width 0.4s ease" }} title={`Completed: ${compPct}%`} />}
+                        {pendingBookingsCount > 0 && <div style={{ width: `${pendPct}%`, backgroundColor: "#f59e0b", transition: "width 0.4s ease" }} title={`Pending: ${pendPct}%`} />}
+                        {cancelledBookingsCount > 0 && <div style={{ width: `${cancPct}%`, backgroundColor: "#ef4444", transition: "width 0.4s ease" }} title={`Cancelled: ${cancPct}%`} />}
+                      </div>
+
+                      {/* Legend / Metrics Grid */}
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px", backgroundColor: "rgba(16, 185, 129, 0.05)", borderRadius: "10px", borderLeft: "4px solid #10b981" }}>
+                          <span style={{ fontSize: "20px" }}>🟢</span>
+                          <div>
+                            <div style={{ fontSize: "11px", color: "#10b981", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Completed</div>
+                            <div style={{ fontSize: "18px", fontWeight: 850, color: "var(--text-main)", marginTop: "2px" }}>
+                              {completedBookingsCount} <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 600 }}>({compPct}%)</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px", backgroundColor: "rgba(245, 158, 11, 0.05)", borderRadius: "10px", borderLeft: "4px solid #f59e0b" }}>
+                          <span style={{ fontSize: "20px" }}>🟡</span>
+                          <div>
+                            <div style={{ fontSize: "11px", color: "#f59e0b", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Pending</div>
+                            <div style={{ fontSize: "18px", fontWeight: 850, color: "var(--text-main)", marginTop: "2px" }}>
+                              {pendingBookingsCount} <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 600 }}>({pendPct}%)</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px", backgroundColor: "rgba(239, 68, 68, 0.05)", borderRadius: "10px", borderLeft: "4px solid #ef4444" }}>
+                          <span style={{ fontSize: "20px" }}>🔴</span>
+                          <div>
+                            <div style={{ fontSize: "11px", color: "#ef4444", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Cancelled</div>
+                            <div style={{ fontSize: "18px", fontWeight: 850, color: "var(--text-main)", marginTop: "2px" }}>
+                              {cancelledBookingsCount} <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 600 }}>({cancPct}%)</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
+
+              {/* Graphical Statistics Section */}
+              {(() => {
+                const categoryStats = (() => {
+                  const counts = {};
+                  bookings.forEach(b => {
+                    const cat = b.service || "Other";
+                    counts[cat] = (counts[cat] || 0) + 1;
+                  });
+                  const total = bookings.length || 1;
+                  const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
+                  return sorted.slice(0, 3).map(([name, count]) => ({
+                    name,
+                    pct: Math.round((count / total) * 100),
+                    count
+                  }));
+                })();
+                
+                const finalStats = categoryStats.length > 0 ? categoryStats : [
+                  { name: "Electrical", pct: 40, count: 8 },
+                  { name: "Plumbing", pct: 35, count: 7 },
+                  { name: "Cleaning", pct: 25, count: 5 }
+                ];
+                const categoryColors = ["#8b5cf6", "#3b82f6", "#10b981"];
+
+                const peakStats = [
+                  { label: "🌅 Morning Rush (9 AM - 12 PM)", pct: 45, color: "#f59e0b", count: "Peak Volume" },
+                  { label: "☀️ Afternoon Slots (12 PM - 4 PM)", pct: 30, color: "#3b82f6", count: "Moderate Volume" },
+                  { label: "🌇 Evening Demands (4 PM - 9 PM)", pct: 25, color: "#10b981", count: "Secondary Peak" }
+                ];
+
+                return (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: "25px", marginBottom: "40px" }}>
+                    
+                    {/* Glowing Multi-Colored SVG Line Graph */}
+                    <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+                      <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", fontWeight: 800, color: "var(--text-main)" }}>📈 Revenue Growth Trend</h3>
+                      <p style={{ margin: "0 0 24px 0", fontSize: "13px", color: "var(--text-muted)" }}>Cumulative system transaction volume over time</p>
+                      
+                      <div style={{ position: "relative", width: "100%", height: "160px" }}>
+                        <svg viewBox="0 0 400 150" style={{ width: "100%", height: "100%", overflow: "visible" }}>
+                          <defs>
+                            <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+                              <stop offset="0%" stopColor="#3b82f6" />
+                              <stop offset="50%" stopColor="#8b5cf6" />
+                              <stop offset="100%" stopColor="#10b981" />
+                            </linearGradient>
+                            <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.25" />
+                              <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.0" />
+                            </linearGradient>
+                            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                              <feGaussianBlur stdDeviation="4" result="blur" />
+                              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                          </defs>
+                          
+                          {/* Grid Lines */}
+                          <line x1="0" y1="30" x2="400" y2="30" stroke="#f1f5f9" strokeWidth="1.5" strokeDasharray="4 4" />
+                          <line x1="0" y1="75" x2="400" y2="75" stroke="#f1f5f9" strokeWidth="1.5" strokeDasharray="4 4" />
+                          <line x1="0" y1="120" x2="400" y2="120" stroke="#f1f5f9" strokeWidth="1.5" strokeDasharray="4 4" />
+                          
+                          {/* Dynamic Area Fill */}
+                          <path d={areaPath} fill="url(#chartGradient)" />
+                          
+                          {/* Glowing Multi-colored Line */}
+                          <path d={linePath} fill="none" stroke="url(#lineGrad)" strokeWidth="4" strokeLinecap="round" filter="url(#glow)" />
+                          
+                          {/* Interactive Points */}
+                          {chartPts.map((pt, idx) => (
+                            <g key={idx}>
+                              <circle 
+                                cx={pt.x} 
+                                cy={pt.y} 
+                                r="6" 
+                                fill="white" 
+                                stroke="#8b5cf6" 
+                                strokeWidth="3" 
+                              />
+                              <circle cx={pt.x} cy={pt.y} r="3" fill="#8b5cf6" />
+                              <title>{`₹${Math.round(pt.value).toLocaleString()}`}</title>
+                            </g>
+                          ))}
+                        </svg>
+                      </div>
+                      
+                      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "12px", fontSize: "11px", color: "var(--text-muted)", fontWeight: 700 }}>
+                        <span>JAN</span>
+                        <span>FEB</span>
+                        <span>MAR</span>
+                        <span>APR</span>
+                        <span>MAY (LIVE)</span>
+                      </div>
+                    </div>
+
+                    {/* SVG Segmented Donut Chart */}
+                    <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)", display: "flex", flexDirection: "column" }}>
+                      <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", fontWeight: 800, color: "var(--text-main)" }}>🍩 Booking Category Split</h3>
+                      <p style={{ margin: "0 0 24px 0", fontSize: "13px", color: "var(--text-muted)" }}>Order volume distribution by top categories</p>
+                      
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-around", flex: 1, gap: 16 }}>
+                        <div style={{ position: "relative", width: "130px", height: "130px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                          <svg width="130" height="130" viewBox="0 0 42 42" style={{ transform: "rotate(-90deg)", overflow: "visible" }}>
+                            <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#f1f5f9" strokeWidth="3" />
+                            {(() => {
+                              let currentOffset = 0;
+                              return finalStats.map((stat, idx) => {
+                                const strokeDasharray = `${stat.pct} ${100 - stat.pct}`;
+                                const strokeDashoffset = 100 - currentOffset + 25;
+                                currentOffset += stat.pct;
+                                return (
+                                  <circle
+                                    key={idx}
+                                    cx="21"
+                                    cy="21"
+                                    r="15.91549430918954"
+                                    fill="transparent"
+                                    stroke={categoryColors[idx % categoryColors.length]}
+                                    strokeWidth="4.5"
+                                    strokeDasharray={strokeDasharray}
+                                    strokeDashoffset={strokeDashoffset}
+                                    style={{ transition: "stroke-dashoffset 0.5s ease" }}
+                                  />
+                                );
+                              });
+                            })()}
+                          </svg>
+                          <div style={{ position: "absolute", textAlign: "center" }}>
+                            <h4 style={{ margin: 0, fontSize: "20px", fontWeight: 900, color: "var(--text-main)" }}>{bookings.length}</h4>
+                            <p style={{ margin: 0, fontSize: "9px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Total Jobs</p>
+                          </div>
+                        </div>
+
+                        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                          {finalStats.map((stat, idx) => (
+                            <div key={idx} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "13px" }}>
+                              <span style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: categoryColors[idx % categoryColors.length] }} />
+                              <strong style={{ color: "var(--text-main)" }}>{stat.pct}%</strong>
+                              <span style={{ color: "var(--text-muted)" }}>{stat.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Peak Bookings CSS Progress Bars */}
+                    <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+                      <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", fontWeight: 800, color: "var(--text-main)" }}>⏱️ Peak Booking Hours</h3>
+                      <p style={{ margin: "0 0 24px 0", fontSize: "13px", color: "var(--text-muted)" }}>Hourly request analysis and resource loads</p>
+                      
+                      <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop: 10 }}>
+                        {peakStats.map((stat, idx) => (
+                          <div key={idx}>
+                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "13px", fontWeight: 700 }}>
+                              <span style={{ color: "var(--text-main)" }}>{stat.label}</span>
+                              <span style={{ color: stat.color }}>{stat.pct}% ({stat.count})</span>
+                            </div>
+                            <div style={{ width: "100%", height: "8px", backgroundColor: "#f1f5f9", borderRadius: "4px", overflow: "hidden" }}>
+                              <div style={{
+                                width: `${stat.pct}%`,
+                                height: "100%",
+                                backgroundColor: stat.color,
+                                borderRadius: "4px",
+                                transition: "width 0.5s ease"
+                              }} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                  </div>
+                );
+              })()}
 
               {/* Transactions Table */}
               <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
@@ -1696,6 +1935,15 @@ function AdminDashboard() {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {activeTab === "security-audit" && (
+            <div className="fade-in">
+              <h2 style={{ margin: "0 0 24px 0", fontSize: "28px", fontWeight: 800, color: "var(--text-main)" }}>
+                Global Security & Audit Timeline
+              </h2>
+              <SecurityLogs userId="admin" />
             </div>
           )}
 

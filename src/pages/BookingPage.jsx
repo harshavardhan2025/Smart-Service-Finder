@@ -3,6 +3,8 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/apiClient";
+import AnimatedSuccess from "../components/AnimatedSuccess";
+import AnimatedFailure from "../components/AnimatedFailure";
 
 function BookingPage() {
   const [date, setDate] = useState(new Date());
@@ -12,7 +14,13 @@ function BookingPage() {
   const [paying, setPaying] = useState(false);
   const [walletBal, setWalletBal] = useState(0);
   const [dispatchAddress, setDispatchAddress] = useState("");
+  const [customPrice, setCustomPrice] = useState(null);
   const navigate = useNavigate();
+
+  const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
+  const [showFailureOverlay, setShowFailureOverlay] = useState(false);
+  const [failureMessage, setFailureMessage] = useState("");
+  const [bookingDetails, setBookingDetails] = useState(null);
 
   const [busyBookings, setBusyBookings] = useState([]);
 
@@ -81,7 +89,7 @@ function BookingPage() {
   };
 
   const basePrice = selectedWorker.price || (selectedWorker.service.includes("Carpentry") ? 399 : selectedWorker.service.includes("Plumbing") ? 299 : selectedWorker.service.includes("Doctors") ? 599 : 349);
-  const calculatedPrice = isEmergency ? basePrice + 150 : basePrice;
+  const calculatedPrice = customPrice !== null ? customPrice : (isEmergency ? basePrice + 150 : basePrice);
 
   // 🛡️ CRITICAL SCHEDULING LOCK: Cap booking capabilities strictly to 6 Days Max!
   const maxBookingDate = new Date();
@@ -139,7 +147,8 @@ function BookingPage() {
   const handlePayNow = async () => {
     if (paymentMethod === "Wallet") {
       if (walletBal < calculatedPrice) {
-        alert(`Insufficient Wallet Balance! (Current: ₹${walletBal}, Required: ₹${calculatedPrice})`);
+        setFailureMessage(`Insufficient Wallet Balance! (Current: ₹${walletBal}, Required: ₹${calculatedPrice}). Please top up your wallet or choose another payment method.`);
+        setShowFailureOverlay(true);
         return;
       }
       setWalletBal(prev => prev - calculatedPrice);
@@ -149,14 +158,15 @@ function BookingPage() {
     const customerName = sessionStorage.getItem("userName") || "Verified Client";
     
     if (!customerId) {
-       alert("Authentication lost. Please log in again.");
-       navigate("/login");
+       setFailureMessage("Authentication session has expired. Please login again.");
+       setShowFailureOverlay(true);
        return;
     }
 
     const workerDbId = selectedWorker._id || selectedWorker.mongoId;
     if (!workerDbId) {
-       alert("Critical Error: Selected worker identity missing. Refresh and try again.");
+       setFailureMessage("Critical worker identity data missing. Please go back, refresh, and re-select your service expert.");
+       setShowFailureOverlay(true);
        return;
     }
 
@@ -191,15 +201,16 @@ function BookingPage() {
          })
       });
 
-      alert(
-        isEmergency 
-          ? `🚨 EMERGENCY CONFIRMED! ₹${calculatedPrice} recorded!\n\n${selectedWorker.name} has received your alert instantly and will be assigned right now! 🚗💨`
-          : `✅ Booking SUCCESSFUL!\n\nYour order has been committed to the Cloud! ${selectedWorker.name} has been officially notified! 🎉`
-      );
-      
-      navigate("/user-dashboard");
+      setBookingDetails({
+         service: selectedWorker.service,
+         date: formatSafeYMD(date),
+         time: selectedSlot,
+         price: calculatedPrice
+      });
+      setShowSuccessOverlay(true);
     } catch(err) {
-       alert(`🛑 Cloud Sync Error: ${err.message}`);
+       setFailureMessage(`Cloud Sync Dispatch Error: ${err.message || 'Connection lost'}`);
+       setShowFailureOverlay(true);
     }
   };
 
@@ -363,6 +374,8 @@ function BookingPage() {
           </div>
         </div>
 
+        <div style={{ marginBottom: "24px" }} />
+
         {/* 🚀 ACTION AREA */}
         {!paying ? (
           <button 
@@ -480,6 +493,27 @@ function BookingPage() {
           </div>
         )}
       </div>
+
+      {showSuccessOverlay && (
+        <AnimatedSuccess
+          bookingDetails={bookingDetails}
+          onClose={() => navigate("/user-dashboard")}
+        />
+      )}
+
+      {showFailureOverlay && (
+        <AnimatedFailure
+          errorMessage={failureMessage}
+          onRetry={() => {
+            setShowFailureOverlay(false);
+            handlePayNow();
+          }}
+          onBack={() => {
+            setShowFailureOverlay(false);
+            setPaying(false);
+          }}
+        />
+      )}
     </div>
   );
 }

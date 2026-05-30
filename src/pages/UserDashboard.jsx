@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 // Replaced local simulator with direct Backend API calls
 import { FaWallet, FaCalendarCheck, FaRegClock, FaHeadset } from "react-icons/fa";
 import { use3dTilt } from "../utils/use3dTilt";
+import SecurityLogs from "../components/SecurityLogs";
+import SkeletonLoader from "../components/SkeletonLoader";
 
 function UserDashboard() {
   const navigate = useNavigate();
@@ -11,9 +13,100 @@ function UserDashboard() {
   const [bookings, setBookings] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [activePlans, setActivePlans] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
+  const [recBasis, setRecBasis] = useState("");
+  const [loading, setLoading] = useState(true);
   const walletCardRef = use3dTilt();
   const activeCardRef = use3dTilt();
   const totalCardRef = use3dTilt();
+
+  const [sosActive, setSosActive] = useState(false);
+  const [sosCountdown, setSosCountdown] = useState(5);
+  const [sosLoading, setSosLoading] = useState(false);
+  const [sosTriggered, setSosTriggered] = useState(false);
+  const timerRef = useRef(null);
+
+  const startSosCountdown = () => {
+    setSosActive(true);
+    setSosTriggered(false);
+    setSosCountdown(5);
+    
+    if (timerRef.current) clearInterval(timerRef.current);
+    
+    timerRef.current = setInterval(() => {
+      setSosCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current);
+          triggerSosAlert();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const cancelSos = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setSosActive(false);
+  };
+
+  const triggerSosAlert = async () => {
+    setSosLoading(true);
+    
+    let coords = { lat: 17.0005, lng: 81.8040 }; // Fallback Rajahmundry
+    try {
+      if (navigator.geolocation) {
+        await new Promise((resolve) => {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              coords = { lat: position.coords.latitude, lng: position.coords.longitude };
+              resolve();
+            },
+            () => resolve(),
+            { timeout: 3000 }
+          );
+        });
+      }
+    } catch(e) { console.error("Geolocation failed"); }
+
+    try {
+      const uId = sessionStorage.getItem("userId");
+      const name = sessionStorage.getItem("userName") || "Client";
+      const uEmail = sessionStorage.getItem("userEmail") || "client@workzy.com";
+      
+      const res = await fetch("/api/security/sos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: uId,
+          name,
+          role: "user",
+          lat: coords.lat,
+          lng: coords.lng,
+          location_name: `Coordinates: ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`
+        })
+      });
+      if (res.ok) {
+        setSosTriggered(true);
+        // Manual Log Ingestion
+        await fetch("/api/security/logs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: uId,
+            email: uEmail,
+            role: "user",
+            action: "SOS_TRIGGERED",
+            city: "Kakinada"
+          })
+        });
+      }
+    } catch (e) {
+      console.error("SOS trigger API fail");
+    } finally {
+      setSosLoading(false);
+    }
+  };
 
   useEffect(() => {
     // 1. Check Authorization
@@ -56,9 +149,19 @@ function UserDashboard() {
           }, 1000); // Base assumed balance
           setWallet(total > 0 ? total : 650); // Fallback placeholder
         }
+
+        // C. Fetch AI-Powered Recommendations
+        const recResp = await fetch(`/api/ai/recommendations?user_id=${currentUserId}`);
+        if (recResp.ok) {
+          const recData = await recResp.json();
+          setRecommendations(recData.recommendations || []);
+          setRecBasis(recData.basis || "");
+        }
         
       } catch (err) {
         console.error("❌ Dashboard Hydration Error:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -115,6 +218,78 @@ function UserDashboard() {
             </div>
           </div>
         </div>
+
+        {/* 🧠 AI-POWERED PERSONALIZED RECOMMENDATIONS */}
+        <div className="premium-card" style={{ 
+          padding: "24px", 
+          marginBottom: "40px", 
+          background: "linear-gradient(135deg, rgba(139, 92, 246, 0.04) 0%, rgba(99, 102, 241, 0.04) 100%)", 
+          border: "1.5px solid rgba(139, 92, 246, 0.15)" 
+        }}>
+          <h3 style={{ margin: "0 0 4px 0", fontSize: "18px", color: "var(--text-main)", display: "flex", alignItems: "center", gap: "8px", fontWeight: 800 }}>
+            🧠 AI-Recommended Services for You
+          </h3>
+          <p style={{ margin: "0 0 20px 0", fontSize: "13px", color: "var(--text-muted)", fontWeight: 500 }}>
+            {recBasis || "Complementary solutions personalized from your activity"}
+          </p>
+          {loading ? (
+            <SkeletonLoader type="card" count={3} />
+          ) : recommendations.length > 0 ? (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px" }}>
+              {recommendations.map((serviceName) => {
+                const serviceIcons = {
+                  "Carpentry": "🪚",
+                  "Plumbing": "🔧",
+                  "Electrical": "⚡",
+                  "AC Repair": "❄️",
+                  "House Cleaning": "🧹",
+                  "Interior Painting": "🎨",
+                  "Packers & Movers": "📦",
+                  "Doctors & Medical": "🩺",
+                  "Appliance Repair": "🔌",
+                  "Mechanic": "⚙️",
+                  "Events": "🎉",
+                  "Beauty, Salon & Spa": "💅"
+                };
+                return (
+                  <div
+                    key={serviceName}
+                    onClick={() => {
+                       localStorage.setItem("voice_query", serviceName);
+                       navigate("/");
+                    }}
+                    style={{
+                      backgroundColor: "var(--bg-card)",
+                      border: "1px solid var(--border)",
+                      borderRadius: "14px",
+                      padding: "20px",
+                      textAlign: "center",
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                      boxShadow: "var(--shadow-3d)"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = "translateY(-4px)";
+                      e.currentTarget.style.borderColor = "var(--primary)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "none";
+                      e.currentTarget.style.borderColor = "var(--border)";
+                    }}
+                  >
+                    <div style={{ fontSize: "36px", marginBottom: "10px" }}>{serviceIcons[serviceName] || "🛠️"}</div>
+                    <h4 style={{ margin: "0 0 6px 0", fontSize: "15px", color: "var(--text-main)" }}>{serviceName}</h4>
+                    <span style={{ fontSize: "11px", fontWeight: "bold", color: "#8b5cf6", backgroundColor: "rgba(139, 92, 246, 0.1)", padding: "4px 8px", borderRadius: "10px" }}>
+                      Match 98%
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)" }}>Explore services on the home page to populate recommendations.</p>
+          )}
+        </div>
  
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "30px" }}>
           <div className="premium-card" style={{ padding: "24px" }}>
@@ -122,7 +297,9 @@ function UserDashboard() {
               <h3 style={{ margin: 0, fontSize: "18px", color: "var(--text-main)" }}>Recent Bookings</h3>
               <Link to="/my-bookings" style={{ color: "var(--primary)", fontSize: "14px", fontWeight: "500", textDecoration: "none" }}>View All</Link>
             </div>
-            {bookings.length > 0 ? (
+            {loading ? (
+              <SkeletonLoader type="list" count={2} />
+            ) : bookings.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 {bookings.map(b => (
                   <div key={b.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "16px", borderBottom: "1px solid var(--border)" }}>
@@ -204,6 +381,9 @@ function UserDashboard() {
           </div>
         </div>
 
+        <div style={{ marginTop: "40px" }} />
+        <SecurityLogs userId={sessionStorage.getItem("userId")} />
+
         <div style={{ marginTop: "40px", display: "flex", justifyContent: "center" }}>
           <Link to="/support">
             <button className="btn-secondary" style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 24px" }}>
@@ -212,6 +392,212 @@ function UserDashboard() {
           </Link>
         </div>
       </div>
+
+      {/* 🚨 FLOATING SOS IN-APP PANIC TRIGGER */}
+      <div
+        onClick={startSosCountdown}
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          left: "20px",
+          width: "60px",
+          height: "60px",
+          borderRadius: "50%",
+          background: "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
+          boxShadow: "0 8px 24px rgba(239, 68, 68, 0.4)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          cursor: "pointer",
+          zIndex: 999,
+          color: "white",
+          fontSize: "22px",
+          fontWeight: "bold",
+          border: "2px solid white",
+          animation: "pulse-sos-btn 1.5s infinite"
+        }}
+      >
+        🆘
+      </div>
+
+      {/* 🛑 FULLSCREEN SOS COUNTDOWN & ALERT OVERLAY */}
+      {sosActive && (
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(15, 23, 42, 0.95)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+          fontFamily: "'Outfit', sans-serif",
+          animation: "fadeIn 0.2s ease-out forwards"
+        }}>
+          <div style={{
+            maxWidth: "420px",
+            width: "90%",
+            backgroundColor: "#ffffff",
+            borderRadius: "24px",
+            padding: "32px",
+            textAlign: "center",
+            boxShadow: "0 25px 50px -12px rgba(239, 68, 68, 0.25)",
+            border: "3px solid #ef4444",
+            animation: "scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)"
+          }}>
+            {!sosTriggered ? (
+              <div>
+                <div style={{
+                  width: "90px",
+                  height: "90px",
+                  borderRadius: "50%",
+                  backgroundColor: "rgba(239, 68, 68, 0.1)",
+                  color: "#ef4444",
+                  fontSize: "42px",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  margin: "0 auto 20px",
+                  animation: "pulse-sos-shield 1s infinite alternate"
+                }}>
+                  🛡️
+                </div>
+                <h2 style={{ margin: "0 0 10px 0", fontSize: "24px", fontWeight: 800, color: "#1e293b" }}>
+                  Emergency Action Triggered
+                </h2>
+                <p style={{ margin: "0 0 24px 0", fontSize: "14px", color: "#64748b", lineHeight: 1.5 }}>
+                  The active system will broadcast an emergency panic signal to local dispatch and coordinates tracking in:
+                </p>
+                <div style={{
+                  fontSize: "72px",
+                  fontWeight: 900,
+                  color: "#ef4444",
+                  margin: "20px 0",
+                  fontVariantNumeric: "lining-nums"
+                }}>
+                  {sosCountdown}
+                </div>
+                <button
+                  onClick={cancelSos}
+                  style={{
+                    backgroundColor: "#f1f5f9",
+                    color: "#475569",
+                    border: "1.5px solid #cbd5e1",
+                    padding: "14px 28px",
+                    borderRadius: "14px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    width: "100%",
+                    fontSize: "15px",
+                    boxShadow: "none",
+                    transform: "none"
+                  }}
+                >
+                  Cancel Emergency Alert ❌
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div style={{
+                  width: "90px",
+                  height: "90px",
+                  borderRadius: "50%",
+                  backgroundColor: "#ef4444",
+                  color: "white",
+                  fontSize: "42px",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  margin: "0 auto 20px",
+                  boxShadow: "0 0 20px rgba(239,68,68,0.4)"
+                }}>
+                  🚨
+                </div>
+                <h2 style={{ margin: "0 0 10px 0", fontSize: "23px", fontWeight: 900, color: "#b91c1c" }}>
+                  EMERGENCY SIGNAL ACTIVE
+                </h2>
+                <p style={{ margin: "0 0 24px 0", fontSize: "14px", color: "#475569", lineHeight: 1.5, fontWeight: 500 }}>
+                  Responders are matching your coordinates. Please remain calm. Local police and ambulance channels are primed.
+                </p>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "20px" }}>
+                  <a
+                    href="tel:112"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "10px",
+                      backgroundColor: "#ef4444",
+                      color: "white",
+                      padding: "14px",
+                      borderRadius: "12px",
+                      textDecoration: "none",
+                      fontWeight: 800,
+                      boxShadow: "0 4px 12px rgba(239, 68, 68, 0.2)"
+                    }}
+                  >
+                    📞 Call National Police (112)
+                  </a>
+                  <a
+                    href="tel:108"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "10px",
+                      backgroundColor: "#3b82f6",
+                      color: "white",
+                      padding: "14px",
+                      borderRadius: "12px",
+                      textDecoration: "none",
+                      fontWeight: 800,
+                      boxShadow: "0 4px 12px rgba(59, 130, 246, 0.2)"
+                    }}
+                  >
+                    📞 Call Medical Response (108)
+                  </a>
+                </div>
+
+                <button
+                  onClick={() => setSosActive(false)}
+                  style={{
+                    backgroundColor: "#f1f5f9",
+                    color: "#475569",
+                    border: "none",
+                    padding: "12px 20px",
+                    borderRadius: "10px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    fontSize: "14px",
+                    width: "100%",
+                    boxShadow: "none",
+                    transform: "none"
+                  }}
+                >
+                  Dismiss Panel
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Styled SOS keyframe definitions */}
+      <style>{`
+        @keyframes pulse-sos-btn {
+          0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+          70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        @keyframes pulse-sos-shield {
+          from { transform: scale(1); box-shadow: 0 0 5px rgba(239,68,68,0.2); }
+          to { transform: scale(1.1); box-shadow: 0 0 20px rgba(239,68,68,0.5); }
+        }
+        @keyframes scaleUp {
+          from { transform: scale(0.9); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }

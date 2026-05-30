@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import Worker from "../models/Worker.js";
 import jwt from "jsonwebtoken";
+import ActivityLog from "../models/ActivityLog.js";
 
 const generateToken = (id) => {
   if (!process.env.JWT_SECRET) {
@@ -38,6 +39,17 @@ export const registerUser = async (req, res) => {
       });
     }
 
+    // Log the registration event
+    await ActivityLog.create({
+      user_id: user._id,
+      email: user.email,
+      role: user.role,
+      action: "SIGNUP",
+      device: req.headers["user-agent"] || "Generic Web Client",
+      ip: req.ip || "127.0.0.1",
+      city: city || "Unknown"
+    });
+
     res.status(201).json({
       success: true,
       message: "User registered successfully",
@@ -68,6 +80,17 @@ export const loginUser = async (req, res) => {
            return res.status(403).json({ error: "CRITICAL: Your worker account has been PERMANENTLY BLOCKED by admin control." });
         }
       }
+
+      // Log the login event
+      await ActivityLog.create({
+        user_id: user._id,
+        email: user.email,
+        role: user.role,
+        action: "LOGIN",
+        device: req.headers["user-agent"] || "Generic Web Client",
+        ip: req.ip || "127.0.0.1",
+        city: user.city || "Unknown"
+      });
 
       res.json({
         success: true,

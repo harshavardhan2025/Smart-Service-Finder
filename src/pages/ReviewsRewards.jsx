@@ -44,26 +44,48 @@ const REWARDS = [
   }
 ];
 
-function StarPicker({ value, onChange }) {
-  const [hovered, setHovered] = useState(0);
+function StarSlider({ value, onChange }) {
   return (
-    <div style={{ display: "flex", gap: "4px", marginBottom: "10px" }}>
-      {[1, 2, 3, 4, 5].map((star) => (
-        <span
-          key={star}
-          onClick={() => onChange(star)}
-          onMouseEnter={() => setHovered(star)}
-          onMouseLeave={() => setHovered(0)}
+    <div style={{ marginBottom: "16px" }}>
+      <label style={{ display: "block", fontSize: "13px", fontWeight: 750, color: "#475569", marginBottom: "6px" }}>
+        Adjust Star Rating Slider:
+      </label>
+      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+        <input
+          type="range"
+          min="1"
+          max="5"
+          step="1"
+          value={value || 3}
+          onChange={(e) => onChange(Number(e.target.value))}
           style={{
-            fontSize: "26px",
+            flex: 1,
+            height: "8px",
+            borderRadius: "4px",
+            background: `linear-gradient(90deg, #f59e0b ${((value || 3) - 1) * 25}%, #e2e8f0 ${((value || 3) - 1) * 25}%)`,
+            outline: "none",
             cursor: "pointer",
-            color: star <= (hovered || value) ? "#f59e0b" : "#d1d5db",
-            transition: "color 0.15s"
+            accentColor: "#f59e0b"
           }}
-        >
-          ★
-        </span>
-      ))}
+        />
+        <div style={{ display: "flex", gap: "2px", alignItems: "center" }}>
+          {[1, 2, 3, 4, 5].map((star) => (
+            <span
+              key={star}
+              onClick={() => onChange(star)}
+              style={{
+                fontSize: "22px",
+                cursor: "pointer",
+                color: star <= (value || 3) ? "#f59e0b" : "#cbd5e1",
+                transition: "color 0.2s"
+              }}
+            >
+              ★
+            </span>
+          ))}
+          <span style={{ marginLeft: "8px", fontWeight: 800, fontSize: "14px", color: "#f59e0b" }}>({value || 3} Star{value > 1 ? 's' : ''})</span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -74,6 +96,7 @@ function ReviewsRewards() {
   const [drafts, setDrafts] = useState({});
   const [redeemedRewards, setRedeemedRewards] = useState([]);
   const [toast, setToast] = useState("");
+  const [filterType, setFilterType] = useState("all");
 
   useEffect(() => {
      const loadData = async () => {
@@ -115,10 +138,7 @@ function ReviewsRewards() {
   const submitReview = async (bookingObj) => {
     const bid = bookingObj._id || bookingObj.id;
     const draft = drafts[bid] || {};
-    if (!draft.rating || draft.rating === 0) {
-      showToast("⚠️ Please select a star rating first!");
-      return;
-    }
+    const ratingVal = draft.rating || 5;
 
     try {
        // 🔥 LIVE CLOUD COMMITMENT: Write hard record to MongoDB!
@@ -130,7 +150,7 @@ function ReviewsRewards() {
              service: bookingObj.service,
              worker_id: bookingObj.worker_id,
              customer_name: sessionStorage.getItem("userName") || "Verified Client",
-             rating: draft.rating,
+             rating: ratingVal,
              comment: draft.comment || ""
           })
        });
@@ -362,8 +382,8 @@ function ReviewsRewards() {
                       </span>
                     </div>
 
-                    <StarPicker
-                      value={drafts[bid]?.rating || 0}
+                    <StarSlider
+                      value={drafts[bid]?.rating || 5}
                       onChange={(val) =>
                         setDrafts((prev) => ({ ...prev, [bid]: { ...prev[bid], rating: val } }))
                       }
@@ -496,53 +516,118 @@ function ReviewsRewards() {
         {/* Past Reviews */}
         {doneReviews.length > 0 && (
           <div>
-            <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#1e293b", margin: "0 0 14px 0" }}>
-              📝 Your Reviews
-            </h2>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "0 0 14px 0", flexWrap: "wrap", gap: 10 }}>
+              <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#1e293b", margin: 0 }}>
+                📝 Your Reviews
+              </h2>
+              {/* Category Filters */}
+              <div style={{ display: "flex", gap: "8px" }}>
+                {[
+                  { id: "all", label: "All" },
+                  { id: "positive", label: "Positive (4-5 ⭐)" },
+                  { id: "critical", label: "Critical (1-3 ⭐)" }
+                ].map(pill => (
+                  <button
+                    key={pill.id}
+                    onClick={() => setFilterType(pill.id)}
+                    style={{
+                      padding: "5px 12px",
+                      borderRadius: "15px",
+                      border: "none",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      backgroundColor: filterType === pill.id ? "#7c3aed" : "#e2e8f0",
+                      color: filterType === pill.id ? "white" : "#475569",
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    {pill.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              {doneReviews.map((r) => (
-                <div
-                  key={r._id}
-                  style={{
-                    backgroundColor: "var(--bg-card)",
-                    borderRadius: "12px",
-                    padding: "16px 20px",
-                    border: "1px solid #f1f5f9",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
-                    <div>
-                      <h3 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "#1e293b" }}>
-                        {r.service || "Professional Service"}
-                      </h3>
-                      <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>👷 Verified Partner · 📅 {r.date}</p>
+              {doneReviews.filter(r => {
+                if (filterType === "positive") return r.rating >= 4;
+                if (filterType === "critical") return r.rating <= 3;
+                return true;
+              }).map((r) => {
+                // Simple automatic sentiment tag generator
+                let sentimentTag = "Punctual";
+                let tagBg = "#eff6ff", tagColor = "#1d4ed8", tagBorder = "#bfdbfe";
+                if (r.rating === 5) {
+                  sentimentTag = "Exemplary Partner";
+                  tagBg = "#ecfdf5"; tagColor = "#047857"; tagBorder = "#a7f3d0";
+                } else if (r.rating <= 3) {
+                  sentimentTag = "Needs Attention";
+                  tagBg = "#fff5f5"; tagColor = "#e53e3e"; tagBorder = "#fed7d7";
+                } else if (r.comment && r.comment.toLowerCase().includes("quick")) {
+                  sentimentTag = "Super Fast Service";
+                  tagBg = "#f5f3ff"; tagColor = "#6d28d9"; tagBorder = "#ddd6fe";
+                }
+
+                return (
+                  <div
+                    key={r._id || r.id}
+                    style={{
+                      backgroundColor: "var(--bg-card)",
+                      borderRadius: "12px",
+                      padding: "16px 20px",
+                      border: "1px solid #f1f5f9",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
+                      <div>
+                        <h3 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "#1e293b" }}>
+                          {r.service || "Professional Service"}
+                        </h3>
+                        <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>👷 Verified Partner · 📅 {r.date}</p>
+                      </div>
+                      <span
+                        style={{
+                          backgroundColor: "#dcfce7",
+                          color: "#16a34a",
+                          padding: "4px 10px",
+                          borderRadius: "20px",
+                          fontSize: "12px",
+                          fontWeight: 700
+                        }}
+                      >
+                        +{POINTS_PER_REVIEW} pts earned ✅
+                      </span>
                     </div>
-                    <span
-                      style={{
-                        backgroundColor: "#dcfce7",
-                        color: "#16a34a",
-                        padding: "4px 10px",
-                        borderRadius: "20px",
-                        fontSize: "12px",
-                        fontWeight: 700
-                      }}
-                    >
-                      +{POINTS_PER_REVIEW} pts earned ✅
-                    </span>
-                  </div>
-                  <div style={{ marginTop: "10px" }}>
-                    <span style={{ color: "#f59e0b", fontSize: "18px" }}>
-                      {"★".repeat(r.rating || 5)}{"☆".repeat(5 - (r.rating || 5))}
-                    </span>
+
+                    <div style={{ marginTop: "10px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+                      <span style={{ color: "#f59e0b", fontSize: "18px" }}>
+                        {"★".repeat(r.rating || 5)}{"☆".repeat(5 - (r.rating || 5))}
+                      </span>
+                      <span style={{ backgroundColor: tagBg, color: tagColor, border: `1px solid ${tagBorder}`, padding: "2px 8px", borderRadius: 12, fontSize: 10, fontWeight: 700 }}>
+                        {sentimentTag}
+                      </span>
+                    </div>
+
                     {r.comment && (
-                      <p style={{ margin: "6px 0 0 0", fontSize: "14px", color: "#475569", fontStyle: "italic" }}>
+                      <p style={{ margin: "10px 0 0 0", fontSize: "14px", color: "#475569", fontStyle: "italic", lineHeight: 1.5, backgroundColor: "#f8fafc", padding: "10px", borderRadius: "8px" }}>
                         "{r.comment}"
                       </p>
                     )}
+
+                    {/* Threaded worker response */}
+                    {r.reply && (
+                      <div style={{ marginTop: "12px", padding: "10px 14px", backgroundColor: "#f5f3ff", borderLeft: "3px solid #8b5cf6", borderRadius: "8px", fontSize: "13px", marginLeft: "10px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                          <span style={{ fontWeight: 800, color: "#6d28d9" }}>💬 Professional Response:</span>
+                          <span style={{ fontSize: "11px", color: "#8b5cf6" }}>📅 {r.replyDate}</span>
+                        </div>
+                        <p style={{ margin: 0, color: "#4c1d95", fontStyle: "normal" }}>{r.reply}</p>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

@@ -7,7 +7,9 @@ const reviewSchema = new mongoose.Schema({
   worker_id: { type: String },
   rating: { type: Number, required: true },
   comment: { type: String },
-  date: { type: String }
+  date: { type: String },
+  reply: { type: String },
+  replyDate: { type: String }
 }, { timestamps: true });
 
 const Review = mongoose.model("Review", reviewSchema);
