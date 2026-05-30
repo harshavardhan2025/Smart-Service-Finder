@@ -340,3 +340,130 @@ export const cancelBooking = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// Admin Force-Cancel: For bookings stuck in "Started" status for over 24 hours
+export const adminForceCancelBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    if (booking.status === "Cancelled") {
+      return res.status(400).json({ error: "Booking is already cancelled" });
+    }
+
+    // Verify the booking is in "Started" status and has been for > 24 hours
+    const now = new Date();
+    const updatedAt = new Date(booking.updatedAt || booking.createdAt);
+    const hoursSinceUpdate = (now - updatedAt) / (1000 * 60 * 60);
+
+    if (booking.status !== "Started") {
+      return res.status(400).json({ 
+        error: `Admin force-cancel is only available for bookings in "Started" status. Current status: "${booking.status}".` 
+      });
+    }
+
+    if (hoursSinceUpdate < 24) {
+      return res.status(400).json({ 
+        error: `This booking has only been in "Started" status for ${Math.round(hoursSinceUpdate)} hours. Admin force-cancel requires at least 24 hours of inactivity.` 
+      });
+    }
+
+    // Force cancel the booking
+    booking.status = "Cancelled";
+    await booking.save();
+
+    // Refund customer wallet
+    const customer = await User.findById(booking.customer_id);
+    if (customer) {
+      customer.walletBalance = (customer.walletBalance || 0) + booking.price;
+      await customer.save();
+
+      // Write a formal refund transaction record
+      await Transaction.create({
+        customer: booking.customer_name,
+        worker: "Admin Force-Cancel Refund",
+        service: `Admin Refund: ${booking.service}`,
+        amount: booking.price,
+        status: "Refunded",
+        method: "Admin Force-Cancel"
+      });
+    }
+
+    // Log the admin force-cancellation event
+    await ActivityLog.create({
+      user_id: "admin",
+      email: "admin@workzy.com",
+      role: "admin",
+      action: "ADMIN_FORCE_CANCEL_OVERDUE_BOOKING",
+      device: req.headers["user-agent"] || "Admin Dashboard",
+      ip: req.ip || "127.0.0.1",
+      city: "System"
+    });
+
+    // Notify customer about admin-initiated cancellation
+    await Notification.create({
+      role: "user",
+      user_id: booking.customer_id,
+      title: "⚠️ Booking Cancelled by Admin",
+      message: `Your booking for ${booking.service} was cancelled by admin due to worker inactivity (no completion update for over 24 hours). A full refund of ₹${booking.price} has been credited to your wallet.`,
+      type: "warning",
+      is_read: false
+    });
+
+    // Notify worker about their forced cancellation
+    try {
+      const worker = await Worker.findById(booking.worker_id);
+      if (worker) {
+        const workerUser = await User.findOne({ email: worker.email });
+        if (workerUser) {
+          await Notification.create({
+            role: "worker",
+            user_id: workerUser._id.toString(),
+            title: "🚫 Booking Force-Cancelled by Admin",
+            message: `Your booking for ${booking.service} (Customer: ${booking.customer_name}) was force-cancelled by admin because the job was not completed within 24 hours of starting. Please ensure timely completion of future jobs.`,
+            type: "warning",
+            is_read: false
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Error notifying worker about admin force-cancel:", err);
+    }
+
+    // Notify admin
+    await Notification.create({
+      role: "admin",
+      user_id: "admin",
+      title: "🛑 Overdue Booking Force-Cancelled",
+      message: `Booking #${booking._id.toString().substr(-6).toUpperCase()} for ${booking.service} was force-cancelled. Worker was inactive for ${Math.round(hoursSinceUpdate)} hours. Customer refund of ₹${booking.price} issued.`,
+      type: "info",
+      is_read: false
+    });
+
+    res.status(200).json({ 
+      success: true, 
+      booking, 
+      message: `Overdue booking force-cancelled by admin. Worker was inactive for ${Math.round(hoursSinceUpdate)} hours. Customer wallet refunded ₹${booking.price}.` 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get overdue bookings: Started > 24 hours ago without completion
+export const getOverdueBookings = async (req, res) => {
+  try {
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    
+    const overdueBookings = await Booking.find({
+      status: "Started",
+      updatedAt: { $lt: oneDayAgo }
+    }).sort({ updatedAt: 1 });
+
+    res.status(200).json(overdueBookings);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

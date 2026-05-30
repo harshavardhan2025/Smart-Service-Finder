@@ -20,6 +20,7 @@ function AdminDashboard() {
   const [bookings, setBookings] = useState([]);
   const [liveRealTimeBookings, setLiveRealTimeBookings] = useState([]);
   const [adminNotifications, setAdminNotifications] = useState([]);
+  const [overdueBookings, setOverdueBookings] = useState([]);
 
   // Initial Services Mock State (Category management with Sub-categories matching NearbyWorkers.jsx)
   const [services, setServices] = useState([
@@ -178,6 +179,20 @@ function AdminDashboard() {
         if (nResp.ok) {
             const nData = await nResp.json();
             setAdminNotifications(nData.filter(n => n.type === "emergency" || n.title.includes("SOS")));
+        }
+
+        // Fetch overdue bookings (Started > 24h without completion)
+        const odResp = await fetch("/api/bookings/overdue");
+        if (odResp.ok) {
+           const odData = await odResp.json();
+           setOverdueBookings(odData);
+        } else {
+           // Fallback: compute from all bookings client-side
+           const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+           const fallbackOverdue = (liveRealTimeBookings || []).filter(b => 
+             b.status === "Started" && new Date(b.updatedAt || b.createdAt) < oneDayAgo
+           );
+           setOverdueBookings(fallbackOverdue);
         }
     } catch(err) { console.error("Background sync fail", err); }
   };
@@ -515,6 +530,7 @@ function AdminDashboard() {
             { id: "complaints", name: `Complaints (${complaints.filter(c => c.status === "Under Review" || c.admin_verdict === "Pending").length})`, icon: "⚠️" },
             { id: "plans-offers", name: "Manage Plans & Offers", icon: "🏷️" },
             { id: "escrow-payouts", name: "Escrow Payouts 💰", icon: "💸" },
+            { id: "overdue-jobs", name: `Overdue Jobs (${overdueBookings.length})`, icon: "⏰" },
             { id: "sos-alerts", name: `SOS Alerts 🚨 (${adminNotifications.filter(n => !n.is_read).length})`, icon: "🆘" },
             { id: "security-audit", name: "Security Audit Logs 🛡️", icon: "🛡️" }
           ].map((tab) => (
@@ -1933,6 +1949,141 @@ function AdminDashboard() {
                       </div>
                     ))}
                   </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB: OVERDUE JOBS MONITOR */}
+          {activeTab === "overdue-jobs" && (
+            <div className="fade-in" style={{ animation: "fadeIn 0.3s ease" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+                <div>
+                  <h2 style={{ margin: "0 0 6px", fontWeight: 850, color: "var(--text-main)" }}>⏰ Overdue Jobs Monitor</h2>
+                  <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14px" }}>Bookings where work has started but not completed within 24 hours. Admin can force-cancel and refund the customer.</p>
+                </div>
+                <div style={{ backgroundColor: overdueBookings.length > 0 ? "#fef2f2" : "#f0fdf4", padding: "10px 20px", borderRadius: "8px", color: overdueBookings.length > 0 ? "#dc2626" : "#16a34a", fontWeight: 700, fontSize: "13px" }}>
+                  {overdueBookings.length > 0 ? `⚠️ ${overdueBookings.length} Overdue Job${overdueBookings.length > 1 ? "s" : ""}` : "✅ No Overdue Jobs"}
+                </div>
+              </div>
+
+              {/* Overdue Stats Cards */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", marginBottom: "24px" }}>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "20px", borderRadius: "12px", borderLeft: "4px solid #f59e0b", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                  <div style={{ fontSize: "11px", color: "#f59e0b", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Currently Started</div>
+                  <div style={{ fontSize: "28px", fontWeight: 850, color: "var(--text-main)", marginTop: "4px" }}>{liveRealTimeBookings.filter(b => b.status === "Started").length}</div>
+                </div>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "20px", borderRadius: "12px", borderLeft: "4px solid #ef4444", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                  <div style={{ fontSize: "11px", color: "#ef4444", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Overdue (&gt;24h)</div>
+                  <div style={{ fontSize: "28px", fontWeight: 850, color: "#ef4444", marginTop: "4px" }}>{overdueBookings.length}</div>
+                </div>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "20px", borderRadius: "12px", borderLeft: "4px solid #8b5cf6", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                  <div style={{ fontSize: "11px", color: "#8b5cf6", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Locked Revenue at Risk</div>
+                  <div style={{ fontSize: "28px", fontWeight: 850, color: "var(--text-main)", marginTop: "4px" }}>₹{overdueBookings.reduce((sum, b) => sum + (b.price || 0), 0)}</div>
+                </div>
+              </div>
+
+              <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", padding: "24px" }}>
+                {overdueBookings.length === 0 ? (
+                  <div style={{ textAlign: "center", color: "#94a3b8", padding: "60px 0" }}>
+                    <div style={{ fontSize: "56px", marginBottom: "16px" }}>✅</div>
+                    <h3 style={{ fontSize: "20px", fontWeight: 800, color: "#334155", margin: "0 0 8px" }}>All Clear — No Overdue Jobs</h3>
+                    <p style={{ margin: 0, fontSize: "14px" }}>All started bookings have been completed on time. No worker intervention required.</p>
+                  </div>
+                ) : (
+                  <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+                    <thead>
+                      <tr style={{ borderBottom: "2px solid #f1f5f9", color: "var(--text-muted)", fontSize: "13px" }}>
+                        <th style={{ padding: "12px 8px" }}>Booking ID</th>
+                        <th style={{ padding: "12px 8px" }}>Customer</th>
+                        <th style={{ padding: "12px 8px" }}>Service</th>
+                        <th style={{ padding: "12px 8px" }}>Amount</th>
+                        <th style={{ padding: "12px 8px" }}>Started At</th>
+                        <th style={{ padding: "12px 8px" }}>Overdue Duration</th>
+                        <th style={{ padding: "12px 8px", textAlign: "right" }}>Admin Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {overdueBookings.map(b => {
+                        const startedAt = new Date(b.updatedAt || b.createdAt);
+                        const hoursOverdue = Math.round((Date.now() - startedAt.getTime()) / (1000 * 60 * 60));
+                        const daysOverdue = Math.floor(hoursOverdue / 24);
+                        const remainingHours = hoursOverdue % 24;
+                        const overdueLabel = daysOverdue > 0 ? `${daysOverdue}d ${remainingHours}h` : `${hoursOverdue}h`;
+                        const severityColor = hoursOverdue > 72 ? "#dc2626" : hoursOverdue > 48 ? "#ea580c" : "#f59e0b";
+                        
+                        // Find assigned worker name
+                        const assignedWorker = workers.find(w => String(w._id) === String(b.worker_id));
+                        
+                        return (
+                          <tr key={b._id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                            <td style={{ padding: "14px 8px", fontFamily: "monospace", fontSize: "12px", fontWeight: 700 }}>#{b._id.substr(-6).toUpperCase()}</td>
+                            <td style={{ padding: "14px 8px" }}>
+                              <div style={{ fontWeight: 700, color: "var(--text-main)", fontSize: "13px" }}>{b.customer_name}</div>
+                              <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>{b.date} at {b.time}</div>
+                            </td>
+                            <td style={{ padding: "14px 8px", fontWeight: 600, color: "#334155" }}>{b.service}</td>
+                            <td style={{ padding: "14px 8px", fontWeight: 700, color: "#16a34a" }}>₹{b.price}</td>
+                            <td style={{ padding: "14px 8px", fontSize: "12px", color: "var(--text-muted)" }}>{startedAt.toLocaleString()}</td>
+                            <td style={{ padding: "14px 8px" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                <span style={{ padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 800, backgroundColor: `${severityColor}15`, color: severityColor, border: `1px solid ${severityColor}30` }}>
+                                  🔴 {overdueLabel} overdue
+                                </span>
+                              </div>
+                              {assignedWorker && (
+                                <div style={{ fontSize: "11px", color: "#64748b", marginTop: "4px", fontWeight: 600 }}>
+                                  👷 Worker: {assignedWorker.name}
+                                </div>
+                              )}
+                            </td>
+                            <td style={{ padding: "14px 8px", textAlign: "right" }}>
+                              <button 
+                                onClick={async () => {
+                                  const workerName = assignedWorker ? assignedWorker.name : "Unknown";
+                                  if(window.confirm(`⚠️ ADMIN FORCE-CANCEL\n\nBooking: #${b._id.substr(-6).toUpperCase()}\nService: ${b.service}\nWorker: ${workerName}\nOverdue: ${overdueLabel}\nAmount: ₹${b.price}\n\nThis will:\n• Cancel the booking\n• Refund ₹${b.price} to customer wallet\n• Notify the worker about forced cancellation\n\nProceed?`)) {
+                                    try {
+                                      const resp = await fetch(`/api/bookings/${b._id}/admin-force-cancel`, {
+                                        method: "POST"
+                                      });
+                                      const data = await resp.json();
+                                      if (!resp.ok) throw new Error(data.error || "Force-cancel failed");
+                                      
+                                      alert(`✅ FORCE-CANCEL SUCCESSFUL!\n\n${data.message}`);
+                                      
+                                      // Remove from local overdue list immediately
+                                      setOverdueBookings(prev => prev.filter(item => item._id !== b._id));
+                                      
+                                      // Refresh all data
+                                      syncAdminStore();
+                                    } catch(err) {
+                                      alert(`🛑 Force-Cancel Failed: ${err.message}`);
+                                    }
+                                  }
+                                }}
+                                style={{ 
+                                  backgroundColor: "#dc2626", 
+                                  color: "white", 
+                                  border: "none", 
+                                  padding: "8px 16px", 
+                                  borderRadius: "8px", 
+                                  fontWeight: 800, 
+                                  fontSize: "12px", 
+                                  cursor: "pointer",
+                                  boxShadow: "0 2px 8px rgba(220, 38, 38, 0.3)",
+                                  transition: "all 0.2s ease"
+                                }}
+                                onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.05)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(220, 38, 38, 0.4)"; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(220, 38, 38, 0.3)"; }}
+                              >
+                                🚫 Force Cancel & Refund
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 )}
               </div>
             </div>
