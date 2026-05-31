@@ -171,6 +171,43 @@ function BookingPage() {
      });
   };
 
+  const handleQuickWalletTopup = async () => {
+    const input = prompt(
+      `⚡ Workzy Secure Wallet Instant Top-Up\n\nYour Current Balance: ₹${walletBal}\nRequired Total: ₹${calculatedPrice}\n\nEnter amount in INR to add to your wallet:`
+    );
+    if (input === null) return;
+    const amount = parseFloat(input);
+    if (isNaN(amount) || amount <= 0) {
+      alert("❌ Invalid Amount! Please enter a positive number.");
+      return;
+    }
+    
+    try {
+      const resp = await fetch("/api/transactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customer: sessionStorage.getItem("userName") || "Verified Client",
+          worker: "Wallet System",
+          service: "Wallet Topup",
+          amount: amount,
+          status: "Added",
+          method: "Wallet Topup"
+        })
+      });
+      
+      if (resp.ok) {
+        setWalletBal(prev => prev + amount);
+        alert(`✅ ₹${amount} successfully added to your secure wallet balance!`);
+      } else {
+        alert("❌ Wallet top-up failed. Please try again.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("❌ Network Error: Unable to top up wallet.");
+    }
+  };
+
   const handleBooking = () => {
     if (!selectedSlot) { alert("Please select an available time slot or toggle Emergency Booking!"); return; }
     setPaying(true);
@@ -487,6 +524,44 @@ function BookingPage() {
                 <option value="Cash">💵 Cash on Delivery</option>
               </select>
             </div>
+
+            {paymentMethod === "Wallet" && walletBal < calculatedPrice && (
+              <div style={{
+                backgroundColor: "#fef2f2",
+                border: "1.5px dashed #f87171",
+                borderRadius: 14,
+                padding: "16px",
+                marginBottom: 20,
+                display: "flex",
+                flexDirection: "column",
+                gap: "10px",
+                alignItems: "center",
+                textAlign: "center"
+              }}>
+                <span style={{ fontSize: "14px", fontWeight: 700, color: "#991b1b" }}>
+                  ⚠️ Insufficient Wallet Balance! (Shortage: ₹{calculatedPrice - walletBal})
+                </span>
+                <button
+                  onClick={handleQuickWalletTopup}
+                  style={{
+                    backgroundColor: "#10b981",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "10px",
+                    padding: "8px 16px",
+                    fontWeight: 800,
+                    fontSize: "13px",
+                    cursor: "pointer",
+                    boxShadow: "0 4px 10px rgba(16, 185, 129, 0.2)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px"
+                  }}
+                >
+                  ⚡ Add Money / Top Up Wallet
+                </button>
+              </div>
+            )}
 
             <div style={{ 
               background: "#f8fafc", 

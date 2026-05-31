@@ -19,10 +19,17 @@ function WorkerProfile() {
     const userRole = sessionStorage.getItem("userRole");
     // 🛡️ FRONT-LINE FIREWALL: Verify valid user credentials before releasing slots!
     if (!userId || userRole !== "user") {
-       alert("🔑 Access Denied!\n\nOnly registered customers (User role) can book service slots.");
-       if (userRole === "admin") navigate("/admin-dashboard");
-       else if (userRole === "worker") navigate("/worker-dashboard");
-       else navigate("/login");
+       if (userId) {
+         alert("🔑 Customer Account Required!\n\nLogging you out now. Please log in with a customer account to schedule bookings.");
+         sessionStorage.clear();
+         localStorage.removeItem("userLocation");
+         localStorage.removeItem("userCity");
+         localStorage.removeItem("userCoordsLat");
+         localStorage.removeItem("userCoordsLng");
+       } else {
+         alert("🔑 Sign-in Required!\n\nPlease login first to reserve this worker and complete the service schedule.");
+       }
+       navigate("/login");
        return;
     }
     navigate("/booking");
@@ -208,7 +215,7 @@ function WorkerProfile() {
                   boxSizing: "border-box"
                 }}
               >
-                {sessionStorage.getItem("userId") ? "🔒 Customer Only Area" : "🔒 Login to Book & Schedule"}
+                🔒 Login to Book & Schedule
               </button>
             )}
           </div>

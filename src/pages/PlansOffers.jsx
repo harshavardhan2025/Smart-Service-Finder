@@ -309,20 +309,21 @@ function PlansOffers() {
                 <button 
                   onClick={() => {
                     if (isLoggedIn) {
-                      const role = sessionStorage.getItem("userRole");
-                      alert("⚠️ Access Denied! Only registered customers (User role) can subscribe to premium plans.");
-                      if (role === "admin") navigate("/admin-dashboard");
-                      else if (role === "worker") navigate("/worker-dashboard");
-                    } else {
-                      navigate("/login");
+                      alert("🔑 Customer Account Required!\n\nLogging you out now. Please log in with a customer account to subscribe to premium plans.");
+                      sessionStorage.clear();
+                      localStorage.removeItem("userLocation");
+                      localStorage.removeItem("userCity");
+                      localStorage.removeItem("userCoordsLat");
+                      localStorage.removeItem("userCoordsLng");
                     }
+                    navigate("/login");
                   }}
                   className="btn-secondary"
                   style={{
                     width: "100%", padding: "14px", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer"
                   }}
                 >
-                  {isLoggedIn ? "🔒 Customer Only Area" : "🔒 Login to Subscribe"}
+                  🔒 Login to Subscribe
                 </button>
               )}
             </div>
