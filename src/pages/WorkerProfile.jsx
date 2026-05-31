@@ -170,23 +170,46 @@ function WorkerProfile() {
             </div>
 
             {/* Booking action button */}
-            <button
-              onClick={handleInitiateBooking}
-              style={{
-                width: "100%",
-                padding: "16px",
-                background: "var(--primary-grad)",
-                color: "white",
-                border: "none",
-                borderRadius: "14px",
-                fontWeight: 700,
-                fontSize: "16px",
-                cursor: "pointer",
-                transition: "all 0.2s",
-              }}
-            >
-              Proceed to Booking & Scheduling →
-            </button>
+            {sessionStorage.getItem("userId") ? (
+              <button
+                onClick={handleInitiateBooking}
+                style={{
+                  width: "100%",
+                  padding: "16px",
+                  background: "var(--primary-grad)",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "14px",
+                  fontWeight: 700,
+                  fontSize: "16px",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                }}
+              >
+                Proceed to Booking & Scheduling →
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  alert("🔑 Sign-in Required!\n\nPlease login first to reserve this worker and complete the service schedule.");
+                  navigate("/login");
+                }}
+                className="btn-secondary"
+                style={{
+                  width: "100%",
+                  padding: "16px",
+                  borderRadius: "14px",
+                  fontWeight: 700,
+                  fontSize: "16px",
+                  cursor: "pointer",
+                  display: "block",
+                  textAlign: "center",
+                  boxSizing: "border-box"
+                }}
+              >
+                🔒 Login to Book & Schedule
+              </button>
+            )}
           </div>
         </div>
       </div>
