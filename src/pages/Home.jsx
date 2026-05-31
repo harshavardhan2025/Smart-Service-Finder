@@ -31,6 +31,59 @@ function Home() {
     }
   }, [role, navigate]);
 
+  // Automatically trigger location detection on mount for logged-in user using their registered profile location
+  useEffect(() => {
+    if (role === "user") {
+      const savedLat = localStorage.getItem("userCoordsLat");
+      const savedLng = localStorage.getItem("userCoordsLng");
+      const savedLoc = localStorage.getItem("userLocation");
+      const registeredCity = sessionStorage.getItem("userCity") || localStorage.getItem("userCity");
+      
+      // If we don't have saved coords/loc, or if the saved location doesn't match the registered city, resolve the registered city!
+      if (!savedLat || !savedLng || !savedLoc || (registeredCity && !savedLoc.toLowerCase().includes(registeredCity.toLowerCase()))) {
+        const targetCity = registeredCity || "Mumbai";
+        
+        const geocodeProfileCity = async () => {
+          try {
+            const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(targetCity)}&limit=1`;
+            const res = await fetch(url);
+            if (res.ok) {
+              const geocodeData = await res.json();
+              const f = geocodeData?.features?.[0];
+              if (f) {
+                const [lon, lat] = f.geometry.coordinates;
+                const p = f.properties;
+                const label = [p.name, p.city || p.town || p.village, p.state, p.country]
+                  .filter(Boolean).join(", ");
+                
+                const finalLabel = label || targetCity;
+                localStorage.setItem("userLocation", finalLabel);
+                localStorage.setItem("userCity", targetCity);
+                localStorage.setItem("userCoordsLat", lat.toString());
+                localStorage.setItem("userCoordsLng", lon.toString());
+                
+                setSearchedLocation(finalLabel);
+                setUserCoords({ lat, lng: lon });
+                setLocationText(finalLabel);
+              } else {
+                localStorage.setItem("userLocation", targetCity);
+                setSearchedLocation(targetCity);
+                setLocationText(targetCity);
+              }
+            }
+          } catch (err) {
+            console.error("Home geocode registered profile city failed:", err);
+            localStorage.setItem("userLocation", targetCity);
+            setSearchedLocation(targetCity);
+            setLocationText(targetCity);
+          }
+        };
+        
+        geocodeProfileCity();
+      }
+    }
+  }, [role]);
+
   // Deep-linking AI recommended service bridge
   useEffect(() => {
     const savedQuery = localStorage.getItem("voice_query");
@@ -52,71 +105,22 @@ function Home() {
     localStorage.setItem("userLocation", searchedLocation);
 
     // 🔍 ADAPTIVE LOCALIZER: Ensure userCity is properly resolved for downstream payment and scheduling components!
-    const lower = searchedLocation.toLowerCase();
-    let resolvedCity = "";
+    let resolvedCity = localStorage.getItem("userCity");
     
-    if (lower.includes("kakinada")) {
-      resolvedCity = "Kakinada";
-    } else if (lower.includes("rajahmundry")) {
-      resolvedCity = "Rajahmundry";
-    } else if (lower.includes("new delhi") || lower.includes("delhi")) {
-      resolvedCity = "New Delhi";
-    } else if (lower.includes("hyderabad")) {
-      resolvedCity = "Hyderabad";
-    } else if (lower.includes("kadapa")) {
-      resolvedCity = "Kadapa";
-    } else {
+    if (!resolvedCity && searchedLocation) {
       // Check if searchedLocation is raw coordinates
       const coordParts = searchedLocation.split(",").map(p => parseFloat(p.trim()));
       const isCoords = coordParts.length === 2 && !isNaN(coordParts[0]) && !isNaN(coordParts[1]);
       
-      const KEY_CITIES = [
-        { name: "Kakinada", lat: 16.989062, lon: 82.243878 },
-        { name: "Rajahmundry", lat: 17.000538, lon: 81.804034 },
-        { name: "New Delhi", lat: 28.613939, lon: 77.209021 },
-        { name: "Hyderabad", lat: 17.385044, lon: 78.486671 },
-        { name: "Kadapa", lat: 14.471306, lon: 78.824165 }
-      ];
-      
-      const getDist = (lat1, lon1, lat2, lon2) => Math.sqrt((lat1 - lat2) ** 2 + (lon1 - lon2) ** 2);
-      
-      if (isCoords) {
-        const [lat, lng] = coordParts;
-        let nearestCity = KEY_CITIES[0];
-        let minDist = getDist(lat, lng, KEY_CITIES[0].lat, KEY_CITIES[0].lon);
-        for (let i = 1; i < KEY_CITIES.length; i++) {
-          const dist = getDist(lat, lng, KEY_CITIES[i].lat, KEY_CITIES[i].lon);
-          if (dist < minDist) {
-            minDist = dist;
-            nearestCity = KEY_CITIES[i];
-          }
-        }
-        resolvedCity = nearestCity.name;
-      } else {
+      if (!isCoords) {
         const parts = searchedLocation.split(",");
-        const possibleCity = parts[0].trim();
-        // If the possibleCity is a latitude float segment, try using userCoords if available, or run Euclidean
-        if (!isNaN(parseFloat(possibleCity))) {
-          if (userCoords && userCoords.lat && userCoords.lng) {
-            let nearestCity = KEY_CITIES[0];
-            let minDist = getDist(userCoords.lat, userCoords.lng, KEY_CITIES[0].lat, KEY_CITIES[0].lon);
-            for (let i = 1; i < KEY_CITIES.length; i++) {
-              const dist = getDist(userCoords.lat, userCoords.lng, KEY_CITIES[i].lat, KEY_CITIES[i].lon);
-              if (dist < minDist) {
-                minDist = dist;
-                nearestCity = KEY_CITIES[i];
-              }
-            }
-            resolvedCity = nearestCity.name;
-          } else {
-            resolvedCity = "Rajahmundry"; // Default backup
-          }
-        } else {
-          resolvedCity = possibleCity;
-        }
+        resolvedCity = parts[0].trim();
+      } else {
+        resolvedCity = "Mumbai";
       }
     }
-    localStorage.setItem("userCity", resolvedCity);
+    
+    localStorage.setItem("userCity", resolvedCity || "Mumbai");
 
     
     const fetchAILocationsAndSuggestWorkers = async () => {
@@ -176,20 +180,12 @@ function Home() {
       try {
         let extractedKey = "";
         if (searchedLocation) {
-          const lower = searchedLocation.toLowerCase();
-          extractedKey = lower.includes("kakinada") ? "kakinada" :
-                         lower.includes("rajahmundry") ? "rajahmundry" :
-                         (lower.includes("new delhi") || lower.includes("delhi")) ? "new delhi" :
-                         lower.includes("hyderabad") ? "hyderabad" :
-                         lower.includes("kadapa") ? "kadapa" : "";
-          if (!extractedKey) {
-            // Fall back to resolved userCity from localStorage
-            const storedCity = localStorage.getItem("userCity");
-            if (storedCity) {
-              extractedKey = storedCity.toLowerCase().trim();
-            } else {
-              extractedKey = searchedLocation.split(",")[0].trim().toLowerCase();
-            }
+          const storedCity = localStorage.getItem("userCity");
+          if (storedCity) {
+            extractedKey = storedCity.toLowerCase().trim();
+          } else {
+            const parts = searchedLocation.split(",");
+            extractedKey = parts[0].trim().toLowerCase();
           }
         }
         

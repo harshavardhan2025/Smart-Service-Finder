@@ -47,7 +47,42 @@ function Login() {
         navigate("/admin-dashboard");
       } else {
         alert(`Welcome Customer ${user.name}! You are logged in successfully! 🎉`);
-        navigate("/user-dashboard");
+        
+        // Save user city to session storage and local storage
+        if (user.city) {
+          sessionStorage.setItem("userCity", user.city);
+          localStorage.setItem("userCity", user.city);
+        }
+
+        // Detect location based on the user's specific registered profile city/location (not raw GPS or hardcoded fallbacks)
+        const targetCity = user.city || "Mumbai";
+        try {
+          const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(targetCity)}&limit=1`;
+          const res = await fetch(url);
+          if (res.ok) {
+            const geocodeData = await res.json();
+            const f = geocodeData?.features?.[0];
+            if (f) {
+              const [lon, lat] = f.geometry.coordinates;
+              const p = f.properties;
+              const label = [p.name, p.city || p.town || p.village, p.state, p.country]
+                .filter(Boolean).join(", ");
+              
+              localStorage.setItem("userLocation", label || targetCity);
+              localStorage.setItem("userCoordsLat", lat.toString());
+              localStorage.setItem("userCoordsLng", lon.toString());
+            } else {
+              localStorage.setItem("userLocation", targetCity);
+            }
+          } else {
+            localStorage.setItem("userLocation", targetCity);
+          }
+        } catch (err) {
+          console.error("Failed to geocode registered profile location on login:", err);
+          localStorage.setItem("userLocation", targetCity);
+        }
+        
+        navigate("/");
       }
     } catch (err) {
       alert(`❌ Login Failed: ${err.message}`);

@@ -86,6 +86,7 @@ export const registerUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        city: user.city,
       },
       token: generateToken(user._id),
     });
@@ -128,6 +129,7 @@ export const loginUser = async (req, res) => {
           name: user.name,
           email: user.email,
           role: user.role,
+          city: user.city,
         },
         token: generateToken(user._id),
       });
