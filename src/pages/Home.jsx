@@ -333,7 +333,7 @@ function Home() {
                 : onlineWorkers
               ).map((worker) => (
                 <div
-                  key={worker.id}
+                  key={worker._id || worker.id}
                   className="premium-card"
                   onClick={() => {
                     localStorage.setItem("selected_worker", JSON.stringify(worker));
