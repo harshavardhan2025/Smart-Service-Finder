@@ -45,18 +45,15 @@ function Home() {
         
         const geocodeProfileCity = async () => {
           try {
-            const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(targetCity)}&limit=1`;
+            const url = `/api/workers/geocode?q=${encodeURIComponent(targetCity)}`;
             const res = await fetch(url);
             if (res.ok) {
-              const geocodeData = await res.json();
-              const f = geocodeData?.features?.[0];
-              if (f) {
-                const [lon, lat] = f.geometry.coordinates;
-                const p = f.properties;
-                const label = [p.name, p.city || p.town || p.village, p.state, p.country]
-                  .filter(Boolean).join(", ");
+              const data = await res.json();
+              if (data?.lat && data?.lon) {
+                const lat = parseFloat(data.lat);
+                const lon = parseFloat(data.lon);
+                const finalLabel = data.label || targetCity;
                 
-                const finalLabel = label || targetCity;
                 localStorage.setItem("userLocation", finalLabel);
                 localStorage.setItem("userCity", targetCity);
                 localStorage.setItem("userCoordsLat", lat.toString());

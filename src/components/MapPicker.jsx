@@ -46,6 +46,38 @@ async function photonReverse(lat, lon) {
     .filter(Boolean).join(", ");
   return { label, city };
 }
+
+// 🌐 Nominatim (OpenStreetMap) Dynamic Real-World Fallback helpers
+async function nominatimSearch(query) {
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&addressdetails=1`;
+  const res = await fetch(url, {
+    headers: { "User-Agent": "SmartServiceFinder/1.0" },
+    signal: AbortSignal.timeout(6000)
+  });
+  if (!res.ok) throw new Error(`Nominatim search HTTP ${res.status}`);
+  const data = await res.json();
+  if (!data || data.length === 0) return null;
+
+  const item = data[0];
+  const lat = parseFloat(item.lat);
+  const lon = parseFloat(item.lon);
+  const label = item.display_name;
+  const city = item.address?.city || item.address?.town || item.address?.village || item.address?.county || "";
+  return { lat, lon, label, city };
+}
+
+async function nominatimReverse(lat, lon) {
+  const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`;
+  const res = await fetch(url, {
+    headers: { "User-Agent": "SmartServiceFinder/1.0" },
+    signal: AbortSignal.timeout(6000)
+  });
+  if (!res.ok) throw new Error(`Nominatim reverse HTTP ${res.status}`);
+  const data = await res.json();
+  if (!data) return null;
+  const city = data.address?.city || data.address?.town || data.address?.village || data.address?.county || "";
+  return { label: data.display_name, city };
+}
 // ─────────────────────────────────────────────────────────────────────────────
 
 const pinIcon = new L.DivIcon({
@@ -115,7 +147,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
     if (onCoordsChange) onCoordsChange({ lat, lng: lon });
   };
 
-  // Dragging / clicking the map → Photon reverse geocode
+  // Dragging / clicking the map → Photon reverse geocode with Nominatim fallback
   const handleMapInteraction = async (lat, lng) => {
     setPosition([lat, lng]);
     try {
@@ -125,8 +157,19 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
         return;
       }
     } catch (e) {
-      console.warn("Photon reverse geocode failed:", e.message);
+      console.warn("Photon reverse geocode failed, trying Nominatim reverse:", e.message);
     }
+
+    try {
+      const result = await nominatimReverse(lat, lng);
+      if (result) {
+        applyLocation(lat, lng, result.label, result.city);
+        return;
+      }
+    } catch (e) {
+      console.warn("Nominatim reverse geocode failed:", e.message);
+    }
+
     // Fallback: show raw coordinates as label
     const fallbackLabel = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
     applyLocation(lat, lng, fallbackLabel, "");
@@ -144,7 +187,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
     if (!search.trim()) return;
     setIsSearching(true);
 
-    // 1. Try Photon forward geocode (client-side, no key, no rate limit)
+    // 1. Try Photon forward geocode (client-side)
     try {
       const result = await photonSearch(search.trim());
       if (result) {
@@ -153,10 +196,22 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
         return;
       }
     } catch (e) {
-      console.warn("Photon search failed, trying backend proxy:", e.message);
+      console.warn("Photon search failed, trying Nominatim client-side:", e.message);
     }
 
-    // 2. Fallback: backend proxy (also Photon-backed)
+    // 2. Try Nominatim forward geocode (client-side)
+    try {
+      const result = await nominatimSearch(search.trim());
+      if (result) {
+        applyLocation(result.lat, result.lon, result.label, result.city);
+        setIsSearching(false);
+        return;
+      }
+    } catch (e) {
+      console.warn("Nominatim search failed, trying backend proxy:", e.message);
+    }
+
+    // 3. Fallback: backend proxy (also Nominatim-resilient)
     try {
       const res = await fetch(`/api/workers/geocode?q=${encodeURIComponent(search.trim())}`);
       if (res.ok) {

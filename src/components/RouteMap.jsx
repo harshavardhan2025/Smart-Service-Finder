@@ -6,13 +6,26 @@ import "leaflet/dist/leaflet.css";
 // ── Photon geocoder (no API key, worldwide OSM-based) ─────────────────────────
 async function photonSearch(query) {
   const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=1`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
   if (!res.ok) throw new Error(`Photon HTTP ${res.status}`);
   const data = await res.json();
   const f = data?.features?.[0];
   if (!f) return null;
   const [lon, lat] = f.geometry.coordinates;
   return [lat, lon];
+}
+
+// 🌐 Nominatim (OpenStreetMap) Fallback helper
+async function nominatimSearch(query) {
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
+  const res = await fetch(url, {
+    headers: { "User-Agent": "SmartServiceFinder/1.0" },
+    signal: AbortSignal.timeout(6000)
+  });
+  if (!res.ok) throw new Error(`Nominatim HTTP ${res.status}`);
+  const data = await res.json();
+  if (!data || data.length === 0) return null;
+  return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -63,10 +76,23 @@ const RouteMap = ({ startAddress, endAddress }) => {
 
         console.log(`🛰️ Photon Route: [${queryA}] --> [${queryB}]`);
 
-        const [resA, resB] = await Promise.all([
-          photonSearch(queryA),
-          photonSearch(queryB)
-        ]);
+        let resA, resB;
+        try {
+          [resA, resB] = await Promise.all([
+            photonSearch(queryA),
+            photonSearch(queryB)
+          ]);
+        } catch (e) {
+          console.warn("Photon RouteMap geocoding failed, trying Nominatim fallback:", e.message);
+          try {
+            [resA, resB] = await Promise.all([
+              nominatimSearch(queryA),
+              nominatimSearch(queryB)
+            ]);
+          } catch (err) {
+            console.error("Nominatim routing fallback failed too:", err.message);
+          }
+        }
 
         if (resA) setPosA(resA);
         if (resB) setPosB(resB);
