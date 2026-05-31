@@ -15,10 +15,14 @@ function WorkerProfile() {
   const calculatedPrice = worker.price || (worker.service.includes("Carpentry") ? 399 : worker.service.includes("Plumbing") ? 299 : worker.service.includes("Doctors") ? 599 : 349);
 
   const handleInitiateBooking = () => {
+    const userId = sessionStorage.getItem("userId");
+    const userRole = sessionStorage.getItem("userRole");
     // 🛡️ FRONT-LINE FIREWALL: Verify valid user credentials before releasing slots!
-    if (!sessionStorage.getItem("userId")) {
-       alert("🔑 Sign-in Required!\n\nPlease login first to reserve this worker and complete the service schedule.");
-       navigate("/login");
+    if (!userId || userRole !== "user") {
+       alert("🔑 Access Denied!\n\nOnly registered customers (User role) can book service slots.");
+       if (userRole === "admin") navigate("/admin-dashboard");
+       else if (userRole === "worker") navigate("/worker-dashboard");
+       else navigate("/login");
        return;
     }
     navigate("/booking");
@@ -170,7 +174,7 @@ function WorkerProfile() {
             </div>
 
             {/* Booking action button */}
-            {sessionStorage.getItem("userId") ? (
+            {sessionStorage.getItem("userId") && sessionStorage.getItem("userRole") === "user" ? (
               <button
                 onClick={handleInitiateBooking}
                 style={{
@@ -190,10 +194,7 @@ function WorkerProfile() {
               </button>
             ) : (
               <button
-                onClick={() => {
-                  alert("🔑 Sign-in Required!\n\nPlease login first to reserve this worker and complete the service schedule.");
-                  navigate("/login");
-                }}
+                onClick={handleInitiateBooking}
                 className="btn-secondary"
                 style={{
                   width: "100%",
@@ -207,7 +208,7 @@ function WorkerProfile() {
                   boxSizing: "border-box"
                 }}
               >
-                🔒 Login to Book & Schedule
+                {sessionStorage.getItem("userId") ? "🔒 Customer Only Area" : "🔒 Login to Book & Schedule"}
               </button>
             )}
           </div>

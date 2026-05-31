@@ -28,9 +28,16 @@ function BookingPage() {
     // 🔐 SECURITY GATE: Hard Lockdown! Deny access to unauthorized sessions instantly!
     const currentUsr = sessionStorage.getItem("userName") || "Verified Client";
     const userId = sessionStorage.getItem("userId");
-    if (!userId) {
-       alert("⚠️ Protected Area! Please login to secure your booking slots.");
-       navigate("/login");
+    const userRole = sessionStorage.getItem("userRole");
+    if (!userId || userRole !== "user") {
+       alert("⚠️ Access Denied! Only registered customers (User role) can book service slots.");
+       if (userRole === "admin") {
+         navigate("/admin-dashboard");
+       } else if (userRole === "worker") {
+         navigate("/worker-dashboard");
+       } else {
+         navigate("/login");
+       }
        return;
     }
 
