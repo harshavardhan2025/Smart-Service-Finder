@@ -15,17 +15,14 @@ async function photonSearch(query) {
   return [lat, lon];
 }
 
-// 🌐 Nominatim (OpenStreetMap) Fallback helper
+// 🌐 Nominatim Fallback helper via our CORS-safe backend proxy
 async function nominatimSearch(query) {
-  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
-  const res = await fetch(url, {
-    headers: { "User-Agent": "SmartServiceFinder/1.0" },
-    signal: AbortSignal.timeout(15000) // Generous 15s timeout
-  });
-  if (!res.ok) throw new Error(`Nominatim HTTP ${res.status}`);
+  const url = `/api/workers/geocode?q=${encodeURIComponent(query)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Backend geocode proxy HTTP ${res.status}`);
   const data = await res.json();
-  if (!data || data.length === 0) return null;
-  return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+  if (!data?.lat || !data?.lon) return null;
+  return [parseFloat(data.lat), parseFloat(data.lon)];
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
