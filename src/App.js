@@ -4,6 +4,8 @@ import {
   Route
 } from "react-router-dom";
 
+import { Navigate } from "react-router-dom";
+
 import Home from "./pages/Home";
 import WorkerProfile from "./pages/WorkerProfile";
 import BookingPage from "./pages/BookingPage";
@@ -19,6 +21,12 @@ import ReviewsRewards from "./pages/ReviewsRewards";
 import Profile from "./pages/Profile";
 import PlansOffers from "./pages/PlansOffers";
 import AiChatBot from "./components/AiChatBot";
+
+// 🔐 SECURITY SHIELD: Prevent direct address bar entry by guests!
+function PrivateRoute({ children }) {
+  const isLoggedIn = !!sessionStorage.getItem("userId");
+  return isLoggedIn ? children : <Navigate to="/login" replace />;
+}
 
 function App() {
   return (
@@ -39,32 +47,32 @@ function App() {
 
         <Route
           path="/booking"
-          element={<BookingPage />}
+          element={<PrivateRoute><BookingPage /></PrivateRoute>}
         />
 
         <Route
           path="/payment"
-          element={<PaymentPage />}
+          element={<PrivateRoute><PaymentPage /></PrivateRoute>}
         />
 
         <Route
           path="/dashboard"
-          element={<UserDashboard />}
+          element={<PrivateRoute><UserDashboard /></PrivateRoute>}
         />
 
         <Route
           path="/user-dashboard"
-          element={<UserDashboard />}
+          element={<PrivateRoute><UserDashboard /></PrivateRoute>}
         />
 
         <Route
           path="/worker-dashboard"
-          element={<WorkerDashboard />}
+          element={<PrivateRoute><WorkerDashboard /></PrivateRoute>}
         />
 
         <Route
           path="/admin-dashboard"
-          element={<AdminDashboard />}
+          element={<PrivateRoute><AdminDashboard /></PrivateRoute>}
         />
 
         <Route
@@ -79,27 +87,27 @@ function App() {
 
         <Route
           path="/support"
-          element={<SupportPage />}
+          element={<PrivateRoute><SupportPage /></PrivateRoute>}
         />
 
         <Route
           path="/my-bookings"
-          element={<MyBookings />}
+          element={<PrivateRoute><MyBookings /></PrivateRoute>}
         />
 
         <Route
           path="/reviews"
-          element={<ReviewsRewards />}
+          element={<PrivateRoute><ReviewsRewards /></PrivateRoute>}
         />
 
         <Route
           path="/profile"
-          element={<Profile />}
+          element={<PrivateRoute><Profile /></PrivateRoute>}
         />
 
         <Route
           path="/plans-offers"
-          element={<PlansOffers />}
+          element={<PrivateRoute><PlansOffers /></PrivateRoute>}
         />
 
       </Routes>
