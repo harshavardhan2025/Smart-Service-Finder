@@ -88,8 +88,33 @@ function BookingPage() {
     price: 599
   };
 
+  // Parse distance from selected worker safely
+  let distanceVal = 0;
+  if (selectedWorker.distanceKm !== undefined) {
+    distanceVal = parseFloat(selectedWorker.distanceKm);
+  } else if (selectedWorker.distance) {
+    distanceVal = parseFloat(selectedWorker.distance);
+  }
+
+  let distanceFee = 0;
+  let distanceTier = "Standard (<= 5 KM)";
+  
+  if (distanceVal > 33) {
+    distanceFee = 350;
+    distanceTier = "Extended Outstation (> 33 KM)";
+  } else if (distanceVal > 25) {
+    distanceFee = 220;
+    distanceTier = "Long Distance (25 - 33 KM)";
+  } else if (distanceVal > 13) {
+    distanceFee = 120;
+    distanceTier = "Mid-Range (13 - 25 KM)";
+  } else if (distanceVal > 5) {
+    distanceFee = 50;
+    distanceTier = "Standard Travel (5 - 13 KM)";
+  }
+
   const basePrice = selectedWorker.price || (selectedWorker.service.includes("Carpentry") ? 399 : selectedWorker.service.includes("Plumbing") ? 299 : selectedWorker.service.includes("Doctors") ? 599 : 349);
-  const calculatedPrice = customPrice !== null ? customPrice : (isEmergency ? basePrice + 150 : basePrice);
+  const calculatedPrice = customPrice !== null ? customPrice : (basePrice + distanceFee + (isEmergency ? 150 : 0));
 
   // 🛡️ CRITICAL SCHEDULING LOCK: Cap booking capabilities strictly to 6 Days Max!
   const maxBookingDate = new Date();
@@ -463,12 +488,33 @@ function BookingPage() {
               marginBottom: 24, 
               border: "1px solid #e2e8f0"
             }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, color: "#64748b", fontSize: 15 }}>
-                <span>Total Service Cost</span>
-                <strong style={{ color: "#059669", fontSize: 18 }}>₹{calculatedPrice}</strong>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, color: "#64748b", fontSize: 14 }}>
+                <span>Base Service Rate</span>
+                <span style={{ fontWeight: 600, color: "#1e293b" }}>₹{basePrice}</span>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", color: "#64748b", fontSize: 14 }}>
-                <span>Delivery Date</span>
+              
+              {distanceFee > 0 && (
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, color: "#64748b", fontSize: 14 }}>
+                  <span>Distance Travel Fee ({distanceVal} KM)</span>
+                  <span style={{ fontWeight: 600, color: "#ea580c" }}>+ ₹{distanceFee} ({distanceTier})</span>
+                </div>
+              )}
+
+              {isEmergency && (
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, color: "#64748b", fontSize: 14 }}>
+                  <span>Emergency Priority Rush Fee</span>
+                  <span style={{ fontWeight: 600, color: "#dc2626" }}>+ ₹150</span>
+                </div>
+              )}
+
+              <div style={{ height: "1px", backgroundColor: "#cbd5e1", margin: "10px 0" }}></div>
+
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, color: "#64748b", fontSize: 15 }}>
+                <span>Total Cost</span>
+                <strong style={{ color: "#059669", fontSize: 20 }}>₹{calculatedPrice}</strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", color: "#64748b", fontSize: 13 }}>
+                <span>Delivery Window</span>
                 <span style={{ fontWeight: 700, color: "#1e293b" }}>{date.toDateString()} — {selectedSlot}</span>
               </div>
             </div>
