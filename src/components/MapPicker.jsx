@@ -15,7 +15,7 @@ import "leaflet/dist/leaflet.css";
 // Forward geocode: search text → coordinates + label
 async function photonSearch(query) {
   const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=1`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  const res = await fetch(url, { signal: AbortSignal.timeout(15000) }); // Generous 15s timeout
   if (!res.ok) throw new Error(`Photon search HTTP ${res.status}`);
   const data = await res.json();
   const features = data?.features;
@@ -33,7 +33,7 @@ async function photonSearch(query) {
 // Reverse geocode: coordinates → label + city
 async function photonReverse(lat, lon) {
   const url = `https://photon.komoot.io/reverse?lon=${lon}&lat=${lat}`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  const res = await fetch(url, { signal: AbortSignal.timeout(15000) }); // Generous 15s timeout
   if (!res.ok) throw new Error(`Photon reverse HTTP ${res.status}`);
   const data = await res.json();
   const features = data?.features;
@@ -52,7 +52,7 @@ async function nominatimSearch(query) {
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&addressdetails=1`;
   const res = await fetch(url, {
     headers: { "User-Agent": "SmartServiceFinder/1.0" },
-    signal: AbortSignal.timeout(6000)
+    signal: AbortSignal.timeout(15000) // Generous 15s timeout
   });
   if (!res.ok) throw new Error(`Nominatim search HTTP ${res.status}`);
   const data = await res.json();
@@ -70,7 +70,7 @@ async function nominatimReverse(lat, lon) {
   const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`;
   const res = await fetch(url, {
     headers: { "User-Agent": "SmartServiceFinder/1.0" },
-    signal: AbortSignal.timeout(6000)
+    signal: AbortSignal.timeout(15000) // Generous 15s timeout
   });
   if (!res.ok) throw new Error(`Nominatim reverse HTTP ${res.status}`);
   const data = await res.json();

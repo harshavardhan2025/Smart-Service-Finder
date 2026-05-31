@@ -6,7 +6,7 @@ import "leaflet/dist/leaflet.css";
 // ── Photon geocoder (no API key, worldwide OSM-based) ─────────────────────────
 async function photonSearch(query) {
   const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=1`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+  const res = await fetch(url, { signal: AbortSignal.timeout(15000) }); // Generous 15s timeout
   if (!res.ok) throw new Error(`Photon HTTP ${res.status}`);
   const data = await res.json();
   const f = data?.features?.[0];
@@ -20,7 +20,7 @@ async function nominatimSearch(query) {
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
   const res = await fetch(url, {
     headers: { "User-Agent": "SmartServiceFinder/1.0" },
-    signal: AbortSignal.timeout(6000)
+    signal: AbortSignal.timeout(15000) // Generous 15s timeout
   });
   if (!res.ok) throw new Error(`Nominatim HTTP ${res.status}`);
   const data = await res.json();
