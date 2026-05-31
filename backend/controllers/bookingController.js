@@ -362,49 +362,54 @@ export const cancelBooking = async (req, res) => {
       return res.status(400).json({ error: timeCheck.error });
     }
 
+    // Dynamically query customer to issue refund back to wallet
+    const customer = await User.findById(booking.customer_id);
+    if (!customer) {
+      return res.status(404).json({ error: "Customer profile not found. Cannot issue wallet refund." });
+    }
+
+    // Perform wallet refund and save user state first
+    customer.walletBalance = (customer.walletBalance || 0) + booking.price;
+    await customer.save();
+
+    // Write a formal transaction record of the refund
+    await Transaction.create({
+      customer: booking.customer_name,
+      worker: "System Refund",
+      service: `Refund: ${booking.service}`,
+      amount: booking.price,
+      status: "Refunded",
+      method: "Wallet Topup"
+    });
+
+    // Update and commit booking status to Cancelled ONLY after refund succeeds
     booking.status = "Cancelled";
     await booking.save();
 
-    // Dynamically query customer to issue refund back to wallet
-    const customer = await User.findById(booking.customer_id);
-    if (customer) {
-      customer.walletBalance += booking.price;
-      await customer.save();
-
-      // Write a formal transaction record of the refund
-      await Transaction.create({
-        customer: booking.customer_name,
-        worker: "System Refund",
-        service: `Refund: ${booking.service}`,
-        amount: booking.price,
-        status: "Refunded",
-        method: "Wallet Topup"
-      });
-    }
-
-    // Log the cancellation event in Activity Logs
-    await ActivityLog.create({
-      user_id: booking.customer_id,
-      email: customer ? customer.email : "client@workzy.com",
-      role: "user",
-      action: "BOOKING_CANCELLED",
-      device: req.headers["user-agent"] || "Generic Web Client",
-      ip: req.ip || "127.0.0.1",
-      city: customer ? customer.city : "Kakinada"
-    });
-
-    // Notify customer
-    await Notification.create({
-      role: "user",
-      user_id: booking.customer_id,
-      title: "❌ Booking Cancelled & Refunded",
-      message: `Your booking for ${booking.service} has been cancelled. A full refund of ₹${booking.price} has been credited back to your wallet.`,
-      type: "warning",
-      is_read: false
-    });
-
-    // Notify worker
+    // Safe notifications and logging (non-blocking)
     try {
+      // Log the cancellation event in Activity Logs
+      await ActivityLog.create({
+        user_id: booking.customer_id,
+        email: customer.email || "client@workzy.com",
+        role: "user",
+        action: "BOOKING_CANCELLED",
+        device: req.headers["user-agent"] || "Generic Web Client",
+        ip: req.ip || "127.0.0.1",
+        city: customer.city || "Kakinada"
+      });
+
+      // Notify customer
+      await Notification.create({
+        role: "user",
+        user_id: booking.customer_id,
+        title: "❌ Booking Cancelled & Refunded",
+        message: `Your booking for ${booking.service} has been cancelled. A full refund of ₹${booking.price} has been credited back to your wallet.`,
+        type: "warning",
+        is_read: false
+      });
+
+      // Notify worker
       const worker = await Worker.findById(booking.worker_id);
       if (worker) {
         const workerUser = await User.findOne({ email: worker.email });
@@ -420,7 +425,7 @@ export const cancelBooking = async (req, res) => {
         }
       }
     } catch (err) {
-      console.error("Error creating cancellation notification for worker:", err);
+      console.error("Non-blocking error during cancellation notifications:", err);
     }
 
     res.status(200).json({ success: true, booking, message: "Booking cancelled successfully and wallet refunded." });
