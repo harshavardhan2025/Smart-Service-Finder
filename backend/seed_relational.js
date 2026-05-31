@@ -53,6 +53,16 @@ const seedDatabase = async () => {
       walletBalance: 100000
     });
 
+    const admin2 = await User.create({
+      name: "Old Admin",
+      email: "admin@worxy.com",
+      password: "password123",
+      role: "admin",
+      phone: "9999999998",
+      city: "New Delhi",
+      walletBalance: 100000
+    });
+
     const standardUser = await User.create({
       name: "Harsha User",
       email: "user@harsha.com",
@@ -70,6 +80,7 @@ const seedDatabase = async () => {
     const LAST_NAMES = ["Sharma", "Verma", "Reddy", "Rao", "Kumar", "Singh", "Patel", "Das", "Yadav", "Gupta", "Nair", "Iyer", "Chowdary", "Naidu", "Jain"];
     
     // We want all workers in all services in all 4 locations
+    let workerCounter = 0;
     for (const city of CITIES) {
       for (const service of SERVICES) {
         
@@ -81,8 +92,8 @@ const seedDatabase = async () => {
         const l2 = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
         const name2 = `${f2} ${l2}`;
         
-        // Create 1 top tier and 1 budget worker per service per city
-        const email1 = `${f1.toLowerCase()}.${l1.toLowerCase()}${Math.floor(Math.random()*100)}@workers.com`;
+        workerCounter++;
+        const email1 = `${f1.toLowerCase()}.${l1.toLowerCase()}${workerCounter}@workers.com`;
         const w1 = await Worker.create({
           name: name1,
           email: email1,
@@ -105,7 +116,8 @@ const seedDatabase = async () => {
           walletBalance: 0
         });
         
-        const email2 = `${f2.toLowerCase()}.${l2.toLowerCase()}${Math.floor(Math.random()*100)}@workers.com`;
+        workerCounter++;
+        const email2 = `${f2.toLowerCase()}.${l2.toLowerCase()}${workerCounter}@workers.com`;
         const w2 = await Worker.create({
           name: name2,
           email: email2,
