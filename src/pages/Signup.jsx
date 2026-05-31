@@ -13,7 +13,6 @@ function Signup() {
   const [role, setRole] = useState("user");
   const [profession, setProfession] = useState("Carpentry");
   const [city, setCity] = useState(""); // Free text location
-  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const navigate = useNavigate();
   const signupCardRef = use3dTilt();
 
@@ -70,38 +69,6 @@ function Signup() {
       navigate("/login");
     } catch (err) {
       alert(`❌ Registration Error: ${err.message}`);
-    }
-  };
-
-  const handleGetCurrentLocation = () => {
-    if (navigator.geolocation) {
-      setIsDetectingLocation(true);
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          try {
-            const { latitude, longitude } = position.coords;
-            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-            const data = await response.json();
-            const address = data.address || {};
-            const district = address.state_district || address.county || address.district || address.city || address.town || "Unknown District";
-            const state = address.state || "Unknown State";
-            const locationStr = `${district}, ${state}`;
-            setCity(locationStr);
-          } catch (error) {
-            console.error("Error fetching location details:", error);
-            alert("Could not determine location from coordinates.");
-          } finally {
-            setIsDetectingLocation(false);
-          }
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          alert("Please allow location access to use this feature.");
-          setIsDetectingLocation(false);
-        }
-      );
-    } else {
-      alert("Geolocation is not supported by this browser.");
     }
   };
 
@@ -286,40 +253,16 @@ function Signup() {
               </div>
             )}
 
-            {/* Explicit Location Column Injection requested for Workers */}
             {role === "worker" && (
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 <label style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-main)" }}>Serving Location (District, State)</label>
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <input
-                    type="text"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    placeholder="e.g. East Godavari, Andhra Pradesh"
-                    style={{ flex: 1, boxSizing: "border-box" }}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleGetCurrentLocation}
-                    disabled={isDetectingLocation}
-                    title="Get Current Location"
-                    style={{
-                      backgroundColor: "var(--primary-light)",
-                      color: "var(--primary-dark)",
-                      border: "none",
-                      borderBottom: "2px solid var(--primary-dark)",
-                      padding: "0 16px",
-                      fontSize: "14px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      whiteSpace: "nowrap",
-                      opacity: isDetectingLocation ? 0.7 : 1
-                    }}
-                  >
-                    {isDetectingLocation ? "⏳ Detecting..." : "📍 Detect"}
-                  </button>
-                </div>
+                <input
+                  type="text"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="e.g. East Godavari, Andhra Pradesh"
+                  style={{ width: "100%", boxSizing: "border-box" }}
+                />
               </div>
             )}
 

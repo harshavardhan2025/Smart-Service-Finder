@@ -63,6 +63,8 @@ function Home() {
       resolvedCity = "New Delhi";
     } else if (lower.includes("hyderabad")) {
       resolvedCity = "Hyderabad";
+    } else if (lower.includes("kadapa")) {
+      resolvedCity = "Kadapa";
     } else {
       // Check if searchedLocation is raw coordinates
       const coordParts = searchedLocation.split(",").map(p => parseFloat(p.trim()));
@@ -72,7 +74,8 @@ function Home() {
         { name: "Kakinada", lat: 16.989062, lon: 82.243878 },
         { name: "Rajahmundry", lat: 17.000538, lon: 81.804034 },
         { name: "New Delhi", lat: 28.613939, lon: 77.209021 },
-        { name: "Hyderabad", lat: 17.385044, lon: 78.486671 }
+        { name: "Hyderabad", lat: 17.385044, lon: 78.486671 },
+        { name: "Kadapa", lat: 14.471306, lon: 78.824165 }
       ];
       
       const getDist = (lat1, lon1, lat2, lon2) => Math.sqrt((lat1 - lat2) ** 2 + (lon1 - lon2) ** 2);
@@ -177,7 +180,8 @@ function Home() {
           extractedKey = lower.includes("kakinada") ? "kakinada" :
                          lower.includes("rajahmundry") ? "rajahmundry" :
                          (lower.includes("new delhi") || lower.includes("delhi")) ? "new delhi" :
-                         lower.includes("hyderabad") ? "hyderabad" : "";
+                         lower.includes("hyderabad") ? "hyderabad" :
+                         lower.includes("kadapa") ? "kadapa" : "";
           if (!extractedKey) {
             // Fall back to resolved userCity from localStorage
             const storedCity = localStorage.getItem("userCity");

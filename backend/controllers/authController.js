@@ -2,6 +2,26 @@ import User from "../models/User.js";
 import Worker from "../models/Worker.js";
 import jwt from "jsonwebtoken";
 import ActivityLog from "../models/ActivityLog.js";
+import { getPriceMultiplier } from "../utils/geoUtils.js";
+
+// Base prices per service category (Tier-2 city baseline)
+const SERVICE_BASE_PRICES = {
+  "Plumbing": 350,
+  "Electrical": 400,
+  "Carpentry": 600,
+  "Haircut (Men)": 250,
+  "Two-Wheeler (Bikes)": 500,
+  "Car Wash": 300,
+  "House Cleaning": 1500,
+  "Photography": 7000,
+  "Doctors & Medical": 500,
+  "Interior Painting": 2000,
+  "Packers & Movers": 10000,
+  "AC Repair": 700,
+  "Mechanic": 500,
+  "Events": 5000,
+  "Beauty, Salon & Spa": 800,
+};
 
 const generateToken = (id) => {
   if (!process.env.JWT_SECRET) {
@@ -30,11 +50,19 @@ export const registerUser = async (req, res) => {
     });
 
     if (role === "worker") {
+      const basePrice = SERVICE_BASE_PRICES[profession] || 350;
+      const multiplier = getPriceMultiplier(city || "");
+      const locationPrice = Math.round(basePrice * multiplier);
+
       await Worker.create({
         name,
         email,
         service: profession,
         city,
+        rating: 2.7,      // Bayesian new-worker baseline
+        ratingSum: 0,
+        reviews: 0,
+        price: locationPrice,
         status: "Active"
       });
     }

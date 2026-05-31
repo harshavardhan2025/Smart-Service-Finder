@@ -2,12 +2,69 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 // Replaced local simulator with direct Backend API calls
-import { FaWallet, FaCalendarCheck, FaRegClock, FaHeadset } from "react-icons/fa";
+import { FaWallet, FaCalendarCheck, FaRegClock, FaHeadset, FaMapMarkerAlt } from "react-icons/fa";
 import { use3dTilt } from "../utils/use3dTilt";
 import SecurityLogs from "../components/SecurityLogs";
 import SkeletonLoader from "../components/SkeletonLoader";
+import MapPicker from "../components/MapPicker";
+
+// ── Photon-powered location card shown inside User Dashboard ────────────────
+function UserLocationMap() {
+  const [location, setLocation] = useState(
+    localStorage.getItem("userLocation") || "Kadapa, Andhra Pradesh, India"
+  );
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="premium-card" style={{ marginBottom: "40px", overflow: "hidden" }}>
+      <div
+        style={{
+          padding: "20px 24px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          cursor: "pointer",
+        }}
+        onClick={() => setOpen(o => !o)}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={{
+            width: "44px", height: "44px", borderRadius: "12px",
+            background: "linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: "20px", flexShrink: 0,
+          }}>
+            <FaMapMarkerAlt style={{ color: "white" }} />
+          </div>
+          <div>
+            <h3 style={{ margin: "0 0 2px", fontSize: "16px", fontWeight: 700, color: "var(--text-main)" }}>
+              Your Location
+            </h3>
+            <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)", maxWidth: "480px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              📍 {location}
+            </p>
+          </div>
+        </div>
+        <span style={{ fontSize: "18px", color: "var(--text-muted)", transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "none" }}>
+          ▼
+        </span>
+      </div>
+
+      {open && (
+        <div style={{ borderTop: "1px solid var(--border)" }}>
+          <MapPicker
+            onLocationChange={(lbl) => setLocation(lbl)}
+            onCoordsChange={() => {}}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 function UserDashboard() {
+
   const navigate = useNavigate();
   const [wallet, setWallet] = useState(0);
   const [bookings, setBookings] = useState([]);
@@ -218,6 +275,9 @@ function UserDashboard() {
             </div>
           </div>
         </div>
+
+        {/* 📍 YOUR LOCATION — Photon Map */}
+        <UserLocationMap />
 
         {/* 🧠 AI-POWERED PERSONALIZED RECOMMENDATIONS */}
         <div className="premium-card" style={{ 

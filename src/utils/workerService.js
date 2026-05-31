@@ -15,6 +15,10 @@ const LOCAL_GEO_DB = {
   "hyderabad suburbs": { lat: 17.415000, lon: 78.435000 },
   "hyderabad": { lat: 17.385044, lon: 78.486671 },
 
+  "kadapa central area": { lat: 14.471306, lon: 78.824165 },
+  "kadapa suburbs": { lat: 14.450000, lon: 78.800000 },
+  "kadapa": { lat: 14.471306, lon: 78.824165 },
+
   "danavaipeta": { lat: 17.008400, lon: 81.792500 },
   "main road": { lat: 16.979800, lon: 82.242500 },
   "bommarillu": { lat: 17.012000, lon: 81.798000 },
@@ -97,11 +101,29 @@ export const fetchAllWorkersCached = async () => {
 };
 
 export const filterWorkersClientSide = async (userCoords, locationKey) => {
+  try {
+    if (userCoords && userCoords.lat && userCoords.lng) {
+      // 🛰️ DYNAMIC DATABASE-DRIVEN MATCHING: Fetch nearby active workers straight from MongoDB backend!
+      const resp = await fetch(`/api/workers/nearby?lat=${userCoords.lat}&lng=${userCoords.lng}&radius=40`);
+      if (resp.ok) {
+        return await resp.json();
+      }
+    } else if (locationKey) {
+      // 🛰️ DYNAMIC DATABASE-DRIVEN MATCHING: Fetch workers by city string straight from MongoDB backend!
+      const resp = await fetch(`/api/workers?city=${encodeURIComponent(locationKey)}`);
+      if (resp.ok) {
+        return await resp.json();
+      }
+    }
+  } catch (e) {
+    console.error("Failed to query nearby workers from database backend:", e);
+  }
+
+  // 🛡️ FAIL-SAFE CLIENT-SIDE FALLBACK: Keep app functioning smoothly under any network offline state
   const allWorkers = await fetchAllWorkersCached();
   
   if (userCoords) {
-    // Perform coordinate-based 40km matching client-side instantly!
-    const results = allWorkers.map(w => {
+    return allWorkers.map(w => {
       let coords = null;
       if (w.location) {
         coords = geocodeCityLocal(w.location);
@@ -116,11 +138,8 @@ export const filterWorkersClientSide = async (userCoords, locationKey) => {
     })
     .filter(w => w !== null && w.distanceKm <= 40)
     .sort((a, b) => a.distanceKm - b.distanceKm);
-    
-    return results;
   } else if (locationKey) {
     const key = locationKey.toLowerCase().trim();
-    // Perform exact/fuzzy city match client-side instantly!
     return allWorkers.filter(w => {
       const wCity = w.city ? w.city.toLowerCase().trim() : "";
       const wLoc = w.location ? w.location.toLowerCase().trim() : "";

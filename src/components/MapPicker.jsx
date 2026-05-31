@@ -10,9 +10,43 @@ import {
 } from "react-leaflet";
 
 import "leaflet/dist/leaflet.css";
-import { OpenStreetMapProvider } from "leaflet-geosearch";
 
-const provider = new OpenStreetMapProvider();
+// ─── Photon helpers ──────────────────────────────────────────────────────────
+// Forward geocode: search text → coordinates + label
+async function photonSearch(query) {
+  const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=1`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  if (!res.ok) throw new Error(`Photon search HTTP ${res.status}`);
+  const data = await res.json();
+  const features = data?.features;
+  if (!features || features.length === 0) return null;
+
+  const f = features[0];
+  const [lon, lat] = f.geometry.coordinates;
+  const p = f.properties;
+  const city = p.city || p.town || p.village || p.county || p.name || query;
+  const label = [p.name, p.city || p.town || p.village, p.state, p.country]
+    .filter(Boolean).join(", ");
+  return { lat, lon, label, city };
+}
+
+// Reverse geocode: coordinates → label + city
+async function photonReverse(lat, lon) {
+  const url = `https://photon.komoot.io/reverse?lon=${lon}&lat=${lat}`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  if (!res.ok) throw new Error(`Photon reverse HTTP ${res.status}`);
+  const data = await res.json();
+  const features = data?.features;
+  if (!features || features.length === 0) return null;
+
+  const f = features[0];
+  const p = f.properties;
+  const city = p.city || p.town || p.village || p.county || p.name || "";
+  const label = [p.name, p.housenumber, p.street, p.city || p.town || p.village, p.state, p.country]
+    .filter(Boolean).join(", ");
+  return { label, city };
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 const pinIcon = new L.DivIcon({
   html: `<div style="font-size: 32px; filter: drop-shadow(0px 3px 4px rgba(0,0,0,0.3)); cursor: pointer;">📍</div>`,
@@ -29,281 +63,116 @@ function ChangeMapView({ center }) {
 }
 
 function MapPicker({ onLocationChange, onCoordsChange }) {
-  const [position, setPosition] = useState([17.385, 78.4867]);
-  const [search, setSearch] = useState("");
-  const [detecting, setDetecting] = useState(false);
-  const [detectedLabel, setDetectedLabel] = useState("");
+  const [position, setPosition] = useState(() => {
+    const savedLat = localStorage.getItem("userCoordsLat");
+    const savedLng = localStorage.getItem("userCoordsLng");
+    if (savedLat && savedLng) return [parseFloat(savedLat), parseFloat(savedLng)];
+    return [14.471306, 78.824165]; // Kadapa default
+  });
 
-  // Auto-detect on mount
+  const [search, setSearch] = useState(() =>
+    localStorage.getItem("userLocation") || "Kadapa, Andhra Pradesh, India"
+  );
+
+  const [detectedLabel, setDetectedLabel] = useState(() =>
+    localStorage.getItem("userLocation") || "Kadapa, Andhra Pradesh, India"
+  );
+
+  const [isSearching, setIsSearching] = useState(false);
+
+  // On mount, sync persisted coords → parent
   useEffect(() => {
-    autoDetect(false);
+    const savedLat = parseFloat(localStorage.getItem("userCoordsLat")) || 14.471306;
+    const savedLng = parseFloat(localStorage.getItem("userCoordsLng")) || 78.824165;
+    const savedLocation = localStorage.getItem("userLocation") || "Kadapa, Andhra Pradesh, India";
+    const savedCity = localStorage.getItem("userCity") || "Kadapa";
+
+    if (!localStorage.getItem("userLocation")) {
+      localStorage.setItem("userLocation", savedLocation);
+      localStorage.setItem("userCity", savedCity);
+      localStorage.setItem("userCoordsLat", savedLat.toString());
+      localStorage.setItem("userCoordsLng", savedLng.toString());
+    }
+
+    setPosition([savedLat, savedLng]);
+    setSearch(savedLocation);
+    setDetectedLabel(savedLocation);
+    if (onLocationChange) onLocationChange(savedLocation);
+    if (onCoordsChange) onCoordsChange({ lat: savedLat, lng: savedLng });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const autoDetect = async (showLoader = true) => {
-    if (!navigator.geolocation) {
-      alert("Geolocation is not supported by this browser.");
-      if (showLoader) setDetecting(false);
-      return;
-    }
-
-    if (showLoader) setDetecting(true);
-    navigator.geolocation.getCurrentPosition(
-      async (loc) => {
-        const { latitude, longitude } = loc.coords;
-        
-        // Define key seeded cities for Euclidean proximity fallback
-        const localMatches = [
-          { name: "Kakinada, Andhra Pradesh, India", city: "Kakinada", coords: { lat: 16.989062, lon: 82.243878 } },
-          { name: "Rajahmundry, Andhra Pradesh, India", city: "Rajahmundry", coords: { lat: 17.000538, lon: 81.804034 } },
-          { name: "New Delhi, Delhi, India", city: "New Delhi", coords: { lat: 28.613939, lon: 77.209021 } },
-          { name: "Hyderabad, Telangana, India", city: "Hyderabad", coords: { lat: 17.385044, lon: 78.486671 } }
-        ];
-        
-        const getDist = (lat1, lon1, lat2, lon2) => Math.sqrt((lat1 - lat2) ** 2 + (lon1 - lon2) ** 2);
-        
-        const getNearestCity = (lat, lon) => {
-          let nearest = localMatches[0];
-          let minDist = getDist(lat, lon, nearest.coords.lat, nearest.coords.lon);
-          for (let i = 1; i < localMatches.length; i++) {
-            const dist = getDist(lat, lon, localMatches[i].coords.lat, localMatches[i].coords.lon);
-            if (dist < minDist) {
-              minDist = dist;
-              nearest = localMatches[i];
-            }
-          }
-          return nearest;
-        };
-
-        const nearest = getNearestCity(latitude, longitude);
-        const snapLat = nearest.coords.lat;
-        const snapLng = nearest.coords.lon;
-        
-        setPosition([snapLat, snapLng]);
-
-        try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`,
-            {
-              headers: {
-                "Accept": "application/json"
-              }
-            }
-          );
-          const data = await res.json();
-          
-          let label = data?.display_name;
-          let city = "";
-          
-          if (data?.address) {
-            city =
-              data.address.city ||
-              data.address.town ||
-              data.address.village ||
-              data.address.suburb ||
-              data.address.county ||
-              "";
-          }
-          
-          // Snaps coordinates & name to our key regions if it falls outside our core database targets
-          if (!city || !["kakinada", "rajahmundry", "new delhi", "hyderabad"].includes(city.toLowerCase())) {
-            label = nearest.name;
-            city = nearest.city;
-          }
-
-          setSearch(label);
-          setDetectedLabel(label);
-
-          localStorage.setItem("userLocation", label);
-          localStorage.setItem("userCity", city);
-          
-          if (onLocationChange) onLocationChange(label);
-          if (onCoordsChange) onCoordsChange({ lat: snapLat, lng: snapLng });
-        } catch (err) {
-          console.error("Reverse geocode failed:", err);
-          console.error("Full Error:", err);
-          
-          const fallbackLabel = nearest.name;
-          const fallbackCity = nearest.city;
-          
-          setSearch(fallbackLabel);
-          setDetectedLabel(fallbackLabel);
-          
-          localStorage.setItem("userLocation", fallbackLabel);
-          localStorage.setItem("userCity", fallbackCity);
-          
-          if (onLocationChange) onLocationChange(fallbackLabel);
-          if (onCoordsChange) onCoordsChange({ lat: snapLat, lng: snapLng });
-        } finally {
-          setDetecting(false);
-        }
-      },
-      (err) => {
-        console.error("Geolocation error:", err);
-        console.error("Full Error:", err);
-        alert(`Location Error: ${err.message}`);
-        setDetecting(false);
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-    );
-  };
-
-  const handleMapInteraction = async (lat, lng) => {
-    const localMatches = [
-      { name: "Kakinada, Andhra Pradesh, India", city: "Kakinada", coords: { lat: 16.989062, lon: 82.243878 } },
-      { name: "Rajahmundry, Andhra Pradesh, India", city: "Rajahmundry", coords: { lat: 17.000538, lon: 81.804034 } },
-      { name: "New Delhi, Delhi, India", city: "New Delhi", coords: { lat: 28.613939, lon: 77.209021 } },
-      { name: "Hyderabad, Telangana, India", city: "Hyderabad", coords: { lat: 17.385044, lon: 78.486671 } }
-    ];
-    
-    const getDist = (lat1, lon1, lat2, lon2) => Math.sqrt((lat1 - lat2) ** 2 + (lon1 - lon2) ** 2);
-    
-    let nearest = localMatches.find(city => getDist(lat, lng, city.coords.lat, city.coords.lon) < 0.25); // ~25km
-    if (!nearest) {
-      // Find absolute nearest even if outside 25km
-      let minD = Infinity;
-      localMatches.forEach(item => {
-        const d = getDist(lat, lng, item.coords.lat, item.coords.lon);
-        if (d < minD) {
-          minD = d;
-          nearest = item;
-        }
-      });
-    }
-    
-    const snapLat = nearest.coords.lat;
-    const snapLng = nearest.coords.lon;
-    setPosition([snapLat, snapLng]);
-    
-    const label = nearest.name;
-    const city = nearest.city;
-    
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  const applyLocation = (lat, lon, label, city) => {
+    setPosition([lat, lon]);
     setSearch(label);
     setDetectedLabel(label);
     localStorage.setItem("userLocation", label);
     localStorage.setItem("userCity", city);
+    localStorage.setItem("userCoordsLat", lat.toString());
+    localStorage.setItem("userCoordsLng", lon.toString());
     if (onLocationChange) onLocationChange(label);
-    if (onCoordsChange) onCoordsChange({ lat: snapLat, lng: snapLng });
+    if (onCoordsChange) onCoordsChange({ lat, lng: lon });
+  };
+
+  // Dragging / clicking the map → Photon reverse geocode
+  const handleMapInteraction = async (lat, lng) => {
+    setPosition([lat, lng]);
+    try {
+      const result = await photonReverse(lat, lng);
+      if (result) {
+        applyLocation(lat, lng, result.label, result.city);
+        return;
+      }
+    } catch (e) {
+      console.warn("Photon reverse geocode failed:", e.message);
+    }
+    // Fallback: show raw coordinates as label
+    const fallbackLabel = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    applyLocation(lat, lng, fallbackLabel, "");
   };
 
   const MapEventsHandler = () => {
     useMapEvents({
-      click(e) {
-        handleMapInteraction(e.latlng.lat, e.latlng.lng);
-      },
+      click(e) { handleMapInteraction(e.latlng.lat, e.latlng.lng); },
     });
     return null;
   };
 
+  // ── Search ─────────────────────────────────────────────────────────────────
   const searchLocation = async () => {
     if (!search.trim()) return;
-    
-    const query = search.toLowerCase().trim();
-    
-    // High-performance local coordinate dictionary (matching seeded cities)
-    const LOCAL_GEO_DB = {
-      "kakinada": { lat: 16.989062, lon: 82.243878, label: "Kakinada, Andhra Pradesh, India", city: "Kakinada" },
-      "rajahmundry": { lat: 17.000538, lon: 81.804034, label: "Rajahmundry, Andhra Pradesh, India", city: "Rajahmundry" },
-      "new delhi": { lat: 28.613939, lon: 77.209021, label: "New Delhi, Delhi, India", city: "New Delhi" },
-      "hyderabad": { lat: 17.385044, lon: 78.486671, label: "Hyderabad, Telangana, India", city: "Hyderabad" }
-    };
-    
-    // 1. Check exact or fuzzy local match
-    const localMatch = Object.keys(LOCAL_GEO_DB).find(k => query.includes(k) || k.includes(query));
-    if (localMatch) {
-      const { lat, lon, label, city } = LOCAL_GEO_DB[localMatch];
-      setPosition([lat, lon]);
-      setSearch(label);
-      localStorage.setItem("userLocation", label);
-      localStorage.setItem("userCity", city);
-      if (onLocationChange) onLocationChange(label);
-      if (onCoordsChange) onCoordsChange({ lat, lng: lon });
-      return;
-    }
-    
-    // 2. Remote fallback
+    setIsSearching(true);
+
+    // 1. Try Photon forward geocode (client-side, no key, no rate limit)
     try {
-      const results = await provider.search({ query: search });
-      if (results.length > 0) {
-        const { x, y, label } = results[0];
-        setPosition([y, x]);
-        setSearch(label);
-        localStorage.setItem("userLocation", label);
-        
-        // Resolve city name
-        const labelLower = label.toLowerCase();
-        let city = labelLower.includes("kakinada") ? "Kakinada" :
-                   labelLower.includes("rajahmundry") ? "Rajahmundry" :
-                   (labelLower.includes("new delhi") || labelLower.includes("delhi")) ? "New Delhi" :
-                   labelLower.includes("hyderabad") ? "Hyderabad" : "";
-        if (!city) {
-          const localMatches = [
-            { city: "Kakinada", coords: { lat: 16.989062, lon: 82.243878 } },
-            { city: "Rajahmundry", coords: { lat: 17.000538, lon: 81.804034 } },
-            { city: "New Delhi", coords: { lat: 28.613939, lon: 77.209021 } },
-            { city: "Hyderabad", coords: { lat: 17.385044, lon: 78.486671 } }
-          ];
-          const getDist = (lat1, lon1, lat2, lon2) => Math.sqrt((lat1 - lat2) ** 2 + (lon1 - lon2) ** 2);
-          
-          let nearest = localMatches[0];
-          let minDist = getDist(y, x, nearest.coords.lat, nearest.coords.lon);
-          for (let i = 1; i < localMatches.length; i++) {
-            const dist = getDist(y, x, localMatches[i].coords.lat, localMatches[i].coords.lon);
-            if (dist < minDist) {
-              minDist = dist;
-              nearest = localMatches[i];
-            }
-          }
-          city = nearest.city;
-        }
-        localStorage.setItem("userCity", city);
-        
-        if (onLocationChange) onLocationChange(label);
-        if (onCoordsChange) onCoordsChange({ lat: y, lng: x });
-      } else {
-        alert("Location not found. Please try a different search term.");
+      const result = await photonSearch(search.trim());
+      if (result) {
+        applyLocation(result.lat, result.lon, result.label, result.city);
+        setIsSearching(false);
+        return;
       }
-    } catch (err) {
-      console.error("Location search failed:", err);
-      console.error("Full Error:", err);
-      // Coordinate direct input fallback if Nominatim is blocked/offline
-      const coordParts = search.split(",").map(p => parseFloat(p.trim()));
-      if (coordParts.length === 2 && !isNaN(coordParts[0]) && !isNaN(coordParts[1])) {
-        const [lat, lng] = coordParts;
-        setPosition([lat, lng]);
-        
-        const localMatches = [
-          { name: "Kakinada, Andhra Pradesh, India", city: "Kakinada", coords: { lat: 16.989062, lon: 82.243878 } },
-          { name: "Rajahmundry, Andhra Pradesh, India", city: "Rajahmundry", coords: { lat: 17.000538, lon: 81.804034 } },
-          { name: "New Delhi, Delhi, India", city: "New Delhi", coords: { lat: 28.613939, lon: 77.209021 } },
-          { name: "Hyderabad, Telangana, India", city: "Hyderabad", coords: { lat: 17.385044, lon: 78.486671 } }
-        ];
-        const getDist = (lat1, lon1, lat2, lon2) => Math.sqrt((lat1 - lat2) ** 2 + (lon1 - lon2) ** 2);
-        
-        let nearest = localMatches[0];
-        let minDist = getDist(lat, lng, nearest.coords.lat, nearest.coords.lon);
-        for (let i = 1; i < localMatches.length; i++) {
-          const dist = getDist(lat, lng, localMatches[i].coords.lat, localMatches[i].coords.lon);
-          if (dist < minDist) {
-            minDist = dist;
-            nearest = localMatches[i];
-          }
-        }
-        
-        const label = nearest.name;
-        const city = nearest.city;
-        
-        setSearch(label);
-        setDetectedLabel(label);
-        localStorage.setItem("userLocation", label);
-        localStorage.setItem("userCity", city);
-        
-        if (onLocationChange) onLocationChange(label);
-        if (onCoordsChange) onCoordsChange({ lat, lng });
-      } else {
-        alert("Could not search location. Please check your internet connection and try again.");
-      }
+    } catch (e) {
+      console.warn("Photon search failed, trying backend proxy:", e.message);
     }
+
+    // 2. Fallback: backend proxy (also Photon-backed)
+    try {
+      const res = await fetch(`/api/workers/geocode?q=${encodeURIComponent(search.trim())}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.lat && data?.lon) {
+          applyLocation(parseFloat(data.lat), parseFloat(data.lon), data.label || search, data.city || "");
+          setIsSearching(false);
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn("Backend geocode proxy failed:", e.message);
+    }
+
+    setIsSearching(false);
+    alert("Location not found. Please try a different search term.");
   };
 
   const handleKeyDown = (e) => {
@@ -317,45 +186,24 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
         <input
           id="location-search-input"
           type="text"
-          placeholder={detecting ? "Detecting your location..." : "Search location..."}
+          placeholder="Search any location, street, village, colony..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={handleKeyDown}
           style={{ flex: 1 }}
         />
-
-        {/* Auto-detect GPS button */}
-        <button
-          id="gps-auto-detect-btn"
-          title="Auto-detect my current location"
-          onClick={() => autoDetect(true)}
-          disabled={detecting}
-          style={{
-            padding: "8px 10px",
-            borderRadius: "5px",
-            border: "1px solid #2196F3",
-            background: "#e3f2fd",
-            color: "#1565c0",
-            cursor: detecting ? "not-allowed" : "pointer",
-            fontSize: "18px",
-            lineHeight: 1,
-          }}
-        >
-          {detecting ? "⏳" : "🎯"}
-        </button>
-
-        {/* Search button */}
         <button
           id="location-search-btn"
           onClick={searchLocation}
-          style={{ backgroundColor: "var(--primary)", color: "white" }}
+          disabled={isSearching}
+          style={{ backgroundColor: "var(--primary)", color: "white", opacity: isSearching ? 0.7 : 1 }}
         >
-          Search Location 🔍
+          {isSearching ? "Searching..." : "Search Location 🔍"}
         </button>
       </div>
 
       {/* Detected label badge */}
-      {detectedLabel && !detecting && (
+      {detectedLabel && (
         <div
           style={{
             display: "inline-flex",
@@ -393,26 +241,22 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
           <ChangeMapView center={position} />
           <MapEventsHandler />
           <TileLayer
-            attribution="&copy; OpenStreetMap contributors"
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.cyclosm.org">CyclOSM</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png"
+            maxZoom={20}
           />
-          <Marker 
-            position={position} 
+          <Marker
+            position={position}
             icon={pinIcon}
             draggable={true}
             eventHandlers={{
               dragend(e) {
-                const marker = e.target;
-                if (marker) {
-                  const latlng = marker.getLatLng();
-                  handleMapInteraction(latlng.lat, latlng.lng);
-                }
+                const latlng = e.target.getLatLng();
+                handleMapInteraction(latlng.lat, latlng.lng);
               }
             }}
           >
-            <Popup>
-              {detectedLabel || search || "Selected Location"}
-            </Popup>
+            <Popup>{detectedLabel || search || "Selected Location"}</Popup>
           </Marker>
         </MapContainer>
       </div>

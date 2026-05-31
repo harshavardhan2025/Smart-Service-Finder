@@ -1,5 +1,5 @@
 import Worker from "../models/Worker.js";
-import { haversineKm, geocodeCity } from "../utils/geoUtils.js";
+import { haversineKm, geocodeCity, getPriceMultiplier } from "../utils/geoUtils.js";
 
 // 🧠 AI SPATIAL CACHE: Prevents redundant LLM hits, accelerating repeat searches flawlessly!
 const aiRadiusCache = {};
@@ -239,4 +239,27 @@ export const createWorker = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+export const geocodeLocation = async (req, res) => {
+  try {
+    const query = req.query.q;
+    if (!query) {
+      return res.status(400).json({ error: "q query param is required." });
+    }
+    
+    const coords = await geocodeCity(query);
+    if (coords) {
+      const city = coords.city || query.charAt(0).toUpperCase() + query.slice(1);
+      const label = coords.label || query.charAt(0).toUpperCase() + query.slice(1);
+      const priceMultiplier = getPriceMultiplier(city);
+      
+      res.status(200).json({ lat: coords.lat, lon: coords.lon, label, city, priceMultiplier });
+    } else {
+      res.status(404).json({ error: "Location not found." });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 

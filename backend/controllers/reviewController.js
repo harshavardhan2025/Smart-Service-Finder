@@ -24,39 +24,52 @@ export const createReview = async (req, res) => {
       date: new Date().toISOString().slice(0, 10)
     });
 
-    // ⚡ REAL-TIME DYNAMIC RATING AGGREGATION: Automatically sync stats with physical Worker profile!
+    // ⚡ BAYESIAN RATING AGGREGATION
+    // Formula: effectiveRating = (W × BASE + ratingSum + newStar) / (W + reviewCount)
+    // BASE = 2.7 (new worker baseline), W = 3 (baseline weight)
     if (req.body.worker_id) {
-       const workerReviews = await Review.find({ worker_id: req.body.worker_id });
-       const totalCount = workerReviews.length;
-       const rawSum = workerReviews.reduce((sum, r) => sum + Number(r.rating || 0), 0);
-       
-       // Force exact math with a standard 1-decimal place rounding
-       const avgRating = totalCount > 0 ? Math.round((rawSum / totalCount) * 10) / 10 : 3.0;
-       
-       await Worker.findByIdAndUpdate(req.body.worker_id, {
-          rating: avgRating,
-          reviews: totalCount
-       });
+      const BASE_RATING = 2.7;
+      const WEIGHT = 3;
+      const newStar = Number(req.body.rating || 0);
 
-       // Create targeted notification for the worker
-       try {
-         const worker = await Worker.findById(req.body.worker_id);
-         if (worker) {
-           const workerUser = await User.findOne({ email: worker.email });
-           if (workerUser) {
-             await Notification.create({
-               role: "worker",
-               user_id: workerUser._id.toString(),
-               title: "⭐️ New Review Received!",
-               message: `${review.customer_name} left you a ${review.rating}-star review: "${review.comment || 'No comment text provided.'}"`,
-               type: "info",
-               is_read: false
-             });
-           }
-         }
-       } catch (err) {
-         console.error("Error creating review notification for worker:", err);
-       }
+      // Increment ratingSum and reviews atomically, then fetch fresh values
+      const updatedWorker = await Worker.findByIdAndUpdate(
+        req.body.worker_id,
+        {
+          $inc: { ratingSum: newStar, reviews: 1 }
+        },
+        { new: true }
+      );
+
+      if (updatedWorker) {
+        const reviewCount = updatedWorker.reviews;
+        const sumStars = updatedWorker.ratingSum;
+        // Bayesian blended rating, rounded to 1 decimal
+        const bayesRating = Math.round(
+          ((WEIGHT * BASE_RATING + sumStars) / (WEIGHT + reviewCount)) * 10
+        ) / 10;
+        // Clamp to valid 1.0 – 5.0 range
+        const finalRating = Math.min(5.0, Math.max(1.0, bayesRating));
+
+        await Worker.findByIdAndUpdate(req.body.worker_id, { rating: finalRating });
+
+        // Notify the worker
+        try {
+          const workerUser = await User.findOne({ email: updatedWorker.email });
+          if (workerUser) {
+            await Notification.create({
+              role: "worker",
+              user_id: workerUser._id.toString(),
+              title: "⭐️ New Review Received!",
+              message: `${review.customer_name} left you a ${review.rating}-star review. Your new rating is ${finalRating} ⭐`,
+              type: "info",
+              is_read: false
+            });
+          }
+        } catch (err) {
+          console.error("Error creating review notification:", err);
+        }
+      }
     }
 
     res.status(201).json(review);
@@ -64,6 +77,7 @@ export const createReview = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
 
 export const replyReview = async (req, res) => {
   try {

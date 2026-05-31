@@ -1,4 +1,57 @@
 /**
+ * Location-based price multipliers.
+ * Keys are lowercase city names. Values are multipliers applied to the
+ * service's base price when a worker registers in that city.
+ *
+ * Metro/high-cost cities  → above 1.0
+ * Tier-2 cities           → 1.0  (baseline)
+ * Smaller towns           → below 1.0
+ */
+export const CITY_PRICE_MULTIPLIERS = {
+  // Metro
+  "new delhi": 1.5,
+  "delhi": 1.5,
+  "mumbai": 1.5,
+  "bangalore": 1.4,
+  "bengaluru": 1.4,
+  "chennai": 1.35,
+  "kolkata": 1.3,
+  "hyderabad": 1.3,
+  "secunderabad": 1.3,
+  "pune": 1.25,
+  "ahmedabad": 1.2,
+  // Tier-2
+  "kakinada": 1.0,
+  "rajahmundry": 1.0,
+  "vijayawada": 1.05,
+  "visakhapatnam": 1.1,
+  "vizag": 1.1,
+  "guntur": 0.95,
+  "tirupati": 0.95,
+  "nellore": 0.9,
+  // Smaller towns
+  "kadapa": 0.85,
+  "kurnool": 0.85,
+  "anantapur": 0.8,
+  "eluru": 0.85,
+  "ongole": 0.8,
+  "srikakulam": 0.8,
+};
+
+/**
+ * Returns the price multiplier for a given city string.
+ * Falls back to 1.0 for unknown cities.
+ */
+export function getPriceMultiplier(city = "") {
+  const key = city.toLowerCase().trim();
+  // Try exact match first, then partial match
+  if (CITY_PRICE_MULTIPLIERS[key] !== undefined) return CITY_PRICE_MULTIPLIERS[key];
+  const partialKey = Object.keys(CITY_PRICE_MULTIPLIERS).find(k => key.includes(k) || k.includes(key));
+  return partialKey ? CITY_PRICE_MULTIPLIERS[partialKey] : 1.0;
+}
+
+/**
+
  * Haversine formula — returns distance in km between two lat/lng points.
  */
 export function haversineKm(lat1, lon1, lat2, lon2) {
@@ -13,80 +66,40 @@ export function haversineKm(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// In-memory geocode cache so we don't hammer Nominatim
+/**
+ * Geocode any location string → { lat, lon, label, city }
+ * Uses Photon (photon.komoot.io) — worldwide OSM-based, no API key, no rate blocks.
+ * Returns null if nothing is found.
+ */
 const geocodeCache = {};
 
-// 🚀 HIGH-PERFORMANCE LOCAL GEOSPATIAL DICTIONARY
-// Pre-computed exact coordinates for all seeded cities, suburbs, and neighborhoods
-const LOCAL_GEO_DB = {
-  "kakinada central area": { lat: 16.989062, lon: 82.243878 },
-  "kakinada suburbs": { lat: 16.955000, lon: 82.215000 },
-  "kakinada": { lat: 16.989062, lon: 82.243878 },
-  
-  "rajahmundry central area": { lat: 17.000538, lon: 81.804034 },
-  "rajahmundry suburbs": { lat: 17.035000, lon: 81.775000 },
-  "rajahmundry": { lat: 17.000538, lon: 81.804034 },
-  
-  "new delhi central area": { lat: 28.613939, lon: 77.209021 },
-  "new delhi suburbs": { lat: 28.575000, lon: 77.155000 },
-  "new delhi": { lat: 28.613939, lon: 77.209021 },
-  
-  "hyderabad central area": { lat: 17.385044, lon: 78.486671 },
-  "hyderabad suburbs": { lat: 17.415000, lon: 78.435000 },
-  "hyderabad": { lat: 17.385044, lon: 78.486671 },
-
-  // Pre-computed exact coordinates for seeded worker neighborhoods to prevent Nominatim hits
-  "danavaipeta": { lat: 17.008400, lon: 81.792500 },
-  "main road": { lat: 16.979800, lon: 82.242500 },
-  "bommarillu": { lat: 17.012000, lon: 81.798000 },
-  "rtc complex": { lat: 16.984030, lon: 82.239840 },
-  "pushkar ghat": { lat: 16.995000, lon: 81.776000 },
-  "suryaraopeta": { lat: 16.986500, lon: 82.238900 },
-  "lala cheruvu": { lat: 17.025000, lon: 81.821000 },
-  "bhanugudi junction": { lat: 16.980120, lon: 82.235670 },
-  "jagannaickpur": { lat: 16.968000, lon: 82.245000 },
-  "kovvur sub": { lat: 17.021000, lon: 81.728000 }
-};
-
-/**
- * Geocode a city/address string to { lat, lon } using Nominatim.
- * Returns null on failure.
- */
-export async function geocodeCity(cityName) {
-  const key = cityName.toLowerCase().trim();
-  
-  // 1. Direct memory cache match
+export async function geocodeCity(location) {
+  const key = location.toLowerCase().trim();
   if (geocodeCache[key]) return geocodeCache[key];
 
-  // 2. High-performance pre-computed dictionary lookup (Exact)
-  if (LOCAL_GEO_DB[key]) {
-    return LOCAL_GEO_DB[key];
-  }
-
-  // 3. Dynamic Fuzzy matcher against local database
-  const fuzzyMatch = Object.keys(LOCAL_GEO_DB).find(
-    (k) => key.includes(k) || k.includes(key)
-  );
-  if (fuzzyMatch) {
-    geocodeCache[key] = LOCAL_GEO_DB[fuzzyMatch];
-    return LOCAL_GEO_DB[fuzzyMatch];
-  }
-
-  // 4. Remote HTTP fallback (For arbitrary user address inputs)
   try {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityName)}&limit=1`;
-    const res = await fetch(url, {
-      headers: { "User-Agent": "SmartServiceFinder/1.0" },
-      signal: AbortSignal.timeout(5000),
-    });
-    const data = await res.json();
-    if (data && data.length > 0) {
-      const coords = { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
-      geocodeCache[key] = coords;
-      return coords;
+    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(location)}&limit=1`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+
+    if (res.ok) {
+      const data = await res.json();
+      const features = data?.features;
+      if (features && features.length > 0) {
+        const f = features[0];
+        const [lon, lat] = f.geometry.coordinates;
+        const p = f.properties;
+        const city = p.city || p.town || p.village || p.county || p.name || location;
+        const label = [p.name, p.city || p.town || p.village, p.state, p.country]
+          .filter(Boolean).join(", ");
+
+        const result = { lat, lon, label, city };
+        geocodeCache[key] = result;
+        return result;
+      }
     }
-  } catch (e) {
-    console.error(`[geocodeCity] Failed for "${cityName}":`, e.message);
+  } catch (err) {
+    console.error("[geocodeCity] Photon geocode failed:", err.message);
   }
+
   return null;
 }

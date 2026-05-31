@@ -89,7 +89,28 @@ const megaEcosystemHydration = async () => {
       { name: "Maruti Bike Point", email: "maruti@workers.com", service: "Two-Wheeler (Bikes)", city: "Kakinada", location: "Suryaraopeta", rating: 4.3, reviews: 24, price: 550, experience: "3 Years" },
       { name: "Durga Painters", email: "durga@workers.com", service: "Interior Painting", city: "Rajahmundry", location: "Lala Cheruvu", rating: 3.8, reviews: 12, price: 2500, experience: "2 Years" },
       { name: "Krishna Photography", email: "krishna@workers.com", service: "Photography", city: "Kakinada", location: "Bhanugudi Junction", rating: 5.0, reviews: 15, price: 8000, experience: "7 Years" },
-      { name: "CleanPro Services", email: "cleanpro@workers.com", service: "House Cleaning", city: "Kakinada", location: "Jagannaickpur", rating: 4.6, reviews: 41, price: 1800, experience: "5 Years" }
+      { name: "CleanPro Services", email: "cleanpro@workers.com", service: "House Cleaning", city: "Kakinada", location: "Jagannaickpur", rating: 4.6, reviews: 41, price: 1800, experience: "5 Years" },
+
+      // 🏰 HYDERABAD REGIONAL WORKERS
+      { name: "Hyd Plumbing Care", email: "hydplumbing@workers.com", service: "Plumbing", city: "Hyderabad", location: "Hyderabad Central Area", rating: 4.8, reviews: 36, price: 349, experience: "7 Years" },
+      { name: "Deccan Electricals", email: "deccan@workers.com", service: "Electrical", city: "Hyderabad", location: "Hyderabad Suburbs", rating: 4.7, reviews: 29, price: 399, experience: "6 Years" },
+      { name: "Nizam Carpentry", email: "nizam@workers.com", service: "Carpentry", city: "Hyderabad", location: "Hyderabad Central Area", rating: 4.5, reviews: 22, price: 599, experience: "5 Years" },
+      { name: "Golkonda Men Salon", email: "golkonda@workers.com", service: "Haircut (Men)", city: "Hyderabad", location: "Hyderabad Suburbs", rating: 4.6, reviews: 48, price: 249, experience: "4 Years" },
+      { name: "Charminar Painters", email: "charminar@workers.com", service: "Interior Painting", city: "Hyderabad", location: "Hyderabad Central Area", rating: 4.9, reviews: 62, price: 1999, experience: "9 Years" },
+
+      // 🏛️ NEW DELHI REGIONAL WORKERS
+      { name: "Delhi Plumbing Hub", email: "delhiplumbing@workers.com", service: "Plumbing", city: "New Delhi", location: "New Delhi Central Area", rating: 4.7, reviews: 40, price: 399, experience: "8 Years" },
+      { name: "Capital Electricals", email: "capital@workers.com", service: "Electrical", city: "New Delhi", location: "New Delhi Suburbs", rating: 4.9, reviews: 54, price: 449, experience: "10 Years" },
+      { name: "Connaught Carpentry", email: "connaught@workers.com", service: "Carpentry", city: "New Delhi", location: "New Delhi Central Area", rating: 4.4, reviews: 19, price: 699, experience: "4 Years" },
+      { name: "Delhi Metro Men Salon", email: "delhimetro@workers.com", service: "Haircut (Men)", city: "New Delhi", location: "New Delhi Suburbs", rating: 4.3, reviews: 31, price: 299, experience: "5 Years" },
+      { name: "Yamuna Painters", email: "yamuna@workers.com", service: "Interior Painting", city: "New Delhi", location: "New Delhi Central Area", rating: 4.8, reviews: 75, price: 2499, experience: "11 Years" },
+
+      // ⛰️ KADAPA REGIONAL WORKERS
+      { name: "Rayalaseema Plumbers", email: "rayalaseema@workers.com", service: "Plumbing", city: "Kadapa", location: "Kadapa Central Area", rating: 4.8, reviews: 31, price: 299, experience: "6 Years" },
+      { name: "Kadapa Power & Light", email: "kadapapower@workers.com", service: "Electrical", city: "Kadapa", location: "Kadapa Suburbs", rating: 4.9, reviews: 43, price: 349, experience: "9 Years" },
+      { name: "YSR Carpentry Works", email: "ysrcarpentry@workers.com", service: "Carpentry", city: "Kadapa", location: "Kadapa Central Area", rating: 4.3, reviews: 15, price: 499, experience: "4 Years" },
+      { name: "Royal Men Salon", email: "royal@workers.com", service: "Haircut (Men)", city: "Kadapa", location: "Kadapa Suburbs", rating: 4.7, reviews: 52, price: 199, experience: "5 Years" },
+      { name: "Palnadu Painters", email: "palnadu@workers.com", service: "Interior Painting", city: "Kadapa", location: "Kadapa Central Area", rating: 4.5, reviews: 21, price: 1499, experience: "3 Years" }
     ];
 
     // Insert into Worker collection

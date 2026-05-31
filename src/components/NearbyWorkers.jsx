@@ -122,6 +122,7 @@ function getShortLocation(fullAddress) {
   if (lower.includes("rajahmundry")) return "rajahmundry";
   if (lower.includes("new delhi") || lower.includes("delhi")) return "new delhi";
   if (lower.includes("hyderabad")) return "hyderabad";
+  if (lower.includes("kadapa")) return "kadapa";
   
   // Fall back to stored userCity if the first segment is a raw coordinate number
   const firstSegment = fullAddress.split(",")[0].trim();

@@ -162,7 +162,7 @@ function WorkerDashboard() {
 
   const handleStatusChange = async (bookingId, newStatus) => {
     try {
-      await fetch(`/api/bookings/${bookingId}`, {
+      const res = await fetch(`/api/bookings/${bookingId}`, {
          method: "PATCH",
          headers: { 
             "Content-Type": "application/json",
@@ -170,15 +170,23 @@ function WorkerDashboard() {
          },
          body: JSON.stringify({ status: newStatus })
       });
-      alert(`Status updated to: ${newStatus}`);
-      syncStore();
-    } catch (err) { alert("Update failed"); }
+      const data = await res.json();
+      if (res.ok) {
+        alert(`✅ Status updated to: ${newStatus}`);
+        syncStore();
+      } else {
+        alert(`🛑 Status Update Failed!\n\n${data.error || "Unable to update booking status. Please try again."}`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("🛑 Network Error: Could not reach the server. Please check your connection and try again.");
+    }
   };
 
   const handleRejectOrder = async (bookingId) => {
     if (window.confirm("Are you sure you want to reject this customer order?")) {
        try {
-          await fetch(`/api/bookings/${bookingId}`, {
+          const res = await fetch(`/api/bookings/${bookingId}`, {
              method: "PATCH",
              headers: { 
                 "Content-Type": "application/json",
@@ -186,9 +194,17 @@ function WorkerDashboard() {
              },
              body: JSON.stringify({ status: "Rejected" })
           });
-          alert("❌ Request rejected successfully.");
-          syncStore();
-       } catch (err) { alert("Failed to reject"); }
+          const data = await res.json();
+          if (res.ok) {
+            alert("✅ Request rejected successfully.");
+            syncStore();
+          } else {
+            alert(`🛑 Rejection Failed!\n\n${data.error || "Unable to reject this booking. Please try again."}`);
+          }
+       } catch (err) {
+         console.error(err);
+         alert("🛑 Network Error: Could not reach the server. Please check your connection and try again.");
+       }
     }
   };
 

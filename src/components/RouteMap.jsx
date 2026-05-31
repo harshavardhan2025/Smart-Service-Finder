@@ -2,9 +2,19 @@ import React, { useEffect, useState } from "react";
 import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { OpenStreetMapProvider } from "leaflet-geosearch";
 
-const provider = new OpenStreetMapProvider();
+// ── Photon geocoder (no API key, worldwide OSM-based) ─────────────────────────
+async function photonSearch(query) {
+  const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=1`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  if (!res.ok) throw new Error(`Photon HTTP ${res.status}`);
+  const data = await res.json();
+  const f = data?.features?.[0];
+  if (!f) return null;
+  const [lon, lat] = f.geometry.coordinates;
+  return [lat, lon];
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 // Custom Icon Definitions
 const workerIcon = new L.DivIcon({
@@ -21,7 +31,7 @@ const homeIcon = new L.DivIcon({
   iconAnchor: [18, 32]
 });
 
-// Self-contained hook/component to automatically fit boundary frame between both points
+// Fit map bounds to include both markers
 function RecenterMap({ pos1, pos2 }) {
   const map = useMap();
   useEffect(() => {
@@ -36,44 +46,38 @@ function RecenterMap({ pos1, pos2 }) {
 }
 
 const RouteMap = ({ startAddress, endAddress }) => {
-  const [posA, setPosA] = useState(null); // Worker Loc
-  const [posB, setPosB] = useState(null); // Cust Loc
+  const [posA, setPosA] = useState(null); // Worker / start location
+  const [posB, setPosB] = useState(null); // Customer / end location
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Default baseline just in case everything fails (Hyderabad)
-  const defaultCenter = [17.3850, 78.4867];
+  const defaultCenter = [17.3850, 78.4867]; // Hyderabad fallback
 
   useEffect(() => {
     const geocodeBoth = async () => {
       setLoading(true);
       setError(null);
       try {
-        // Standard cleansing of input address queries
         const queryA = startAddress || "Hyderabad, India";
         const queryB = endAddress || "Banjara Hills, Hyderabad";
 
-        console.log(`🛰️ Geocoding Route: [${queryA}] --> [${queryB}]`);
+        console.log(`🛰️ Photon Route: [${queryA}] --> [${queryB}]`);
 
         const [resA, resB] = await Promise.all([
-          provider.search({ query: queryA }),
-          provider.search({ query: queryB })
+          photonSearch(queryA),
+          photonSearch(queryB)
         ]);
 
-        if (resA && resA.length > 0) {
-          setPosA([resA[0].y, resA[0].x]);
-        }
-        if (resB && resB.length > 0) {
-          setPosB([resB[0].y, resB[0].x]);
-        }
+        if (resA) setPosA(resA);
+        if (resB) setPosB(resB);
 
-        if ((!resA || resA.length === 0) && (!resB || resB.length === 0)) {
-          setError("Could not resolve valid global coordinates for these addresses.");
+        if (!resA && !resB) {
+          setError("Could not resolve coordinates for these addresses.");
         }
 
       } catch (err) {
-        console.error("Geocoding Engine Fail:", err);
-        setError("Live geocoding service temporarily offline.");
+        console.error("Photon RouteMap geocoding error:", err);
+        setError("Live geocoding temporarily unavailable.");
       } finally {
         setLoading(false);
       }
@@ -85,58 +89,57 @@ const RouteMap = ({ startAddress, endAddress }) => {
   if (loading) {
     return (
       <div style={{ height: 260, backgroundColor: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12 }}>
-         <div className="spinner" style={{ width: 24, height: 24, border: "3px solid #e2e8f0", borderTopColor: "var(--primary)", borderRadius: "50%", animation: "spin 1s linear infinite" }}></div>
-         <span style={{ fontSize: 13, color: "#64748b", fontWeight: 600 }}>Calculating Optimal Path Live...</span>
+        <div className="spinner" style={{ width: 24, height: 24, border: "3px solid #e2e8f0", borderTopColor: "var(--primary)", borderRadius: "50%", animation: "spin 1s linear infinite" }}></div>
+        <span style={{ fontSize: 13, color: "#64748b", fontWeight: 600 }}>Calculating Optimal Path...</span>
       </div>
     );
   }
 
   if (error && !posA && !posB) {
-     return (
-       <div style={{ height: 260, backgroundColor: "#fef2f2", display: "flex", alignItems: "center", justifyContent: "center", color: "#dc2626", padding: 20, textAlign: "center", fontSize: 13 }}>
-          ⚠️ <strong>Mapping Unavailable:</strong> {error}
-       </div>
-     );
+    return (
+      <div style={{ height: 260, backgroundColor: "#fef2f2", display: "flex", alignItems: "center", justifyContent: "center", color: "#dc2626", padding: 20, textAlign: "center", fontSize: 13 }}>
+        ⚠️ <strong>Mapping Unavailable:</strong>&nbsp;{error}
+      </div>
+    );
   }
 
-  // Fallback rendering centers if one coordinate exists but not the other
   const displayPosA = posA || defaultCenter;
   const displayPosB = posB || [displayPosA[0] + 0.01, displayPosA[1] + 0.01];
 
   return (
     <div style={{ height: 260, position: "relative", width: "100%" }}>
-      <MapContainer 
-         center={displayPosA} 
-         zoom={13} 
-         style={{ height: "100%", width: "100%" }}
-         scrollWheelZoom={false}
+      <MapContainer
+        center={displayPosA}
+        zoom={13}
+        style={{ height: "100%", width: "100%" }}
+        scrollWheelZoom={false}
       >
         <TileLayer
-          attribution='&copy; OpenStreetMap'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.cyclosm.org">CyclOSM</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png"
+          maxZoom={20}
         />
-        
+
         <RecenterMap pos1={posA} pos2={posB} />
 
         {posA && (
           <Marker position={posA} icon={workerIcon}>
-            <Popup><strong>🧑‍🏭 Your Position</strong><br/>{startAddress}</Popup>
+            <Popup><strong>🧑‍🏭 Worker Location</strong><br />{startAddress}</Popup>
           </Marker>
         )}
 
         {posB && (
           <Marker position={posB} icon={homeIcon}>
-            <Popup><strong>🏠 Customer Drop</strong><br/>{endAddress}</Popup>
+            <Popup><strong>🏠 Customer Location</strong><br />{endAddress}</Popup>
           </Marker>
         )}
 
-        {/* Draw live dynamic dashed tracing route line between current real positions! */}
         {posA && posB && (
-          <Polyline 
-            positions={[posA, posB]} 
-            color="#3b82f6" 
-            weight={4} 
-            dashArray="10, 10" 
+          <Polyline
+            positions={[posA, posB]}
+            color="#3b82f6"
+            weight={4}
+            dashArray="10, 10"
             opacity={0.8}
           />
         )}

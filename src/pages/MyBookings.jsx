@@ -75,15 +75,17 @@ function MyBookings() {
         },
         body: JSON.stringify({ reason: cancelReason })
       });
+      const data = await res.json();
       if (res.ok) {
-        alert(`❌ Booking CANCELLED Successfully!\n\nYour payment has been fully refunded back to your secure Wallet balance! 💵`);
+        alert(`✅ Booking Cancelled Successfully!\n\nYour payment has been fully refunded back to your secure Wallet balance! 💵`);
         setActiveCancelBooking(null);
         syncBookings();
       } else {
-        alert("Failed to cancel booking.");
+        alert(`🛑 Cancellation Failed!\n\n${data.error || "Unable to cancel this booking. Please try again later."}`);
       }
     } catch(e) {
       console.error(e);
+      alert("🛑 Network Error: Could not reach the server. Please check your connection and try again.");
     } finally {
       setSubmittingCancel(false);
     }
