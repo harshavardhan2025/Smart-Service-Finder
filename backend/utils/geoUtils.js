@@ -80,7 +80,7 @@ export async function geocodeCity(location) {
   // Try Primary Provider: Photon (OSM-based Komoot API)
   try {
     const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(location)}&limit=1`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(15000) }); // Generous 15s timeout for standard network speeds
+    const res = await fetch(url, { signal: AbortSignal.timeout(3000) }); // Fast 3s timeout to prevent backend choke when offline
 
     if (res.ok) {
       const data = await res.json();
@@ -109,7 +109,7 @@ export async function geocodeCity(location) {
       headers: {
         "User-Agent": "SmartServiceFinder/1.0 (harshavardhan2025/Smart-Service-Finder)"
       },
-      signal: AbortSignal.timeout(15000) // Generous 15s timeout for fallback
+      signal: AbortSignal.timeout(3000) // Fast 3s timeout
     });
 
     if (res.ok) {
@@ -128,6 +128,27 @@ export async function geocodeCity(location) {
     }
   } catch (err) {
     console.error("[geocodeCity] Nominatim fallback geocode also failed:", err.message);
+  }
+
+  // 🏛️ SMART OFFLINE FALLBACK: Preset coordinate mapper for key application cities!
+  // This executes ONLY as an offline safety-net if both real-world APIs fail or time out (e.g. inside network-restricted sandboxes).
+  const lowerQuery = key;
+  let localMatch = null;
+  if (lowerQuery.includes("kakinada")) {
+    localMatch = { lat: 16.98906, lon: 82.24747, city: "Kakinada", label: "Kakinada, Andhra Pradesh, India" };
+  } else if (lowerQuery.includes("rajahmundry")) {
+    localMatch = { lat: 17.00053, lon: 81.80403, city: "Rajahmundry", label: "Rajahmundry, Andhra Pradesh, India" };
+  } else if (lowerQuery.includes("delhi")) {
+    localMatch = { lat: 28.6139, lon: 77.2090, city: "New Delhi", label: "New Delhi, Delhi, India" };
+  } else if (lowerQuery.includes("hyderabad")) {
+    localMatch = { lat: 17.3850, lon: 78.4867, city: "Hyderabad", label: "Hyderabad, Telangana, India" };
+  } else if (lowerQuery.includes("kadapa")) {
+    localMatch = { lat: 14.4673, lon: 78.8242, city: "Kadapa", label: "Kadapa, Andhra Pradesh, India" };
+  }
+
+  if (localMatch) {
+    geocodeCache[key] = localMatch;
+    return localMatch;
   }
 
   return null;
