@@ -73,6 +73,38 @@ const seedDatabase = async () => {
       walletBalance: 5000
     });
 
+    const testAdmin = await User.create({
+      name: "Admin Master",
+      email: "admin@harsha.com",
+      password: "password123",
+      role: "admin",
+      phone: "9876543211",
+      city: "Rajahmundry",
+      walletBalance: 100000
+    });
+
+    const testWorkerUser = await User.create({
+      name: "Suresh Worker",
+      email: "worker@harsha.com",
+      password: "password123",
+      role: "worker",
+      phone: "9876543212",
+      city: "Rajahmundry",
+      walletBalance: 5000
+    });
+
+    const testWorkerProfile = await Worker.create({
+      name: "Suresh Worker",
+      email: "worker@harsha.com",
+      service: "Plumbing",
+      city: "Rajahmundry",
+      location: "Rajahmundry Central",
+      rating: 4.8,
+      reviews: 50,
+      price: 350,
+      experience: "8+ Years"
+    });
+
     console.log("Generating Dynamic Workers across 4 Cities & 10 Services...");
     const createdWorkers = [];
     

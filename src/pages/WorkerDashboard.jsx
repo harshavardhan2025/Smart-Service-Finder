@@ -20,6 +20,9 @@ function WorkerDashboard() {
   // Load the logged-in worker ID dynamically from localStorage, fallback to 1 (Rahul Sharma)
   const selectedWorkerId = Number(sessionStorage.getItem("loggedInWorkerId")) || 1;
 
+  const [activeRejectBooking, setActiveRejectBooking] = useState(null);
+  const [rejectReason, setRejectReason] = useState("Schedule Conflict");
+  const [submittingReject, setSubmittingReject] = useState(false);
   const [bookings, setBookings] = useState([]);
   const [workerReviews, setWorkerReviews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -183,28 +186,32 @@ function WorkerDashboard() {
     }
   };
 
-  const handleRejectOrder = async (bookingId) => {
-    if (window.confirm("Are you sure you want to reject this customer order?")) {
-       try {
-          const res = await fetch(`/api/bookings/${bookingId}`, {
-             method: "PATCH",
-             headers: { 
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`
-             },
-             body: JSON.stringify({ status: "Rejected" })
-          });
-          const data = await res.json();
-          if (res.ok) {
-            alert("✅ Request rejected successfully.");
-            syncStore();
-          } else {
-            alert(`🛑 Rejection Failed!\n\n${data.error || "Unable to reject this booking. Please try again."}`);
-          }
-       } catch (err) {
-         console.error(err);
-         alert("🛑 Network Error: Could not reach the server. Please check your connection and try again.");
-       }
+  const handleConfirmReject = async () => {
+    if (!activeRejectBooking) return;
+    setSubmittingReject(true);
+    
+    try {
+      const res = await fetch(`/api/bookings/${activeRejectBooking.id}`, {
+         method: "PATCH",
+         headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`
+         },
+         body: JSON.stringify({ status: "Rejected", reason: rejectReason })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("✅ Order Rejected Successfully!\n\nThe customer has been fully refunded.");
+        setActiveRejectBooking(null);
+        syncStore();
+      } else {
+        alert(`🛑 Rejection Failed!\n\n${data.error || "Unable to reject this booking. Please try again."}`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("🛑 Network Error: Could not reach the server. Please check your connection and try again.");
+    } finally {
+      setSubmittingReject(false);
     }
   };
 
@@ -603,7 +610,7 @@ Reported At: ${new Date().toLocaleString()}`,
                                   style={{ padding: "10px 20px", backgroundColor: "var(--success)", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", display: "inline-flex", gap: 6, alignItems: "center" }}>
                                   Accept Order ✅
                                 </button>
-                                <button onClick={() => handleRejectOrder(n.bookingId)}
+                                <button onClick={() => setActiveRejectBooking({ id: n.bookingId })}
                                   style={{ padding: "10px 20px", backgroundColor: "#f43f5e", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", display: "inline-flex", gap: 6, alignItems: "center" }}>
                                   Reject Request ❌
                                 </button>
@@ -1337,6 +1344,70 @@ Reported At: ${new Date().toLocaleString()}`,
           100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
       `}</style>
+      {/* ❌ CUSTOM REJECTION MODAL */}
+      {activeRejectBooking && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(15, 23, 42, 0.75)", display: "flex",
+          justifyContent: "center", alignItems: "center", zIndex: 9999,
+          fontFamily: "'Outfit', sans-serif", backdropFilter: "blur(8px)",
+          animation: "fadeIn 0.2s ease-out forwards"
+        }}>
+          <div style={{
+            maxWidth: "400px", width: "90%", backgroundColor: "white",
+            borderRadius: "20px", padding: "28px", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+            border: "1px solid rgba(0,0,0,0.05)"
+          }}>
+            <h3 style={{ margin: "0 0 8px 0", fontSize: "20px", fontWeight: 800, color: "#1e293b" }}>
+              Reject Booking Order?
+            </h3>
+            <p style={{ margin: "0 0 20px 0", fontSize: "13px", color: "#64748b", lineHeight: 1.5 }}>
+              Are you sure you want to reject this booking? The customer will be immediately refunded. Please select a reason for rejection.
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "20px" }}>
+              <label style={{ fontSize: "12px", fontWeight: 700, color: "#475569" }}>Select Rejection Reason</label>
+              <select 
+                value={rejectReason} 
+                onChange={(e) => setRejectReason(e.target.value)}
+                style={{ width: "100%", padding: "10px", borderRadius: "10px", border: "1px solid #cbd5e1" }}
+              >
+                <option value="Schedule Conflict">📅 Scheduler Conflict</option>
+                <option value="Outside Service Area">🗺️ Outside Service Area</option>
+                <option value="Emergency">🚨 Personal Emergency</option>
+                <option value="Incomplete Details">📋 Incomplete Details</option>
+                <option value="Other">Other Reason</option>
+              </select>
+            </div>
+
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button
+                disabled={submittingReject}
+                onClick={handleConfirmReject}
+                style={{
+                  flex: 1, backgroundColor: "#ef4444", color: "white", border: "none",
+                  padding: "12px", borderRadius: "10px", fontWeight: "bold",
+                  cursor: "pointer", fontSize: "14px"
+                }}
+              >
+                {submittingReject ? "Rejecting..." : "Confirm Reject ❌"}
+              </button>
+              <button
+                disabled={submittingReject}
+                onClick={() => setActiveRejectBooking(null)}
+                style={{
+                  flex: 1, backgroundColor: "#e2e8f0", color: "#475569", border: "none",
+                  padding: "12px", borderRadius: "10px", fontWeight: "bold",
+                  cursor: "pointer", fontSize: "14px"
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

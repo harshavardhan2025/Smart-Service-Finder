@@ -139,6 +139,33 @@ export const updateBookingStatus = async (req, res) => {
     booking.status = req.body.status;
     await booking.save();
 
+    if (booking.status === "Rejected") {
+      const customer = await User.findById(booking.customer_id);
+      if (customer) {
+        customer.walletBalance = (customer.walletBalance || 0) + booking.price;
+        await customer.save();
+
+        await Transaction.create({
+          customer: booking.customer_name,
+          worker: "System Refund",
+          service: `Refund (Rejected): ${booking.service}`,
+          amount: booking.price,
+          status: "Refunded",
+          method: "Wallet Topup"
+        });
+      }
+      
+      await ActivityLog.create({
+        user_id: booking.worker_id,
+        email: req.headers["x-user-email"] || "worker@workzy.com",
+        role: "worker",
+        action: "BOOKING_REJECTED",
+        device: req.headers["user-agent"] || "Worker Dashboard",
+        ip: req.ip || "127.0.0.1",
+        city: "System"
+      });
+    }
+
     if (booking) {
       // Notify customer (user) of status update
       let statusTitle = "📅 Booking Update";
@@ -164,6 +191,10 @@ export const updateBookingStatus = async (req, res) => {
       } else if (booking.status === "Cancelled") {
         statusTitle = "❌ Booking Cancelled";
         statusMsg = `Your booking request for ${booking.service} has been cancelled.`;
+        notifyType = "warning";
+      } else if (booking.status === "Rejected") {
+        statusTitle = "❌ Booking Rejected & Refunded";
+        statusMsg = `Your booking request for ${booking.service} was rejected by the provider. A full refund of ₹${booking.price} has been credited back to your wallet.`;
         notifyType = "warning";
       }
 
