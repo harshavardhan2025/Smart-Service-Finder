@@ -356,60 +356,54 @@ export const cancelBooking = async (req, res) => {
       return res.status(400).json({ error: "Booking is already cancelled" });
     }
 
-    // Apply the duration cancellation checks!
-    const timeCheck = validateCancellationTime(booking);
-    if (!timeCheck.allowed) {
-      return res.status(400).json({ error: timeCheck.error });
+    if (booking.status === "Cancellation Pending") {
+      return res.status(400).json({ error: "Booking cancellation request is already pending review" });
     }
 
-    // Dynamically query customer to issue refund back to wallet
-    const customer = await User.findById(booking.customer_id);
-    if (!customer) {
-      return res.status(404).json({ error: "Customer profile not found. Cannot issue wallet refund." });
-    }
-
-    // Perform wallet refund and save user state first
-    customer.walletBalance = (customer.walletBalance || 0) + booking.price;
-    await customer.save();
-
-    // Write a formal transaction record of the refund
-    await Transaction.create({
-      customer: booking.customer_name,
-      worker: "System Refund",
-      service: `Refund: ${booking.service}`,
-      amount: booking.price,
-      status: "Refunded",
-      method: "Wallet Topup"
-    });
-
-    // Update and commit booking status to Cancelled ONLY after refund succeeds
-    booking.status = "Cancelled";
+    // Set cancellation pending status and save user reason
+    booking.status = "Cancellation Pending";
+    booking.cancelReason = req.body.reason || "Client Request";
     await booking.save();
+
+    // Dynamically query customer for notifications
+    const customer = await User.findById(booking.customer_id);
 
     // Safe notifications and logging (non-blocking)
     try {
-      // Log the cancellation event in Activity Logs
-      await ActivityLog.create({
-        user_id: booking.customer_id,
-        email: customer.email || "client@workzy.com",
-        role: "user",
-        action: "BOOKING_CANCELLED",
-        device: req.headers["user-agent"] || "Generic Web Client",
-        ip: req.ip || "127.0.0.1",
-        city: customer.city || "Kakinada"
-      });
+      if (customer) {
+        // Log the cancellation request event in Activity Logs
+        await ActivityLog.create({
+          user_id: booking.customer_id,
+          email: customer.email || "client@workzy.com",
+          role: "user",
+          action: "BOOKING_CANCEL_REQUESTED",
+          device: req.headers["user-agent"] || "Generic Web Client",
+          ip: req.ip || "127.0.0.1",
+          city: customer.city || "Kakinada"
+        });
+      }
 
-      // Notify customer
+      // Notify customer that cancellation is pending review
       await Notification.create({
         role: "user",
         user_id: booking.customer_id,
-        title: "❌ Booking Cancelled & Refunded",
-        message: `Your booking for ${booking.service} has been cancelled. A full refund of ₹${booking.price} has been credited back to your wallet.`,
+        title: "⏳ Cancellation Pending Review",
+        message: `Your cancellation request for ${booking.service} is now pending administrator review. Once approved, the full amount will be refunded.`,
         type: "warning",
         is_read: false
       });
 
-      // Notify worker
+      // Notify admin about the new request
+      await Notification.create({
+        role: "admin",
+        user_id: "admin",
+        title: "⚖️ Cancellation Refund Pending",
+        message: `Customer ${booking.customer_name} has requested cancellation for ${booking.service} due to: "${booking.cancelReason}".`,
+        type: "info",
+        is_read: false
+      });
+
+      // Notify worker (non-blocking notification)
       const worker = await Worker.findById(booking.worker_id);
       if (worker) {
         const workerUser = await User.findOne({ email: worker.email });
@@ -417,22 +411,23 @@ export const cancelBooking = async (req, res) => {
           await Notification.create({
             role: "worker",
             user_id: workerUser._id.toString(),
-            title: "❌ Booking Cancelled by Customer",
-            message: `The booking for ${booking.service} by ${booking.customer_name} has been cancelled.`,
+            title: "⏳ Cancellation Requested by Customer",
+            message: `The customer has requested to cancel the booking for ${booking.service}. This is pending admin approval.`,
             type: "warning",
             is_read: false
           });
         }
       }
     } catch (err) {
-      console.error("Non-blocking error during cancellation notifications:", err);
+      console.error("Non-blocking error during cancellation request notifications:", err);
     }
 
-    res.status(200).json({ success: true, booking, message: "Booking cancelled successfully and wallet refunded." });
+    res.status(200).json({ success: true, booking, message: "Cancellation request successfully submitted for review." });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 // Admin Force-Cancel: For bookings stuck in "Started" status for over 24 hours
 export const adminForceCancelBooking = async (req, res) => {
