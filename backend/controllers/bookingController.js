@@ -365,11 +365,11 @@ export const cancelBooking = async (req, res) => {
     booking.cancelReason = req.body.reason || "Client Request";
     await booking.save();
 
-    // Dynamically query customer for notifications
-    const customer = await User.findById(booking.customer_id);
-
     // Safe notifications and logging (non-blocking)
     try {
+      // Dynamically query customer for notifications (wrapped inside try-catch to prevent CastErrors)
+      const customer = booking.customer_id ? await User.findById(booking.customer_id) : null;
+      
       if (customer) {
         // Log the cancellation request event in Activity Logs
         await ActivityLog.create({
@@ -384,14 +384,16 @@ export const cancelBooking = async (req, res) => {
       }
 
       // Notify customer that cancellation is pending review
-      await Notification.create({
-        role: "user",
-        user_id: booking.customer_id,
-        title: "⏳ Cancellation Pending Review",
-        message: `Your cancellation request for ${booking.service} is now pending administrator review. Once approved, the full amount will be refunded.`,
-        type: "warning",
-        is_read: false
-      });
+      if (booking.customer_id) {
+        await Notification.create({
+          role: "user",
+          user_id: booking.customer_id.toString(),
+          title: "⏳ Cancellation Pending Review",
+          message: `Your cancellation request for ${booking.service} is now pending administrator review. Once approved, the full amount will be refunded.`,
+          type: "warning",
+          is_read: false
+        });
+      }
 
       // Notify admin about the new request
       await Notification.create({
