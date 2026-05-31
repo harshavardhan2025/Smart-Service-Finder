@@ -532,6 +532,7 @@ function AdminDashboard() {
             { id: "complaints", name: `Complaints (${complaints.filter(c => c.status === "Under Review" || c.admin_verdict === "Pending").length})`, icon: "⚠️" },
             { id: "plans-offers", name: "Manage Plans & Offers", icon: "🏷️" },
             { id: "escrow-payouts", name: "Escrow Payouts 💰", icon: "💸" },
+            { id: "cancellation-refunds", name: `Cancellation Refunds (${liveRealTimeBookings.filter(b => b.status === "Cancellation Pending").length})`, icon: "⚖️" },
             { id: "overdue-jobs", name: `Overdue Jobs (${overdueBookings.length})`, icon: "⏰" },
             { id: "sos-alerts", name: `SOS Alerts 🚨 (${adminNotifications.filter(n => !n.is_read).length})`, icon: "🆘" },
             { id: "security-audit", name: "Security Audit Logs 🛡️", icon: "🛡️" }
@@ -1873,6 +1874,106 @@ function AdminDashboard() {
                             ) : (
                               <span style={{ fontSize: "12px", color: "#94a3b8", fontStyle: "italic" }}>Completed Successfully</span>
                             )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === "cancellation-refunds" && (
+            <div className="fade-in" style={{ animation: "fadeIn 0.3s ease" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+                <div>
+                  <h2 style={{ margin: "0 0 6px", fontWeight: 800, color: "var(--text-main)" }}>⚖️ Cancellation Refund Approvals</h2>
+                  <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14px" }}>Review, Approve, or Decline customer-requested booking cancellations and refunds.</p>
+                </div>
+                <div style={{ backgroundColor: "#fef3c7", padding: "10px 20px", borderRadius: "8px", color: "#d97706", fontWeight: 700 }}>
+                  ⚖️ Pending Review: {liveRealTimeBookings.filter(b => b.status === "Cancellation Pending").length} Requests
+                </div>
+              </div>
+
+              <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", padding: "24px" }}>
+                {liveRealTimeBookings.filter(b => b.status === "Cancellation Pending").length === 0 ? (
+                  <div style={{ textAlign: "center", color: "#94a3b8", padding: "48px 0" }}>
+                    <div style={{ fontSize: "48px", marginBottom: "12px" }}>⚖️</div>
+                    <h3>No pending cancellation refunds.</h3>
+                    <p>All client cancellation requests have been processed successfully.</p>
+                  </div>
+                ) : (
+                  <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+                    <thead>
+                      <tr style={{ borderBottom: "2px solid #f1f5f9", color: "var(--text-muted)", fontSize: "13px" }}>
+                        <th style={{ padding: "12px 8px" }}>Booking ID</th>
+                        <th style={{ padding: "12px 8px" }}>Customer</th>
+                        <th style={{ padding: "12px 8px" }}>Service</th>
+                        <th style={{ padding: "12px 8px" }}>Price</th>
+                        <th style={{ padding: "12px 8px" }}>Cancellation Reason</th>
+                        <th style={{ padding: "12px 8px", textAlign: "right" }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {liveRealTimeBookings.filter(b => b.status === "Cancellation Pending").map(b => (
+                        <tr key={b._id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                          <td style={{ padding: "14px 8px", fontFamily: "monospace", fontSize: "12px" }}>#{b._id.substr(-6).toUpperCase()}</td>
+                          <td style={{ padding: "14px 8px", fontWeight: 700, color: "#334155" }}>{b.customer_name}</td>
+                          <td style={{ padding: "14px 8px", fontWeight: 600, color: "#475569" }}>{b.service}</td>
+                          <td style={{ padding: "14px 8px", fontWeight: 800, color: "#059669" }}>₹{b.price}</td>
+                          <td style={{ padding: "14px 8px", fontStyle: "italic", fontSize: "13px", color: "#64748b" }}>{b.cancelReason || "Client Request"}</td>
+                          <td style={{ padding: "14px 8px", textAlign: "right" }}>
+                            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                              <button 
+                                onClick={async () => {
+                                  if(window.confirm(`APPROVE cancellation refund? This will officially CANCEL this booking and credit ₹${b.price} back to the customer's wallet. Proceed?`)) {
+                                     try {
+                                       const respAction = await fetch(`/api/bookings/${b._id}/approve-refund`, {
+                                         method: "POST"
+                                       });
+                                       if (!respAction.ok) {
+                                          const errorData = await respAction.json();
+                                          throw new Error(errorData.error || "Server Rejected Approval");
+                                       }
+                                       alert(`🟢 REFUND APPROVED!\n₹${b.price} has been successfully credited back to ${b.customer_name}'s secure wallet.`);
+                                       
+                                       setLiveRealTimeBookings(prev => prev.map(item => item._id === b._id ? { ...item, status: "Cancelled" } : item));
+                                       
+                                       const resp = await fetch("/api/bookings");
+                                       if (resp.ok) setLiveRealTimeBookings(await resp.json());
+                                     } catch(err) { alert(`🛑 Approval Failed: ${err.message}`); }
+                                  }
+                                }}
+                                style={{ backgroundColor: "#10b981", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer" }}
+                              >
+                                🟢 Approve
+                              </button>
+                              <button 
+                                onClick={async () => {
+                                  if(window.confirm(`DECLINE cancellation refund? This will deny the refund and mark this booking as 'Refund Declined'. Proceed?`)) {
+                                     try {
+                                       const respAction = await fetch(`/api/bookings/${b._id}/decline-refund`, {
+                                         method: "POST"
+                                       });
+                                       if (!respAction.ok) {
+                                          const errorData = await respAction.json();
+                                          throw new Error(errorData.error || "Server Rejected Decline");
+                                       }
+                                       alert(`🔴 REFUND DECLINED!\nRefund request has been officially declined. Booking status updated.`);
+                                       
+                                       setLiveRealTimeBookings(prev => prev.map(item => item._id === b._id ? { ...item, status: "Refund Declined" } : item));
+                                       
+                                       const resp = await fetch("/api/bookings");
+                                       if (resp.ok) setLiveRealTimeBookings(await resp.json());
+                                     } catch(err) { alert(`🛑 Decline Failed: ${err.message}`); }
+                                  }
+                                }}
+                                style={{ backgroundColor: "#ef4444", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer" }}
+                              >
+                                🔴 Decline
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}

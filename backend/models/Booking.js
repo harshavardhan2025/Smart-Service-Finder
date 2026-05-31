@@ -9,7 +9,8 @@ const bookingSchema = new mongoose.Schema({
   service: { type: String, required: true },
   price: { type: Number, required: true },
   address: { type: String, default: "Kakinada Main Road, 533001" },
-  status: { type: String, default: "Upcoming" }
+  status: { type: String, default: "Upcoming" },
+  cancelReason: { type: String }
 }, { timestamps: true });
 
 const Booking = mongoose.model("Booking", bookingSchema);

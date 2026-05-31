@@ -77,11 +77,11 @@ function MyBookings() {
       });
       const data = await res.json();
       if (res.ok) {
-        alert(`✅ Booking Cancelled Successfully!\n\nYour payment has been fully refunded back to your secure Wallet balance! 💵`);
+        alert(`⚖️ Cancellation Requested Successfully!\n\nYour refund request is now pending Administrator review. Once approved, the full amount of ₹${activeCancelBooking.price} will be credited back to your secure Wallet balance! 💵`);
         setActiveCancelBooking(null);
         syncBookings();
       } else {
-        alert(`🛑 Cancellation Failed!\n\n${data.error || "Unable to cancel this booking. Please try again later."}`);
+        alert(`🛑 Cancellation Request Failed!\n\n${data.error || "Unable to request cancellation. Please try again later."}`);
       }
     } catch(e) {
       console.error(e);
@@ -123,12 +123,19 @@ function MyBookings() {
   const getStatusStyles = (status) => {
     switch (status) {
       case "Completed":
+      case "Paid Out":
         return { color: "#2563eb", bg: "#dbeafe" };
       case "Accepted":
       case "Confirmed":
         return { color: "#16a34a", bg: "#dcfce7" };
       case "Rejected":
+      case "Refund Declined":
         return { color: "#ef4444", bg: "#fee2e2" };
+      case "Cancelled":
+      case "Escrow Declined":
+        return { color: "#4b5563", bg: "#f3f4f6" };
+      case "Cancellation Pending":
+        return { color: "#ea580c", bg: "#ffedd5" };
       case "Upcoming":
       default:
         return { color: "#d97706", bg: "#fef3c7" };
@@ -351,7 +358,7 @@ function MyBookings() {
                     </div>
                   )}
 
-                  {!["Completed", "Paid Out", "Cancelled", "Rejected"].includes(booking.status) && (
+                  {!["Completed", "Paid Out", "Cancelled", "Rejected", "Cancellation Pending", "Refund Declined", "Escrow Declined"].includes(booking.status) && (
                     <div style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px dashed #cbd5e1" }}>
                       <button 
                         onClick={() => setActiveCancelBooking(booking)}

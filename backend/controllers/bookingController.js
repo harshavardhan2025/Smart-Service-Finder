@@ -560,3 +560,94 @@ export const getOverdueBookings = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// Admin approves booking cancellation and refunds customer
+export const approveRefund = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    if (booking.status !== "Cancellation Pending") {
+      return res.status(400).json({ error: "Booking is not pending cancellation refund" });
+    }
+
+    const customer = await User.findById(booking.customer_id);
+    if (!customer) {
+      return res.status(404).json({ error: "Customer profile not found. Cannot issue refund." });
+    }
+
+    // Perform refund
+    customer.walletBalance = (customer.walletBalance || 0) + booking.price;
+    await customer.save();
+
+    // Create Transaction record
+    await Transaction.create({
+      customer: booking.customer_name,
+      worker: "Admin Refund Approval",
+      service: `Refund approved: ${booking.service}`,
+      amount: booking.price,
+      status: "Refunded",
+      method: "Wallet Topup"
+    });
+
+    // Update status to Cancelled
+    booking.status = "Cancelled";
+    await booking.save();
+
+    // Notify customer
+    try {
+      await Notification.create({
+        role: "user",
+        user_id: booking.customer_id,
+        title: "🟢 Cancellation Refund Approved",
+        message: `Your cancellation request for ${booking.service} has been APPROVED by the administrator. ₹${booking.price} has been credited back to your wallet.`,
+        type: "success",
+        is_read: false
+      });
+    } catch (err) {
+      console.error("Non-blocking notification error:", err);
+    }
+
+    res.status(200).json({ success: true, booking, message: "Cancellation refund approved and wallet credited successfully." });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Admin declines booking cancellation and refund
+export const declineRefund = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    if (booking.status !== "Cancellation Pending") {
+      return res.status(400).json({ error: "Booking is not pending cancellation refund" });
+    }
+
+    // Update status to Refund Declined
+    booking.status = "Refund Declined";
+    await booking.save();
+
+    // Notify customer
+    try {
+      await Notification.create({
+        role: "user",
+        user_id: booking.customer_id,
+        title: "🔴 Cancellation Refund Declined",
+        message: `Your cancellation refund request for ${booking.service} was REVIEWED and DECLINED by the administrator. The booking has been marked as Refund Declined.`,
+        type: "danger",
+        is_read: false
+      });
+    } catch (err) {
+      console.error("Non-blocking notification error:", err);
+    }
+
+    res.status(200).json({ success: true, booking, message: "Cancellation refund request declined." });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
