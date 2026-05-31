@@ -466,13 +466,15 @@ function AdminDashboard() {
   // Toggle Customer Status
 
 
-  // Handle Complaint Verdict
   const handleComplaintVerdict = async (id, verdict) => {
     try {
+       const refundAmount = window.prompt(`Enter refund amount to issue to the customer for verdict "${verdict}" (leave empty or 0 for no refund):`, "0");
+       const amount = Number(refundAmount) || 0;
+
        const resp = await fetch(`/api/complaints/${id}/resolve`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ verdict })
+          body: JSON.stringify({ verdict, refundAmount: amount })
        });
        if (!resp.ok) throw new Error("Server rejected patch.");
        
@@ -1815,33 +1817,59 @@ function AdminDashboard() {
                             </span>
                           </td>
                           <td style={{ padding: "14px 8px", textAlign: "right" }}>
-                            {b.status !== "Paid Out" ? (
-                              <button 
-                                onClick={async () => {
-                                  if(window.confirm(`Verify completion and release ₹${b.price} directly to the Worker account now?`)) {
-                                     try {
-                                       const respAction = await fetch(`/api/bookings/${b._id}/release`, {
-                                         method: "POST"
-                                       });
-                                       if (!respAction.ok) {
-                                          const errorData = await respAction.json();
-                                          throw new Error(errorData.error || "Server Rejected Release");
-                                       }
-                                       alert(`💸 FUNDS RELEASED SUCCESSFUL!\n₹${b.price} has been deposited into the Worker wallet system.`);
-                                       
-                                       // Force IMMEDIATE Local Visual Update Flawlessly
-                                       setLiveRealTimeBookings(prev => prev.map(item => item._id === b._id ? { ...item, status: "Paid Out" } : item));
-                                       
-                                       // Verify with central registry refresh
-                                       const resp = await fetch("/api/bookings");
-                                       if (resp.ok) setLiveRealTimeBookings(await resp.json());
-                                     } catch(err) { alert(`🛑 Release Failed: ${err.message}`); }
-                                  }
-                                }}
-                                style={{ backgroundColor: "#4338ca", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer" }}
-                              >
-                                💸 Release Money
-                              </button>
+                            {b.status !== "Paid Out" && b.status !== "Escrow Declined" ? (
+                              <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                                <button 
+                                  onClick={async () => {
+                                    if(window.confirm(`Verify completion and release ₹${b.price} directly to the Worker account now?`)) {
+                                       try {
+                                         const respAction = await fetch(`/api/bookings/${b._id}/release`, {
+                                           method: "POST"
+                                         });
+                                         if (!respAction.ok) {
+                                            const errorData = await respAction.json();
+                                            throw new Error(errorData.error || "Server Rejected Release");
+                                         }
+                                         alert(`💸 FUNDS RELEASED SUCCESSFUL!\n₹${b.price} has been deposited into the Worker wallet system.`);
+                                         
+                                         // Force IMMEDIATE Local Visual Update Flawlessly
+                                         setLiveRealTimeBookings(prev => prev.map(item => item._id === b._id ? { ...item, status: "Paid Out" } : item));
+                                         
+                                         // Verify with central registry refresh
+                                         const resp = await fetch("/api/bookings");
+                                         if (resp.ok) setLiveRealTimeBookings(await resp.json());
+                                       } catch(err) { alert(`🛑 Release Failed: ${err.message}`); }
+                                    }
+                                  }}
+                                  style={{ backgroundColor: "#4338ca", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer", flex: 1 }}
+                                >
+                                  💸 Release Money
+                                </button>
+                                <button 
+                                  onClick={async () => {
+                                    if(window.confirm(`Decline Escrow? This will cancel the worker's payout and fully refund ₹${b.price} to the customer's wallet. Proceed?`)) {
+                                       try {
+                                         const respAction = await fetch(`/api/bookings/${b._id}/decline-escrow`, {
+                                           method: "POST"
+                                         });
+                                         if (!respAction.ok) {
+                                            const errorData = await respAction.json();
+                                            throw new Error(errorData.error || "Server Rejected Escrow Decline");
+                                         }
+                                         alert(`🛑 ESCROW DECLINED!\n₹${b.price} has been fully refunded to the Customer's wallet.`);
+                                         
+                                         setLiveRealTimeBookings(prev => prev.map(item => item._id === b._id ? { ...item, status: "Escrow Declined" } : item));
+                                         
+                                         const resp = await fetch("/api/bookings");
+                                         if (resp.ok) setLiveRealTimeBookings(await resp.json());
+                                       } catch(err) { alert(`🛑 Decline Failed: ${err.message}`); }
+                                    }
+                                  }}
+                                  style={{ backgroundColor: "#ef4444", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer", flex: 1 }}
+                                >
+                                  ❌ Decline & Refund
+                                </button>
+                              </div>
                             ) : (
                               <span style={{ fontSize: "12px", color: "#94a3b8", fontStyle: "italic" }}>Completed Successfully</span>
                             )}

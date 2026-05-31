@@ -288,6 +288,63 @@ export const releaseEscrow = async (req, res) => {
   }
 };
 
+export const declineEscrow = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) return res.status(404).json({ error: "Booking not found" });
+
+    booking.status = "Escrow Declined";
+    await booking.save();
+
+    const customer = await User.findById(booking.customer_id);
+    if (customer) {
+      customer.walletBalance = (customer.walletBalance || 0) + booking.price;
+      await customer.save();
+
+      await Transaction.create({
+         customer: booking.customer_name,
+         worker: "System Refund",
+         service: `Escrow Refund: ${booking.service}`,
+         amount: booking.price,
+         status: "Refunded",
+         method: "Admin Escrow Decline"
+      });
+    }
+
+    await Notification.create({
+      role: "user",
+      user_id: booking.customer_id,
+      title: "❌ Escrow Declined & Refunded",
+      message: `The escrow payment of ₹${booking.price} for your ${booking.service} service was declined by Admin and refunded to your wallet.`,
+      type: "warning",
+      is_read: false
+    });
+
+    try {
+      const worker = await Worker.findById(booking.worker_id);
+      if (worker) {
+        const workerUser = await User.findOne({ email: worker.email });
+        if (workerUser) {
+          await Notification.create({
+            role: "worker",
+            user_id: workerUser._id.toString(),
+            title: "🚫 Escrow Payment Declined",
+            message: `Your pending escrow payment for the ${booking.service} service was declined by Administration. Funds were returned to the customer.`,
+            type: "warning",
+            is_read: false
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Error creating escrow decline notification for worker:", err);
+    }
+
+    res.status(200).json({ success: true, message: "Escrow declined and customer fully refunded." });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const cancelBooking = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);

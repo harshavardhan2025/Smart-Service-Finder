@@ -3,6 +3,7 @@ import Booking from "../models/Booking.js";
 import Worker from "../models/Worker.js";
 import User from "../models/User.js";
 import Notification from "../models/Notification.js";
+import Transaction from "../models/Transaction.js";
 
 export const getComplaints = async (req, res) => {
   try {
@@ -41,7 +42,7 @@ export const submitComplaint = async (req, res) => {
 
 export const resolveComplaint = async (req, res) => {
   try {
-    const { verdict } = req.body;
+    const { verdict, refundAmount } = req.body;
 
     const complaint = await Complaint.findByIdAndUpdate(
       req.params.id,
@@ -70,6 +71,28 @@ export const resolveComplaint = async (req, res) => {
       }
     }
 
+    let refundMsg = "";
+    if (refundAmount && Number(refundAmount) > 0) {
+      if (complaint.reported_by) {
+        const customer = await User.findById(complaint.reported_by);
+        if (customer) {
+          customer.walletBalance = (customer.walletBalance || 0) + Number(refundAmount);
+          await customer.save();
+
+          await Transaction.create({
+            customer: customer.name || "Customer",
+            worker: "System Refund",
+            service: `Complaint Refund: ${complaint.issue_type}`,
+            amount: Number(refundAmount),
+            status: "Refunded",
+            method: "Admin Complaint Resolution"
+          });
+          
+          refundMsg = ` Additionally, a refund of ₹${refundAmount} has been credited to your wallet.`;
+        }
+      }
+    }
+
     // Create targeted notification for the customer who reported it
     try {
       if (complaint.reported_by) {
@@ -77,7 +100,7 @@ export const resolveComplaint = async (req, res) => {
           role: "user",
           user_id: complaint.reported_by.toString(),
           title: "⚖️ Complaint Resolution Update",
-          message: `Your complaint regarding "${complaint.issue_type}" has been resolved by Admin. Verdict: "${verdict}".`,
+          message: `Your complaint regarding "${complaint.issue_type}" has been resolved by Admin. Verdict: "${verdict}".${refundMsg}`,
           type: "success",
           is_read: false
         });
