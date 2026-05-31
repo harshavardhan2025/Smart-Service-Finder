@@ -182,7 +182,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
   return (
     <div style={{ marginTop: "12px", padding: "0 20px 20px 20px" }}>
 
-      <div style={{ marginBottom: "14px", display: "flex", gap: "10px" }}>
+      <div style={{ marginBottom: "14px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
         <input
           id="location-search-input"
           type="text"
@@ -190,7 +190,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={handleKeyDown}
-          style={{ flex: 1 }}
+          style={{ flex: 1, minWidth: "200px" }}
         />
         <button
           id="location-search-btn"
@@ -199,6 +199,42 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
           style={{ backgroundColor: "var(--primary)", color: "white", opacity: isSearching ? 0.7 : 1 }}
         >
           {isSearching ? "Searching..." : "Search Location 🔍"}
+        </button>
+        <button
+          id="location-autodetect-btn"
+          onClick={async () => {
+            if (!navigator.geolocation) {
+              alert("Geolocation is not supported by your browser.");
+              return;
+            }
+            setIsSearching(true);
+            navigator.geolocation.getCurrentPosition(
+              async (pos) => {
+                const { latitude, longitude } = pos.coords;
+                try {
+                  const result = await photonReverse(latitude, longitude);
+                  if (result) {
+                    applyLocation(latitude, longitude, result.label, result.city);
+                  } else {
+                    applyLocation(latitude, longitude, `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`, "");
+                  }
+                } catch (err) {
+                  applyLocation(latitude, longitude, `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`, "");
+                }
+                setIsSearching(false);
+              },
+              (err) => {
+                setIsSearching(false);
+                alert("Failed to auto-detect location. Please search manually or check location permissions.");
+                console.error("Auto-detect failed:", err);
+              },
+              { enableHighAccuracy: true, timeout: 8000 }
+            );
+          }}
+          disabled={isSearching}
+          style={{ backgroundColor: "#0284c7", color: "white", opacity: isSearching ? 0.7 : 1 }}
+        >
+          Auto Detect 📍
         </button>
       </div>
 
