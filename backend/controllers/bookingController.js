@@ -623,6 +623,23 @@ export const declineRefund = async (req, res) => {
       return res.status(400).json({ error: "Booking is not pending cancellation refund" });
     }
 
+    // Locate the Admin user to credit the declined refund amount as platform/admin revenue
+    const adminUser = await User.findOne({ role: "admin" });
+    if (adminUser) {
+      adminUser.walletBalance = (adminUser.walletBalance || 0) + booking.price;
+      await adminUser.save();
+    }
+
+    // Write a formal transaction record of the declined cancellation (admin earnings)
+    await Transaction.create({
+      customer: booking.customer_name,
+      worker: "Platform Revenue (Refund Declined)",
+      service: `Decline hold: ${booking.service}`,
+      amount: booking.price,
+      status: "Admin Revenue",
+      method: "Admin Hold"
+    });
+
     // Update status to Refund Declined
     booking.status = "Refund Declined";
     await booking.save();
@@ -641,8 +658,9 @@ export const declineRefund = async (req, res) => {
       console.error("Non-blocking notification error:", err);
     }
 
-    res.status(200).json({ success: true, booking, message: "Cancellation refund request declined." });
+    res.status(200).json({ success: true, booking, message: "Cancellation refund request declined. Funds credited to Admin Balance successfully." });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
