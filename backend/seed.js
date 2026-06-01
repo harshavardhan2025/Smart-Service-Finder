@@ -7,6 +7,7 @@ import Service from "./models/Service.js";
 import Offer from "./models/Offer.js";
 import Plan from "./models/Plan.js";
 import Complaint from "./models/Complaint.js";
+import { geocodeCity } from "./utils/geoUtils.js";
 
 dotenv.config();
 
@@ -104,11 +105,28 @@ const seedDynamicEcosystem = async () => {
     ];
 
     // Distribute unique generated emails automatically for batch population to avoid uniqueness constraint issues
-    const fullPopulation = initialWorkers.map((w, idx) => ({
-      ...w,
-      location: w.city, // Explicitly mapping location keyword so logic never breaks
-      email: w.email || `provider_${idx}_${Date.now()}@workzy.com`
-    }));
+    const fullPopulation = await Promise.all(
+      initialWorkers.map(async (w, idx) => {
+        let lat = null;
+        let lon = null;
+        try {
+          const coords = await geocodeCity(w.city);
+          if (coords) {
+            lat = coords.lat;
+            lon = coords.lon;
+          }
+        } catch (err) {
+          console.error(`Geocoding failed for seeded worker ${w.name}:`, err.message);
+        }
+        return {
+          ...w,
+          location: w.city, // Explicitly mapping location keyword so logic never breaks
+          lat,
+          lon,
+          email: w.email || `provider_${idx}_${Date.now()}@workzy.com`
+        };
+      })
+    );
 
     // Add worker user accounts automatically for ALL generated accounts
     for(let w of fullPopulation) {
@@ -116,7 +134,8 @@ const seedDynamicEcosystem = async () => {
         name: w.name,
         email: w.email,
         password: "workerpassword",
-        role: "worker"
+        role: "worker",
+        city: w.city
       });
     }
 

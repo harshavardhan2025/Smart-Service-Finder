@@ -171,32 +171,51 @@ export const getNearbyWorkers = async (req, res) => {
 
     const allWorkers = await Worker.find(filter).lean();
 
-    // Geocode each worker's city in parallel (cached after first call)
+    // Map workers to coordinates (utilizes pre-saved coords, heals missing records)
     const withCoords = await Promise.all(
       allWorkers.map(async (w) => {
-        let cityStr = "";
-        if (w.location && w.city) {
-          // Clean strings for exact matches
-          const locClean = w.location.toLowerCase().trim();
-          const cityClean = w.city.toLowerCase().trim();
-          // If the location is different from the city, fully qualify: "location, city"
-          if (locClean !== cityClean) {
-            cityStr = `${w.location}, ${w.city}`;
+        let lat = w.lat;
+        let lon = w.lon;
+
+        // Auto-heal missing coords for unseeded or legacy entries
+        if (lat === undefined || lon === undefined || lat === null || lon === null) {
+          let cityStr = "";
+          if (w.location && w.city) {
+            const locClean = w.location.toLowerCase().trim();
+            const cityClean = w.city.toLowerCase().trim();
+            if (locClean !== cityClean) {
+              cityStr = `${w.location}, ${w.city}`;
+            } else {
+              cityStr = w.city;
+            }
           } else {
-            cityStr = w.city;
+            cityStr = w.location || w.city || "";
           }
-        } else {
-          cityStr = w.location || w.city || "";
+
+          if (cityStr) {
+            try {
+              let coords = await geocodeCity(cityStr);
+              if (!coords && w.city) {
+                coords = await geocodeCity(w.city);
+              }
+              if (coords) {
+                lat = coords.lat;
+                lon = coords.lon;
+                // Persist back to database so future requests are 0ms
+                await Worker.findByIdAndUpdate(w._id, { lat, lon });
+              }
+            } catch (err) {
+              console.error(`[getNearbyWorkers] Failed to heal coordinates for worker ${w.name}:`, err.message);
+            }
+          }
         }
 
-        if (!cityStr) return null;
-        let coords = await geocodeCity(cityStr);
-        if (!coords && w.city) {
-          coords = await geocodeCity(w.city);
+        if (lat === undefined || lon === undefined || lat === null || lon === null) {
+          return null;
         }
-        if (!coords) return null;
-        const distanceKm = haversineKm(userLat, userLng, coords.lat, coords.lon);
-        return { ...w, lat: coords.lat, lng: coords.lon, distanceKm: Math.round(distanceKm * 10) / 10 };
+
+        const distanceKm = haversineKm(userLat, userLng, lat, lon);
+        return { ...w, lat, lng: lon, distanceKm: Math.round(distanceKm * 10) / 10 };
       })
     );
 
@@ -215,7 +234,14 @@ export const getNearbyWorkers = async (req, res) => {
 
 export const updateWorker = async (req, res) => {
   try {
-    const worker = await Worker.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const worker = await Worker.findById(req.params.id);
+    if (!worker) {
+      return res.status(404).json({ error: "Worker profile not found." });
+    }
+
+    Object.assign(worker, req.body);
+    await worker.save();
+
     res.status(200).json({ success: true, worker });
   } catch (error) {
     res.status(400).json({ error: error.message });

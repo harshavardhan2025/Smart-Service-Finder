@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { geocodeCity } from "../utils/geoUtils.js";
 
 const workerSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -6,6 +7,8 @@ const workerSchema = new mongoose.Schema({
   service: { type: String, required: true },
   city: { type: String, default: "Kakinada" },
   location: { type: String },
+  lat: { type: Number },
+  lon: { type: Number },
   rating: { type: Number, default: 2.7 },   // Bayesian starting baseline
   ratingSum: { type: Number, default: 0 },   // Running sum of customer star ratings
   reviews: { type: Number, default: 0 },     // Count of customer reviews
@@ -15,6 +18,49 @@ const workerSchema = new mongoose.Schema({
   experience: { type: String, default: "2+ Years" }
 }, { timestamps: true });
 
+// Centralized automatic geocoding hook at database write-time
+workerSchema.pre("save", async function () {
+  // Geocode if city/location changes or if coordinates are not populated
+  if (
+    this.isModified("city") ||
+    this.isModified("location") ||
+    this.lat === undefined ||
+    this.lon === undefined ||
+    this.lat === null ||
+    this.lon === null
+  ) {
+    let cityStr = "";
+    if (this.location && this.city) {
+      const locClean = this.location.toLowerCase().trim();
+      const cityClean = this.city.toLowerCase().trim();
+      if (locClean !== cityClean) {
+        cityStr = `${this.location}, ${this.city}`;
+      } else {
+        cityStr = this.city;
+      }
+    } else {
+      cityStr = this.location || this.city || "";
+    }
+
+    if (cityStr) {
+      try {
+        const coords = await geocodeCity(cityStr);
+        if (coords) {
+          this.lat = coords.lat;
+          this.lon = coords.lon;
+        } else if (this.city) {
+          const cityCoords = await geocodeCity(this.city);
+          if (cityCoords) {
+            this.lat = cityCoords.lat;
+            this.lon = cityCoords.lon;
+          }
+        }
+      } catch (err) {
+        console.error(`[Worker Schema pre-save] Geocoding failed for ${this.name}:`, err.message);
+      }
+    }
+  }
+});
 
 const Worker = mongoose.model("Worker", workerSchema);
 export default Worker;

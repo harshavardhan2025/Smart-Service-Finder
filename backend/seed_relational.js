@@ -12,6 +12,7 @@ import Plan from "./models/Plan.js";
 import Offer from "./models/Offer.js";
 import Complaint from "./models/Complaint.js";
 import Service from "./models/Service.js";
+import { geocodeCity } from "./utils/geoUtils.js";
 
 dotenv.config();
 
@@ -93,12 +94,15 @@ const seedDatabase = async () => {
       walletBalance: 5000
     });
 
+    let sureshCoords = await geocodeCity("Rajahmundry Central");
     const testWorkerProfile = await Worker.create({
       name: "Suresh Worker",
       email: "worker@harsha.com",
       service: "Plumbing",
       city: "Rajahmundry",
       location: "Rajahmundry Central",
+      lat: sureshCoords ? sureshCoords.lat : null,
+      lon: sureshCoords ? sureshCoords.lon : null,
       rating: 4.8,
       reviews: 50,
       price: 350,
@@ -124,6 +128,8 @@ const seedDatabase = async () => {
         const l2 = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
         const name2 = `${f2} ${l2}`;
         
+        const locStr1 = `${city} Central Area`;
+        const coords1 = await geocodeCity(locStr1);
         workerCounter++;
         const email1 = `${f1.toLowerCase()}.${l1.toLowerCase()}${workerCounter}@workers.com`;
         const w1 = await Worker.create({
@@ -131,7 +137,9 @@ const seedDatabase = async () => {
           email: email1,
           service: service,
           city: city,
-          location: `${city} Central Area`,
+          location: locStr1,
+          lat: coords1 ? coords1.lat : null,
+          lon: coords1 ? coords1.lon : null,
           rating: (4.5 + Math.random() * 0.5).toFixed(1),
           reviews: Math.floor(Math.random() * 150) + 10,
           price: Math.floor(Math.random() * 500) + 300,
@@ -148,6 +156,8 @@ const seedDatabase = async () => {
           walletBalance: 0
         });
         
+        const locStr2 = `${city} Suburbs`;
+        const coords2 = await geocodeCity(locStr2);
         workerCounter++;
         const email2 = `${f2.toLowerCase()}.${l2.toLowerCase()}${workerCounter}@workers.com`;
         const w2 = await Worker.create({
@@ -155,7 +165,9 @@ const seedDatabase = async () => {
           email: email2,
           service: service,
           city: city,
-          location: `${city} Suburbs`,
+          location: locStr2,
+          lat: coords2 ? coords2.lat : null,
+          lon: coords2 ? coords2.lon : null,
           rating: (3.8 + Math.random() * 0.7).toFixed(1),
           reviews: Math.floor(Math.random() * 50) + 2,
           price: Math.floor(Math.random() * 200) + 150,

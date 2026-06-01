@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import Worker from "./models/Worker.js";
 import User from "./models/User.js";
+import { geocodeCity } from "./utils/geoUtils.js";
 
 dotenv.config();
 
@@ -70,13 +71,18 @@ const runSeeder = async () => {
         const genReviews = Math.floor(Math.random() * 80) + 10;
         const exp = (Math.floor(Math.random() * 8) + 2) + "+ Years";
 
+        const locationStr = assignedCity === "Kakinada" ? "Bhanugudi Junction" : "Danavaipeta";
+        const coords = await geocodeCity(locationStr);
+
         // Step 1: Commit to main Worker Collection
         const finalWorker = await Worker.create({
            name: def.name,
            email: def.email,
            service: def.service,
            city: assignedCity,
-           location: assignedCity === "Kakinada" ? "Bhanugudi Junction" : "Danavaipeta",
+           location: locationStr,
+           lat: coords ? coords.lat : null,
+           lon: coords ? coords.lon : null,
            rating: Number(genRating),
            reviews: genReviews,
            price: def.price,

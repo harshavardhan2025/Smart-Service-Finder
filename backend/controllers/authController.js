@@ -13,7 +13,7 @@ const SERVICE_BASE_PRICES = {
   "Two-Wheeler (Bikes)": 500,
   "Car Wash": 300,
   "House Cleaning": 1500,
-  "Photography": 7000,
+  "Photography": 700-20000,
   "Doctors & Medical": 500,
   "Interior Painting": 2000,
   "Packers & Movers": 10000,

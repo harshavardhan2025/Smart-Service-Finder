@@ -11,6 +11,7 @@ import Booking from "./models/Booking.js";
 import Review from "./models/Review.js";
 import Notification from "./models/Notification.js";
 import Transaction from "./models/Transaction.js";
+import { geocodeCity } from "./utils/geoUtils.js";
 
 dotenv.config();
 
@@ -69,12 +70,15 @@ const megaEcosystemHydration = async () => {
     console.log("✅ 2. IDENTITY USERS SEEDED FOR REGION.");
 
     // 4. TARGETED REGIONAL WORKERS (Linked to Identity when relevant)
+    let sureshCoords = await geocodeCity("Rajahmundry");
     const linkedWorker = await Worker.create({
       name: "Suresh Worker",
       email: "worker@harsha.com",
       service: "Plumbing",
       city: "Rajahmundry",
       location: "Rajahmundry",
+      lat: sureshCoords ? sureshCoords.lat : null,
+      lon: sureshCoords ? sureshCoords.lon : null,
       rating: 4.8,
       price: 350,
       experience: "8+ Years"
@@ -113,8 +117,48 @@ const megaEcosystemHydration = async () => {
       { name: "Palnadu Painters", email: "palnadu@workers.com", service: "Interior Painting", city: "Kadapa", location: "Kadapa Central Area", rating: 4.5, reviews: 21, price: 1499, experience: "3 Years" }
     ];
 
+    // Resolve coordinates for all extra workers at seed-time
+    const extraWorkersWithCoords = await Promise.all(
+      extraWorkerDefinitions.map(async (w) => {
+        let cityStr = "";
+        if (w.location && w.city) {
+          const locClean = w.location.toLowerCase().trim();
+          const cityClean = w.city.toLowerCase().trim();
+          if (locClean !== cityClean) {
+            cityStr = `${w.location}, ${w.city}`;
+          } else {
+            cityStr = w.city;
+          }
+        } else {
+          cityStr = w.location || w.city || "";
+        }
+
+        let lat = null;
+        let lon = null;
+        if (cityStr) {
+          try {
+            const coords = await geocodeCity(cityStr);
+            if (coords) {
+              lat = coords.lat;
+              lon = coords.lon;
+            } else if (w.city) {
+              const cityCoords = await geocodeCity(w.city);
+              if (cityCoords) {
+                lat = cityCoords.lat;
+                lon = cityCoords.lon;
+              }
+            }
+          } catch (err) {
+            console.error(`Geocoding failed for extra seeded worker ${w.name}:`, err.message);
+          }
+        }
+
+        return { ...w, lat, lon };
+      })
+    );
+
     // Insert into Worker collection
-    await Worker.insertMany(extraWorkerDefinitions);
+    await Worker.insertMany(extraWorkersWithCoords);
 
     // CRITICAL: Simultaneously Generate Real Login Credentials for All Workers
     await Promise.all(extraWorkerDefinitions.map(async (w) => {
