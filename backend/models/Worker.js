@@ -18,8 +18,14 @@ const workerSchema = new mongoose.Schema({
   experience: { type: String, default: "2+ Years" }
 }, { timestamps: true });
 
-// Centralized automatic geocoding hook at database write-time
+// Centralized automatic geocoding and rating aggregation hook at database write-time
 workerSchema.pre("save", async function () {
+  // Auto-initialize ratingSum for seeded or manually imported workers who have ratings/reviews but no ratingSum
+  if (this.reviews > 0 && (!this.ratingSum || this.ratingSum === 0)) {
+    const baseline = this.rating || 2.7;
+    this.ratingSum = Math.round(baseline * this.reviews);
+  }
+
   // Geocode if city/location changes or if coordinates are not populated
   if (
     this.isModified("city") ||
