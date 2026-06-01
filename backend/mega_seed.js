@@ -46,7 +46,7 @@ const megaEcosystemHydration = async () => {
     // 3. EXPLICIT REGIONAL TARGETED USERS (Kakinada & Rajahmundry)
     const testAdmin = await User.create({
       name: "Admin Master",
-      email: "admin@harsha.com",
+      email: "amdin@workzy.com",
       password: "password123",
       role: "admin",
       city: "Rajahmundry"

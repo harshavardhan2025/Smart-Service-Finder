@@ -62,7 +62,7 @@ const seedDynamicEcosystem = async () => {
 
     // 2. Seed Standard Customer and Admin Profiles
     await User.create([
-      { name: "Admin System", email: "admin@example.com", password: "adminpassword", role: "admin" },
+      { name: "Admin System", email: "amdin@workzy.com", password: "password123", role: "admin" },
       { name: "Test Tester", email: "test@test.com", password: "password123", role: "user" },
       { name: "Ravi Kumar", email: "ravi@example.com", password: "password123", role: "user" }
     ]);

@@ -49,8 +49,8 @@ const clearAllButServices = async () => {
     // Create one clean initial Admin account
     await User.create({
       name: "Admin System",
-      email: "admin@example.com",
-      password: "adminpassword",
+      email: "amdin@workzy.com",
+      password: "password123",
       role: "admin",
       city: "Kakinada"
     });

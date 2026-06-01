@@ -46,7 +46,7 @@ const seedDatabase = async () => {
     
     const admin = await User.create({
       name: "Super Admin",
-      email: "admin@workzy.com",
+      email: "amdin@workzy.com",
       password: "password123",
       role: "admin",
       phone: "9999999999",
@@ -56,7 +56,7 @@ const seedDatabase = async () => {
 
     const admin2 = await User.create({
       name: "Old Admin",
-      email: "admin@worxy.com",
+      email: "amdin2@workzy.com",
       password: "password123",
       role: "admin",
       phone: "9999999998",
@@ -76,7 +76,7 @@ const seedDatabase = async () => {
 
     const testAdmin = await User.create({
       name: "Admin Master",
-      email: "admin@harsha.com",
+      email: "amdin3@workzy.com",
       password: "password123",
       role: "admin",
       phone: "9876543211",
