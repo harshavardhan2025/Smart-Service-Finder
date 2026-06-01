@@ -204,18 +204,20 @@ const seedDatabase = async () => {
       price: "₹2,999",
       features: ["Unlimited doctor home consultations", "24/7 helpdesk"],
       color: "#0284c7",
-      btnText: "Subscribe"
+      btnText: "Subscribe",
+      expiryDate: new Date("2030-01-01")
     });
     const p2 = await Plan.create({
       title: "🚗 Unlimited Annual Car Wash Plan",
       price: "₹1,499",
       features: ["2 Detailed washes per month", "Complimentary wax"],
       color: "#16a34a",
-      btnText: "Subscribe 🚀"
+      btnText: "Subscribe 🚀",
+      expiryDate: new Date("2030-01-01")
     });
 
-    await Offer.create({ code: "DOCFREE", discount: "Flat ₹150 Off", desc: "Valid on all Doctor consults.", expiry: "Ends Dec 31" });
-    await Offer.create({ code: "FESTIVE25", discount: "25% Discount", desc: "Enjoy savings on all services.", expiry: "Ends Dec 31" });
+    await Offer.create({ code: "DOCFREE", discount: "Flat ₹150 Off", desc: "Valid on all Doctor consults.", expiry: "Ends Dec 31", expiryDate: new Date("2026-12-31") });
+    await Offer.create({ code: "FESTIVE25", discount: "25% Discount", desc: "Enjoy savings on all services.", expiry: "Ends Dec 31", expiryDate: new Date("2026-12-31") });
 
     console.log("Weaving Relational History (Bookings, Transactions, Reviews)...");
     

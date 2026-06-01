@@ -2,7 +2,15 @@ import Plan from "../models/Plan.js";
 
 export const getPlans = async (req, res) => {
   try {
-    const plans = await Plan.find();
+    const filter = {};
+    if (req.query.adminView !== "true") {
+      filter.$or = [
+        { expiryDate: { $gt: new Date() } },
+        { expiryDate: { $exists: false } },
+        { expiryDate: null }
+      ];
+    }
+    const plans = await Plan.find(filter);
     res.status(200).json(plans);
   } catch (error) {
     res.status(400).json({ error: error.message });

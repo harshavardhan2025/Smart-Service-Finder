@@ -66,16 +66,36 @@ function PlansOffers() {
          }
          if (wResp.ok) setWorkers(await wResp.json());
 
-         // Only fetch subscriptions for logged-in users
          if (isLoggedIn) {
            const currentUserName = sessionStorage.getItem("userName") || "Verified Subscriber";
            const tResp = await fetch(`${BASE_URL}/api/transactions?customer=${encodeURIComponent(currentUserName)}`);
            if (tResp.ok) {
              const txns = await tResp.json();
-             const subbed = txns
-               .filter(t => t.service && t.service.startsWith("Plan Subscription:"))
-               .map(t => t.service.replace("Plan Subscription:", "").trim());
-             setUserPlans(subbed);
+             const subbed = [];
+             
+             txns.forEach(t => {
+               if (t.service && t.service.startsWith("Plan Subscription:")) {
+                 const planTitle = t.service.replace("Plan Subscription:", "").trim();
+                 
+                 // Check validity period from transaction creation date
+                 if (t.createdAt) {
+                   const txDate = new Date(t.createdAt);
+                   let daysValid = 30; // default monthly
+                   if (planTitle.toLowerCase().includes("annual") || planTitle.toLowerCase().includes("year")) {
+                     daysValid = 365; // annual plan
+                   }
+                   
+                   const expiryDate = new Date(txDate.getTime() + daysValid * 24 * 60 * 60 * 1000);
+                   if (expiryDate > new Date()) {
+                     subbed.push(planTitle);
+                   }
+                 } else {
+                   // Fallback for legacy transactions lacking timestamp
+                   subbed.push(planTitle);
+                 }
+               }
+             });
+             setUserPlans([...new Set(subbed)]);
            }
          }
       } catch(err) { console.error("Data Load Failure: ", err); }

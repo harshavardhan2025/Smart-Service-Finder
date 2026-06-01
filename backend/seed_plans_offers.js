@@ -21,6 +21,7 @@ const PLANS = [
       "❌ Priority booking",
       "❌ Dedicated expert",
     ],
+    expiryDate: new Date("2030-01-01"),
   },
   {
     title: "Home Pro",
@@ -37,6 +38,7 @@ const PLANS = [
       "✅ Priority booking",
       "❌ Dedicated expert",
     ],
+    expiryDate: new Date("2030-01-01"),
   },
   {
     title: "Elite Annual",
@@ -53,6 +55,20 @@ const PLANS = [
       "✅ Priority booking always",
       "✅ Personal home expert",
     ],
+    expiryDate: new Date("2030-01-01"),
+  },
+  {
+    title: "Flash Spring Plan (Expired)",
+    price: "₹499",
+    period: "month",
+    popular: false,
+    color: "#ef4444",
+    btnText: "Expired",
+    features: [
+      "❌ 1 service visit/month",
+      "❌ No priority booking",
+    ],
+    expiryDate: new Date("2026-05-01"), // Expired!
   },
 ];
 
@@ -62,36 +78,49 @@ const OFFERS = [
     discount: "₹50 OFF",
     desc: "Welcome discount for new users on first booking",
     expiry: "Valid till 31 Dec 2026",
+    expiryDate: new Date("2026-12-31"),
   },
   {
     code: "FESTIVE25",
     discount: "25% OFF",
     desc: "Festive season discount on all service plans",
     expiry: "Valid till 30 Jun 2026",
+    expiryDate: new Date("2026-06-30"),
   },
   {
     code: "PROPLAN150",
     discount: "₹150 OFF",
     desc: "Flat ₹150 off on Home Pro monthly plan",
     expiry: "Valid till 31 Jul 2026",
+    expiryDate: new Date("2026-07-31"),
   },
   {
     code: "ELITE500",
     discount: "₹500 OFF",
     desc: "Exclusive ₹500 off on Elite Annual plan",
     expiry: "Valid till 31 Aug 2026",
+    expiryDate: new Date("2026-08-31"),
   },
   {
     code: "FIRSTBOOK",
     discount: "10% OFF",
     desc: "10% off on your first service booking",
     expiry: "Valid till 31 Dec 2026",
+    expiryDate: new Date("2026-12-31"),
   },
   {
     code: "DOCFREE",
     discount: "FREE Consultation",
     desc: "Free doctor consultation for new Elite subscribers",
     expiry: "Valid till 30 Sep 2026",
+    expiryDate: new Date("2026-09-30"),
+  },
+  {
+    code: "EXPIRED50",
+    discount: "50% OFF",
+    desc: "Flash Sale (Expired)",
+    expiry: "Expired on 01 May 2026",
+    expiryDate: new Date("2026-05-01"), // Expired!
   },
 ];
 

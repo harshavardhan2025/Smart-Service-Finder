@@ -8,7 +8,8 @@ const planSchema = new mongoose.Schema({
   features: { type: [String] },
   color: { type: String },
   btnText: { type: String },
-  workerId: { type: String }
+  workerId: { type: String },
+  expiryDate: { type: Date }
 }, { timestamps: true });
 
 const Plan = mongoose.model("Plan", planSchema);

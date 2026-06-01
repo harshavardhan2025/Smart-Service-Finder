@@ -223,11 +223,11 @@ const megaEcosystemHydration = async () => {
 
     // 6. POPULATE AUXILIARY MODULES (Offers, Plans, Tickets)
     await Offer.insertMany([
-      { title: "East Godavari Special 20% OFF", discount: "20%", code: "EGOD20", expiry: "2026-12-31" }
+      { title: "East Godavari Special 20% OFF", discount: "20%", code: "EGOD20", expiry: "2026-12-31", expiryDate: new Date("2026-12-31") }
     ]);
     
     await Plan.insertMany([
-      { title: "Regional Unlimited", price: "₹199/mo", features: ["Priority Local Dispatch"], color: "#ffffff" }
+      { title: "Regional Unlimited", price: "₹199/mo", features: ["Priority Local Dispatch"], color: "#ffffff", expiryDate: new Date("2030-01-01") }
     ]);
 
     await Complaint.create({
