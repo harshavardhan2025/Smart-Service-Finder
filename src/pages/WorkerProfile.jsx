@@ -138,6 +138,18 @@ function WorkerProfile() {
                 <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Overall Rating</label>
                 <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "#eab308" }}>⭐ {worker.rating} / 5.0</p>
               </div>
+              <div>
+                <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Contact Number</label>
+                {sessionStorage.getItem("userId") ? (
+                  <p style={{ margin: "4px 0 0 0", fontSize: "15px", fontWeight: 700, color: "var(--primary)" }}>
+                    📞 +91 9{Math.abs(worker.name.charCodeAt(0) * worker.name.charCodeAt(worker.name.length - 1) * 38283) % 900000000 + 100000000}
+                  </p>
+                ) : (
+                  <p style={{ margin: "4px 0 0 0", fontSize: "14px", fontWeight: 700, color: "#ef4444" }}>
+                    🔒 Login to view
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Price section */}

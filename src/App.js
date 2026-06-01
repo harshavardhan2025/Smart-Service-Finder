@@ -107,7 +107,7 @@ function App() {
 
         <Route
           path="/plans-offers"
-          element={<PrivateRoute><PlansOffers /></PrivateRoute>}
+          element={<PlansOffers />}
         />
 
       </Routes>
