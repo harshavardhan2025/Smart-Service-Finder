@@ -194,9 +194,24 @@ function UserDashboard() {
           const txnData = await txnResp.json();
           setTransactions(txnData.slice(0, 5)); // Top 5 recent
           
-          // Extract active plans from transactions
-          const plans = txnData.filter(t => t.service && t.service.includes("Plan Subscription"));
-          setActivePlans(plans);
+          // Extract active plans from transactions with strict validity/expiration checks (monthly = 30 days, annual = 365 days)
+          const activePlansFiltered = txnData.filter(t => {
+            if (t.service && t.service.startsWith("Plan Subscription:")) {
+              const planTitle = t.service.replace("Plan Subscription:", "").trim();
+              if (t.createdAt) {
+                const txDate = new Date(t.createdAt);
+                let daysValid = 30; // default monthly
+                if (planTitle.toLowerCase().includes("annual") || planTitle.toLowerCase().includes("year")) {
+                  daysValid = 365; // annual plan
+                }
+                const expiryDate = new Date(txDate.getTime() + daysValid * 24 * 60 * 60 * 1000);
+                return expiryDate > new Date();
+              }
+              return true; // Keep legacy subscriptions without timestamps
+            }
+            return false;
+          });
+          setActivePlans(activePlansFiltered);
           
           // Calculate Wallet sum dynamically from authentic transaction ledger
           const total = txnData.reduce((acc, t) => {
@@ -393,7 +408,7 @@ function UserDashboard() {
                       </div>
                       <div>
                         <p style={{ margin: "0 0 4px 0", fontWeight: "500", color: "var(--text-main)" }}>{t.service}</p>
-                        <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)" }}>{t.date} • {t.method}</p>
+                        <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)" }}>{t.date || new Date(t.createdAt).toLocaleDateString()} • {t.method}</p>
                       </div>
                     </div>
                     <p style={{ 
@@ -426,7 +441,7 @@ function UserDashboard() {
                       </div>
                       <div>
                         <p style={{ margin: "0 0 4px 0", fontWeight: "600", color: "var(--text-main)" }}>{p.service.replace("Plan Subscription: ", "")}</p>
-                        <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)" }}>Subscribed on {p.date}</p>
+                        <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)" }}>Subscribed on {p.date || new Date(p.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
                     <span style={{ padding: "6px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: "600", backgroundColor: "#dcfce7", color: "#16a34a" }}>
