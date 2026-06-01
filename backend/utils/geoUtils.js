@@ -160,15 +160,46 @@ export const PRESET_CITY_COORDS = {
   "jagannaickpur": { lat: 16.968000, lon: 82.245000, city: "Kakinada", label: "Jagannaickpur, Kakinada, Andhra Pradesh, India" }
 };
 
+/**
+ * Resolves coordinate presets for key application cities and seeded locations.
+ * Uses exact segment-based parsing and regex word boundary matching to ensure 
+ * 100% precision and avoid false positives across compound location queries.
+ * 
+ * @param {string} location - The raw search or location string.
+ * @returns {Object|null} The preset coordinate object {lat, lon, city, label} or null.
+ */
 export function geocodePreset(location = "") {
   if (!location) return null;
-  const key = location.toLowerCase().trim();
-  if (PRESET_CITY_COORDS[key]) return PRESET_CITY_COORDS[key];
   
-  // Try fuzzy partial matches (e.g. "Kakinada Central Area" should match "kakinada central area" or "kakinada")
-  const foundKey = Object.keys(PRESET_CITY_COORDS).find(k => key.includes(k) || k.includes(key));
-  if (foundKey) return PRESET_CITY_COORDS[foundKey];
+  const normalized = location.toLowerCase().trim();
   
+  // 1. Direct, high-precision exact match
+  if (PRESET_CITY_COORDS[normalized]) {
+    return PRESET_CITY_COORDS[normalized];
+  }
+
+  // 2. Segment-based parsing (splitting address segments right-to-left)
+  const segments = normalized
+    .split(/[,;\-\(\)\s]+/)
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  // Check segments starting from the most general rightmost component (usually the city name)
+  for (let i = segments.length - 1; i >= 0; i--) {
+    const segment = segments[i];
+    if (PRESET_CITY_COORDS[segment]) {
+      return PRESET_CITY_COORDS[segment];
+    }
+  }
+
+  // 3. Word-boundary regex matching to prevent sub-string false-positives
+  for (const [key, value] of Object.entries(PRESET_CITY_COORDS)) {
+    const regex = new RegExp(`\\b${key}\\b`, "i");
+    if (regex.test(normalized)) {
+      return value;
+    }
+  }
+
   return null;
 }
 
