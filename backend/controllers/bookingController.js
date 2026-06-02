@@ -5,28 +5,28 @@ import User from "../models/User.js";
 import ActivityLog from "../models/ActivityLog.js";
 import Notification from "../models/Notification.js";
 
+// Parse scheduled date and time into authoritative Date object
+const parseBookingDateTime = (dateStr, timeStr) => {
+  try {
+    const [time, modifier] = timeStr.split(" ");
+    let [hours, minutes] = time.split(":");
+    hours = parseInt(hours, 10);
+    minutes = parseInt(minutes, 10);
+    
+    if (modifier === "PM" && hours < 12) hours += 12;
+    if (modifier === "AM" && hours === 12) hours = 0;
+    
+    return new Date(`${dateStr}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`);
+  } catch (err) {
+    return null;
+  }
+};
+
 const validateCancellationTime = (booking) => {
   const now = new Date();
   const createdTime = new Date(booking.createdAt || now);
-  
-  // Parse scheduled date and time
-  const parseBookingDateTime = (dateStr, timeStr) => {
-    try {
-      const [time, modifier] = timeStr.split(" ");
-      let [hours, minutes] = time.split(":");
-      hours = parseInt(hours, 10);
-      minutes = parseInt(minutes, 10);
-      
-      if (modifier === "PM" && hours < 12) hours += 12;
-      if (modifier === "AM" && hours === 12) hours = 0;
-      
-      return new Date(`${dateStr}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`);
-    } catch (err) {
-      return null;
-    }
-  };
-
   const scheduledDateTime = parseBookingDateTime(booking.date, booking.time);
+  
   if (!scheduledDateTime || isNaN(scheduledDateTime.getTime())) {
     // If we can't parse the scheduled time, default to allowing it
     return { allowed: true };
@@ -128,8 +128,8 @@ export const updateBookingStatus = async (req, res) => {
       return res.status(404).json({ error: "Booking not found" });
     }
 
-    // If the status is changing to Cancelled or Rejected, apply time checks!
-    if (req.body.status === "Cancelled" || req.body.status === "Rejected") {
+    // If the status is changing to Cancelled, apply time checks!
+    if (req.body.status === "Cancelled") {
       const timeCheck = validateCancellationTime(booking);
       if (!timeCheck.allowed) {
         return res.status(400).json({ error: timeCheck.error });
@@ -137,6 +137,9 @@ export const updateBookingStatus = async (req, res) => {
     }
 
     booking.status = req.body.status;
+    if (req.body.status === "Rejected") {
+      booking.rejectReason = req.body.reason || "Schedule Conflict";
+    }
     await booking.save();
 
     if (booking.status === "Rejected") {
@@ -148,7 +151,7 @@ export const updateBookingStatus = async (req, res) => {
         await Transaction.create({
           customer: booking.customer_name,
           worker: "System Refund",
-          service: `Refund (Rejected): ${booking.service}`,
+          service: `Refund (Rejected - ${booking.rejectReason}): ${booking.service}`,
           amount: booking.price,
           status: "Refunded",
           method: "Wallet Topup"
@@ -194,7 +197,7 @@ export const updateBookingStatus = async (req, res) => {
         notifyType = "warning";
       } else if (booking.status === "Rejected") {
         statusTitle = "❌ Booking Rejected & Refunded";
-        statusMsg = `Your booking request for ${booking.service} was rejected by the provider. A full refund of ₹${booking.price} has been credited back to your wallet.`;
+        statusMsg = `Your booking request for ${booking.service} was rejected by the provider due to: "${booking.rejectReason}". A full refund of ₹${booking.price} has been credited back to your wallet.`;
         notifyType = "warning";
       }
 
@@ -663,6 +666,89 @@ export const declineRefund = async (req, res) => {
     res.status(200).json({ success: true, booking, message: "Cancellation refund request declined. Funds credited to Admin Balance successfully." });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+// ⏰ AUTOMATIC BOOKING TIMEOUT AND WALLET REFUND BACKGROUND ROUTINE
+export const checkBookingTimeouts = async () => {
+  try {
+    const now = new Date();
+    // Query all bookings currently in Pending or Upcoming state
+    const bookings = await Booking.find({ status: { $in: ["Pending", "Upcoming"] } });
+
+    for (const booking of bookings) {
+      const createdTime = new Date(booking.createdAt || now);
+      const scheduledDateTime = parseBookingDateTime(booking.date, booking.time);
+      
+      let isInstant = false;
+      if (scheduledDateTime && !isNaN(scheduledDateTime.getTime())) {
+        const timeGapMinutes = (scheduledDateTime - createdTime) / 60000;
+        if (timeGapMinutes <= 60) {
+          isInstant = true;
+        }
+      }
+
+      const elapsedMinutes = (now - createdTime) / 60000;
+      const limitMinutes = isInstant ? 20 : 45;
+
+      if (elapsedMinutes >= limitMinutes) {
+        console.log(`⏰ [BOOKING TIMEOUT] Booking #${booking._id} (${isInstant ? "Instant" : "Normal"}) has expired after ${Math.round(elapsedMinutes)} minutes without worker acceptance.`);
+
+        // 1. Cancel the booking document
+        booking.status = "Cancelled";
+        booking.cancelReason = "Booking acceptance timeout. Customer refunded.";
+        await booking.save();
+
+        // 2. Perform full wallet refund
+        const customer = await User.findById(booking.customer_id);
+        if (customer) {
+          customer.walletBalance = (customer.walletBalance || 0) + booking.price;
+          await customer.save();
+
+          // WriteTransaction audit ledger
+          await Transaction.create({
+            customer: booking.customer_name,
+            worker: "System Timeout Cancel",
+            service: `Refund (Expired - Acceptance Timeout): ${booking.service}`,
+            amount: booking.price,
+            status: "Refunded",
+            method: "Wallet Topup"
+          });
+        }
+
+        // 3. Dispatch Notification to Customer
+        await Notification.create({
+          role: "user",
+          user_id: booking.customer_id,
+          title: "❌ Booking Cancelled & Refunded",
+          message: `Your booking request for ${booking.service} was automatically cancelled because the worker did not accept it within the ${limitMinutes}-minute time limit. ₹${booking.price} has been refunded to your wallet.`,
+          type: "warning",
+          is_read: false
+        });
+
+        // 4. Dispatch Notification to Worker
+        try {
+          const worker = await Worker.findById(booking.worker_id);
+          if (worker) {
+            const workerUser = await User.findOne({ email: worker.email });
+            if (workerUser) {
+              await Notification.create({
+                role: "worker",
+                user_id: workerUser._id.toString(),
+                title: "🚫 Booking Request Expired",
+                message: `The booking request for ${booking.service} from ${booking.customer_name} has expired because it was not accepted within ${limitMinutes} minutes.`,
+                type: "warning",
+                is_read: false
+              });
+            }
+          }
+        } catch (err) {
+          console.error("Error creating timeout notification for worker:", err);
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error in checkBookingTimeouts job:", error.message);
   }
 };
 

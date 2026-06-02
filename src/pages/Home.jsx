@@ -21,6 +21,7 @@ function Home() {
   const [onlineWorkers, setOnlineWorkers] = useState([]);
   const [aiSuggestedWorkers, setAiSuggestedWorkers] = useState([]);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiSuggestedAreas, setAiSuggestedAreas] = useState([]);
 
   // Automatic redirect if Admin or Worker tries to visit the general home page directly
   useEffect(() => {
@@ -145,7 +146,10 @@ function Home() {
         const data = await response.json();
         if (data.choices && data.choices.length > 0) {
           const result = data.choices[0].message.content;
-
+          if (result && typeof result === "string") {
+            const parsedAreas = result.split(",").map(a => a.trim().toLowerCase());
+            setAiSuggestedAreas(parsedAreas);
+          }
         } else {
           throw new Error("No choices returned");
         }
@@ -190,13 +194,29 @@ function Home() {
         const matchingWorkers = await filterWorkersClientSide(userCoords, extractedKey);
         
         setOnlineWorkers(matchingWorkers);
-        setAiSuggestedWorkers(matchingWorkers.slice(0, 3));
+        
+        // Prioritize matching workers residing or operating in AI suggested neighborhoods
+        if (aiSuggestedAreas.length > 0) {
+          const suggested = matchingWorkers.filter(worker => {
+            const wLoc = (worker.location || "").toLowerCase();
+            const wCity = (worker.city || "").toLowerCase();
+            return aiSuggestedAreas.some(area => wLoc.includes(area) || wCity.includes(area) || area.includes(wLoc) || area.includes(wCity));
+          });
+          
+          if (suggested.length > 0) {
+            setAiSuggestedWorkers(suggested.slice(0, 3));
+          } else {
+            setAiSuggestedWorkers(matchingWorkers.slice(0, 3));
+          }
+        } else {
+          setAiSuggestedWorkers(matchingWorkers.slice(0, 3));
+        }
       } catch(e) { console.error("Home cloud workers fail", e); }
     };
     syncOnline();
     const interval = setInterval(syncOnline, 10000); // Keep synced periodically in case database changes
     return () => clearInterval(interval);
-  }, [searchedLocation, userCoords]);
+  }, [searchedLocation, userCoords, aiSuggestedAreas]);
 
   // Extract a short readable city/area name from the full address string
   const getShortLocation = (fullAddress) => {

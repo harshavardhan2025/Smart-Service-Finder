@@ -22,6 +22,7 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import aiRoutes from "./routes/aiRoutes.js";
 import securityRoutes from "./routes/securityRoutes.js";
+import { checkBookingTimeouts } from "./controllers/bookingController.js";
 
 dotenv.config();
 
@@ -53,6 +54,8 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on ${PORT}`);
+  // Start background timer to check for booking timeouts every 30 seconds
+  setInterval(checkBookingTimeouts, 30000);
 });
 
 export default app;

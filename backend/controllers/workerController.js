@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import Worker from "../models/Worker.js";
 import { haversineKm, geocodeCity, getPriceMultiplier } from "../utils/geoUtils.js";
 
@@ -11,6 +12,44 @@ const LOCAL_CLUSTER_FALLBACKS = {
   "kakinada": ["kakinada", "samalkot", "peddapuram", "pithapuram", "karanampetta", "sarpavaram", "chollangi", "ramanayyapeta", "turangi", "yanam"],
   "new delhi": ["new delhi", "noida", "gurugram", "ghaziabad", "faridabad", "dwarka", "rohini", "saket", "vasant kunj", "connaught place", "karol bagh"],
   "hyderabad": ["hyderabad", "secunderabad", "gachibowli", "hitech city", "madhapur", "kondapur", "kukatpally", "begumpet", "banjara hills", "jubilee hills"]
+};
+
+// Zhipu JWT signature builder for standard completions
+const generateZhipuToken = (apiKey) => {
+  if (!apiKey || !apiKey.includes(".")) return "";
+  const [id, secret] = apiKey.split(".");
+  const timestamp = Date.now();
+  const exp = timestamp + 180000; // 3 minutes validity in ms
+  
+  const header = {
+    alg: "HS256",
+    sign_type: "SIGN"
+  };
+  const payload = {
+    api_key: id,
+    exp: exp,
+    timestamp: timestamp
+  };
+  
+  const base64UrlEncode = (obj) => {
+    return Buffer.from(JSON.stringify(obj))
+      .toString("base64")
+      .replace(/=/g, "")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_");
+  };
+  
+  const headerPart = base64UrlEncode(header);
+  const payloadPart = base64UrlEncode(payload);
+  const signature = crypto
+    .createHmac("sha256", secret)
+    .update(`${headerPart}.${payloadPart}`)
+    .digest("base64")
+    .replace(/=/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
+    
+  return `${headerPart}.${payloadPart}.${signature}`;
 };
 
 // 🤖 ACTIVE AI SPATIAL ANALYSIS ENGINE
@@ -47,7 +86,7 @@ const analyzeLocationWithAi = async (cityName) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
+        "Authorization": `Bearer ${generateZhipuToken(apiKey)}`
       },
       body: JSON.stringify({
         model: modelName,

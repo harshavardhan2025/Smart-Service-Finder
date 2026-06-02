@@ -338,7 +338,7 @@ Reported At: ${new Date().toLocaleString()}`,
       time: new Date(n.timestamp).toLocaleTimeString(),
       read: n.read
     })),
-    ...bookings.filter(b => ["Pending", "Upcoming", "Accepted", "On the Way", "Started"].includes(b.status)).map((b) => ({
+    ...bookings.filter(b => ["Pending", "Upcoming", "Accepted", "On the Way", "Started", "Cancelled", "Rejected"].includes(b.status)).map((b) => ({
       id: `b-${b._id}`,
       bookingId: b._id,
       bookingStatus: b.status,

@@ -132,6 +132,11 @@ function AiChatBot() {
   const [activeOffers, setActiveOffers] = useState([]);
   const [activePlans, setActivePlans] = useState([]);
 
+  // Auto-scroll to the latest message smoothly
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isTyping]);
+
   useEffect(() => {
      const primeAIPercepts = async () => {
         try {
@@ -155,171 +160,108 @@ function AiChatBot() {
     { text: "Safety & Trust 🛡️", query: "Are workers verified?" }
   ];
 
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
+  const levenshtein = (a, b) => {
+    const tmp = [];
+    let i, j;
+    for (i = 0; i <= a.length; i++) {
+      tmp[i] = [i];
+    }
+    for (j = 0; j <= b.length; j++) {
+      tmp[0][j] = j;
+    }
+    for (i = 1; i <= a.length; i++) {
+      for (j = 1; j <= b.length; j++) {
+        tmp[i][j] = Math.min(
+          tmp[i - 1][j] + 1,
+          tmp[i][j - 1] + 1,
+          tmp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+        );
+      }
+    }
+    return tmp[a.length][b.length];
+  };
+
+  const findBestServiceMatch = (queryText) => {
+    const stopWords = new Set([
+      "need", "want", "have", "with", "this", "that", "your", "from", "near", "best", "some", "good", "find", "show", "here", "there", 
+      "what", "where", "when", "about", "book", "free", "how", "to", "do", "you", "a", "an", "the", "is", "are", "was", "were", 
+      "payment", "methods", "support", "service", "booking", "cancel", "reschedule", "refund", "price", "discount", "offers", 
+      "safety", "verified", "time", "hours", "location", "cities", "help", "complaint"
+    ]);
+
+    const words = queryText.toLowerCase().split(/[\s,./?#@!$%^&*()_+={}[\]|\\:;"'-]+/);
+    let bestService = null;
+    let minDistance = Infinity;
+
+    const servicesList = [
+      { name: "Plumbing", keywords: ["plumber", "pluber", "leak", "pipe", "tap", "sink", "toilet", "drain", "water line"] },
+      { name: "Electrical", keywords: ["electrician", "electrican", "wire", "switch", "fuse", "fan", "light", "current", "power", "short circuit", "spark"] },
+      { name: "Carpentry", keywords: ["carpenter", "wood", "door", "chair", "sofa", "furniture", "table", "wooden"] },
+      { name: "AC Repair", keywords: ["ac", "air conditioner", "cooling", "coolng", "cool", "condenser", "compressor"] },
+      { name: "Washing Machine", keywords: ["washing machine", "washer", "dryer", "laundry"] },
+      { name: "Geyser", keywords: ["geyser", "heater", "hot water"] },
+      { name: "Grinder", keywords: ["grinder"] },
+      { name: "Mixer", keywords: ["mixer", "juicer", "blender"] },
+      { name: "Refrigerator", keywords: ["fridge", "refrigerator", "freezer"] },
+      { name: "Water Purifier", keywords: ["purifier", "filter", "ro"] },
+      { name: "House Cleaning", keywords: ["cleaning", "clean", "maid", "sweep", "house clean", "deep clean"] },
+      { name: "Floor cleaning", keywords: ["floor clean", "mop", "scrub"] },
+      { name: "Utensils Cleaning", keywords: ["utensil", "dish", "plate", "pot"] },
+      { name: "Wall Putty Coating", keywords: ["putty", "coating", "wall putty"] },
+      { name: "Interior Painting", keywords: ["paint", "interior", "indoor paint", "room paint"] },
+      { name: "Exterior Painting", keywords: ["exterior paint", "outdoor paint", "building paint"] },
+      { name: "Texture & Designer Finishers", keywords: ["texture", "designer finish", "wall art"] },
+      { name: "Wallpaper Installation", keywords: ["wallpaper", "wall paper", "wall sticker"] },
+      { name: "Wood Polishing", keywords: ["wood polish", "polish", "varnish"] },
+      { name: "Two-Wheeler (Bikes)", keywords: ["bike", "motorcycle", "scooter", "two-wheeler", "puncture"] },
+      { name: "Four-Wheeler (Cars)", keywords: ["car", "automobile", "mechanic", "four-wheeler"] },
+      { name: "Others (Heavy)", keywords: ["tractor", "crane", "heavy mech"] },
+      { name: "Bike Wash", keywords: ["bike wash", "scooter wash"] },
+      { name: "Car Wash", keywords: ["car wash", "car vacuum"] },
+      { name: "Photography", keywords: ["photo", "video", "shoot", "camera", "wedding shoot"] },
+      { name: "Purohit", keywords: ["priest", "pandit", "pooja", "purohit", "havan"] },
+      { name: "Decor", keywords: ["decor", "balloon", "flower decoration", "stage"] },
+      { name: "Mehandi", keywords: ["mehandi", "henna"] },
+      { name: "Makeup", keywords: ["makeup", "bridal makeup"] },
+      { name: "Beauty, Salon & Spa", keywords: ["salon", "parlor", "beauty", "haircut", "facial", "spa", "nail", "grooming", "shave", "beard"] },
+      { name: "Doctors", keywords: ["doctor", "doctr", "medical", "consultation", "physician", "clinic", "sick", "health", "ill", "fever", "pain", "injury", "medicine", "cough", "cold", "flu", "hospital", "patient"] }
+    ];
+
+    for (const w of words) {
+      if (w.length < 3 || stopWords.has(w)) continue;
+
+      for (const service of servicesList) {
+        for (const keyword of service.keywords) {
+          if (w === keyword) {
+            bestService = service.name;
+            minDistance = 0;
+            break;
+          }
+          if (w.includes(keyword) || keyword.includes(w)) {
+            const distance = Math.abs(w.length - keyword.length);
+            if (distance < minDistance) {
+              minDistance = distance;
+              bestService = service.name;
+            }
+          }
+          
+          const minLen = Math.min(w.length, keyword.length);
+          const allowedDistance = minLen <= 3 ? 0 : minLen === 4 ? 1 : 2;
+          const dist = levenshtein(w, keyword);
+          
+          if (dist <= allowedDistance && dist < minDistance) {
+            minDistance = dist;
+            bestService = service.name;
+          }
+        }
+      }
+    }
+
+    return bestService;
+  };
 
   const parseProblem = (text) => {
-    const lowercaseText = text.toLowerCase();
-
-    // 1. AC & Appliances Repair
-    if (lowercaseText.includes("ac") || lowercaseText.includes("air cond") || lowercaseText.includes("cooling")) {
-      return "AC Repair";
-    }
-    if (lowercaseText.includes("washing") || lowercaseText.includes("washer") || lowercaseText.includes("dryer") || lowercaseText.includes("laundry")) {
-      return "Washing Machine";
-    }
-    if (lowercaseText.includes("geyser") || lowercaseText.includes("hot water") || lowercaseText.includes("heater")) {
-      return "Geyser";
-    }
-    if (lowercaseText.includes("grinder")) {
-      return "Grinder";
-    }
-    if (lowercaseText.includes("mixer") || lowercaseText.includes("miker") || lowercaseText.includes("mix") || lowercaseText.includes("juicer") || lowercaseText.includes("blender")) {
-      return "Mixer";
-    }
-    if (lowercaseText.includes("fridge") || lowercaseText.includes("refrigerator") || lowercaseText.includes("freezer")) {
-      return "Refrigerator";
-    }
-    if (lowercaseText.includes("purifier") || lowercaseText.includes("ro filter") || lowercaseText.includes("water filter")) {
-      return "Water Purifier";
-    }
-
-    // 2. Painting Subservices
-    if (lowercaseText.includes("putty") || lowercaseText.includes("coating") || lowercaseText.includes("wall putty")) {
-      return "Wall Putty Coating";
-    }
-    if (lowercaseText.includes("indoor paint") || lowercaseText.includes("interior paint") || lowercaseText.includes("room paint")) {
-      return "Interior Painting";
-    }
-    if (lowercaseText.includes("outdoor paint") || lowercaseText.includes("exterior paint") || lowercaseText.includes("building paint")) {
-      return "Exterior Painting";
-    }
-    if (lowercaseText.includes("texture") || lowercaseText.includes("wall art") || lowercaseText.includes("designer finish")) {
-      return "Texture & Designer Finishers";
-    }
-    if (lowercaseText.includes("wallpaper") || lowercaseText.includes("wall sticker") || lowercaseText.includes("wall paper")) {
-      return "Wallpaper Installation";
-    }
-    if (lowercaseText.includes("polish") || lowercaseText.includes("wood polish") || lowercaseText.includes("varnish")) {
-      return "Wood Polishing";
-    }
-    if (lowercaseText.includes("paint") || lowercaseText.includes("color")) {
-      return "Interior Painting"; // Default Painting
-    }
-
-    // 3. Mechanical
-    if (lowercaseText.includes("bike repair") || lowercaseText.includes("motorcycle") || lowercaseText.includes("scooter repair") || lowercaseText.includes("two wheeler")) {
-      return "Two-Wheeler (Bikes)";
-    }
-    if (lowercaseText.includes("car repair") || lowercaseText.includes("car mechanic") || lowercaseText.includes("sedan") || lowercaseText.includes("suv") || lowercaseText.includes("four wheeler")) {
-      return "Four-Wheeler (Cars)";
-    }
-    if (lowercaseText.includes("tractor") || lowercaseText.includes("crane") || lowercaseText.includes("heavy mech")) {
-      return "Others (Heavy)";
-    }
-    if (lowercaseText.includes("repair") || lowercaseText.includes("mechanic") || lowercaseText.includes("engine") || lowercaseText.includes("puncture")) {
-      return "Two-Wheeler (Bikes)"; // Default Mechanical
-    }
-
-    // 4. Automobile Cleaning
-    if (lowercaseText.includes("bike wash") || lowercaseText.includes("scooter wash") || lowercaseText.includes("wash bike")) {
-      return "Bike Wash";
-    }
-    if (lowercaseText.includes("car wash") || lowercaseText.includes("car vacuum") || lowercaseText.includes("wash car")) {
-      return "Car Wash";
-    }
-    if (lowercaseText.includes("cleaning") && (lowercaseText.includes("truck") || lowercaseText.includes("bus") || lowercaseText.includes("tempo"))) {
-      return "Others";
-    }
-
-    // 5. Cleaning
-    if (lowercaseText.includes("mop") || lowercaseText.includes("floor") || lowercaseText.includes("scrub")) {
-      return "Floor cleaning";
-    }
-    if (lowercaseText.includes("dish") || lowercaseText.includes("utensil") || lowercaseText.includes("plate") || lowercaseText.includes("pot")) {
-      return "Utensils Cleaning";
-    }
-    if (lowercaseText.includes("house") || lowercaseText.includes("home") || lowercaseText.includes("deep clean") || lowercaseText.includes("flat")) {
-      return "House Cleaning";
-    }
-    if (lowercaseText.includes("clean") || lowercaseText.includes("maid") || lowercaseText.includes("sweep")) {
-      return "House Cleaning"; // Default Cleaning
-    }
-
-    // 6. Beauty, Salon & Spa
-    // Men's Beauty
-    if (lowercaseText.includes("men haircut") || lowercaseText.includes("male haircut") || lowercaseText.includes("boy haircut") || ((lowercaseText.includes("haircut") || lowercaseText.includes("hair cut")) && (lowercaseText.includes("men") || lowercaseText.includes("boy")))) {
-      return "Haircut (Men)";
-    }
-    if (lowercaseText.includes("beard") || lowercaseText.includes("trim beard") || lowercaseText.includes("shave") || lowercaseText.includes("mustache")) {
-      return "Beard Trimming (Men)";
-    }
-    if (lowercaseText.includes("grooming") && (lowercaseText.includes("men") || lowercaseText.includes("groom"))) {
-      return "Grooming (Men)";
-    }
-    if (lowercaseText.includes("spa") && lowercaseText.includes("men")) {
-      return "Spa (Men)";
-    }
-    // Women's Beauty
-    if (lowercaseText.includes("women haircut") || lowercaseText.includes("female haircut") || lowercaseText.includes("hair styling") || lowercaseText.includes("hairstyling") || ((lowercaseText.includes("haircut") || lowercaseText.includes("hair cut")) && (lowercaseText.includes("women") || lowercaseText.includes("girl") || lowercaseText.includes("lady")))) {
-      return "Haircut (Women)";
-    }
-    if (lowercaseText.includes("thread") || lowercaseText.includes("eyebrow") || lowercaseText.includes("upper lip")) {
-      return "Threading (Women)";
-    }
-    if (lowercaseText.includes("facial") || lowercaseText.includes("face clean") || lowercaseText.includes("glow")) {
-      return "Facials (Women)";
-    }
-    if (lowercaseText.includes("nail") || lowercaseText.includes("nail polish") || lowercaseText.includes("nail art")) {
-      return "Nail Art (Women)";
-    }
-    if (lowercaseText.includes("manicure") || lowercaseText.includes("pedicure") || lowercaseText.includes("mani pedi")) {
-      return "Manicure / pedicure (Women)";
-    }
-    // General Beauty/Salon fallback (Catches general "haircut" or "hair cut" without gender)
-    if (lowercaseText.includes("haircut") || lowercaseText.includes("hair cut") || lowercaseText.includes("salon") || lowercaseText.includes("parlor") || lowercaseText.includes("beauty")) {
-      return "Haircut (Men)"; // Serves as the primary haircut fallback match
-    }
-
-    // 7. Events
-    if (lowercaseText.includes("photo") || lowercaseText.includes("video") || lowercaseText.includes("shoot") || lowercaseText.includes("camera") || lowercaseText.includes("wedding shoot")) {
-      return "Photography";
-    }
-    if (lowercaseText.includes("priest") || lowercaseText.includes("pandit") || lowercaseText.includes("pooja") || lowercaseText.includes("puja") || lowercaseText.includes("purohit") || lowercaseText.includes("havan")) {
-      return "Purohit";
-    }
-    if (lowercaseText.includes("decor") || lowercaseText.includes("balloon") || lowercaseText.includes("flower decoration") || lowercaseText.includes("stage")) {
-      return "Decor";
-    }
-    if (lowercaseText.includes("mehandi") || lowercaseText.includes("henna") || lowercaseText.includes("bridal mehandi")) {
-      return "Mehandi";
-    }
-    if (lowercaseText.includes("makeup") || lowercaseText.includes("cosmetic") || lowercaseText.includes("makeup artist")) {
-      return "Makeup";
-    }
-
-    // 8. General Standard Services
-    if (lowercaseText.includes("switch") || lowercaseText.includes("swit") || lowercaseText.includes("wire") || lowercaseText.includes("electric") || lowercaseText.includes("elec") || lowercaseText.includes("fuse") || lowercaseText.includes("fan") || lowercaseText.includes("light") || lowercaseText.includes("current") || lowercaseText.includes("power")) {
-      return "Electrical";
-    }
-    if (lowercaseText.includes("tap") || lowercaseText.includes("leak") || lowercaseText.includes("pipe") || lowercaseText.includes("sink") || lowercaseText.includes("plumber")) {
-      return "Plumbing";
-    }
-    if (lowercaseText.includes("furniture") || lowercaseText.includes("wood") || lowercaseText.includes("door") || lowercaseText.includes("chair") || lowercaseText.includes("sofa") || lowercaseText.includes("carpenter")) {
-      return "Carpentry";
-    }
-    if (lowercaseText.includes("mover") || lowercaseText.includes("packer") || lowercaseText.includes("shifting") || lowercaseText.includes("luggage")) {
-      return "Packers & Movers";
-    }
-    if (lowercaseText.includes("baby") || lowercaseText.includes("child") || lowercaseText.includes("nanny") || lowercaseText.includes("care")) {
-      return "Care takers (baby)";
-    }
-    if (lowercaseText.includes("doctor") || lowercaseText.includes("sick") || lowercaseText.includes("health") || lowercaseText.includes("ill") || lowercaseText.includes("fever") || lowercaseText.includes("medical") || lowercaseText.includes("pain") || lowercaseText.includes("cough") || lowercaseText.includes("cold") || lowercaseText.includes("clinic") || lowercaseText.includes("hospital")) {
-      return "Doctors";
-    }
-
-    return null;
+    return findBestServiceMatch(text);
   };
 
   const getSupportReply = (text) => {
