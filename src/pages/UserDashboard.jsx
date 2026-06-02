@@ -408,7 +408,7 @@ function UserDashboard() {
             ) : bookings.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 {bookings.map(b => (
-                  <div key={b.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "16px", borderBottom: "1px solid var(--border)" }}>
+                  <div key={b._id || b.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "16px", borderBottom: "1px solid var(--border)" }}>
                     <div>
                       <p style={{ margin: "0 0 4px 0", fontWeight: "600", color: "var(--text-main)" }}>{b.service}</p>
                       <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)" }}>{b.date || "Scheduled"} • {b.workerName || "Pending Worker"}</p>
@@ -439,14 +439,14 @@ function UserDashboard() {
             ) : transactions.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 {transactions.map(t => (
-                  <div key={t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "16px", borderBottom: "1px solid var(--border)" }}>
+                  <div key={t._id || t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "16px", borderBottom: "1px solid var(--border)" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                       <div style={{ width: "40px", height: "40px", borderRadius: "50%", backgroundColor: "var(--border)", display: "flex", justifyContent: "center", alignItems: "center", fontSize: "18px" }}>
                         {t.icon || "💰"}
                       </div>
                       <div>
                         <p style={{ margin: "0 0 4px 0", fontWeight: "500", color: "var(--text-main)" }}>{t.service}</p>
-                        <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)" }}>{t.date || new Date(t.createdAt).toLocaleDateString()} • {t.method}</p>
+                        <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)" }}>{t.date || (t.createdAt ? new Date(t.createdAt).toLocaleDateString() : "")} • {t.method}</p>
                       </div>
                     </div>
                     <p style={{ 

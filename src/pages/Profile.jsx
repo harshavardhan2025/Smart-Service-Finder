@@ -506,7 +506,7 @@ function Profile() {
                       <span style={{ fontSize: "22px" }}>{txn.icon}</span>
                       <div>
                         <p style={{ margin: 0, fontWeight: 700, fontSize: "14px", color: "#1e293b" }}>{txn.service}</p>
-                        <p style={{ margin: 0, fontSize: "12px", color: "#64748b" }}>📅 {txn.date} &nbsp;·&nbsp; {txn.id}</p>
+                        <p style={{ margin: 0, fontSize: "12px", color: "#64748b" }}>📅 {txn.date} &nbsp;·&nbsp; {txnIdentifier}</p>
                       </div>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -532,7 +532,7 @@ function Profile() {
                       }}
                     >
                       {[
-                        { label: "Transaction ID", value: txn.id },
+                        { label: "Transaction ID", value: txnIdentifier },
                         { label: "Worker", value: txn.worker },
                         { label: "Payment Method", value: txn.method },
                         { label: "Amount", value: `₹${txn.amount}` },

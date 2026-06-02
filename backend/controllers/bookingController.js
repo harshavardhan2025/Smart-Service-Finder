@@ -115,7 +115,24 @@ export const getBookings = async (req, res) => {
     if (req.query.worker_id) filter.worker_id = req.query.worker_id;
 
     const bookings = await Booking.find(filter).sort({ createdAt: -1 });
-    res.status(200).json(bookings);
+
+    const populatedBookings = await Promise.all(bookings.map(async (b) => {
+      const bObj = b.toObject();
+      if (b.worker_id) {
+        try {
+          const workerObj = await Worker.findById(b.worker_id);
+          if (workerObj) {
+            bObj.workerName = workerObj.name;
+            bObj.worker_name = workerObj.name;
+          }
+        } catch (e) {
+          // Ignore lookup errors
+        }
+      }
+      return bObj;
+    }));
+
+    res.status(200).json(populatedBookings);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
