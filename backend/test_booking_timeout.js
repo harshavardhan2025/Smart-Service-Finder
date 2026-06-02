@@ -19,6 +19,8 @@ const runTest = async () => {
     // 1. Clean up any previous test artifacts
     await User.deleteMany({ email: "timeout_customer@test.com" });
     await Worker.deleteMany({ email: "timeout_worker@test.com" });
+    await Transaction.deleteMany({ customer: "Timeout Customer" });
+    await Notification.deleteMany({ title: { $in: ["❌ Booking Cancelled & Refunded", "🚫 Booking Request Expired"] } });
 
     // 2. Create Mock Customer and Worker
     const customer = await User.create({

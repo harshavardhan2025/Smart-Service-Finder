@@ -9,11 +9,19 @@ import SkeletonLoader from "../components/SkeletonLoader";
 import MapPicker from "../components/MapPicker";
 
 // ── Photon-powered location card shown inside User Dashboard ────────────────
-function UserLocationMap() {
+function UserLocationMap({ isLoggedIn }) {
   const [location, setLocation] = useState(
     localStorage.getItem("userLocation") || "Kadapa, Andhra Pradesh, India"
   );
   const [open, setOpen] = useState(false);
+
+  const handleToggle = () => {
+    if (!isLoggedIn) {
+      alert("🔑 Customer Sign-in Required!\n\nPlease login first to set or customize your service location address.");
+      return;
+    }
+    setOpen(o => !o);
+  };
 
   return (
     <div className="premium-card" style={{ marginBottom: "40px", overflow: "hidden" }}>
@@ -25,7 +33,7 @@ function UserLocationMap() {
           justifyContent: "space-between",
           cursor: "pointer",
         }}
-        onClick={() => setOpen(o => !o)}
+        onClick={handleToggle}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{
@@ -41,7 +49,7 @@ function UserLocationMap() {
               Your Location
             </h3>
             <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)", maxWidth: "480px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              📍 {location}
+              📍 {location} {!isLoggedIn && " (🔒 Guest Preview)"}
             </p>
           </div>
         </div>
@@ -64,8 +72,9 @@ function UserLocationMap() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function UserDashboard() {
-
   const navigate = useNavigate();
+  const isLoggedIn = !!sessionStorage.getItem("userId") && sessionStorage.getItem("userRole") === "user";
+
   const [wallet, setWallet] = useState(0);
   const [bookings, setBookings] = useState([]);
   const [transactions, setTransactions] = useState([]);
@@ -84,6 +93,11 @@ function UserDashboard() {
   const timerRef = useRef(null);
 
   const startSosCountdown = () => {
+    if (!isLoggedIn) {
+      alert("🔑 Customer Sign-in Required!\n\nYou must be logged in as a registered customer to broadcast real-time emergency SOS telemetry signals to police and platform dispatch.");
+      navigate("/login");
+      return;
+    }
     setSosActive(true);
     setSosTriggered(false);
     setSosCountdown(5);
@@ -166,18 +180,28 @@ function UserDashboard() {
   };
 
   useEffect(() => {
-    // 1. Check Authorization
+    // 1. Check Authorization only if they are logged in but have the wrong role
     const role = sessionStorage.getItem("userRole");
-    const currentUserId = sessionStorage.getItem("userId");
-    
-    if (role !== "user") {
+    if (role && role !== "user") {
       navigate("/login");
       return;
     }
 
     // 2. Implement True Live Cloud Data Fetch Routine
     const fetchLiveDashboardData = async () => {
+      if (!isLoggedIn) {
+        // Guest mode: load empty arrays/placeholders and stop loading
+        setBookings([]);
+        setTransactions([]);
+        setActivePlans([]);
+        setRecommendations(["Plumbing", "Electrical", "AC Repair"]); // default preview services
+        setRecBasis("💡 Standard recommended expert utilities for you");
+        setLoading(false);
+        return;
+      }
+
       try {
+        const currentUserId = sessionStorage.getItem("userId");
         if (!currentUserId) return;
 
         // A. Fetch Real Bookings
@@ -238,7 +262,7 @@ function UserDashboard() {
     };
 
     fetchLiveDashboardData();
-  }, [navigate]);
+  }, [navigate, isLoggedIn]);
 
   const activeBookings = bookings.filter(b => b.status === "Pending" || b.status === "Confirmed" || b.status === "On the way");
 
@@ -266,7 +290,7 @@ function UserDashboard() {
             </div>
             <div>
               <p style={{ margin: "0 0 4px 0", color: "var(--text-muted)", fontSize: "14px" }}>Wallet Balance</p>
-              <h2 style={{ margin: 0, color: "var(--text-main)", fontSize: "24px" }}>₹{wallet}</h2>
+              <h2 style={{ margin: 0, color: "var(--text-main)", fontSize: "24px" }}>₹{isLoggedIn ? wallet : "0 (Guest Preview)"}</h2>
             </div>
           </div>
           
@@ -276,7 +300,7 @@ function UserDashboard() {
             </div>
             <div>
               <p style={{ margin: "0 0 4px 0", color: "var(--text-muted)", fontSize: "14px" }}>Active Bookings</p>
-              <h2 style={{ margin: 0, color: "var(--text-main)", fontSize: "24px" }}>{activeBookings.length}</h2>
+              <h2 style={{ margin: 0, color: "var(--text-main)", fontSize: "24px" }}>{isLoggedIn ? activeBookings.length : "0 (Locked)"}</h2>
             </div>
           </div>
 
@@ -286,13 +310,13 @@ function UserDashboard() {
             </div>
             <div>
               <p style={{ margin: "0 0 4px 0", color: "var(--text-muted)", fontSize: "14px" }}>Total Bookings</p>
-              <h2 style={{ margin: 0, color: "var(--text-main)", fontSize: "24px" }}>{bookings.length}</h2>
+              <h2 style={{ margin: 0, color: "var(--text-main)", fontSize: "24px" }}>{isLoggedIn ? bookings.length : "0 (Locked)"}</h2>
             </div>
           </div>
         </div>
 
         {/* 📍 YOUR LOCATION — Photon Map */}
-        <UserLocationMap />
+        <UserLocationMap isLoggedIn={isLoggedIn} />
 
         {/* 🧠 AI-POWERED PERSONALIZED RECOMMENDATIONS */}
         <div className="premium-card" style={{ 
@@ -370,9 +394,16 @@ function UserDashboard() {
           <div className="premium-card" style={{ padding: "24px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
               <h3 style={{ margin: 0, fontSize: "18px", color: "var(--text-main)" }}>Recent Bookings</h3>
-              <Link to="/my-bookings" style={{ color: "var(--primary)", fontSize: "14px", fontWeight: "500", textDecoration: "none" }}>View All</Link>
+              {isLoggedIn && <Link to="/my-bookings" style={{ color: "var(--primary)", fontSize: "14px", fontWeight: "500", textDecoration: "none" }}>View All</Link>}
             </div>
-            {loading ? (
+            {!isLoggedIn ? (
+              <div style={{ textAlign: "center", padding: "30px 10px", color: "var(--text-muted)" }}>
+                <span style={{ fontSize: "28px" }}>📋</span>
+                <h4 style={{ margin: "12px 0 6px 0", color: "var(--text-main)", fontWeight: 700 }}>Bookings Locked</h4>
+                <p style={{ fontSize: "12px", margin: "0 0 16px 0", lineHeight: "1.4" }}>Sign in with a customer account to schedule new jobs and monitor active providers.</p>
+                <button onClick={() => navigate("/login")} className="btn-secondary" style={{ padding: "8px 16px", fontSize: "12px", cursor: "pointer", fontWeight: 700 }}>Login Now</button>
+              </div>
+            ) : loading ? (
               <SkeletonLoader type="list" count={2} />
             ) : bookings.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -396,9 +427,16 @@ function UserDashboard() {
           <div className="premium-card" style={{ padding: "24px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
               <h3 style={{ margin: 0, fontSize: "18px", color: "var(--text-main)" }}>Recent Transactions</h3>
-              <Link to="/payment" style={{ color: "var(--primary)", fontSize: "14px", fontWeight: "500", textDecoration: "none" }}>Manage Wallet</Link>
+              {isLoggedIn && <Link to="/payment" style={{ color: "var(--primary)", fontSize: "14px", fontWeight: "500", textDecoration: "none" }}>Manage Wallet</Link>}
             </div>
-            {transactions.length > 0 ? (
+            {!isLoggedIn ? (
+              <div style={{ textAlign: "center", padding: "30px 10px", color: "var(--text-muted)" }}>
+                <span style={{ fontSize: "28px" }}>💰</span>
+                <h4 style={{ margin: "12px 0 6px 0", color: "var(--text-main)", fontWeight: 700 }}>Statements Locked</h4>
+                <p style={{ fontSize: "12px", margin: "0 0 16px 0", lineHeight: "1.4" }}>Sign in with a customer account to top-up wallet balances and view invoice logs.</p>
+                <button onClick={() => navigate("/login")} className="btn-secondary" style={{ padding: "8px 16px", fontSize: "12px", cursor: "pointer", fontWeight: 700 }}>Login Now</button>
+              </div>
+            ) : transactions.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 {transactions.map(t => (
                   <div key={t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "16px", borderBottom: "1px solid var(--border)" }}>
@@ -429,9 +467,16 @@ function UserDashboard() {
           <div className="premium-card" style={{ padding: "24px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
               <h3 style={{ margin: 0, fontSize: "18px", color: "var(--text-main)" }}>Manage Plans</h3>
-              <Link to="/plans" style={{ color: "var(--primary)", fontSize: "14px", fontWeight: "500", textDecoration: "none" }}>Explore Plans</Link>
+              <Link to="/plans-offers" style={{ color: "var(--primary)", fontSize: "14px", fontWeight: "500", textDecoration: "none" }}>Explore Plans</Link>
             </div>
-            {activePlans.length > 0 ? (
+            {!isLoggedIn ? (
+              <div style={{ textAlign: "center", padding: "30px 10px", color: "var(--text-muted)" }}>
+                <span style={{ fontSize: "28px" }}>⭐</span>
+                <h4 style={{ margin: "12px 0 6px 0", color: "var(--text-main)", fontWeight: 700 }}>Subscriptions Locked</h4>
+                <p style={{ fontSize: "12px", margin: "0 0 16px 0", lineHeight: "1.4" }}>Sign in with a customer account to unlock seasonal coupons and service packages.</p>
+                <button onClick={() => navigate("/login")} className="btn-secondary" style={{ padding: "8px 16px", fontSize: "12px", cursor: "pointer", fontWeight: 700 }}>Login Now</button>
+              </div>
+            ) : activePlans.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 {activePlans.map(p => (
                   <div key={p._id || p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "16px", borderBottom: "1px solid var(--border)" }}>
@@ -456,8 +501,12 @@ function UserDashboard() {
           </div>
         </div>
 
-        <div style={{ marginTop: "40px" }} />
-        <SecurityLogs userId={sessionStorage.getItem("userId")} />
+        {isLoggedIn && (
+          <>
+            <div style={{ marginTop: "40px" }} />
+            <SecurityLogs userId={sessionStorage.getItem("userId")} />
+          </>
+        )}
 
         <div style={{ marginTop: "40px", display: "flex", justifyContent: "center" }}>
           <Link to="/support">
