@@ -14,7 +14,7 @@ function BookingPage() {
   const [paying, setPaying] = useState(false);
   const [walletBal, setWalletBal] = useState(0);
   const [dispatchAddress, setDispatchAddress] = useState("");
-  const [customPrice, setCustomPrice] = useState(null);
+  const customPrice = null;
   const navigate = useNavigate();
 
   const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);

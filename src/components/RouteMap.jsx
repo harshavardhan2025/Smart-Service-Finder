@@ -127,7 +127,6 @@ const RouteMap = ({ startAddress, endAddress }) => {
   }
 
   const displayPosA = posA || defaultCenter;
-  const displayPosB = posB || [displayPosA[0] + 0.01, displayPosA[1] + 0.01];
 
   return (
     <div style={{ height: 260, position: "relative", width: "100%" }}>

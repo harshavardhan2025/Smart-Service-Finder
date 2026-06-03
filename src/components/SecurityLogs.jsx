@@ -25,6 +25,7 @@ function SecurityLogs({ userId = "admin" }) {
     fetchLogs();
     const interval = setInterval(fetchLogs, 15000); // Reload every 15s
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const getActionIcon = (action) => {

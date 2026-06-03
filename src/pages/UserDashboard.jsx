@@ -88,7 +88,6 @@ function UserDashboard() {
 
   const [sosActive, setSosActive] = useState(false);
   const [sosCountdown, setSosCountdown] = useState(5);
-  const [sosLoading, setSosLoading] = useState(false);
   const [sosTriggered, setSosTriggered] = useState(false);
   const timerRef = useRef(null);
 
@@ -122,8 +121,6 @@ function UserDashboard() {
   };
 
   const triggerSosAlert = async () => {
-    setSosLoading(true);
-    
     let coords = { lat: 17.0005, lng: 81.8040 }; // Fallback Rajahmundry
     try {
       if (navigator.geolocation) {
@@ -174,8 +171,6 @@ function UserDashboard() {
       }
     } catch (e) {
       console.error("SOS trigger API fail");
-    } finally {
-      setSosLoading(false);
     }
   };
 

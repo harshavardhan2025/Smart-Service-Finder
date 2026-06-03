@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FaMicrophone, FaVolumeUp } from "react-icons/fa";
+import { FaMicrophone } from "react-icons/fa";
 
 const SERVICE_SUGGESTIONS = [
   "Plumber", "Electrician", "Carpenter", "Painter", "Doctor",
@@ -42,6 +42,7 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation }) {
 
       setRecognition(rec);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const processVoiceSearch = (speech) => {

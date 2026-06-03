@@ -139,7 +139,6 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
   const [cloudWorkers, setCloudWorkers] = useState([]);
 
   const locationKey = getShortLocation(searchedLocation);
-  const displayCity = locationKey ? locationKey.charAt(0).toUpperCase() + locationKey.slice(1).toLowerCase() : "";
 
   useEffect(() => {
     if (!searchedLocation && !userCoords) {

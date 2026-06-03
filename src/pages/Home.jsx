@@ -40,8 +40,11 @@ function Home() {
       const savedLoc = localStorage.getItem("userLocation");
       const registeredCity = sessionStorage.getItem("userCity") || localStorage.getItem("userCity");
       
-      // If we don't have saved coords/loc, or if the saved location doesn't match the registered city, resolve the registered city!
-      if (!savedLat || !savedLng || !savedLoc || (registeredCity && !savedLoc.toLowerCase().includes(registeredCity.toLowerCase()))) {
+      // Always use the registered city as the source of truth
+      const needsGeocode = !savedLat || !savedLng || !savedLoc || 
+        (registeredCity && !savedLoc.toLowerCase().includes(registeredCity.toLowerCase()));
+      
+      if (needsGeocode) {
         const targetCity = registeredCity || "Mumbai";
         
         const geocodeProfileCity = async () => {
@@ -62,27 +65,23 @@ function Home() {
                 
                 setSearchedLocation(finalLabel);
                 setUserCoords({ lat, lng: lon });
-                setLocationText(finalLabel);
               } else {
                 localStorage.setItem("userLocation", targetCity);
                 setSearchedLocation(targetCity);
-                setLocationText(targetCity);
               }
             }
           } catch (err) {
             console.error("Home geocode registered profile city failed:", err);
             localStorage.setItem("userLocation", targetCity);
             setSearchedLocation(targetCity);
-            setLocationText(targetCity);
           }
         };
         
         geocodeProfileCity();
       } else {
-        // Coords already prefetched (e.g. from login page) — use them instantly!
+        // Coords already match the registered city — use them instantly!
         setSearchedLocation(savedLoc);
         setUserCoords({ lat: parseFloat(savedLat), lng: parseFloat(savedLng) });
-        setLocationText(savedLoc);
       }
     }
   }, [role]);
@@ -128,8 +127,6 @@ function Home() {
     
     const fetchAILocationsAndSuggestWorkers = async () => {
       setIsAiLoading(true);
-      const baseLoc = searchedLocation.split(",")[0].trim().toLowerCase();
-      let searchAreas = [baseLoc];
 
       try {
         // CRA prefers process.env over import.meta.env. Standard fallback inserted.

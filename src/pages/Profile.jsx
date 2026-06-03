@@ -53,6 +53,7 @@ function Profile() {
 
   useEffect(() => {
     fetchUserData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const PREVIEW_COUNT = 2;

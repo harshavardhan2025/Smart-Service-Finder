@@ -234,7 +234,8 @@ function AdminDashboard() {
     // Accelerated state tracking to 5 seconds to ensure rapid life-safety responsiveness
     const interval = setInterval(syncAdminStore, 5000); 
     return () => clearInterval(interval);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigate]);
 
   const location = useLocation();
 

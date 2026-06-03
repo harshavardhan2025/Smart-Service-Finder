@@ -302,11 +302,13 @@ Reported At: ${new Date().toLocaleString()}`,
 
   useEffect(() => {
     syncStore();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedWorkerId]);
 
   useEffect(() => {
     const interval = setInterval(syncStore, 5000); // Accelerated update telemetry cadence to 5s for extreme emergency responsiveness
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedWorkerId]);
 
   // ── GRANULAR REVENUE ACCOUNTING SUBSYSTEM ──
