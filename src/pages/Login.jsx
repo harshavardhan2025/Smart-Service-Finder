@@ -124,7 +124,7 @@ function Login() {
     }
 
     const client = window.google.accounts.oauth2.initTokenClient({
-      client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID || "565022097960-4l136709q4clm2a1l9231f855d0j0eef.apps.googleusercontent.com",
+      client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID || "849555982996-giolb22mkrfbg8c4ut0ohbv1ps9giv2o.apps.googleusercontent.com",
       scope: "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
       callback: async (tokenResponse) => {
         if (tokenResponse && tokenResponse.access_token) {
