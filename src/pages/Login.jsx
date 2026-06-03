@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import authBg from "../assets/auth-bg.jpg";
 import { use3dTilt } from "../utils/use3dTilt";
+import { fetchAllWorkersCached } from "../utils/workerService";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -11,6 +12,28 @@ function Login() {
   const [loginStatus, setLoginStatus] = useState(null); // { type: 'success'|'error', message: '' }
   const navigate = useNavigate();
   const loginCardRef = use3dTilt();
+
+  // Prefetch workers & location data while user is on login page
+  // so home page loads workers instantly after login
+  useEffect(() => {
+    // Warm up the worker cache in background
+    fetchAllWorkersCached();
+
+    // If user has a saved city, prefetch geocode too
+    const savedCity = localStorage.getItem("userCity");
+    if (savedCity) {
+      fetch(`/api/workers/geocode?q=${encodeURIComponent(savedCity)}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data?.lat && data?.lon) {
+            localStorage.setItem("userLocation", data.label || savedCity);
+            localStorage.setItem("userCoordsLat", String(parseFloat(data.lat)));
+            localStorage.setItem("userCoordsLng", String(parseFloat(data.lon)));
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
