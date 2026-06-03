@@ -78,6 +78,11 @@ function Home() {
         };
         
         geocodeProfileCity();
+      } else {
+        // Coords already prefetched (e.g. from login page) — use them instantly!
+        setSearchedLocation(savedLoc);
+        setUserCoords({ lat: parseFloat(savedLat), lng: parseFloat(savedLng) });
+        setLocationText(savedLoc);
       }
     }
   }, [role]);
@@ -255,6 +260,7 @@ function Home() {
           value={locationText}
           onChange={setLocationText}
           onSearch={(query) => setServiceQuery(query)}
+          detectedLocation={searchedLocation}
         />
 
         {/* Location context banner */}

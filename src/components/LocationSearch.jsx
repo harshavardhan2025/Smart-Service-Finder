@@ -8,7 +8,7 @@ const SERVICE_SUGGESTIONS = [
   "Tutor", "Cook", "Driver", "Mechanic", "Yoga Trainer",
 ];
 
-function LocationSearch({ value, onChange, onSearch }) {
+function LocationSearch({ value, onChange, onSearch, detectedLocation }) {
   const [suggestions, setSuggestions] = useState([]);
   const [focused, setFocused] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -127,9 +127,28 @@ function LocationSearch({ value, onChange, onSearch }) {
 
   return (
     <div style={{ padding: "20px" }}>
-      <p style={{ margin: "0 0 6px 0", fontSize: "13px", color: "var(--text-secondary, #6b7280)", fontWeight: 600 }}>
-        🔍 Search Services or Workers
-      </p>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+        <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary, #6b7280)", fontWeight: 600 }}>
+          🔍 Search Services or Workers
+        </p>
+        {detectedLocation && (
+          <div style={{ 
+            display: "inline-flex", 
+            alignItems: "center", 
+            gap: "6px", 
+            backgroundColor: "#dcfce7", 
+            color: "#15803d", 
+            padding: "4px 12px", 
+            borderRadius: "20px", 
+            fontSize: "12px", 
+            fontWeight: 600,
+            border: "1px solid #bbf7d0"
+          }}>
+            <span>📍</span>
+            {detectedLocation.split(",").slice(0, 2).join(",").trim()}
+          </div>
+        )}
+      </div>
       <div style={{ display: "flex", alignItems: "center" }}>
         <div style={{ position: "relative" }}>
           <input
