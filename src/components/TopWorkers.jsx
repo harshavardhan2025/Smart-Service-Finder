@@ -23,15 +23,18 @@ function getShortLocation(fullAddress) {
 
 function TopWorkers({ searchedLocation, userCoords }) {
   const [cloudWorkers, setCloudWorkers] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!searchedLocation && !userCoords) {
       setCloudWorkers([]);
+      setLoading(false);
       return;
     }
 
     // Immediately clear previous list to prevent showing wrong or stale data while loading new location
     setCloudWorkers([]);
+    setLoading(true);
 
     const fetchWorkers = async () => {
       try {
@@ -40,6 +43,8 @@ function TopWorkers({ searchedLocation, userCoords }) {
         setCloudWorkers(results);
       } catch (e) {
         console.error("Top workers fail", e);
+      } finally {
+        setLoading(false);
       }
     };
     fetchWorkers();
@@ -61,9 +66,13 @@ function TopWorkers({ searchedLocation, userCoords }) {
         </p>
       )}
 
-      {topWorkers.length === 0 ? (
+      {loading ? (
         <p style={{ color: "gray", fontStyle: "italic" }}>
           Scanning for top professionals near you...
+        </p>
+      ) : topWorkers.length === 0 ? (
+        <p style={{ color: "gray", fontStyle: "italic" }}>
+          No top-rated professionals found near this location.
         </p>
       ) : (
         <div style={{ display: "flex", overflowX: "auto", gap: "15px", paddingBottom: "10px" }}>

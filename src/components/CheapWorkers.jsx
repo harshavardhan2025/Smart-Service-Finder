@@ -23,15 +23,18 @@ function getShortLocation(fullAddress) {
 
 function CheapWorkers({ searchedLocation, userCoords }) {
   const [cloudWorkers, setCloudWorkers] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!searchedLocation && !userCoords) {
       setCloudWorkers([]);
+      setLoading(false);
       return;
     }
 
     // Immediately clear previous list to prevent showing wrong or stale data while loading new location
     setCloudWorkers([]);
+    setLoading(true);
 
     const fetchBudgetWorkers = async () => {
       try {
@@ -40,6 +43,8 @@ function CheapWorkers({ searchedLocation, userCoords }) {
         setCloudWorkers(results);
       } catch (e) {
         console.error("Budget fetch fail", e);
+      } finally {
+        setLoading(false);
       }
     };
     fetchBudgetWorkers();
@@ -61,9 +66,13 @@ function CheapWorkers({ searchedLocation, userCoords }) {
         Highly rated professionals at great value rates near your location!
       </p>
 
-      {cheapWorkers.length === 0 ? (
+      {loading ? (
         <p style={{ color: "var(--text-secondary)", fontStyle: "italic" }}>
           Scanning nearby cloud for budget-friendly workers...
+        </p>
+      ) : cheapWorkers.length === 0 ? (
+        <p style={{ color: "var(--text-secondary)", fontStyle: "italic" }}>
+          No budget-friendly professionals found near this location.
         </p>
       ) : (
         <div style={{ display: "flex", overflowX: "auto", gap: "15px", paddingBottom: "10px" }}>
