@@ -101,7 +101,11 @@ function Signup() {
     <div style={{ 
       minHeight: "100vh", 
       display: "flex", 
-      flexDirection: "column"
+      flexDirection: "column", 
+      backgroundImage: `url(${authBg})`, 
+      backgroundSize: "cover", 
+      backgroundPosition: "center", 
+      backgroundRepeat: "no-repeat" 
     }}>
       <Navbar />
 
@@ -111,11 +115,7 @@ function Signup() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          padding: "20px",
-          backgroundImage: `url(${authBg})`, 
-          backgroundSize: "cover", 
-          backgroundPosition: "center", 
-          backgroundRepeat: "no-repeat"
+          padding: "20px"
         }}
       >
         <div
@@ -318,21 +318,6 @@ function Signup() {
           </p>
         </div>
       </div>
-
-      {/* Modern Footer */}
-      <footer
-        style={{
-          textAlign: "center",
-          padding: "24px",
-          color: "var(--text-secondary)",
-          fontSize: "14px",
-          backgroundColor: "var(--bg-card)",
-          borderTop: "1px solid var(--border-color)",
-          fontWeight: 500
-        }}
-      >
-        © 2026 Workzy Inc. All rights reserved. Made with ❤️ by PS-152 Team.
-      </footer>
     </div>
   );
 }
