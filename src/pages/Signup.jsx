@@ -5,171 +5,202 @@ import authBg from "../assets/auth-bg.jpg";
 import authMobileBg from "../assets/auth-mobile-bg.png";
 import { use3dTilt } from "../utils/use3dTilt";
 
+const PROFESSIONS = [
+  { group: "Main Services", options: ["Carpentry", "Plumbing", "Electrical", "Beauty, Salon & Spa", "Doctors"] },
+  { group: "Cleaning", options: ["Floor cleaning", "Utensils Cleaning", "House Cleaning"] },
+  { group: "Painting", options: ["Wall Putty Coating", "Interior Painting", "Exterior Painting", "Texture & Designer Finishers", "Wallpaper Installation", "Wood Polishing"] },
+  { group: "Mechanical", options: ["Two-Wheeler (Bikes)", "Four-Wheeler (Cars)", "Others (Heavy)"] },
+  { group: "Automobile Cleaning", options: ["Bike Wash", "Car Wash", "Others"] },
+  { group: "Appliance Repair", options: ["AC Repair", "Washing Machine", "Geyser", "Grinder", "Mixer", "Refrigerator", "Water Purifier"] },
+  { group: "Specializations", options: ["Photography", "Decor", "Mehandi", "Doctors & Medical"] },
+];
+
+// Result Popup Component
+function ResultPopup({ result, onClose, navigate }) {
+  useEffect(() => {
+    if (result?.type === "success") {
+      const timer = setTimeout(() => {
+        navigate("/login");
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [result, navigate]);
+
+  if (!result) return null;
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 9999,
+      background: "rgba(0,0,0,0.55)",
+      backdropFilter: "blur(6px)",
+      display: "flex", justifyContent: "center", alignItems: "center"
+    }}>
+      <div style={{
+        background: "white",
+        borderRadius: "20px",
+        padding: "44px 40px",
+        maxWidth: "380px",
+        width: "90%",
+        textAlign: "center",
+        boxShadow: "0 24px 60px rgba(0,0,0,0.25)",
+        animation: "popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both"
+      }}>
+        <div style={{ fontSize: "56px", marginBottom: "16px" }}>
+          {result.type === "success" ? "✅" : "❌"}
+        </div>
+        <h2 style={{
+          margin: "0 0 10px 0",
+          fontSize: "22px", fontWeight: 800,
+          color: result.type === "success" ? "#15803d" : "#dc2626"
+        }}>
+          {result.type === "success" ? "Registration Successful!" : "Registration Failed"}
+        </h2>
+        <p style={{ margin: "0 0 24px 0", fontSize: "14px", color: "#64748b", lineHeight: 1.6 }}>
+          {result.message}
+        </p>
+        {result.type === "success" ? (
+          <p style={{ fontSize: "13px", color: "#94a3b8" }}>
+            Redirecting to login page...
+          </p>
+        ) : (
+          <button
+            onClick={onClose}
+            style={{
+              backgroundColor: "#dc2626",
+              color: "white",
+              border: "none",
+              borderRadius: "10px",
+              padding: "12px 32px",
+              fontSize: "14px",
+              fontWeight: 700,
+              cursor: "pointer"
+            }}
+          >
+            Try Again
+          </button>
+        )}
+      </div>
+      <style>{`
+        @keyframes popIn {
+          0% { opacity: 0; transform: scale(0.7); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
+    </div>
+  );
+}
 
 function Signup() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  // ── State ──────────────────────────────────────────────────
+  const [step, setStep] = useState("choose"); // "choose" | "worker-details" | "email-form"
+  const [selectedRole, setSelectedRole] = useState(null);
+
+  // Worker Google details
+  const [wName, setWName]       = useState("");
+  const [wPhone, setWPhone]     = useState("");
+  const [wService, setWService] = useState("Carpentry");
+  const [wCity, setWCity]       = useState("");
+
+  // Email signup state
+  const [name, setName]         = useState("");
+  const [email, setEmail]       = useState("");
+  const [phone, setPhone]       = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("user");
+  const [role, setRole]         = useState("user");
   const [profession, setProfession] = useState("Carpentry");
-  const [city, setCity] = useState(""); // Free text location
+  const [city, setCity]         = useState("");
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [popupResult, setPopupResult] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
   const navigate = useNavigate();
   const signupCardRef = use3dTilt();
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // ── Email Signup Handler ───────────────────────────────────
   const handleSignup = async (e) => {
     e.preventDefault();
     if (!name || !email || !password || !phone) {
       alert("Please fill in all fields!");
       return;
     }
-
     if (role === "worker" && !city.trim()) {
       alert("Please enter your serving location!");
       return;
     }
-
     const hasLetter = /[a-zA-Z]/.test(password);
     const hasNumber = /[0-9]/.test(password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-    if (!hasLetter || !hasNumber || !hasSpecialChar) {
-      alert(
-        "❌ Weak Password!\nYour password must contain at least:\n- One Letter\n- One Number\n- One Special Character (e.g. !, @, #, $, %, ^, &, *)"
-      );
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    if (!hasLetter || !hasNumber || !hasSpecial) {
+      alert("❌ Weak Password!\nYour password must contain at least:\n- One Letter\n- One Number\n- One Special Character");
       return;
     }
-
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-          phone,
-          role,
-          profession: role === "worker" ? profession : null,
-          city: role === "worker" ? city : "Mumbai" // Capturing defined city
-        })
+        body: JSON.stringify({ name, email, password, phone, role, profession: role === "worker" ? profession : null, city: role === "worker" ? city : "Mumbai" })
       });
-
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Registration failed!");
-      }
-
-      alert(
-        role === "worker"
-          ? `Account created successfully as a Professional ${profession} in ${city}! 🎉`
-          : `Account created successfully as a User / Customer! 🎉`
-      );
-      
+      if (!response.ok) throw new Error(data.error || "Registration failed!");
+      alert(role === "worker" ? `Account created as ${profession} in ${city}! 🎉` : `Account created as User / Customer! 🎉`);
       navigate("/login");
     } catch (err) {
       alert(`❌ Registration Error: ${err.message}`);
     }
   };
 
-  const handleGoogleSignUp = () => {
-    if (role === "worker") {
-      if (!name || !name.trim()) {
-        alert("❌ Please enter your name before signing up as a Worker!");
-        return;
-      }
-      if (!phone || !phone.trim()) {
-        alert("❌ Please enter your phone number before signing up as a Worker!");
-        return;
-      }
-      if (!city || !city.trim()) {
-        alert("❌ Please enter your serving location before signing up as a Worker!");
-        return;
-      }
-    }
-
+  // ── Google Auth Core ──────────────────────────────────────
+  const launchGoogleAuth = (extraBody = {}) => {
     if (!window.google) {
-      alert("❌ Google SDK is not loaded yet. Please refresh or try again!");
+      setPopupResult({ type: "fail", message: "Google SDK is not loaded. Please refresh the page and try again." });
       return;
     }
 
+    setIsLoading(true);
     const client = window.google.accounts.oauth2.initTokenClient({
       client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID || "849555982996-giolb22mkrfbg8c4ut0ohbv1ps9giv2o.apps.googleusercontent.com",
       scope: "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
       callback: async (tokenResponse) => {
-        if (tokenResponse && tokenResponse.access_token) {
-          try {
-            const response = await fetch("/api/auth/google", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                accessToken: tokenResponse.access_token,
-                role,
-                profession: role === "worker" ? profession : null,
-                city: role === "worker" ? city : "Mumbai",
-                phone,
-                name: name.trim() ? name : undefined
-              })
-            });
+        setIsLoading(false);
+        if (!tokenResponse?.access_token) {
+          setPopupResult({ type: "fail", message: "Google authentication was cancelled or failed. Please try again." });
+          return;
+        }
 
-            const data = await response.json();
+        try {
+          const response = await fetch("/api/auth/google", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ accessToken: tokenResponse.access_token, ...extraBody })
+          });
+          const data = await response.json();
 
-            if (!response.ok) {
-              alert(`❌ Google Sign-Up Failed: ${data.error || "Registration failed."}`);
-              return;
-            }
-
-            // Store session details to automatically log in the user
-            sessionStorage.setItem("userRole", data.user.role);
-            sessionStorage.setItem("userName", data.user.name);
-            sessionStorage.setItem("userEmail", data.user.email);
-            sessionStorage.setItem("userId", data.user.id || data.user._id);
-            sessionStorage.setItem("authToken", data.token);
-
-            alert(
-              role === "worker"
-                ? `Account created/verified successfully via Google as a Professional ${profession} in ${city}! Redirecting... 🎉`
-                : `Account created/verified successfully via Google as a User / Customer! Redirecting... 🎉`
-            );
-
-            if (data.user.role === "worker") {
-              sessionStorage.setItem("loggedInWorkerId", data.user.id);
-              navigate("/worker-dashboard");
-            } else {
-              if (data.user.city) {
-                sessionStorage.setItem("userCity", data.user.city);
-                localStorage.setItem("userCity", data.user.city);
-              }
-              navigate("/");
-
-              // fetch geocode in background
-              const targetCity = data.user.city || "Mumbai";
-              fetch(`/api/workers/geocode?q=${encodeURIComponent(targetCity)}`)
-                .then(res => res.ok ? res.json() : null)
-                .then(geoData => {
-                  if (geoData?.lat && geoData?.lon) {
-                    localStorage.setItem("userLocation", geoData.label || targetCity);
-                    localStorage.setItem("userCoordsLat", String(parseFloat(geoData.lat)));
-                    localStorage.setItem("userCoordsLng", String(parseFloat(geoData.lon)));
-                  } else {
-                    localStorage.setItem("userLocation", targetCity);
-                  }
-                })
-                .catch(() => localStorage.setItem("userLocation", targetCity));
-            }
-          } catch (err) {
-            alert(`❌ Network error during Google Sign-Up! Please try again.`);
+          if (!response.ok) {
+            setPopupResult({ type: "fail", message: data.error || "Registration failed. Please try again." });
+            return;
           }
+
+          // Verify account exists in DB
+          if (!data.user?.email) {
+            setPopupResult({ type: "fail", message: "Account verification failed. Could not confirm your account in our database." });
+            return;
+          }
+
+          setPopupResult({
+            type: "success",
+            message: extraBody.role === "worker"
+              ? `Welcome, ${data.user.name}! Your Worker account as ${extraBody.profession} in ${extraBody.city} has been created successfully.`
+              : `Welcome, ${data.user.name}! Your Customer account has been created successfully.`
+          });
+        } catch (err) {
+          setPopupResult({ type: "fail", message: `Technical Error: ${err.message}. Please check your connection.` });
         }
       }
     });
@@ -177,243 +208,387 @@ function Signup() {
     client.requestAccessToken();
   };
 
+  // ── Google Sign-Up for Customer ───────────────────────────
+  const handleGoogleCustomer = () => {
+    launchGoogleAuth({ role: "user", city: "Mumbai" });
+  };
+
+  // ── Google Sign-Up for Worker ─────────────────────────────
+  const handleGoogleWorker = (e) => {
+    e.preventDefault();
+    if (!wName.trim()) { alert("❌ Please enter your full name!"); return; }
+    if (!wPhone.trim() || !/^[0-9]{10}$/.test(wPhone.trim())) { alert("❌ Please enter a valid 10-digit phone number!"); return; }
+    if (!wCity.trim()) { alert("❌ Please enter your serving location!"); return; }
+    launchGoogleAuth({ role: "worker", name: wName, phone: wPhone, profession: wService, city: wCity });
+  };
+
+  // ── Render ────────────────────────────────────────────────
   return (
-    <div style={{ 
-      minHeight: "100vh", 
-      display: "flex", 
-      flexDirection: "column"
-    }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Navbar />
 
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: "40px 20px",
-          backgroundImage: `url(${isMobile ? authMobileBg : authBg})`, 
-          backgroundSize: "cover", 
-          backgroundPosition: "center", 
-          backgroundRepeat: "no-repeat" 
-        }}
-      >
+      {/* Result Popup */}
+      <ResultPopup
+        result={popupResult}
+        onClose={() => { setPopupResult(null); setStep("choose"); setSelectedRole(null); }}
+        navigate={navigate}
+      />
+
+      <div style={{
+        flex: 1,
+        display: "flex", justifyContent: "center", alignItems: "center",
+        padding: "40px 20px",
+        backgroundImage: `url(${isMobile ? authMobileBg : authBg})`,
+        backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat"
+      }}>
         <div
           className="premium-card"
           ref={signupCardRef}
-          style={{
-            width: "100%",
-            maxWidth: "400px",
-            backgroundColor: "var(--bg-card)",
-            padding: "40px"
-          }}
+          style={{ width: "100%", maxWidth: "420px", backgroundColor: "var(--bg-card)", padding: "36px", boxSizing: "border-box" }}
         >
-          <div style={{ textAlign: "center", marginBottom: "30px" }}>
-            <h1 style={{ margin: "0 0 8px 0", fontSize: "28px", fontWeight: 800, color: "var(--text-main)" }}>
-              Create Account
-            </h1>
-            <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14px" }}>
-              Join Workzy and explore local professionals
-            </p>
-          </div>
 
-          <form onSubmit={handleSignup} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-main)" }}>Full Name</label>
-              <input
-                type="text"
-                placeholder="John Doe"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                style={{ width: "100%", boxSizing: "border-box" }}
-              />
-            </div>
+          {/* ─── STEP: CHOOSE METHOD ─── */}
+          {step === "choose" && (
+            <>
+              <div style={{ textAlign: "center", marginBottom: "28px" }}>
+                <h1 style={{ margin: "0 0 6px", fontSize: "26px", fontWeight: 800, color: "var(--text-main)" }}>
+                  Create Account
+                </h1>
+                <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "13.5px" }}>
+                  Join Workzy – choose how you want to sign up
+                </p>
+              </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-main)" }}>Phone Number</label>
-              <input
-                type="tel"
-                placeholder="9876543210"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                style={{ width: "100%", boxSizing: "border-box" }}
-              />
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-main)" }}>Email Address</label>
-              <input
-                type="email"
-                placeholder="name@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={{ width: "100%", boxSizing: "border-box" }}
-              />
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-main)" }}>Password</label>
-              <input
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{ width: "100%", boxSizing: "border-box" }}
-              />
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-main)" }}>Register As</label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                style={{ width: "100%", boxSizing: "border-box" }}
-              >
-                <option value="user">User / Customer</option>
-                <option value="worker">Professional Worker</option>
-              </select>
-            </div>
-
-            {/* Dynamic Profession Selection for Professional Worker Signup */}
-            {role === "worker" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <label style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-main)" }}>Select Profession</label>
-                <select
-                  value={profession}
-                  onChange={(e) => setProfession(e.target.value)}
-                  style={{ width: "100%", boxSizing: "border-box" }}
+              {/* Two Google role cards */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginBottom: "24px" }}>
+                {/* Customer Card */}
+                <button
+                  onClick={handleGoogleCustomer}
+                  disabled={isLoading}
+                  style={{
+                    display: "flex", alignItems: "center", gap: "16px",
+                    padding: "18px 20px",
+                    background: "linear-gradient(135deg, #eff6ff, #e0f2fe)",
+                    border: "2px solid #bfdbfe",
+                    borderRadius: "14px",
+                    cursor: isLoading ? "not-allowed" : "pointer",
+                    textAlign: "left",
+                    transition: "all 0.2s",
+                    opacity: isLoading ? 0.7 : 1
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 20px rgba(59,130,246,0.15)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
                 >
-                  <optgroup label="Direct Main Services">
-                    <option value="Carpentry">🪚 Carpentry Specialist</option>
-                    <option value="Plumbing">🔧 Plumbing Specialist</option>
-                    <option value="Electrical">⚡ Electrical Specialist</option>
-                    <option value="Beauty, Salon & Spa">💅 Beauty, Salon & Spa</option>
-                    <option value="Doctors">🩺 Doctor / Medical expert</option>
-                  </optgroup>
-                  <optgroup label="🧹 Cleaning Sub-Categories">
-                    <option value="Floor cleaning">Floor cleaning</option>
-                    <option value="Utensils Cleaning">Utensils Cleaning</option>
-                    <option value="House Cleaning">House Cleaning</option>
-                  </optgroup>
-                  <optgroup label="🎨 Painting Sub-Categories">
-                    <option value="Wall Putty Coating">Wall Putty Coating</option>
-                    <option value="Interior Painting">Interior Painting</option>
-                    <option value="Exterior Painting">Exterior Painting</option>
-                    <option value="Texture & Designer Finishers">Texture & Designer Finishers</option>
-                    <option value="Wallpaper Installation">Wallpaper Installation</option>
-                    <option value="Wood Polishing">Wood Polishing</option>
-                  </optgroup>
-                  <optgroup label="⚙️ Mechanical Sub-Categories">
-                    <option value="Two-Wheeler (Bikes)">Two-Wheeler (Bikes) Repair</option>
-                    <option value="Four-Wheeler (Cars)">Four-Wheeler (Cars) Repair</option>
-                    <option value="Others (Heavy)">Others (Heavy) Repair</option>
-                  </optgroup>
-                  <optgroup label="🚗 Automobile Cleaning Sub-Categories">
-                    <option value="Bike Wash">Bike Wash</option>
-                    <option value="Car Wash">Car Wash</option>
-                    <option value="Others">Others Cleaning</option>
-                  </optgroup>
-                  <optgroup label="🔌 Electrical Appliances Repair Sub-Categories">
-                    <option value="AC Repair">AC Repair</option>
-                    <option value="Washing Machine">Washing Machine Repair</option>
-                    <option value="Geyser">Geyser Repair</option>
-                    <option value="Grinder">Grinder Repair</option>
-                    <option value="Mixer">Mixer Repair</option>
-                    <option value="Refrigerator">Refrigerator Repair</option>
-                    <option value="Water Purifier">Water Purifier Repair</option>
-                  </optgroup>
-                  <optgroup label="🎉 Additional Specializations">
-                    <option value="Photography">Photography</option>
-                    <option value="Decor">Decor</option>
-                    <option value="Mehandi">Mehandi</option>
-                    <option value="Doctors & Medical">Doctors & Medical</option>
-                  </optgroup>
-                </select>
+                  <span style={{ fontSize: "32px" }}>🛒</span>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: "15px", color: "#1e40af" }}>Sign up as Customer</div>
+                    <div style={{ fontSize: "12px", color: "#60a5fa", marginTop: "2px" }}>Book services instantly. No extra details needed.</div>
+                  </div>
+                  <div style={{ marginLeft: "auto" }}>
+                    <GoogleIcon />
+                  </div>
+                </button>
+
+                {/* Worker Card */}
+                <button
+                  onClick={() => setStep("worker-details")}
+                  disabled={isLoading}
+                  style={{
+                    display: "flex", alignItems: "center", gap: "16px",
+                    padding: "18px 20px",
+                    background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
+                    border: "2px solid #bbf7d0",
+                    borderRadius: "14px",
+                    cursor: isLoading ? "not-allowed" : "pointer",
+                    textAlign: "left",
+                    transition: "all 0.2s",
+                    opacity: isLoading ? 0.7 : 1
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 20px rgba(34,197,94,0.15)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
+                >
+                  <span style={{ fontSize: "32px" }}>🛠️</span>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: "15px", color: "#15803d" }}>Sign up as Worker</div>
+                    <div style={{ fontSize: "12px", color: "#4ade80", marginTop: "2px" }}>Offer your services. Fill a few details first.</div>
+                  </div>
+                  <div style={{ marginLeft: "auto", fontSize: "18px", color: "#15803d" }}>→</div>
+                </button>
               </div>
-            )}
 
-            {role === "worker" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <label style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-main)" }}>Serving Location (District, State)</label>
-                <input
-                  type="text"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  placeholder="e.g. East Godavari, Andhra Pradesh"
-                  style={{ width: "100%", boxSizing: "border-box" }}
-                />
+              {/* Divider + Email signup */}
+              <div style={{ display: "flex", alignItems: "center", margin: "4px 0 16px" }}>
+                <div style={{ flex: 1, height: "1px", background: "var(--border)" }} />
+                <span style={{ padding: "0 10px", color: "var(--text-muted)", fontSize: "12px" }}>or use email instead</span>
+                <div style={{ flex: 1, height: "1px", background: "var(--border)" }} />
               </div>
-            )}
+              <button
+                type="button"
+                onClick={() => setStep("email-form")}
+                style={{
+                  width: "100%", padding: "12px",
+                  border: "1.5px solid var(--border)",
+                  borderRadius: "10px",
+                  background: "transparent",
+                  color: "var(--text-main)",
+                  fontSize: "14px", fontWeight: 600,
+                  cursor: "pointer",
+                  transition: "all 0.2s"
+                }}
+              >
+                ✉️ Sign up with Email & Password
+              </button>
 
-            <button
-              type="submit"
-              className="btn-primary"
-              style={{
-                padding: "12px",
-                fontSize: "15px",
-                marginTop: "10px",
-                width: "100%"
-              }}
-            >
-              Sign Up
-            </button>
-          </form>
+              <p style={{ textAlign: "center", marginTop: "20px", fontSize: "13px", color: "var(--text-muted)" }}>
+                Already have an account?{" "}
+                <Link to="/login" style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>Sign in</Link>
+              </p>
+            </>
+          )}
 
-          {/* Social Divider */}
-          <div style={{ display: "flex", alignItems: "center", margin: "20px 0" }}>
-            <div style={{ flex: 1, height: "1px", backgroundColor: "var(--border)" }}></div>
-            <span style={{ padding: "0 10px", color: "var(--text-muted)", fontSize: "13px" }}>or continue with</span>
-            <div style={{ flex: 1, height: "1px", backgroundColor: "var(--border)" }}></div>
-          </div>
+          {/* ─── STEP: WORKER DETAILS ─── */}
+          {step === "worker-details" && (
+            <>
+              <button
+                onClick={() => setStep("choose")}
+                style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: "6px",
+                  color: "var(--text-muted)", fontSize: "13px", marginBottom: "20px", padding: 0
+                }}
+              >
+                ← Back
+              </button>
 
-          {/* Google Sign-In Button */}
-          <button
-            type="button"
-            onClick={handleGoogleSignUp}
-            className="btn-secondary"
-            style={{
-              padding: "12px",
-              fontSize: "15px",
-              width: "100%",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              boxShadow: "none"
-            }}
-          >
-            <svg width="18" height="18" viewBox="0 0 18 18" style={{ marginRight: "10px" }}>
-              <path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.7v2.24h2.91c1.7-1.57 2.68-3.88 2.68-6.57z"/>
-              <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.23l-2.91-2.24c-.8.54-1.84.87-3.05.87-2.34 0-4.33-1.58-5.03-3.7H.95v2.3C2.43 15.89 5.5 18 9 18z"/>
-              <path fill="#FBBC05" d="M3.97 10.7c-.18-.54-.28-1.12-.28-1.7s.1-1.16.28-1.7V5H.95C.35 6.2.01 7.57.01 9s.34 2.8 1.04 4l2.92-2.3z"/>
-              <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35L15 2.4C13.46.97 11.41 0 9 0 5.5 0 2.43 2.11.95 5.1l2.97 2.3c.7-2.12 2.69-3.82 5.03-3.82z"/>
-            </svg>
-            Sign Up with Google
-          </button>
+              <div style={{ textAlign: "center", marginBottom: "24px" }}>
+                <div style={{ fontSize: "40px", marginBottom: "8px" }}>🛠️</div>
+                <h2 style={{ margin: "0 0 6px", fontSize: "22px", fontWeight: 800, color: "var(--text-main)" }}>
+                  Worker Registration
+                </h2>
+                <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "13px" }}>
+                  Fill in your details, then authenticate via Google
+                </p>
+              </div>
 
-          <p style={{ textAlign: "center", marginTop: "24px", margin: "24px 0 0 0", fontSize: "14px", color: "var(--text-muted)" }}>
-            Already have an account?{" "}
-            <Link to="/login" style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>
-              Sign in
-            </Link>
-          </p>
+              <form onSubmit={handleGoogleWorker} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                {/* Name */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Full Name *</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Harsha Vardhan"
+                    value={wName}
+                    onChange={(e) => setWName(e.target.value)}
+                    style={{ width: "100%", boxSizing: "border-box" }}
+                    required
+                  />
+                </div>
+
+                {/* Phone */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Phone Number * <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>(10 digits)</span></label>
+                  <input
+                    type="tel"
+                    placeholder="e.g. 9876543210"
+                    value={wPhone}
+                    onChange={(e) => setWPhone(e.target.value)}
+                    maxLength={10}
+                    style={{ width: "100%", boxSizing: "border-box" }}
+                    required
+                  />
+                </div>
+
+                {/* Service */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Service / Profession *</label>
+                  <select
+                    value={wService}
+                    onChange={(e) => setWService(e.target.value)}
+                    style={{ width: "100%", boxSizing: "border-box" }}
+                  >
+                    {PROFESSIONS.map((g) =>
+                      <optgroup key={g.group} label={g.group}>
+                        {g.options.map((o) => <option key={o} value={o}>{o}</option>)}
+                      </optgroup>
+                    )}
+                  </select>
+                </div>
+
+                {/* Location */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Serving Location * <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>(District, State)</span></label>
+                  <input
+                    type="text"
+                    placeholder="e.g. East Godavari, Andhra Pradesh"
+                    value={wCity}
+                    onChange={(e) => setWCity(e.target.value)}
+                    style={{ width: "100%", boxSizing: "border-box" }}
+                    required
+                  />
+                </div>
+
+                {/* Steps info pill */}
+                <div style={{
+                  display: "flex", alignItems: "center", gap: "8px",
+                  padding: "10px 14px",
+                  background: "rgba(37,99,235,0.06)",
+                  borderRadius: "10px",
+                  border: "1px dashed rgba(37,99,235,0.2)",
+                  fontSize: "12.5px", color: "#1d4ed8"
+                }}>
+                  <span>ℹ️</span>
+                  <span>After submitting, you'll be taken to Google to authenticate your account.</span>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  style={{
+                    padding: "13px",
+                    fontSize: "14px", fontWeight: 700,
+                    borderRadius: "10px",
+                    background: isLoading ? "#94a3b8" : "linear-gradient(135deg, #1d4ed8, #2563eb)",
+                    color: "white",
+                    border: "none",
+                    cursor: isLoading ? "not-allowed" : "pointer",
+                    display: "flex", justifyContent: "center", alignItems: "center", gap: "10px",
+                    transition: "all 0.2s"
+                  }}
+                >
+                  {isLoading ? (
+                    <>
+                      <span style={{ width: "16px", height: "16px", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "white", borderRadius: "50%", display: "inline-block", animation: "spin 0.6s linear infinite" }} />
+                      Authenticating...
+                    </>
+                  ) : (
+                    <>
+                      <GoogleIcon white />
+                      Continue with Google
+                    </>
+                  )}
+                </button>
+              </form>
+
+              <p style={{ textAlign: "center", marginTop: "18px", fontSize: "13px", color: "var(--text-muted)" }}>
+                Already have an account?{" "}
+                <Link to="/login" style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>Sign in</Link>
+              </p>
+            </>
+          )}
+
+          {/* ─── STEP: EMAIL FORM ─── */}
+          {step === "email-form" && (
+            <>
+              <button
+                onClick={() => setStep("choose")}
+                style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: "6px",
+                  color: "var(--text-muted)", fontSize: "13px", marginBottom: "20px", padding: 0
+                }}
+              >
+                ← Back
+              </button>
+
+              <div style={{ textAlign: "center", marginBottom: "22px" }}>
+                <h2 style={{ margin: "0 0 6px", fontSize: "22px", fontWeight: 800, color: "var(--text-main)" }}>
+                  Sign Up with Email
+                </h2>
+                <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "13px" }}>
+                  Fill all the details to register your account
+                </p>
+              </div>
+
+              <form onSubmit={handleSignup} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Full Name</label>
+                  <input type="text" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} style={{ width: "100%", boxSizing: "border-box" }} />
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Phone Number</label>
+                  <input type="tel" placeholder="9876543210" value={phone} onChange={(e) => setPhone(e.target.value)} style={{ width: "100%", boxSizing: "border-box" }} />
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Email Address</label>
+                  <input type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: "100%", boxSizing: "border-box" }} />
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Password</label>
+                  <input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: "100%", boxSizing: "border-box" }} />
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Register As</label>
+                  <select value={role} onChange={(e) => setRole(e.target.value)} style={{ width: "100%", boxSizing: "border-box" }}>
+                    <option value="user">User / Customer</option>
+                    <option value="worker">Professional Worker</option>
+                  </select>
+                </div>
+                {role === "worker" && (
+                  <>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                      <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Select Profession</label>
+                      <select value={profession} onChange={(e) => setProfession(e.target.value)} style={{ width: "100%", boxSizing: "border-box" }}>
+                        {PROFESSIONS.map((g) =>
+                          <optgroup key={g.group} label={g.group}>
+                            {g.options.map((o) => <option key={o} value={o}>{o}</option>)}
+                          </optgroup>
+                        )}
+                      </select>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                      <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Serving Location</label>
+                      <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. East Godavari, Andhra Pradesh" style={{ width: "100%", boxSizing: "border-box" }} />
+                    </div>
+                  </>
+                )}
+                <button type="submit" className="btn-primary" style={{ padding: "12px", fontSize: "15px", marginTop: "6px", width: "100%" }}>
+                  Sign Up
+                </button>
+              </form>
+
+              <p style={{ textAlign: "center", marginTop: "20px", fontSize: "13px", color: "var(--text-muted)" }}>
+                Already have an account?{" "}
+                <Link to="/login" style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>Sign in</Link>
+              </p>
+            </>
+          )}
+
         </div>
       </div>
 
-      {/* Modern Footer */}
-      <footer
-        style={{
-          textAlign: "center",
-          padding: "24px",
-          color: "var(--text-secondary)",
-          fontSize: "14px",
-          backgroundColor: "var(--bg-card)",
-          borderTop: "1px solid var(--border-color)",
-          fontWeight: 500
-        }}
-      >
+      <footer style={{
+        textAlign: "center", padding: "24px",
+        color: "var(--text-secondary)", fontSize: "14px",
+        backgroundColor: "var(--bg-card)",
+        borderTop: "1px solid var(--border-color)", fontWeight: 500
+      }}>
         © 2026 Workzy Inc. All rights reserved. Made with ❤️ by PS-152 Team.
       </footer>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}</style>
     </div>
+  );
+}
+
+// ── Google "G" SVG Icon ────────────────────────────────────
+function GoogleIcon({ white = false }) {
+  if (white) return (
+    <svg width="18" height="18" viewBox="0 0 18 18">
+      <path fill="white" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.7v2.24h2.91c1.7-1.57 2.68-3.88 2.68-6.57z"/>
+      <path fill="rgba(255,255,255,0.85)" d="M9 18c2.43 0 4.47-.8 5.96-2.23l-2.91-2.24c-.8.54-1.84.87-3.05.87-2.34 0-4.33-1.58-5.03-3.7H.95v2.3C2.43 15.89 5.5 18 9 18z"/>
+      <path fill="rgba(255,255,255,0.7)" d="M3.97 10.7c-.18-.54-.28-1.12-.28-1.7s.1-1.16.28-1.7V5H.95C.35 6.2.01 7.57.01 9s.34 2.8 1.04 4l2.92-2.3z"/>
+      <path fill="rgba(255,255,255,0.9)" d="M9 3.58c1.32 0 2.5.45 3.44 1.35L15 2.4C13.46.97 11.41 0 9 0 5.5 0 2.43 2.11.95 5.1l2.97 2.3c.7-2.12 2.69-3.82 5.03-3.82z"/>
+    </svg>
+  );
+  return (
+    <svg width="20" height="20" viewBox="0 0 18 18">
+      <path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.7v2.24h2.91c1.7-1.57 2.68-3.88 2.68-6.57z"/>
+      <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.23l-2.91-2.24c-.8.54-1.84.87-3.05.87-2.34 0-4.33-1.58-5.03-3.7H.95v2.3C2.43 15.89 5.5 18 9 18z"/>
+      <path fill="#FBBC05" d="M3.97 10.7c-.18-.54-.28-1.12-.28-1.7s.1-1.16.28-1.7V5H.95C.35 6.2.01 7.57.01 9s.34 2.8 1.04 4l2.92-2.3z"/>
+      <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35L15 2.4C13.46.97 11.41 0 9 0 5.5 0 2.43 2.11.95 5.1l2.97 2.3c.7-2.12 2.69-3.82 5.03-3.82z"/>
+    </svg>
   );
 }
 

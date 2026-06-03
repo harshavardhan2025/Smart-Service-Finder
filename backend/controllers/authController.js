@@ -185,7 +185,7 @@ export const googleAuth = async (req, res) => {
         const locationPrice = Math.round(basePrice * multiplier);
 
         await Worker.create({
-          name,
+          name: finalName,
           email,
           service: profession || "Carpentry",
           city: city || "Mumbai",
