@@ -34,7 +34,7 @@ const generateToken = (id) => {
 
 export const registerUser = async (req, res) => {
   try {
-    const { email, password, name, role, profession, city } = req.body;
+    const { email, password, name, role, profession, city, phone } = req.body;
 
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -46,7 +46,8 @@ export const registerUser = async (req, res) => {
       email,
       password,
       role,
-      city
+      city,
+      phone
     });
 
     if (role === "worker") {
@@ -143,7 +144,7 @@ export const loginUser = async (req, res) => {
 
 export const googleAuth = async (req, res) => {
   try {
-    const { accessToken, role, profession, city } = req.body;
+    const { accessToken, role, profession, city, phone, name: customName } = req.body;
 
     if (!accessToken) {
       return res.status(400).json({ error: "Access token is required" });
@@ -167,13 +168,15 @@ export const googleAuth = async (req, res) => {
     const placeholderPassword = `GoogleOAuthSecurePassword123!`;
 
     if (!user) {
+      const finalName = customName || name;
       // 3. Create new user (Sign-up flow)
       user = await User.create({
-        name,
+        name: finalName,
         email,
         password: placeholderPassword,
         role: role || "user",
-        city: city || "Mumbai"
+        city: city || "Mumbai",
+        phone: phone || ""
       });
 
       if (user.role === "worker") {

@@ -84,6 +84,11 @@ function Signup() {
   };
 
   const handleGoogleSignUp = () => {
+    if (!phone || !phone.trim()) {
+      alert("❌ Please enter your phone number before signing up with Google!");
+      return;
+    }
+
     if (role === "worker" && !city.trim()) {
       alert("❌ Please enter your serving location before signing up with Google!");
       return;
@@ -107,7 +112,9 @@ function Signup() {
                 accessToken: tokenResponse.access_token,
                 role,
                 profession: role === "worker" ? profession : null,
-                city: role === "worker" ? city : "Mumbai"
+                city: role === "worker" ? city : "Mumbai",
+                phone,
+                name: name.trim() ? name : undefined
               })
             });
 
