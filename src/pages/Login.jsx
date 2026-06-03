@@ -7,15 +7,20 @@ import { use3dTilt } from "../utils/use3dTilt";
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [loginStatus, setLoginStatus] = useState(null); // { type: 'success'|'error', message: '' }
   const navigate = useNavigate();
   const loginCardRef = use3dTilt();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!email || !password) {
-      alert("Please fill in all fields!");
+      setLoginStatus({ type: "error", message: "Please fill in all fields!" });
       return;
     }
+
+    setIsLoading(true);
+    setLoginStatus(null);
 
     try {
       const response = await fetch("/api/auth/login", {
@@ -27,63 +32,56 @@ function Login() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Invalid login credentials!");
+        setIsLoading(false);
+        setLoginStatus({ type: "error", message: data.error || "Invalid email or password!" });
+        return;
       }
 
-      // Save user session details consistently
+      // Save user session details
       const user = data.user;
       sessionStorage.setItem("userRole", user.role);
       sessionStorage.setItem("userName", user.name);
       sessionStorage.setItem("userEmail", user.email);
       sessionStorage.setItem("userId", user.id || user._id);
-      sessionStorage.setItem("authToken", data.token); // For future auth requests
+      sessionStorage.setItem("authToken", data.token);
 
       if (user.role === "worker") {
         sessionStorage.setItem("loggedInWorkerId", user.id);
-        alert(`Welcome Professional ${user.name}! You are logged in successfully! 🛠️`);
-        navigate("/worker-dashboard");
+        setLoginStatus({ type: "success", message: `Welcome ${user.name}! Redirecting to dashboard... 🛠️` });
+        setTimeout(() => navigate("/worker-dashboard"), 600);
       } else if (user.role === "admin") {
-        alert("Welcome Administrator! You are logged in successfully! 👑");
-        navigate("/admin-dashboard");
+        setLoginStatus({ type: "success", message: "Welcome Administrator! Redirecting... 👑" });
+        setTimeout(() => navigate("/admin-dashboard"), 600);
       } else {
-        alert(`Welcome Customer ${user.name}! You are logged in successfully! 🎉`);
-        
-        // Save user city to session storage and local storage
+        setLoginStatus({ type: "success", message: `Welcome ${user.name}! Redirecting... 🎉` });
+
+        // Save city immediately
         if (user.city) {
           sessionStorage.setItem("userCity", user.city);
           localStorage.setItem("userCity", user.city);
         }
 
-        // Detect location based on the user's specific registered profile city/location (not raw GPS or hardcoded fallbacks)
+        // Navigate fast, geocode in background
+        setTimeout(() => navigate("/"), 600);
+
+        // Background geocode — doesn't block navigation
         const targetCity = user.city || "Mumbai";
-        try {
-          const url = `/api/workers/geocode?q=${encodeURIComponent(targetCity)}`;
-          const res = await fetch(url);
-          if (res.ok) {
-            const data = await res.json();
-            if (data?.lat && data?.lon) {
-              const lat = parseFloat(data.lat);
-              const lon = parseFloat(data.lon);
-              const label = data.label || targetCity;
-              
-              localStorage.setItem("userLocation", label);
-              localStorage.setItem("userCoordsLat", lat.toString());
-              localStorage.setItem("userCoordsLng", lon.toString());
+        fetch(`/api/workers/geocode?q=${encodeURIComponent(targetCity)}`)
+          .then(res => res.ok ? res.json() : null)
+          .then(geoData => {
+            if (geoData?.lat && geoData?.lon) {
+              localStorage.setItem("userLocation", geoData.label || targetCity);
+              localStorage.setItem("userCoordsLat", String(parseFloat(geoData.lat)));
+              localStorage.setItem("userCoordsLng", String(parseFloat(geoData.lon)));
             } else {
               localStorage.setItem("userLocation", targetCity);
             }
-          } else {
-            localStorage.setItem("userLocation", targetCity);
-          }
-        } catch (err) {
-          console.error("Failed to geocode registered profile location on login:", err);
-          localStorage.setItem("userLocation", targetCity);
-        }
-        
-        navigate("/");
+          })
+          .catch(() => localStorage.setItem("userLocation", targetCity));
       }
     } catch (err) {
-      alert(`❌ Login Failed: ${err.message}`);
+      setIsLoading(false);
+      setLoginStatus({ type: "error", message: "Network error! Please check your connection." });
     }
   };
 
@@ -99,16 +97,14 @@ function Login() {
 
     if (emailRegex.test(input.trim())) {
       sessionStorage.setItem("userRole", "user");
-      alert(`Google account verified successfully! ✅\nEmail: ${input.trim()}\nWelcome to Workzy! 🎉`);
-      navigate("/");
+      setLoginStatus({ type: "success", message: `Google verified! Welcome to Workzy! 🎉` });
+      setTimeout(() => navigate("/"), 600);
     } else if (phoneRegex.test(input.trim())) {
       sessionStorage.setItem("userRole", "user");
-      alert(`Google account verified successfully! ✅\nMobile: ${input.trim()}\nWelcome to Workzy! 🎉`);
-      navigate("/");
+      setLoginStatus({ type: "success", message: `Google verified! Welcome to Workzy! 🎉` });
+      setTimeout(() => navigate("/"), 600);
     } else {
-      alert(
-        "❌ Verification Failed!\nPlease enter a valid Google Email (must end with @gmail.com) or a valid 10-digit mobile number."
-      );
+      setLoginStatus({ type: "error", message: "Invalid Google email or mobile number!" });
     }
   };
 
@@ -153,6 +149,31 @@ function Login() {
             </p>
           </div>
 
+          {/* Inline Status Message */}
+          {loginStatus && (
+            <div
+              style={{
+                padding: "12px 16px",
+                borderRadius: "10px",
+                marginBottom: "18px",
+                fontSize: "13px",
+                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                animation: "fadeIn 0.3s ease-out forwards",
+                backgroundColor: loginStatus.type === "success" ? "#dcfce7" : "#fee2e2",
+                color: loginStatus.type === "success" ? "#15803d" : "#dc2626",
+                border: `1px solid ${loginStatus.type === "success" ? "#bbf7d0" : "#fecaca"}`
+              }}
+            >
+              <span style={{ fontSize: "18px" }}>
+                {loginStatus.type === "success" ? "✅" : "❌"}
+              </span>
+              {loginStatus.message}
+            </div>
+          )}
+
           <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               <label style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-main)" }}>Email Address</label>
@@ -160,8 +181,13 @@ function Login() {
                 type="email"
                 placeholder="name@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={{ width: "100%", boxSizing: "border-box" }}
+                onChange={(e) => { setEmail(e.target.value); setLoginStatus(null); }}
+                style={{ 
+                  width: "100%", 
+                  boxSizing: "border-box",
+                  borderColor: loginStatus?.type === "error" ? "#fecaca" : undefined,
+                  transition: "border-color 0.2s"
+                }}
               />
             </div>
 
@@ -171,22 +197,43 @@ function Login() {
                 type="password"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{ width: "100%", boxSizing: "border-box" }}
+                onChange={(e) => { setPassword(e.target.value); setLoginStatus(null); }}
+                style={{ 
+                  width: "100%", 
+                  boxSizing: "border-box",
+                  borderColor: loginStatus?.type === "error" ? "#fecaca" : undefined,
+                  transition: "border-color 0.2s"
+                }}
               />
             </div>
 
             <button
               type="submit"
               className="btn-primary"
+              disabled={isLoading}
               style={{
                 padding: "12px",
                 fontSize: "15px",
                 marginTop: "10px",
-                width: "100%"
+                width: "100%",
+                opacity: isLoading ? 0.7 : 1,
+                cursor: isLoading ? "not-allowed" : "pointer",
+                position: "relative"
               }}
             >
-              Sign In
+              {isLoading ? (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                  <span style={{ 
+                    width: "16px", height: "16px", 
+                    border: "2px solid rgba(255,255,255,0.3)", 
+                    borderTopColor: "white", 
+                    borderRadius: "50%", 
+                    display: "inline-block",
+                    animation: "spin 0.6s linear infinite"
+                  }} />
+                  Signing In...
+                </span>
+              ) : "Sign In"}
             </button>
           </form>
 
@@ -231,6 +278,13 @@ function Login() {
 
         </div>
       </div>
+
+      {/* Spinner animation */}
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
