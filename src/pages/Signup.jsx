@@ -150,7 +150,6 @@ function ResultPopup({ result, onClose, navigate }) {
 function Signup() {
   // ── State ──────────────────────────────────────────────────
   const [step, setStep] = useState("choose"); // "choose" | "worker-details" | "email-form"
-  const [selectedRole, setSelectedRole] = useState(null);
 
   // Worker Google details
   const [wName, setWName]       = useState("");
@@ -299,12 +298,21 @@ function Signup() {
     launchGoogleAuth({ role: "user", city: "Mumbai" });
   };
 
-  // ── Google Sign-Up for Worker ─────────────────────────────
+  // ── Google Sign-Up for Worker ─────────────────────────
   const handleGoogleWorker = (e) => {
     e.preventDefault();
-    if (!wName.trim()) { alert("❌ Please enter your full name!"); return; }
-    if (!wPhone.trim() || !/^[0-9]{10}$/.test(wPhone.trim())) { alert("❌ Please enter a valid 10-digit phone number!"); return; }
-    if (!wCity.trim()) { alert("❌ Please enter your serving location!"); return; }
+    if (!wName.trim()) {
+      setPopupResult({ type: "fail", message: "Please enter your full name." });
+      return;
+    }
+    if (!wPhone.trim() || !/^[0-9]{10}$/.test(wPhone.trim())) {
+      setPopupResult({ type: "fail", message: "Please enter a valid 10-digit phone number." });
+      return;
+    }
+    if (!wCity.trim()) {
+      setPopupResult({ type: "fail", message: "Please enter your serving location." });
+      return;
+    }
     launchGoogleAuth({ role: "worker", name: wName, phone: wPhone, profession: wService, city: wCity });
   };
 
@@ -316,7 +324,7 @@ function Signup() {
       {/* Result Popup */}
       <ResultPopup
         result={popupResult}
-        onClose={() => { setPopupResult(null); setStep("choose"); setSelectedRole(null); }}
+        onClose={() => { setPopupResult(null); setStep("choose"); }}
         navigate={navigate}
       />
 
@@ -644,9 +652,9 @@ function Signup() {
 
       <footer style={{
         textAlign: "center", padding: "24px",
-        color: "var(--text-secondary)", fontSize: "14px",
+        color: "var(--text-muted)", fontSize: "14px",
         backgroundColor: "var(--bg-card)",
-        borderTop: "1px solid var(--border-color)", fontWeight: 500
+        borderTop: "1px solid var(--border)", fontWeight: 500
       }}>
         © 2026 Workzy Inc. All rights reserved. Made with ❤️ by PS-152 Team.
       </footer>

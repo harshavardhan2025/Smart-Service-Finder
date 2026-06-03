@@ -1,10 +1,10 @@
 import {
   BrowserRouter,
   Routes,
-  Route
+  Route,
+  Navigate
 } from "react-router-dom";
 
-import { Navigate } from "react-router-dom";
 
 import Home from "./pages/Home";
 import WorkerProfile from "./pages/WorkerProfile";
@@ -15,7 +15,6 @@ import WorkerDashboard from "./pages/WorkerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import GoogleAuthMock from "./pages/GoogleAuthMock";
 import SupportPage from "./pages/SupportPage";
 import MyBookings from "./pages/MyBookings";
 import ReviewsRewards from "./pages/ReviewsRewards";
@@ -57,11 +56,6 @@ function App() {
         />
 
         <Route
-          path="/dashboard"
-          element={<UserDashboard />}
-        />
-
-        <Route
           path="/user-dashboard"
           element={<UserDashboard />}
         />
@@ -86,10 +80,6 @@ function App() {
           element={<Signup />}
         />
 
-        <Route
-          path="/google-auth"
-          element={<GoogleAuthMock />}
-        />
 
         <Route
           path="/support"
