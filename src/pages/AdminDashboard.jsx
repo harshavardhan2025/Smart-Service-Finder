@@ -118,6 +118,8 @@ function AdminDashboard() {
   const [customerSearch, setCustomerSearch] = useState("");
   const [escrowSearch, setEscrowSearch] = useState("");
   const [complaintSearch, setComplaintSearch] = useState("");
+  const [refundModal, setRefundModal] = useState(null);
+  const [refundAmount, setRefundAmount] = useState("");
 
   const [adminPlans, setAdminPlans] = useState([]);
   const [adminOffers, setAdminOffers] = useState([]);
@@ -467,19 +469,33 @@ function AdminDashboard() {
   // Toggle Customer Status
 
 
-  const handleComplaintVerdict = async (id, verdict) => {
-    try {
-       const refundAmount = window.prompt(`Enter refund amount to issue to the customer for verdict "${verdict}" (leave empty or 0 for no refund):`, "0");
-       const amount = Number(refundAmount) || 0;
+  const openRefundModal = (complaint, verdict) => {
+    const linkedBooking = liveRealTimeBookings.find(b => String(b._id) === String(complaint.booking_id));
+    const assignedWorker = linkedBooking ? workers.find(w => String(w._id) === String(linkedBooking.worker_id)) : null;
+    setRefundModal({
+      complaintId: complaint._id,
+      verdict,
+      complaint,
+      booking: linkedBooking || null,
+      worker: assignedWorker || null
+    });
+    setRefundAmount(linkedBooking ? String(linkedBooking.price) : "0");
+  };
 
-       const resp = await fetch(`/api/complaints/${id}/resolve`, {
+  const handleComplaintVerdict = async () => {
+    if (!refundModal) return;
+    try {
+       const amount = Number(refundAmount) || 0;
+       const resp = await fetch(`/api/complaints/${refundModal.complaintId}/resolve`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ verdict, refundAmount: amount })
+          body: JSON.stringify({ verdict: refundModal.verdict, refundAmount: amount })
        });
        if (!resp.ok) throw new Error("Server rejected patch.");
        
-       alert(`⚖️ DECISION RECORDED!\nComplaint resolved as ${verdict} inside physical cloud ledger.`);
+       alert(`⚖️ DECISION RECORDED!\nComplaint resolved as ${refundModal.verdict}. ${amount > 0 ? `₹${amount} refund issued to customer.` : 'No refund issued.'}`);
+       setRefundModal(null);
+       setRefundAmount("");
        syncAdminStore();
     } catch(err) { alert(`🛑 Failed to resolve decision: ${err.message}`); }
   };
@@ -1506,7 +1522,7 @@ function AdminDashboard() {
                         <tr style={{ borderBottom: "2px solid #e2e8f0", color: "var(--text-muted)" }}>
                           <th style={{ padding: "12px" }}>ID</th>
                           <th style={{ padding: "12px" }}>Customer</th>
-                          <th style={{ padding: "12px" }}>Worker Details (ID & Name)</th>
+                          <th style={{ padding: "12px" }}>Worker & Order</th>
                           <th style={{ padding: "12px" }}>Complaint Detail</th>
                           <th style={{ padding: "12px" }}>Date</th>
                           <th style={{ padding: "12px" }}>Verdict Status</th>
@@ -1518,13 +1534,32 @@ function AdminDashboard() {
                           const linkedBooking = liveRealTimeBookings.find(b => String(b._id) === String(c.booking_id));
                           const isEscrowHeld = linkedBooking && linkedBooking.status === "Completed";
                           const isEscrowReleased = linkedBooking && linkedBooking.status === "Paid Out";
+                          const complaintWorker = linkedBooking ? workers.find(w => String(w._id) === String(linkedBooking.worker_id)) : null;
 
                           return (
                             <tr key={c._id} style={{ borderBottom: "1px solid #f1f5f9" }}>
                               <td style={{ padding: "12px", fontWeight: "bold", fontSize: 11 }}>{c._id?.substr(-6).toUpperCase()}</td>
                               <td style={{ padding: "12px" }}>{c.reported_by || "User"}</td>
                               <td style={{ padding: "12px" }}>
-                                <div style={{ fontWeight: "bold", color: "#dc2626" }}>⚠️ {c.issue_type}</div>
+                                {/* Worker Info */}
+                                {complaintWorker ? (
+                                  <div style={{ marginBottom: "4px" }}>
+                                    <span style={{ fontWeight: 700, color: "#1e293b" }}>👷 {complaintWorker.name}</span>
+                                    <div style={{ fontSize: "11px", color: "#64748b" }}>{complaintWorker.speciality || complaintWorker.specialty || "Worker"} • {complaintWorker.city || ""}</div>
+                                  </div>
+                                ) : (
+                                  <div style={{ fontSize: "12px", color: "#94a3b8", marginBottom: "4px" }}>Worker info N/A</div>
+                                )}
+                                {/* Order Price */}
+                                {linkedBooking && (
+                                  <div style={{ marginBottom: "4px" }}>
+                                    <span style={{ fontSize: "12px", backgroundColor: "#dbeafe", color: "#1d4ed8", padding: "2px 8px", borderRadius: "4px", fontWeight: 700, display: "inline-block" }}>
+                                      💰 Order: ₹{linkedBooking.price} • {linkedBooking.service}
+                                    </span>
+                                  </div>
+                                )}
+                                {/* Issue Type */}
+                                <div style={{ fontWeight: "bold", color: "#dc2626", fontSize: "12px" }}>⚠️ {c.issue_type}</div>
                                 <div style={{ fontSize: "11px", color: "#475569", fontWeight: 700, marginTop: "2px", backgroundColor: "#f1f5f9", padding: "2px 6px", borderRadius: "4px", display: "inline-block" }}>
                                   Booking: {c.booking_id?.substr(-6) || "N/A"}
                                 </div>
@@ -1584,13 +1619,13 @@ function AdminDashboard() {
                                   {c.admin_verdict === "Pending" || !c.admin_verdict ? (
                                     <>
                                       <button
-                                        onClick={() => handleComplaintVerdict(c._id, "Valid")}
+                                        onClick={() => openRefundModal(c, "Valid")}
                                         style={{ backgroundColor: "#ef4444", color: "white", border: "none", padding: "6px 10px", borderRadius: "4px", fontSize: "11px", fontWeight: "bold", cursor: "pointer" }}
                                       >
                                         Valid (Deduct ⭐)
                                       </button>
                                       <button
-                                        onClick={() => handleComplaintVerdict(c._id, "Dismissed")}
+                                        onClick={() => openRefundModal(c, "Dismissed")}
                                         style={{ backgroundColor: "#e2e8f0", color: "#475569", border: "none", padding: "6px 10px", borderRadius: "4px", fontSize: "11px", fontWeight: "bold", cursor: "pointer" }}
                                       >
                                         Dismiss
@@ -2432,6 +2467,201 @@ function AdminDashboard() {
 
         </div>
       </div>
+
+      {/* ⚖️ COMPLAINT REFUND DECISION MODAL */}
+      {refundModal && (
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(15, 23, 42, 0.75)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 99999,
+          fontFamily: "'Outfit', 'Inter', sans-serif",
+          backdropFilter: "blur(8px)",
+          animation: "fadeIn 0.2s ease-out forwards"
+        }}>
+          <div style={{
+            maxWidth: "500px",
+            width: "92%",
+            backgroundColor: "white",
+            borderRadius: "20px",
+            padding: "32px",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.3)",
+            border: "1px solid rgba(0,0,0,0.05)"
+          }}>
+            {/* Modal Header */}
+            <h3 style={{ margin: "0 0 6px 0", fontSize: "22px", fontWeight: 800, color: refundModal.verdict === "Valid" ? "#b91c1c" : "#475569", display: "flex", alignItems: "center", gap: 8 }}>
+              <span>{refundModal.verdict === "Valid" ? "⚖️" : "🔍"}</span>
+              {refundModal.verdict === "Valid" ? "Mark Complaint Valid & Issue Refund" : "Dismiss Complaint"}
+            </h3>
+            <p style={{ margin: "0 0 20px 0", fontSize: "13px", color: "#64748b", lineHeight: 1.5 }}>
+              {refundModal.verdict === "Valid" 
+                ? "This complaint will be marked as valid. You can issue a refund to the customer's wallet. Review the order details below."
+                : "This complaint will be dismissed. You may still issue a partial refund if needed."}
+            </p>
+
+            {/* Order & Worker Details Card */}
+            <div style={{ backgroundColor: "#f8fafc", borderRadius: "12px", padding: "16px", marginBottom: "20px", border: "1px solid #e2e8f0" }}>
+              <div style={{ fontSize: "12px", color: "#94a3b8", fontWeight: 600, marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Order & Worker Details</div>
+              
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                {/* Worker */}
+                <div style={{ backgroundColor: "white", padding: "10px 12px", borderRadius: "8px", border: "1px solid #f1f5f9" }}>
+                  <div style={{ fontSize: "11px", color: "#94a3b8", fontWeight: 600, marginBottom: "4px" }}>👷 WORKER</div>
+                  <div style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b" }}>
+                    {refundModal.worker ? refundModal.worker.name : "Unknown"}
+                  </div>
+                  {refundModal.worker && (
+                    <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>
+                      {refundModal.worker.speciality || refundModal.worker.specialty || "Worker"} • {refundModal.worker.city || ""}
+                    </div>
+                  )}
+                </div>
+
+                {/* Order Price */}
+                <div style={{ backgroundColor: "white", padding: "10px 12px", borderRadius: "8px", border: "1px solid #f1f5f9" }}>
+                  <div style={{ fontSize: "11px", color: "#94a3b8", fontWeight: 600, marginBottom: "4px" }}>💰 ORDER PRICE</div>
+                  <div style={{ fontSize: "22px", fontWeight: 800, color: "#1d4ed8" }}>
+                    ₹{refundModal.booking ? refundModal.booking.price : "N/A"}
+                  </div>
+                </div>
+
+                {/* Service */}
+                <div style={{ backgroundColor: "white", padding: "10px 12px", borderRadius: "8px", border: "1px solid #f1f5f9" }}>
+                  <div style={{ fontSize: "11px", color: "#94a3b8", fontWeight: 600, marginBottom: "4px" }}>🛠️ SERVICE</div>
+                  <div style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b" }}>
+                    {refundModal.booking ? refundModal.booking.service : "N/A"}
+                  </div>
+                </div>
+
+                {/* Customer */}
+                <div style={{ backgroundColor: "white", padding: "10px 12px", borderRadius: "8px", border: "1px solid #f1f5f9" }}>
+                  <div style={{ fontSize: "11px", color: "#94a3b8", fontWeight: 600, marginBottom: "4px" }}>👤 CUSTOMER</div>
+                  <div style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b" }}>
+                    {refundModal.complaint.reported_by || "Customer"}
+                  </div>
+                </div>
+              </div>
+
+              {/* Complaint Type */}
+              <div style={{ marginTop: "12px", padding: "8px 12px", backgroundColor: "#fee2e2", borderRadius: "8px", border: "1px solid #fecaca" }}>
+                <span style={{ fontSize: "12px", fontWeight: 700, color: "#dc2626" }}>
+                  ⚠️ {refundModal.complaint.issue_type}: </span>
+                <span style={{ fontSize: "12px", color: "#7f1d1d", fontStyle: "italic" }}>
+                  "{refundModal.complaint.description || 'No description provided'}"
+                </span>
+              </div>
+            </div>
+
+            {/* Refund Amount Input */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "20px" }}>
+              <label style={{ fontSize: "13px", fontWeight: 700, color: "#1e293b", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span>Refund Amount to Customer Wallet</span>
+                {refundModal.booking && (
+                  <span style={{ fontSize: "11px", color: "#64748b", fontWeight: 500 }}>
+                    Max: ₹{refundModal.booking.price}
+                  </span>
+                )}
+              </label>
+              <div style={{ position: "relative" }}>
+                <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "16px", fontWeight: 700, color: "#64748b" }}>₹</span>
+                <input 
+                  type="number"
+                  min="0"
+                  max={refundModal.booking ? refundModal.booking.price : 99999}
+                  value={refundAmount}
+                  onChange={(e) => setRefundAmount(e.target.value)}
+                  placeholder="0"
+                  style={{ 
+                    width: "100%", 
+                    padding: "12px 12px 12px 30px", 
+                    borderRadius: "10px", 
+                    border: "2px solid #cbd5e1", 
+                    fontSize: "18px", 
+                    fontWeight: 700, 
+                    fontFamily: "inherit", 
+                    boxSizing: "border-box",
+                    outline: "none"
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = "#4f46e5"}
+                  onBlur={(e) => e.target.style.borderColor = "#cbd5e1"}
+                />
+              </div>
+              <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                <button 
+                  onClick={() => setRefundAmount("0")}
+                  style={{ padding: "4px 10px", borderRadius: "6px", border: "1px solid #e2e8f0", backgroundColor: "#f8fafc", color: "#475569", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}
+                >
+                  No Refund
+                </button>
+                {refundModal.booking && (
+                  <>
+                    <button 
+                      onClick={() => setRefundAmount(String(Math.round(refundModal.booking.price * 0.25)))}
+                      style={{ padding: "4px 10px", borderRadius: "6px", border: "1px solid #e2e8f0", backgroundColor: "#f8fafc", color: "#475569", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}
+                    >
+                      25% (₹{Math.round(refundModal.booking.price * 0.25)})
+                    </button>
+                    <button 
+                      onClick={() => setRefundAmount(String(Math.round(refundModal.booking.price * 0.5)))}
+                      style={{ padding: "4px 10px", borderRadius: "6px", border: "1px solid #e2e8f0", backgroundColor: "#f8fafc", color: "#475569", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}
+                    >
+                      50% (₹{Math.round(refundModal.booking.price * 0.5)})
+                    </button>
+                    <button 
+                      onClick={() => setRefundAmount(String(refundModal.booking.price))}
+                      style={{ padding: "4px 10px", borderRadius: "6px", border: "1px solid #dbeafe", backgroundColor: "#eff6ff", color: "#1d4ed8", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}
+                    >
+                      Full (₹{refundModal.booking.price})
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button
+                onClick={handleComplaintVerdict}
+                style={{
+                  flex: 1,
+                  backgroundColor: refundModal.verdict === "Valid" ? "#dc2626" : "#475569",
+                  color: "white",
+                  border: "none",
+                  padding: "14px",
+                  borderRadius: "10px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  transition: "all 0.2s"
+                }}
+              >
+                {refundModal.verdict === "Valid" ? "⚖️ Confirm Valid & Process" : "🔍 Confirm Dismiss"}
+                {Number(refundAmount) > 0 ? ` (₹${refundAmount} Refund)` : ""}
+              </button>
+              <button
+                onClick={() => { setRefundModal(null); setRefundAmount(""); }}
+                style={{
+                  flex: 0.6,
+                  backgroundColor: "#e2e8f0",
+                  color: "#475569",
+                  border: "none",
+                  padding: "14px",
+                  borderRadius: "10px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  fontSize: "14px"
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

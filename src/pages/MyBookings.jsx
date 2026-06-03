@@ -313,7 +313,7 @@ function MyBookings() {
                   </div>
 
                   {(booking.status === "Completed" || booking.status === "Paid Out") && (
-                    <div style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px dashed #cbd5e1", display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                    <div style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px dashed #cbd5e1", display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
                       <button 
                         onClick={() => handleReview(booking)}
                         disabled={isReviewed}
@@ -334,27 +334,29 @@ function MyBookings() {
                         {isReviewed ? "✅ Review Submitted & Cashback Claimed" : "⭐ Leave Review & Earn ₹50 Wallet Cashback"}
                       </button>
 
-                      <button 
-                        onClick={() => setActiveComplaintBooking(booking)}
-                        style={{
-                          backgroundColor: "#fee2e2",
-                          color: "#dc2626",
-                          border: "1px solid #fecaca",
-                          padding: "8px 16px",
-                          borderRadius: "8px",
-                          fontWeight: "bold",
-                          cursor: "pointer",
-                          fontSize: "13px",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "6px",
-                          transition: "all 0.2s"
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#fecaca"}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#fee2e2"}
-                      >
-                        ⚠️ Report Grievance
-                      </button>
+                      {isReviewed && (
+                        <button 
+                          onClick={() => setActiveComplaintBooking(booking)}
+                          style={{
+                            backgroundColor: "#fee2e2",
+                            color: "#dc2626",
+                            border: "1px solid #fecaca",
+                            padding: "8px 16px",
+                            borderRadius: "8px",
+                            fontWeight: "bold",
+                            cursor: "pointer",
+                            fontSize: "13px",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            transition: "all 0.2s"
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#fecaca"}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#fee2e2"}
+                        >
+                          ⚠️ Report Grievance
+                        </button>
+                      )}
                     </div>
                   )}
 
