@@ -24,3 +24,6 @@ yarn-error.log*
 node_modules/
 .env
 backend/.env
+
+# Local scratch / temp dev files
+scratch/
