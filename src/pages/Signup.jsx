@@ -365,7 +365,7 @@ function Signup() {
                   onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 20px rgba(59,130,246,0.15)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
                 >
-                  <span style={{ fontSize: "32px" }}>🛒</span>
+                  <span style={{ fontSize: "32px" }}>👤</span>
                   <div>
                     <div style={{ fontWeight: 700, fontSize: "15px", color: "#1e40af" }}>Sign up as Customer</div>
                     <div style={{ fontSize: "12px", color: "#60a5fa", marginTop: "2px" }}>Book services instantly. No extra details needed.</div>
