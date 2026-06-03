@@ -1,10 +1,6 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
 
 function GoogleAuthMock() {
-  const [searchParams] = useSearchParams();
-  const type = searchParams.get("type") || "login";
-  
   const [step, setStep] = useState("choose"); // "choose", "custom", "loading"
   const [emailInput, setEmailInput] = useState("");
   const [nameInput, setNameInput] = useState("");

@@ -1,4 +1,3 @@
-/* global google */
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
@@ -84,14 +83,19 @@ function Signup() {
   };
 
   const handleGoogleSignUp = () => {
-    if (!phone || !phone.trim()) {
-      alert("❌ Please enter your phone number before signing up with Google!");
-      return;
-    }
-
-    if (role === "worker" && !city.trim()) {
-      alert("❌ Please enter your serving location before signing up with Google!");
-      return;
+    if (role === "worker") {
+      if (!name || !name.trim()) {
+        alert("❌ Please enter your name before signing up as a Worker!");
+        return;
+      }
+      if (!phone || !phone.trim()) {
+        alert("❌ Please enter your phone number before signing up as a Worker!");
+        return;
+      }
+      if (!city || !city.trim()) {
+        alert("❌ Please enter your serving location before signing up as a Worker!");
+        return;
+      }
     }
 
     if (!window.google) {
