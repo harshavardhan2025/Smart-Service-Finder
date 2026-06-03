@@ -34,7 +34,8 @@ export const getTransactions = async (req, res) => {
     }
 
     const filter = {};
-    if (req.query.customer) filter.customer = req.query.customer;
+    const customerQuery = req.query.customer || req.query.user;
+    if (customerQuery) filter.customer = customerQuery;
     if (req.query.worker) filter.worker = req.query.worker;
     
     const txns = await Transaction.find(filter).sort({ createdAt: -1 });

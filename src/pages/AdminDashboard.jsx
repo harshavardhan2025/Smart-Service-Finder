@@ -116,6 +116,8 @@ function AdminDashboard() {
   const [workerFilterStatus, setWorkerFilterStatus] = useState("All");
 
   const [customerSearch, setCustomerSearch] = useState("");
+  const [escrowSearch, setEscrowSearch] = useState("");
+  const [complaintSearch, setComplaintSearch] = useState("");
 
   const [adminPlans, setAdminPlans] = useState([]);
   const [adminOffers, setAdminOffers] = useState([]);
@@ -1472,73 +1474,140 @@ function AdminDashboard() {
               </h2>
 
               <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
-                {complaints.length === 0 ? (
-                  <p style={{ textAlign: "center", color: "var(--text-muted)", padding: "20px" }}>No complaints registered yet! All systems clear. ✅</p>
-                ) : (
-                  <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "14px" }}>
-                    <thead>
-                      <tr style={{ borderBottom: "2px solid #e2e8f0", color: "var(--text-muted)" }}>
-                        <th style={{ padding: "12px" }}>ID</th>
-                        <th style={{ padding: "12px" }}>Customer</th>
-                        <th style={{ padding: "12px" }}>Worker Details (ID & Name)</th>
-                        <th style={{ padding: "12px" }}>Complaint Detail</th>
-                        <th style={{ padding: "12px" }}>Date</th>
-                        <th style={{ padding: "12px" }}>Verdict Status</th>
-                        <th style={{ padding: "12px", textAlign: "right" }}>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {complaints.map((c) => (
-                        <tr key={c._id} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                          <td style={{ padding: "12px", fontWeight: "bold", fontSize: 11 }}>{c._id?.substr(-6).toUpperCase()}</td>
-                          <td style={{ padding: "12px" }}>{c.reported_by || "User"}</td>
-                          <td style={{ padding: "12px" }}>
-                            <div style={{ fontWeight: "bold", color: "#dc2626" }}>⚠️ {c.issue_type}</div>
-                            <div style={{ fontSize: "11px", color: "#475569", fontWeight: 700, marginTop: "2px", backgroundColor: "#f1f5f9", padding: "2px 6px", borderRadius: "4px", display: "inline-block" }}>
-                              Booking: {c.booking_id?.substr(-6) || "N/A"}
-                            </div>
-                          </td>
-                          <td style={{ padding: "12px", color: "#475569", fontSize: 13, fontStyle: "italic" }}>"{c.description}"</td>
-                          <td style={{ padding: "12px", fontSize: 12 }}>{c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "Recent"}</td>
-                          <td style={{ padding: "12px" }}>
-                            <span
-                              style={{
-                                padding: "4px 8px",
-                                borderRadius: "20px",
-                                fontSize: "11px",
-                                fontWeight: 700,
-                                backgroundColor: c.admin_verdict === "Valid" ? "#ffebee" : c.admin_verdict === "Pending" ? "#fff3e0" : "#f0fdf4",
-                                color: c.admin_verdict === "Valid" ? "#c62828" : c.admin_verdict === "Pending" ? "#e65100" : "#16a34a"
-                              }}
-                            >
-                              {c.admin_verdict || "Under Review"}
-                            </span>
-                          </td>
-                          <td style={{ padding: "12px", textAlign: "right" }}>
-                            {c.admin_verdict === "Pending" || !c.admin_verdict ? (
-                              <div style={{ display: "flex", gap: "6px", justifyContent: "flex-end" }}>
-                                <button
-                                  onClick={() => handleComplaintVerdict(c._id, "Valid")}
-                                  style={{ backgroundColor: "#ef4444", color: "white", border: "none", padding: "6px 10px", borderRadius: "4px", fontSize: "11px", fontWeight: "bold", cursor: "pointer" }}
-                                >
-                                  Valid (Deduct ⭐)
-                                </button>
-                                <button
-                                  onClick={() => handleComplaintVerdict(c._id, "Dismissed")}
-                                  style={{ backgroundColor: "#e2e8f0", color: "#475569", border: "none", padding: "6px 10px", borderRadius: "4px", fontSize: "11px", fontWeight: "bold", cursor: "pointer" }}
-                                >
-                                  Dismiss
-                                </button>
-                              </div>
-                            ) : (
-                              <span style={{ fontSize: "12px", color: "#16a34a", fontWeight: "bold" }}>✅ DECIDED</span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                {complaintSearch && (
+                  <div style={{ marginBottom: "16px", backgroundColor: "#fffbeb", padding: "12px 16px", borderRadius: "8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: "14px", color: "#b45309", fontWeight: 600 }}>
+                      🔍 Filtering complaints by Booking/ID: <strong>{complaintSearch}</strong>
+                    </span>
+                    <button 
+                      onClick={() => setComplaintSearch("")}
+                      style={{ padding: "6px 12px", backgroundColor: "#d97706", color: "white", border: "none", borderRadius: "6px", fontSize: "12px", fontWeight: "bold", cursor: "pointer" }}
+                    >
+                      Clear Filter
+                    </button>
+                  </div>
                 )}
+                {(() => {
+                  const filteredComplaints = complaints.filter(c => {
+                    if (!complaintSearch) return true;
+                    return (c.booking_id && String(c.booking_id).toLowerCase().includes(complaintSearch.toLowerCase())) ||
+                           (c._id && String(c._id).toLowerCase().includes(complaintSearch.toLowerCase()));
+                  });
+
+                  if (filteredComplaints.length === 0) {
+                    return (
+                      <p style={{ textAlign: "center", color: "var(--text-muted)", padding: "20px" }}>No matching complaints found! ✅</p>
+                    );
+                  }
+
+                  return (
+                    <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "14px" }}>
+                      <thead>
+                        <tr style={{ borderBottom: "2px solid #e2e8f0", color: "var(--text-muted)" }}>
+                          <th style={{ padding: "12px" }}>ID</th>
+                          <th style={{ padding: "12px" }}>Customer</th>
+                          <th style={{ padding: "12px" }}>Worker Details (ID & Name)</th>
+                          <th style={{ padding: "12px" }}>Complaint Detail</th>
+                          <th style={{ padding: "12px" }}>Date</th>
+                          <th style={{ padding: "12px" }}>Verdict Status</th>
+                          <th style={{ padding: "12px", textAlign: "right" }}>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredComplaints.map((c) => {
+                          const linkedBooking = liveRealTimeBookings.find(b => String(b._id) === String(c.booking_id));
+                          const isEscrowHeld = linkedBooking && linkedBooking.status === "Completed";
+                          const isEscrowReleased = linkedBooking && linkedBooking.status === "Paid Out";
+
+                          return (
+                            <tr key={c._id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                              <td style={{ padding: "12px", fontWeight: "bold", fontSize: 11 }}>{c._id?.substr(-6).toUpperCase()}</td>
+                              <td style={{ padding: "12px" }}>{c.reported_by || "User"}</td>
+                              <td style={{ padding: "12px" }}>
+                                <div style={{ fontWeight: "bold", color: "#dc2626" }}>⚠️ {c.issue_type}</div>
+                                <div style={{ fontSize: "11px", color: "#475569", fontWeight: 700, marginTop: "2px", backgroundColor: "#f1f5f9", padding: "2px 6px", borderRadius: "4px", display: "inline-block" }}>
+                                  Booking: {c.booking_id?.substr(-6) || "N/A"}
+                                </div>
+                                {isEscrowHeld && (
+                                  <div style={{ marginTop: "4px" }}>
+                                    <span style={{ fontSize: "11px", backgroundColor: "#fff3e0", color: "#e65100", padding: "2px 6px", borderRadius: "4px", fontWeight: 700, display: "inline-block" }}>
+                                      🔒 Escrow Held: ₹{linkedBooking.price}
+                                    </span>
+                                  </div>
+                                )}
+                                {isEscrowReleased && (
+                                  <div style={{ marginTop: "4px" }}>
+                                    <span style={{ fontSize: "11px", backgroundColor: "#dcfce7", color: "#16a34a", padding: "2px 6px", borderRadius: "4px", fontWeight: 700, display: "inline-block" }}>
+                                      ✅ Escrow Released: ₹{linkedBooking.price}
+                                    </span>
+                                  </div>
+                                )}
+                              </td>
+                              <td style={{ padding: "12px", color: "#475569", fontSize: 13, fontStyle: "italic" }}>"{c.description}"</td>
+                              <td style={{ padding: "12px", fontSize: 12 }}>{c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "Recent"}</td>
+                              <td style={{ padding: "12px" }}>
+                                <span
+                                  style={{
+                                    padding: "4px 8px",
+                                    borderRadius: "20px",
+                                    fontSize: "11px",
+                                    fontWeight: 700,
+                                    backgroundColor: c.admin_verdict === "Valid" ? "#ffebee" : c.admin_verdict === "Pending" ? "#fff3e0" : "#f0fdf4",
+                                    color: c.admin_verdict === "Valid" ? "#c62828" : c.admin_verdict === "Pending" ? "#e65100" : "#16a34a"
+                                  }}
+                                >
+                                  {c.admin_verdict || "Under Review"}
+                                </span>
+                              </td>
+                              <td style={{ padding: "12px", textAlign: "right" }}>
+                                <div style={{ display: "flex", gap: "6px", justifyContent: "flex-end", flexWrap: "wrap", alignItems: "center" }}>
+                                  {isEscrowHeld && (
+                                    <button
+                                      onClick={() => {
+                                        setEscrowSearch(linkedBooking._id);
+                                        setActiveTab("escrow-payouts");
+                                      }}
+                                      style={{
+                                        backgroundColor: "#e0e7ff",
+                                        color: "#4338ca",
+                                        border: "none",
+                                        padding: "6px 10px",
+                                        borderRadius: "4px",
+                                        fontSize: "11px",
+                                        fontWeight: "bold",
+                                        cursor: "pointer"
+                                      }}
+                                    >
+                                      💸 Go to Escrow
+                                    </button>
+                                  )}
+                                  {c.admin_verdict === "Pending" || !c.admin_verdict ? (
+                                    <>
+                                      <button
+                                        onClick={() => handleComplaintVerdict(c._id, "Valid")}
+                                        style={{ backgroundColor: "#ef4444", color: "white", border: "none", padding: "6px 10px", borderRadius: "4px", fontSize: "11px", fontWeight: "bold", cursor: "pointer" }}
+                                      >
+                                        Valid (Deduct ⭐)
+                                      </button>
+                                      <button
+                                        onClick={() => handleComplaintVerdict(c._id, "Dismissed")}
+                                        style={{ backgroundColor: "#e2e8f0", color: "#475569", border: "none", padding: "6px 10px", borderRadius: "4px", fontSize: "11px", fontWeight: "bold", cursor: "pointer" }}
+                                      >
+                                        Dismiss
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <span style={{ fontSize: "12px", color: "#16a34a", fontWeight: "bold" }}>✅ DECIDED</span>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  );
+                })()}
               </div>
             </div>
           )}
@@ -1845,105 +1914,163 @@ function AdminDashboard() {
               </div>
 
               <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", padding: "24px" }}>
-                {liveRealTimeBookings.filter(b => ["Completed", "Paid Out"].includes(b.status)).length === 0 ? (
-                  <div style={{ textAlign: "center", color: "#94a3b8", padding: "48px 0" }}>
-                    <div style={{ fontSize: "48px", marginBottom: "12px" }}>⚖️</div>
-                    <h3>No pending escrows found.</h3>
-                    <p>Awaiting completion signals from active workers.</p>
+                {escrowSearch && (
+                  <div style={{ marginBottom: "16px", backgroundColor: "#e0e7ff", padding: "12px 16px", borderRadius: "8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: "14px", color: "#4338ca", fontWeight: 600 }}>
+                      🔍 Filtering escrows by Booking ID: <strong>{escrowSearch}</strong>
+                    </span>
+                    <button 
+                      onClick={() => setEscrowSearch("")}
+                      style={{ padding: "6px 12px", backgroundColor: "#4338ca", color: "white", border: "none", borderRadius: "6px", fontSize: "12px", fontWeight: "bold", cursor: "pointer" }}
+                    >
+                      Clear Filter
+                    </button>
                   </div>
-                ) : (
-                  <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-                    <thead>
-                      <tr style={{ borderBottom: "2px solid #f1f5f9", color: "var(--text-muted)", fontSize: "13px" }}>
-                        <th style={{ padding: "12px 8px" }}>Booking ID</th>
-                        <th style={{ padding: "12px 8px" }}>Service</th>
-                        <th style={{ padding: "12px 8px" }}>Locked Amt</th>
-                        <th style={{ padding: "12px 8px" }}>Current Status</th>
-                        <th style={{ padding: "12px 8px", textAlign: "right" }}>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {liveRealTimeBookings.filter(b => ["Completed", "Paid Out"].includes(b.status)).map(b => (
-                        <tr key={b._id} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                          <td style={{ padding: "14px 8px", fontFamily: "monospace", fontSize: "12px" }}>#{b._id.substr(-6).toUpperCase()}</td>
-                          <td style={{ padding: "14px 8px", fontWeight: 600, color: "#334155" }}>{b.service}</td>
-                          <td style={{ padding: "14px 8px", fontWeight: 700, color: "#16a34a" }}>₹{b.price}</td>
-                          <td style={{ padding: "14px 8px" }}>
-                            <span style={{ padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700, backgroundColor: b.status === "Paid Out" ? "#dcfce7" : "#fff3e0", color: b.status === "Paid Out" ? "#16a34a" : "#e65100" }}>
-                              {b.status === "Paid Out" ? "✓ SENT TO WORKER" : "🔒 HELD BY ADMIN"}
-                            </span>
-                          </td>
-                          <td style={{ padding: "14px 8px", textAlign: "right" }}>
-                            {b.status !== "Paid Out" && b.status !== "Escrow Declined" ? (
-                              <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
-                                <button 
-                                  onClick={async () => {
-                                    if(window.confirm(`Verify completion and release ₹${b.price} directly to the Worker account now?`)) {
-                                       try {
-                                         const respAction = await fetch(`/api/bookings/${b._id}/release`, {
-                                           method: "POST",
-                                           headers: {
-                                             "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`,
-                                             "Content-Type": "application/json"
-                                           }
-                                         });
-                                         if (!respAction.ok) {
-                                            const errorData = await respAction.json();
-                                            throw new Error(errorData.error || "Server Rejected Release");
-                                         }
-                                         alert(`💸 FUNDS RELEASED SUCCESSFUL!\n₹${b.price} has been deposited into the Worker wallet system.`);
-                                         
-                                         // Force IMMEDIATE Local Visual Update Flawlessly
-                                         setLiveRealTimeBookings(prev => prev.map(item => item._id === b._id ? { ...item, status: "Paid Out" } : item));
-                                         
-                                         // Verify with central registry refresh
-                                         const resp = await fetch("/api/bookings");
-                                         if (resp.ok) setLiveRealTimeBookings(await resp.json());
-                                       } catch(err) { alert(`🛑 Release Failed: ${err.message}`); }
-                                    }
-                                  }}
-                                  style={{ backgroundColor: "#4338ca", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer", flex: 1 }}
-                                >
-                                  💸 Release Money
-                                </button>
-                                <button 
-                                  onClick={async () => {
-                                    if(window.confirm(`Decline Escrow? This will cancel the worker's payout and fully refund ₹${b.price} to the customer's wallet. Proceed?`)) {
-                                       try {
-                                         const respAction = await fetch(`/api/bookings/${b._id}/decline-escrow`, {
-                                           method: "POST",
-                                           headers: {
-                                             "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`,
-                                             "Content-Type": "application/json"
-                                           }
-                                         });
-                                         if (!respAction.ok) {
-                                            const errorData = await respAction.json();
-                                            throw new Error(errorData.error || "Server Rejected Escrow Decline");
-                                         }
-                                         alert(`🛑 ESCROW DECLINED!\n₹${b.price} has been fully refunded to the Customer's wallet.`);
-                                         
-                                         setLiveRealTimeBookings(prev => prev.map(item => item._id === b._id ? { ...item, status: "Escrow Declined" } : item));
-                                         
-                                         const resp = await fetch("/api/bookings");
-                                         if (resp.ok) setLiveRealTimeBookings(await resp.json());
-                                       } catch(err) { alert(`🛑 Decline Failed: ${err.message}`); }
-                                    }
-                                  }}
-                                  style={{ backgroundColor: "#ef4444", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer", flex: 1 }}
-                                >
-                                  ❌ Decline & Refund
-                                </button>
-                              </div>
-                            ) : (
-                              <span style={{ fontSize: "12px", color: "#94a3b8", fontStyle: "italic" }}>Completed Successfully</span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
                 )}
+                {(() => {
+                  const escrowBookings = liveRealTimeBookings
+                    .filter(b => ["Completed", "Paid Out"].includes(b.status))
+                    .filter(b => {
+                      if (!escrowSearch) return true;
+                      return String(b._id).toLowerCase().includes(escrowSearch.toLowerCase()) ||
+                             (b.service && b.service.toLowerCase().includes(escrowSearch.toLowerCase()));
+                    });
+
+                  if (escrowBookings.length === 0) {
+                    return (
+                      <div style={{ textAlign: "center", color: "#94a3b8", padding: "48px 0" }}>
+                        <div style={{ fontSize: "48px", marginBottom: "12px" }}>⚖️</div>
+                        <h3>No matching escrows found.</h3>
+                        <p>Awaiting completion signals or try clearing the search filter.</p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+                      <thead>
+                        <tr style={{ borderBottom: "2px solid #f1f5f9", color: "var(--text-muted)", fontSize: "13px" }}>
+                          <th style={{ padding: "12px 8px" }}>Booking ID</th>
+                          <th style={{ padding: "12px 8px" }}>Service</th>
+                          <th style={{ padding: "12px 8px" }}>Locked Amt</th>
+                          <th style={{ padding: "12px 8px" }}>Current Status</th>
+                          <th style={{ padding: "12px 8px", textAlign: "right" }}>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {escrowBookings.map(b => {
+                          const linkedComplaint = complaints.find(c => String(c.booking_id) === String(b._id));
+                          return (
+                            <tr key={b._id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                              <td style={{ padding: "14px 8px", fontFamily: "monospace", fontSize: "12px" }}>
+                                #{b._id.substr(-6).toUpperCase()}
+                                {linkedComplaint && (
+                                  <div style={{ marginTop: "4px" }}>
+                                    <span style={{ fontSize: "10px", backgroundColor: "#ffebee", color: "#c62828", padding: "2px 6px", borderRadius: "4px", fontWeight: 700, display: "inline-block" }}>
+                                      ⚠️ Active Complaint
+                                    </span>
+                                    <button 
+                                      onClick={() => {
+                                        setComplaintSearch(b._id);
+                                        setActiveTab("complaints");
+                                      }}
+                                      style={{
+                                        marginLeft: "6px",
+                                        backgroundColor: "#fee2e2",
+                                        color: "#ef4444",
+                                        border: "none",
+                                        padding: "2px 6px",
+                                        borderRadius: "4px",
+                                        fontSize: "9px",
+                                        fontWeight: "bold",
+                                        cursor: "pointer"
+                                      }}
+                                    >
+                                      View
+                                    </button>
+                                  </div>
+                                )}
+                              </td>
+                              <td style={{ padding: "14px 8px", fontWeight: 600, color: "#334155" }}>{b.service}</td>
+                              <td style={{ padding: "14px 8px", fontWeight: 700, color: "#16a34a" }}>₹{b.price}</td>
+                              <td style={{ padding: "14px 8px" }}>
+                                <span style={{ padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700, backgroundColor: b.status === "Paid Out" ? "#dcfce7" : "#fff3e0", color: b.status === "Paid Out" ? "#16a34a" : "#e65100" }}>
+                                  {b.status === "Paid Out" ? "✓ SENT TO WORKER" : "🔒 HELD BY ADMIN"}
+                                </span>
+                              </td>
+                              <td style={{ padding: "14px 8px", textAlign: "right" }}>
+                                {b.status !== "Paid Out" && b.status !== "Escrow Declined" ? (
+                                  <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                                    <button 
+                                      onClick={async () => {
+                                        if(window.confirm(`Verify completion and release ₹${b.price} directly to the Worker account now?`)) {
+                                           try {
+                                             const respAction = await fetch(`/api/bookings/${b._id}/release`, {
+                                               method: "POST",
+                                               headers: {
+                                                 "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`,
+                                                 "Content-Type": "application/json"
+                                               }
+                                             });
+                                             if (!respAction.ok) {
+                                                const errorData = await respAction.json();
+                                                throw new Error(errorData.error || "Server Rejected Release");
+                                             }
+                                             alert(`💸 FUNDS RELEASED SUCCESSFUL!\n₹${b.price} has been deposited into the Worker wallet system.`);
+                                             
+                                             // Force IMMEDIATE Local Visual Update Flawlessly
+                                             setLiveRealTimeBookings(prev => prev.map(item => item._id === b._id ? { ...item, status: "Paid Out" } : item));
+                                             
+                                             // Verify with central registry refresh
+                                             const resp = await fetch("/api/bookings");
+                                             if (resp.ok) setLiveRealTimeBookings(await resp.json());
+                                           } catch(err) { alert(`🛑 Release Failed: ${err.message}`); }
+                                        }
+                                      }}
+                                      style={{ backgroundColor: "#4338ca", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer", flex: 1 }}
+                                    >
+                                      💸 Release Money
+                                    </button>
+                                    <button 
+                                      onClick={async () => {
+                                        if(window.confirm(`Decline Escrow? This will cancel the worker's payout and fully refund ₹${b.price} to the customer's wallet. Proceed?`)) {
+                                           try {
+                                             const respAction = await fetch(`/api/bookings/${b._id}/decline-escrow`, {
+                                               method: "POST",
+                                               headers: {
+                                                 "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`,
+                                                 "Content-Type": "application/json"
+                                               }
+                                             });
+                                             if (!respAction.ok) {
+                                                const errorData = await respAction.json();
+                                                throw new Error(errorData.error || "Server Rejected Escrow Decline");
+                                             }
+                                             alert(`🛑 ESCROW DECLINED!\n₹${b.price} has been fully refunded to the Customer's wallet.`);
+                                             
+                                             setLiveRealTimeBookings(prev => prev.map(item => item._id === b._id ? { ...item, status: "Escrow Declined" } : item));
+                                             
+                                             const resp = await fetch("/api/bookings");
+                                             if (resp.ok) setLiveRealTimeBookings(await resp.json());
+                                           } catch(err) { alert(`🛑 Decline Failed: ${err.message}`); }
+                                        }
+                                      }}
+                                      style={{ backgroundColor: "#ef4444", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer", flex: 1 }}
+                                    >
+                                      ❌ Decline & Refund
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <span style={{ fontSize: "12px", color: "#94a3b8", fontStyle: "italic" }}>Completed Successfully</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  );
+                })()}
               </div>
             </div>
           )}

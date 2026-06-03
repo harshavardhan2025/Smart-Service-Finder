@@ -262,10 +262,21 @@ export const releaseEscrow = async (req, res) => {
     // Execute the direct balance hydration on the assigned worker document atomicly
     await Worker.findByIdAndUpdate(booking.worker_id, { $inc: { walletBalance: booking.price } });
 
+    // Retrieve worker name to log a human-readable transaction
+    let workerName = "Worker";
+    try {
+      const workerDoc = await Worker.findById(booking.worker_id);
+      if (workerDoc) {
+        workerName = workerDoc.name;
+      }
+    } catch (err) {
+      console.error("Non-blocking error finding worker name for escrow release transaction:", err);
+    }
+
     // Formally audit and record this cash event in transaction database
     await Transaction.create({
-       customer: booking.customer_id,
-       worker: booking.worker_id,
+       customer: booking.customer_name || "Customer",
+       worker: workerName,
        service: booking.service,
        amount: booking.price,
        status: "Paid Out",

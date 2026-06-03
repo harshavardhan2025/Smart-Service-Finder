@@ -74,7 +74,15 @@ export const resolveComplaint = async (req, res) => {
     let refundMsg = "";
     if (refundAmount && Number(refundAmount) > 0) {
       if (complaint.reported_by) {
-        const customer = await User.findById(complaint.reported_by);
+        let customer = null;
+        if (complaint.reported_by.match(/^[0-9a-fA-F]{24}$/)) {
+          try {
+            customer = await User.findById(complaint.reported_by);
+          } catch (e) {}
+        }
+        if (!customer) {
+          customer = await User.findOne({ name: complaint.reported_by });
+        }
         if (customer) {
           customer.walletBalance = (customer.walletBalance || 0) + Number(refundAmount);
           await customer.save();
