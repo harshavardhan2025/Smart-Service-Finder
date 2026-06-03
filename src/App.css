@@ -108,12 +108,11 @@
   padding: 0;
   box-sizing: border-box;
 
+  /* Only transition color/background globally — transforms must be explicit per-component */
   transition:
-    background 0.3s ease,
+    background-color 0.3s ease,
     color 0.3s ease,
-    border-color 0.3s ease,
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
+    border-color 0.25s ease;
 }
 
 html,
@@ -225,8 +224,9 @@ body,
 .premium-card:hover,
 .section:hover {
 
-  transform:
-    translateY(-8px);
+  /* No translateY on cards that contain forms — prevents the whole form from
+     floating away while the user is typing. Shadow upgrade is enough for depth. */
+  transform: none;
 
   background: var(--bg-card-hover);
 
@@ -269,6 +269,11 @@ small,
 ========================================================= */
 
 input,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"],
 textarea,
 select {
 
@@ -299,11 +304,14 @@ select:focus {
 
   border-color: var(--primary);
 
-  transform: translateY(-2px);
+  /* No translateY — prevents form from jumping when user clicks a field */
+  transform: none;
 
   box-shadow:
-    0 0 0 4px rgba(255, 78, 205, 0.15),
-    0 10px 25px rgba(124, 77, 255, 0.15);
+    0 0 0 3px rgba(107, 79, 79, 0.18),
+    inset 0 1px 3px rgba(0, 0, 0, 0.04);
+
+  background: rgba(255, 255, 255, 0.12);
 }
 
 input::placeholder,
