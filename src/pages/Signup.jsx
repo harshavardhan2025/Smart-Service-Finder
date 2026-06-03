@@ -15,62 +15,119 @@ const PROFESSIONS = [
   { group: "Specializations", options: ["Photography", "Decor", "Mehandi", "Doctors & Medical"] },
 ];
 
-// Result Popup Component
+// Result Popup — handles 3 types: success | exists | fail
 function ResultPopup({ result, onClose, navigate }) {
   useEffect(() => {
     if (result?.type === "success") {
-      const timer = setTimeout(() => {
-        navigate("/login");
-      }, 2500);
+      const timer = setTimeout(() => navigate("/login"), 2500);
       return () => clearTimeout(timer);
     }
   }, [result, navigate]);
 
   if (!result) return null;
 
+  const config = {
+    success: {
+      icon: "✅",
+      title: "Registration Successful!",
+      titleColor: "#15803d",
+      bg: "#f0fdf4",
+      border: "#bbf7d0",
+    },
+    exists: {
+      icon: "⚠️",
+      title: "Account Already Exists",
+      titleColor: "#92400e",
+      bg: "#fffbeb",
+      border: "#fde68a",
+    },
+    fail: {
+      icon: "❌",
+      title: "Registration Failed",
+      titleColor: "#dc2626",
+      bg: "#fff1f2",
+      border: "#fecaca",
+    },
+  }[result.type] || {};
+
   return (
     <div style={{
       position: "fixed", inset: 0, zIndex: 9999,
       background: "rgba(0,0,0,0.55)",
-      backdropFilter: "blur(6px)",
+      backdropFilter: "blur(8px)",
       display: "flex", justifyContent: "center", alignItems: "center"
     }}>
       <div style={{
-        background: "white",
-        borderRadius: "20px",
+        background: config.bg || "white",
+        border: `2px solid ${config.border || "#e2e8f0"}`,
+        borderRadius: "22px",
         padding: "44px 40px",
-        maxWidth: "380px",
+        maxWidth: "400px",
         width: "90%",
         textAlign: "center",
-        boxShadow: "0 24px 60px rgba(0,0,0,0.25)",
+        boxShadow: "0 28px 70px rgba(0,0,0,0.22)",
         animation: "popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both"
       }}>
-        <div style={{ fontSize: "56px", marginBottom: "16px" }}>
-          {result.type === "success" ? "✅" : "❌"}
+        <div style={{ fontSize: "60px", marginBottom: "14px", lineHeight: 1 }}>
+          {config.icon}
         </div>
-        <h2 style={{
-          margin: "0 0 10px 0",
-          fontSize: "22px", fontWeight: 800,
-          color: result.type === "success" ? "#15803d" : "#dc2626"
-        }}>
-          {result.type === "success" ? "Registration Successful!" : "Registration Failed"}
+        <h2 style={{ margin: "0 0 10px 0", fontSize: "22px", fontWeight: 800, color: config.titleColor }}>
+          {config.title}
         </h2>
-        <p style={{ margin: "0 0 24px 0", fontSize: "14px", color: "#64748b", lineHeight: 1.6 }}>
+        <p style={{ margin: "0 0 26px 0", fontSize: "14px", color: "#64748b", lineHeight: 1.7 }}>
           {result.message}
         </p>
-        {result.type === "success" ? (
-          <p style={{ fontSize: "13px", color: "#94a3b8" }}>
-            Redirecting to login page...
-          </p>
-        ) : (
+
+        {result.type === "success" && (
+          <p style={{ fontSize: "13px", color: "#94a3b8" }}>Redirecting to login page...</p>
+        )}
+
+        {result.type === "exists" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <button
+              onClick={() => navigate("/login")}
+              style={{
+                backgroundColor: "#d97706",
+                color: "white",
+                border: "none",
+                borderRadius: "12px",
+                padding: "13px 28px",
+                fontSize: "14px",
+                fontWeight: 700,
+                cursor: "pointer",
+                width: "100%"
+              }}
+            >
+              🔑 Sign In to My Account
+            </button>
+            <button
+              onClick={onClose}
+              style={{
+                backgroundColor: "transparent",
+                color: "#94a3b8",
+                border: "1.5px solid #e2e8f0",
+                borderRadius: "12px",
+                padding: "11px 28px",
+                fontSize: "13px",
+                fontWeight: 600,
+                cursor: "pointer",
+                width: "100%"
+              }}
+            >
+              Use a Different Account
+            </button>
+          </div>
+        )}
+
+        {result.type === "fail" && (
           <button
             onClick={onClose}
             style={{
               backgroundColor: "#dc2626",
               color: "white",
               border: "none",
-              borderRadius: "10px",
-              padding: "12px 32px",
+              borderRadius: "12px",
+              padding: "13px 32px",
               fontSize: "14px",
               fontWeight: 700,
               cursor: "pointer"
@@ -82,7 +139,7 @@ function ResultPopup({ result, onClose, navigate }) {
       </div>
       <style>{`
         @keyframes popIn {
-          0% { opacity: 0; transform: scale(0.7); }
+          0% { opacity: 0; transform: scale(0.72); }
           100% { opacity: 1; transform: scale(1); }
         }
       `}</style>
@@ -127,20 +184,21 @@ function Signup() {
   const handleSignup = async (e) => {
     e.preventDefault();
     if (!name || !email || !password || !phone) {
-      alert("Please fill in all fields!");
+      setPopupResult({ type: "fail", message: "Please fill in all required fields before submitting." });
       return;
     }
     if (role === "worker" && !city.trim()) {
-      alert("Please enter your serving location!");
+      setPopupResult({ type: "fail", message: "Please enter your serving location." });
       return;
     }
     const hasLetter = /[a-zA-Z]/.test(password);
     const hasNumber = /[0-9]/.test(password);
     const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
     if (!hasLetter || !hasNumber || !hasSpecial) {
-      alert("❌ Weak Password!\nYour password must contain at least:\n- One Letter\n- One Number\n- One Special Character");
+      setPopupResult({ type: "fail", message: "Weak password! It must have at least one letter, one number, and one special character (e.g. @, #, !)." });
       return;
     }
+    setIsLoading(true);
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
@@ -148,11 +206,31 @@ function Signup() {
         body: JSON.stringify({ name, email, password, phone, role, profession: role === "worker" ? profession : null, city: role === "worker" ? city : "Mumbai" })
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Registration failed!");
-      alert(role === "worker" ? `Account created as ${profession} in ${city}! 🎉` : `Account created as User / Customer! 🎉`);
-      navigate("/login");
+      setIsLoading(false);
+
+      // ── Account already exists ──
+      if (response.status === 400 && data.error?.toLowerCase().includes("already exists")) {
+        setPopupResult({
+          type: "exists",
+          message: `An account with ${email} already exists. You can sign in directly with your existing credentials.`
+        });
+        return;
+      }
+
+      if (!response.ok) {
+        setPopupResult({ type: "fail", message: data.error || "Registration failed. Please try again." });
+        return;
+      }
+
+      setPopupResult({
+        type: "success",
+        message: role === "worker"
+          ? `Your Worker account as ${profession} in ${city} has been created successfully!`
+          : `Your Customer account has been created successfully! Welcome aboard.`
+      });
     } catch (err) {
-      alert(`❌ Registration Error: ${err.message}`);
+      setIsLoading(false);
+      setPopupResult({ type: "fail", message: `Network error: ${err.message}. Please check your connection.` });
     }
   };
 
@@ -182,12 +260,20 @@ function Signup() {
           });
           const data = await response.json();
 
+          // ── Account already exists (409 from backend) ──
+          if (response.status === 409) {
+            setPopupResult({
+              type: "exists",
+              message: data.error || "An account with this Google email already exists. Please sign in instead."
+            });
+            return;
+          }
+
           if (!response.ok) {
             setPopupResult({ type: "fail", message: data.error || "Registration failed. Please try again." });
             return;
           }
 
-          // Verify account exists in DB
           if (!data.user?.email) {
             setPopupResult({ type: "fail", message: "Account verification failed. Could not confirm your account in our database." });
             return;
