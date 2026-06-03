@@ -334,7 +334,7 @@ function MyBookings() {
                         {isReviewed ? "✅ Review Submitted & Cashback Claimed" : "⭐ Leave Review & Earn ₹50 Wallet Cashback"}
                       </button>
 
-                      {isReviewed && (
+                      {isReviewed && booking.status !== "Paid Out" && (
                         <button 
                           onClick={() => setActiveComplaintBooking(booking)}
                           style={{
