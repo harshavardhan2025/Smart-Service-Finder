@@ -151,25 +151,41 @@ export const googleAuth = async (req, res) => {
     }
 
     // 1. Verify access token with Google UserInfo endpoint
-    const googleRes = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`);
+    let googleRes;
+    try {
+      googleRes = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`);
+    } catch (netErr) {
+      return res.status(503).json({ error: "Could not reach Google servers. Please check your connection and try again." });
+    }
+
     if (!googleRes.ok) {
-      return res.status(401).json({ error: "Invalid Google Access Token" });
+      return res.status(401).json({ error: "Google authentication failed. Your session may have expired. Please try again." });
     }
 
     const googleUser = await googleRes.json();
     const { email, name } = googleUser;
 
     if (!email) {
-      return res.status(400).json({ error: "Google account does not have a verified email" });
+      return res.status(400).json({ error: "Google account does not have a verified email address." });
     }
 
-    // 2. Check if user exists in database
+    // 2. Check if user already exists in database
     let user = await User.findOne({ email });
     const placeholderPassword = `GoogleOAuthSecurePassword123!`;
+    const isSignupFlow = !!role; // if role is passed, it's a signup attempt
 
-    if (!user) {
+    // ── SIGNUP FLOW: role was provided ──────────────────────
+    if (isSignupFlow) {
+      if (user) {
+        // Email already registered — reject with clear message
+        return res.status(409).json({
+          error: `An account with this email (${email}) already exists. Please go to the login page and sign in instead.`
+        });
+      }
+
       const finalName = customName || name;
-      // 3. Create new user (Sign-up flow)
+
+      // Create new user
       user = await User.create({
         name: finalName,
         email,
@@ -197,7 +213,7 @@ export const googleAuth = async (req, res) => {
         });
       }
 
-      // Log the registration event
+      // Log signup event
       await ActivityLog.create({
         user_id: user._id,
         email: user.email,
@@ -207,17 +223,25 @@ export const googleAuth = async (req, res) => {
         ip: req.ip || "127.0.0.1",
         city: city || "Mumbai"
       });
+
+    // ── LOGIN FLOW: no role passed ───────────────────────────
     } else {
-      // 4. User exists (Login flow)
-      // Check if user is a blocked worker
+      if (!user) {
+        // No account found — user needs to register first
+        return res.status(404).json({
+          error: `No account found for ${email}. Please sign up first to create your account.`
+        });
+      }
+
+      // Block check for workers
       if (user.role === "worker") {
         const associatedWorker = await Worker.findOne({ email: user.email });
         if (associatedWorker && associatedWorker.status === "Blocked") {
-          return res.status(403).json({ error: "CRITICAL: Your worker account has been PERMANENTLY BLOCKED by admin control." });
+          return res.status(403).json({ error: "Your worker account has been blocked by admin. Please contact support." });
         }
       }
 
-      // Log the login event
+      // Log login event
       await ActivityLog.create({
         user_id: user._id,
         email: user.email,
@@ -243,6 +267,8 @@ export const googleAuth = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("[googleAuth] Error:", error.message);
+    res.status(500).json({ error: `Server error during Google authentication: ${error.message}` });
   }
 };
+
