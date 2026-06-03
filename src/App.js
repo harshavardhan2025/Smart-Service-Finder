@@ -15,6 +15,7 @@ import WorkerDashboard from "./pages/WorkerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import GoogleAuthMock from "./pages/GoogleAuthMock";
 import SupportPage from "./pages/SupportPage";
 import MyBookings from "./pages/MyBookings";
 import ReviewsRewards from "./pages/ReviewsRewards";
@@ -83,6 +84,11 @@ function App() {
         <Route
           path="/signup"
           element={<Signup />}
+        />
+
+        <Route
+          path="/google-auth"
+          element={<GoogleAuthMock />}
         />
 
         <Route

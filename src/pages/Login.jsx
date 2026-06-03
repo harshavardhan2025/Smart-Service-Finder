@@ -1,7 +1,9 @@
+/* global google */
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import authBg from "../assets/auth-bg.jpg";
+import authMobileBg from "../assets/auth-mobile-bg.png";
 import { use3dTilt } from "../utils/use3dTilt";
 import { fetchAllWorkersCached } from "../utils/workerService";
 
@@ -10,6 +12,7 @@ function Login() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [loginStatus, setLoginStatus] = useState(null); // { type: 'success'|'error', message: '' }
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const navigate = useNavigate();
   const loginCardRef = use3dTilt();
 
@@ -33,7 +36,54 @@ function Login() {
         })
         .catch(() => {});
     }
+
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  const handleLoginSuccess = (data) => {
+    const user = data.user;
+    sessionStorage.setItem("userRole", user.role);
+    sessionStorage.setItem("userName", user.name);
+    sessionStorage.setItem("userEmail", user.email);
+    sessionStorage.setItem("userId", user.id || user._id);
+    sessionStorage.setItem("authToken", data.token);
+
+    if (user.role === "worker") {
+      sessionStorage.setItem("loggedInWorkerId", user.id);
+      setLoginStatus({ type: "success", message: `Welcome ${user.name}! Redirecting to dashboard... 🛠️` });
+      setTimeout(() => navigate("/worker-dashboard"), 600);
+    } else if (user.role === "admin") {
+      setLoginStatus({ type: "success", message: "Welcome Administrator! Redirecting... 👑" });
+      setTimeout(() => navigate("/admin-dashboard"), 600);
+    } else {
+      setLoginStatus({ type: "success", message: `Welcome ${user.name}! Redirecting... 🎉` });
+
+      if (user.city) {
+        sessionStorage.setItem("userCity", user.city);
+        localStorage.setItem("userCity", user.city);
+      }
+
+      setTimeout(() => navigate("/"), 600);
+
+      const targetCity = user.city || "Mumbai";
+      fetch(`/api/workers/geocode?q=${encodeURIComponent(targetCity)}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(geoData => {
+          if (geoData?.lat && geoData?.lon) {
+            localStorage.setItem("userLocation", geoData.label || targetCity);
+            localStorage.setItem("userCoordsLat", String(parseFloat(geoData.lat)));
+            localStorage.setItem("userCoordsLng", String(parseFloat(geoData.lon)));
+          } else {
+            localStorage.setItem("userLocation", targetCity);
+          }
+        })
+        .catch(() => localStorage.setItem("userLocation", targetCity));
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -60,48 +110,7 @@ function Login() {
         return;
       }
 
-      // Save user session details
-      const user = data.user;
-      sessionStorage.setItem("userRole", user.role);
-      sessionStorage.setItem("userName", user.name);
-      sessionStorage.setItem("userEmail", user.email);
-      sessionStorage.setItem("userId", user.id || user._id);
-      sessionStorage.setItem("authToken", data.token);
-
-      if (user.role === "worker") {
-        sessionStorage.setItem("loggedInWorkerId", user.id);
-        setLoginStatus({ type: "success", message: `Welcome ${user.name}! Redirecting to dashboard... 🛠️` });
-        setTimeout(() => navigate("/worker-dashboard"), 600);
-      } else if (user.role === "admin") {
-        setLoginStatus({ type: "success", message: "Welcome Administrator! Redirecting... 👑" });
-        setTimeout(() => navigate("/admin-dashboard"), 600);
-      } else {
-        setLoginStatus({ type: "success", message: `Welcome ${user.name}! Redirecting... 🎉` });
-
-        // Save city immediately
-        if (user.city) {
-          sessionStorage.setItem("userCity", user.city);
-          localStorage.setItem("userCity", user.city);
-        }
-
-        // Navigate fast, geocode in background
-        setTimeout(() => navigate("/"), 600);
-
-        // Background geocode — doesn't block navigation
-        const targetCity = user.city || "Mumbai";
-        fetch(`/api/workers/geocode?q=${encodeURIComponent(targetCity)}`)
-          .then(res => res.ok ? res.json() : null)
-          .then(geoData => {
-            if (geoData?.lat && geoData?.lon) {
-              localStorage.setItem("userLocation", geoData.label || targetCity);
-              localStorage.setItem("userCoordsLat", String(parseFloat(geoData.lat)));
-              localStorage.setItem("userCoordsLng", String(parseFloat(geoData.lon)));
-            } else {
-              localStorage.setItem("userLocation", targetCity);
-            }
-          })
-          .catch(() => localStorage.setItem("userLocation", targetCity));
-      }
+      handleLoginSuccess(data);
     } catch (err) {
       setIsLoading(false);
       setLoginStatus({ type: "error", message: "Network error! Please check your connection." });
@@ -109,26 +118,46 @@ function Login() {
   };
 
   const handleGoogleSignIn = () => {
-    const input = prompt(
-      "Google Secure Account Verification:\n\nEnter your Google Email ID (ends with @gmail.com) or 10-digit mobile number to verify:"
-    );
-
-    if (input === null) return; // User clicked cancel
-
-    const emailRegex = /^[^\s@]+@gmail\.com$/i;
-    const phoneRegex = /^[0-9]{10}$/;
-
-    if (emailRegex.test(input.trim())) {
-      sessionStorage.setItem("userRole", "user");
-      setLoginStatus({ type: "success", message: `Google verified! Welcome to Workzy! 🎉` });
-      setTimeout(() => navigate("/"), 600);
-    } else if (phoneRegex.test(input.trim())) {
-      sessionStorage.setItem("userRole", "user");
-      setLoginStatus({ type: "success", message: `Google verified! Welcome to Workzy! 🎉` });
-      setTimeout(() => navigate("/"), 600);
-    } else {
-      setLoginStatus({ type: "error", message: "Invalid Google email or mobile number!" });
+    if (!window.google) {
+      setLoginStatus({ type: "error", message: "Google SDK is not loaded yet. Please refresh or try again!" });
+      return;
     }
+
+    const client = window.google.accounts.oauth2.initTokenClient({
+      client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID || "565022097960-4l136709q4clm2a1l9231f855d0j0eef.apps.googleusercontent.com",
+      scope: "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
+      callback: async (tokenResponse) => {
+        if (tokenResponse && tokenResponse.access_token) {
+          setIsLoading(true);
+          setLoginStatus({ type: "success", message: "Verifying Google Authentication... 🔑" });
+
+          try {
+            const response = await fetch("/api/auth/google", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                accessToken: tokenResponse.access_token
+              })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              setIsLoading(false);
+              setLoginStatus({ type: "error", message: data.error || "Google Sign-In failed!" });
+              return;
+            }
+
+            handleLoginSuccess(data);
+          } catch (err) {
+            setIsLoading(false);
+            setLoginStatus({ type: "error", message: "Network error during Google Sign-In!" });
+          }
+        }
+      }
+    });
+
+    client.requestAccessToken();
   };
 
   return (
@@ -146,7 +175,7 @@ function Login() {
           justifyContent: "center",
           alignItems: "center",
           padding: "40px 20px",
-          backgroundImage: `url(${authBg})`, 
+          backgroundImage: `url(${isMobile ? authMobileBg : authBg})`, 
           backgroundSize: "cover", 
           backgroundPosition: "center", 
           backgroundRepeat: "no-repeat" 

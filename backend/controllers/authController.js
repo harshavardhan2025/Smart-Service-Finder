@@ -140,3 +140,106 @@ export const loginUser = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const googleAuth = async (req, res) => {
+  try {
+    const { accessToken, role, profession, city } = req.body;
+
+    if (!accessToken) {
+      return res.status(400).json({ error: "Access token is required" });
+    }
+
+    // 1. Verify access token with Google UserInfo endpoint
+    const googleRes = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`);
+    if (!googleRes.ok) {
+      return res.status(401).json({ error: "Invalid Google Access Token" });
+    }
+
+    const googleUser = await googleRes.json();
+    const { email, name } = googleUser;
+
+    if (!email) {
+      return res.status(400).json({ error: "Google account does not have a verified email" });
+    }
+
+    // 2. Check if user exists in database
+    let user = await User.findOne({ email });
+    const placeholderPassword = `GoogleOAuthSecurePassword123!`;
+
+    if (!user) {
+      // 3. Create new user (Sign-up flow)
+      user = await User.create({
+        name,
+        email,
+        password: placeholderPassword,
+        role: role || "user",
+        city: city || "Mumbai"
+      });
+
+      if (user.role === "worker") {
+        const basePrice = SERVICE_BASE_PRICES[profession || "Carpentry"] || 350;
+        const multiplier = getPriceMultiplier(city || "");
+        const locationPrice = Math.round(basePrice * multiplier);
+
+        await Worker.create({
+          name,
+          email,
+          service: profession || "Carpentry",
+          city: city || "Mumbai",
+          rating: 2.7,
+          ratingSum: 0,
+          reviews: 0,
+          price: locationPrice,
+          status: "Active"
+        });
+      }
+
+      // Log the registration event
+      await ActivityLog.create({
+        user_id: user._id,
+        email: user.email,
+        role: user.role,
+        action: "SIGNUP",
+        device: req.headers["user-agent"] || "Generic Web Client",
+        ip: req.ip || "127.0.0.1",
+        city: city || "Mumbai"
+      });
+    } else {
+      // 4. User exists (Login flow)
+      // Check if user is a blocked worker
+      if (user.role === "worker") {
+        const associatedWorker = await Worker.findOne({ email: user.email });
+        if (associatedWorker && associatedWorker.status === "Blocked") {
+          return res.status(403).json({ error: "CRITICAL: Your worker account has been PERMANENTLY BLOCKED by admin control." });
+        }
+      }
+
+      // Log the login event
+      await ActivityLog.create({
+        user_id: user._id,
+        email: user.email,
+        role: user.role,
+        action: "LOGIN",
+        device: req.headers["user-agent"] || "Generic Web Client",
+        ip: req.ip || "127.0.0.1",
+        city: user.city || "Unknown"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Authentication successful",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        city: user.city,
+      },
+      token: generateToken(user._id),
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

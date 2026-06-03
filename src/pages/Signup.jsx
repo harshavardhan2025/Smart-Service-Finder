@@ -1,7 +1,9 @@
-import { useState } from "react";
+/* global google */
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import authBg from "../assets/auth-bg.jpg";
+import authMobileBg from "../assets/auth-mobile-bg.png";
 import { use3dTilt } from "../utils/use3dTilt";
 
 
@@ -13,8 +15,17 @@ function Signup() {
   const [role, setRole] = useState("user");
   const [profession, setProfession] = useState("Carpentry");
   const [city, setCity] = useState(""); // Free text location
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const navigate = useNavigate();
   const signupCardRef = use3dTilt();
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -73,28 +84,86 @@ function Signup() {
   };
 
   const handleGoogleSignUp = () => {
-    const input = prompt(
-      "Google Secure Account Verification:\n\nEnter your Google Email ID (ends with @gmail.com) or 10-digit mobile number to verify and register:"
-    );
-
-    if (input === null) return; // User clicked cancel
-
-    const emailRegex = /^[^\s@]+@gmail\.com$/i;
-    const phoneRegex = /^[0-9]{10}$/;
-
-    if (emailRegex.test(input.trim()) || phoneRegex.test(input.trim())) {
-      const targetInput = input.trim();
-      const msg =
-        role === "worker"
-          ? `Google account verified successfully! ✅\nVerified Account: ${targetInput}\nAccount registered successfully as a Professional ${profession}! 🎉`
-          : `Google account verified successfully! ✅\nVerified Account: ${targetInput}\nAccount registered successfully as a User / Customer! 🎉`;
-      alert(msg);
-      navigate("/");
-    } else {
-      alert(
-        "❌ Verification Failed!\nPlease enter a valid Google Email (must end with @gmail.com) or a valid 10-digit mobile number."
-      );
+    if (role === "worker" && !city.trim()) {
+      alert("❌ Please enter your serving location before signing up with Google!");
+      return;
     }
+
+    if (!window.google) {
+      alert("❌ Google SDK is not loaded yet. Please refresh or try again!");
+      return;
+    }
+
+    const client = window.google.accounts.oauth2.initTokenClient({
+      client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID || "565022097960-4l136709q4clm2a1l9231f855d0j0eef.apps.googleusercontent.com",
+      scope: "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
+      callback: async (tokenResponse) => {
+        if (tokenResponse && tokenResponse.access_token) {
+          try {
+            const response = await fetch("/api/auth/google", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                accessToken: tokenResponse.access_token,
+                role,
+                profession: role === "worker" ? profession : null,
+                city: role === "worker" ? city : "Mumbai"
+              })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              alert(`❌ Google Sign-Up Failed: ${data.error || "Registration failed."}`);
+              return;
+            }
+
+            // Store session details to automatically log in the user
+            sessionStorage.setItem("userRole", data.user.role);
+            sessionStorage.setItem("userName", data.user.name);
+            sessionStorage.setItem("userEmail", data.user.email);
+            sessionStorage.setItem("userId", data.user.id || data.user._id);
+            sessionStorage.setItem("authToken", data.token);
+
+            alert(
+              role === "worker"
+                ? `Account created/verified successfully via Google as a Professional ${profession} in ${city}! Redirecting... 🎉`
+                : `Account created/verified successfully via Google as a User / Customer! Redirecting... 🎉`
+            );
+
+            if (data.user.role === "worker") {
+              sessionStorage.setItem("loggedInWorkerId", data.user.id);
+              navigate("/worker-dashboard");
+            } else {
+              if (data.user.city) {
+                sessionStorage.setItem("userCity", data.user.city);
+                localStorage.setItem("userCity", data.user.city);
+              }
+              navigate("/");
+
+              // fetch geocode in background
+              const targetCity = data.user.city || "Mumbai";
+              fetch(`/api/workers/geocode?q=${encodeURIComponent(targetCity)}`)
+                .then(res => res.ok ? res.json() : null)
+                .then(geoData => {
+                  if (geoData?.lat && geoData?.lon) {
+                    localStorage.setItem("userLocation", geoData.label || targetCity);
+                    localStorage.setItem("userCoordsLat", String(parseFloat(geoData.lat)));
+                    localStorage.setItem("userCoordsLng", String(parseFloat(geoData.lon)));
+                  } else {
+                    localStorage.setItem("userLocation", targetCity);
+                  }
+                })
+                .catch(() => localStorage.setItem("userLocation", targetCity));
+            }
+          } catch (err) {
+            alert(`❌ Network error during Google Sign-Up! Please try again.`);
+          }
+        }
+      }
+    });
+
+    client.requestAccessToken();
   };
 
   return (
@@ -112,7 +181,7 @@ function Signup() {
           justifyContent: "center",
           alignItems: "center",
           padding: "40px 20px",
-          backgroundImage: `url(${authBg})`, 
+          backgroundImage: `url(${isMobile ? authMobileBg : authBg})`, 
           backgroundSize: "cover", 
           backgroundPosition: "center", 
           backgroundRepeat: "no-repeat" 

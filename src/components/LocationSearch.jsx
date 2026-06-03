@@ -150,8 +150,8 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation }) {
           </div>
         )}
       </div>
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <div style={{ position: "relative" }}>
+      <div style={{ display: "flex", alignItems: "center", width: "100%", gap: "10px", flexWrap: "wrap" }}>
+        <div style={{ position: "relative", flex: 1, maxWidth: "350px", width: "100%" }}>
           <input
             id="service-search-input"
             type="text"
@@ -162,7 +162,7 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation }) {
             onFocus={() => setFocused(true)}
             onBlur={() => setTimeout(() => setFocused(false), 150)}
             style={{
-              width: "350px",
+              width: "100%",
               padding: "10px 45px 10px 12px",
               borderRadius: "8px",
               border: isListening ? "1.5px solid #ef4444" : "1.5px solid var(--border)",
@@ -260,12 +260,12 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation }) {
           onClick={handleSearch}
           className="btn-primary"
           style={{
-            marginLeft: "10px",
             padding: "10px 20px",
             borderRadius: "8px",
             border: "none",
             cursor: "pointer",
             fontWeight: "bold",
+            flexShrink: 0
           }}
         >
           Search

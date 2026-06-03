@@ -20,6 +20,52 @@ function Sidebar() {
   }, []);
 
   const isDark = theme === "dark";
+  const isLoggedIn = !!sessionStorage.getItem("userId");
+  const userRole = sessionStorage.getItem("userRole");
+
+  const links = [
+    { to: "/", icon: <FaHome />, label: "Home Page" }
+  ];
+
+  let sidebarSubtitle = "Explore Local Professionals";
+
+  if (isLoggedIn) {
+    if (userRole === "user") {
+      sidebarSubtitle = "Customer Navigation";
+      links.push(
+        { to: "/user-dashboard", icon: <FaUser />, label: "My Dashboard" },
+        { to: "/my-bookings", icon: <FaBook />, label: "My Bookings" },
+        { to: "/plans-offers", icon: <FaPercent />, label: "Plans & Offers" },
+        { to: "/reviews", icon: <FaGift />, label: "Reviews & Rewards" },
+        { to: "/profile", icon: <FaUser />, label: "My Profile" }
+      );
+    } else if (userRole === "worker") {
+      sidebarSubtitle = "Worker Navigation";
+      links.push(
+        { to: "/worker-dashboard", icon: <FaUser />, label: "Worker Dashboard" },
+        { to: "/profile", icon: <FaUser />, label: "My Profile" }
+      );
+    } else if (userRole === "admin") {
+      sidebarSubtitle = "Administrator Navigation";
+      links.push(
+        { to: "/admin-dashboard", icon: <FaUser />, label: "Admin Dashboard" }
+      );
+    }
+  } else {
+    links.push(
+      { to: "/plans-offers", icon: <FaPercent />, label: "Plans & Offers" }
+    );
+  }
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("userRole");
+    sessionStorage.removeItem("userId");
+    sessionStorage.removeItem("userName");
+    sessionStorage.removeItem("userEmail");
+    sessionStorage.removeItem("authToken");
+    alert("Logged out successfully! 👋");
+    window.location.href = "/";
+  };
 
   return (
     <div>
@@ -91,24 +137,18 @@ function Sidebar() {
         }}
       >
         {/* Logo / Title */}
-        <div style={{ marginBottom: "40px", paddingTop: "24px", borderBottom: "1px solid rgba(255,255,255,0.08)", paddingBottom: "20px" }}>
+        <div style={{ marginBottom: "30px", paddingTop: "24px", borderBottom: "1px solid rgba(255,255,255,0.08)", paddingBottom: "20px" }}>
           <h2 style={{ margin: 0, fontSize: "22px", fontWeight: 800, letterSpacing: "0.5px", display: "flex", alignItems: "center", gap: "10px" }}>
             🛠️ Work<span style={{ color: "var(--primary)" }}>zy</span>
           </h2>
           <p style={{ margin: "6px 0 0 0", fontSize: "12px", color: "#94a3b8" }}>
-            Navigate Customer Dashboard
+            {sidebarSubtitle}
           </p>
         </div>
 
         {/* Nav Links */}
-        <nav style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1 }}>
-          {[
-            { to: "/", icon: <FaHome />, label: "Home Page" },
-            { to: "/my-bookings", icon: <FaBook />, label: "My Bookings" },
-            { to: "/plans-offers", icon: <FaPercent />, label: "Plans & Offers" },
-            { to: "/reviews", icon: <FaGift />, label: "Reviews & Rewards" },
-            { to: "/profile", icon: <FaUser />, label: "My Profile" },
-          ].map(({ to, icon, label }) => (
+        <nav style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1, overflowY: "auto" }}>
+          {links.map(({ to, icon, label }) => (
             <Link
               key={to}
               to={to}
@@ -140,6 +180,62 @@ function Sidebar() {
               {label}
             </Link>
           ))}
+
+          {/* Dynamic Login/Signup/Logout for Mobile/Sidebar view */}
+          <div style={{ margin: "20px 0 0 0", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "20px" }}>
+            {isLoggedIn ? (
+              <button
+                onClick={handleLogout}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  backgroundColor: "#ef4444",
+                  color: "white",
+                  borderRadius: "10px",
+                  fontWeight: "bold",
+                  border: "none",
+                  cursor: "pointer"
+                }}
+              >
+                Logout
+              </button>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <Link to="/login" onClick={() => setOpen(false)} style={{ textDecoration: "none" }}>
+                  <button
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      backgroundColor: "transparent",
+                      color: "white",
+                      border: "1px solid rgba(255,255,255,0.2)",
+                      borderRadius: "10px",
+                      fontWeight: "bold",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Login
+                  </button>
+                </Link>
+                <Link to="/signup" onClick={() => setOpen(false)} style={{ textDecoration: "none" }}>
+                  <button
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      backgroundColor: "var(--primary)",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "10px",
+                      fontWeight: "bold",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Signup
+                  </button>
+                </Link>
+              </div>
+            )}
+          </div>
         </nav>
 
         {/* Footer */}

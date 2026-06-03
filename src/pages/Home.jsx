@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import Sidebar from "../components/Sidebar";
 import LocationSearch from "../components/LocationSearch";
 import MapPicker from "../components/MapPicker";
 import TopWorkers from "../components/TopWorkers";
@@ -230,7 +229,6 @@ function Home() {
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      {role === "user" && <Sidebar />}
       <Navbar />
 
       {/* Hero Welcome Banner */}
