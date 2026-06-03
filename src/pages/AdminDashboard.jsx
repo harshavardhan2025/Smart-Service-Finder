@@ -1825,7 +1825,11 @@ function AdminDashboard() {
                                     if(window.confirm(`Verify completion and release ₹${b.price} directly to the Worker account now?`)) {
                                        try {
                                          const respAction = await fetch(`/api/bookings/${b._id}/release`, {
-                                           method: "POST"
+                                           method: "POST",
+                                           headers: {
+                                             "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`,
+                                             "Content-Type": "application/json"
+                                           }
                                          });
                                          if (!respAction.ok) {
                                             const errorData = await respAction.json();
@@ -1851,7 +1855,11 @@ function AdminDashboard() {
                                     if(window.confirm(`Decline Escrow? This will cancel the worker's payout and fully refund ₹${b.price} to the customer's wallet. Proceed?`)) {
                                        try {
                                          const respAction = await fetch(`/api/bookings/${b._id}/decline-escrow`, {
-                                           method: "POST"
+                                           method: "POST",
+                                           headers: {
+                                             "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`,
+                                             "Content-Type": "application/json"
+                                           }
                                          });
                                          if (!respAction.ok) {
                                             const errorData = await respAction.json();
@@ -1930,7 +1938,11 @@ function AdminDashboard() {
                                   if(window.confirm(`APPROVE cancellation refund? This will officially CANCEL this booking and credit ₹${b.price} back to the customer's wallet. Proceed?`)) {
                                      try {
                                        const respAction = await fetch(`/api/bookings/${b._id}/approve-refund`, {
-                                         method: "POST"
+                                         method: "POST",
+                                         headers: {
+                                           "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`,
+                                           "Content-Type": "application/json"
+                                         }
                                        });
                                        if (!respAction.ok) {
                                           const errorData = await respAction.json();
@@ -1954,7 +1966,11 @@ function AdminDashboard() {
                                   if(window.confirm(`DECLINE cancellation refund? This will deny the refund and mark this booking as 'Refund Declined'. Proceed?`)) {
                                      try {
                                        const respAction = await fetch(`/api/bookings/${b._id}/decline-refund`, {
-                                         method: "POST"
+                                         method: "POST",
+                                         headers: {
+                                           "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`,
+                                           "Content-Type": "application/json"
+                                         }
                                        });
                                        if (!respAction.ok) {
                                           const errorData = await respAction.json();
@@ -2173,7 +2189,11 @@ function AdminDashboard() {
                                   if(window.confirm(`⚠️ ADMIN FORCE-CANCEL\n\nBooking: #${b._id.substr(-6).toUpperCase()}\nService: ${b.service}\nWorker: ${workerName}\nOverdue: ${overdueLabel}\nAmount: ₹${b.price}\n\nThis will:\n• Cancel the booking\n• Refund ₹${b.price} to customer wallet\n• Notify the worker about forced cancellation\n\nProceed?`)) {
                                     try {
                                       const resp = await fetch(`/api/bookings/${b._id}/admin-force-cancel`, {
-                                        method: "POST"
+                                        method: "POST",
+                                        headers: {
+                                          "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`,
+                                          "Content-Type": "application/json"
+                                        }
                                       });
                                       const data = await resp.json();
                                       if (!resp.ok) throw new Error(data.error || "Force-cancel failed");
