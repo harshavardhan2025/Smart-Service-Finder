@@ -1,5 +1,8 @@
 import crypto from "crypto";
 import Worker from "../models/Worker.js";
+import User from "../models/User.js";
+import Transaction from "../models/Transaction.js";
+import Notification from "../models/Notification.js";
 import { haversineKm, geocodeCity, getPriceMultiplier } from "../utils/geoUtils.js";
 
 // 🧠 AI SPATIAL CACHE: Prevents redundant LLM hits, accelerating repeat searches flawlessly!
@@ -322,6 +325,54 @@ export const geocodeLocation = async (req, res) => {
     } else {
       res.status(404).json({ error: "Location not found." });
     }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const sendMoneyToWorker = async (req, res) => {
+  try {
+    const { amount, reason } = req.body;
+    if (!amount || isNaN(amount) || amount <= 0) {
+      return res.status(400).json({ error: "Invalid amount specified." });
+    }
+
+    const worker = await Worker.findById(req.params.id);
+    if (!worker) {
+      return res.status(404).json({ error: "Worker not found." });
+    }
+
+    worker.walletBalance = (worker.walletBalance || 0) + Number(amount);
+    await worker.save();
+
+    // Create Transaction record
+    await Transaction.create({
+      customer: "Admin Deposit",
+      worker: worker.name,
+      service: reason || "Admin Top-up / Compensation",
+      amount: Number(amount),
+      status: "Paid Out",
+      method: "Admin Adjustment"
+    });
+
+    // Notify the worker
+    try {
+      const workerUser = await User.findOne({ email: worker.email });
+      if (workerUser) {
+        await Notification.create({
+          role: "worker",
+          user_id: workerUser._id.toString(),
+          title: "💰 Money Received from Admin",
+          message: `Admin has credited ₹${amount} to your wallet. Note: ${reason || "No reason specified."}`,
+          type: "success",
+          is_read: false
+        });
+      }
+    } catch (err) {
+      console.error("Error creating notification for worker:", err);
+    }
+
+    res.status(200).json({ success: true, message: `Successfully sent ₹${amount} to worker ${worker.name}.`, walletBalance: worker.walletBalance });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

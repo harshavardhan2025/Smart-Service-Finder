@@ -132,6 +132,15 @@ function AdminDashboard() {
   const [editingOffer, setEditingOffer] = useState(null); // null if creating
   const [offerForm, setOfferForm] = useState({ code: "", discount: "", desc: "", expiry: "" });
 
+  // Send money form states
+  const [sendMoneyWorkerId, setSendMoneyWorkerId] = useState("");
+  const [sendMoneyWorkerAmount, setSendMoneyWorkerAmount] = useState("");
+  const [sendMoneyWorkerReason, setSendMoneyWorkerReason] = useState("");
+
+  const [sendMoneyCustomerId, setSendMoneyCustomerId] = useState("");
+  const [sendMoneyCustomerAmount, setSendMoneyCustomerAmount] = useState("");
+  const [sendMoneyCustomerReason, setSendMoneyCustomerReason] = useState("");
+
   const filteredWorkers = workers.filter((w) => {
     const matchesSearch = w.name.toLowerCase().includes(workerSearch.toLowerCase()) ||
                           w.service.toLowerCase().includes(workerSearch.toLowerCase()) ||
@@ -152,9 +161,10 @@ function AdminDashboard() {
        const wResp = await fetch("/api/workers?adminView=true");
        if (wResp.ok) setWorkers(await wResp.json());
 
+       let bData = [];
        const bResp = await fetch("/api/bookings");
        if (bResp.ok) {
-           const bData = await bResp.json();
+           bData = await bResp.json();
            setLiveRealTimeBookings(bData);
            setBookings(bData);
        }
@@ -170,13 +180,18 @@ function AdminDashboard() {
        if (uResp.ok) {
            const usersData = await uResp.json();
            // Map from backend schema to frontend display expectations seamlessly
-           setCustomers(usersData.map(u => ({
-               id: u._id,
-               name: u.name,
-               email: u.email,
-               phone: u.phone || "N/A",
-               status: u.status || "Active"
-           })));
+           setCustomers(usersData.map(u => {
+               const customerBookings = bData.filter(b => b.customer_id === u._id);
+               return {
+                   id: u._id,
+                   name: u.name,
+                   email: u.email,
+                   phone: u.phone || "N/A",
+                   status: u.status || "Active",
+                   walletBalance: u.walletBalance !== undefined ? u.walletBalance : 1000,
+                   bookings: customerBookings.length
+               };
+           }));
        }
 
         const nResp = await fetch("/api/notifications?role=admin");
@@ -307,6 +322,84 @@ function AdminDashboard() {
          setCustomers(customers.filter(c => c.id !== id));
          alert(`Customer account "${name}" permanently deleted from the ledger.`);
       } catch(err) { alert("Failed to purge customer account from cloud database."); }
+    }
+  };
+
+  const handleSendMoneyToWorker = async (e) => {
+    e.preventDefault();
+    if (!sendMoneyWorkerId) {
+      alert("Please select a worker first.");
+      return;
+    }
+    if (!sendMoneyWorkerAmount || isNaN(sendMoneyWorkerAmount) || Number(sendMoneyWorkerAmount) <= 0) {
+      alert("Please enter a valid amount greater than 0.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/workers/${sendMoneyWorkerId}/send-money`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          amount: Number(sendMoneyWorkerAmount),
+          reason: sendMoneyWorkerReason
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to send money to worker.");
+      }
+
+      alert(`Successfully sent ₹${sendMoneyWorkerAmount} to worker!`);
+      setSendMoneyWorkerId("");
+      setSendMoneyWorkerAmount("");
+      setSendMoneyWorkerReason("");
+      syncAdminStore();
+    } catch (err) {
+      alert(`Error: ${err.message}`);
+    }
+  };
+
+  const handleSendMoneyToCustomer = async (e) => {
+    e.preventDefault();
+    if (!sendMoneyCustomerId) {
+      alert("Please select a customer first.");
+      return;
+    }
+    if (!sendMoneyCustomerAmount || isNaN(sendMoneyCustomerAmount) || Number(sendMoneyCustomerAmount) <= 0) {
+      alert("Please enter a valid amount greater than 0.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/users/${sendMoneyCustomerId}/send-money`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          amount: Number(sendMoneyCustomerAmount),
+          reason: sendMoneyCustomerReason
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to send money to customer.");
+      }
+
+      alert(`Successfully sent ₹${sendMoneyCustomerAmount} to customer!`);
+      setSendMoneyCustomerId("");
+      setSendMoneyCustomerAmount("");
+      setSendMoneyCustomerReason("");
+      syncAdminStore();
+    } catch (err) {
+      alert(`Error: ${err.message}`);
     }
   };
 
@@ -1267,6 +1360,100 @@ function AdminDashboard() {
                 Manage Service Professionals
               </h2>
 
+              {/* Send Money Card */}
+              <div 
+                id="worker-send-money-card"
+                style={{
+                  backgroundColor: "var(--bg-card)",
+                  border: "1.5px solid #cbd5e1",
+                  borderRadius: "12px",
+                  padding: "24px",
+                  marginBottom: "24px",
+                  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)",
+                  animation: "fadeIn 0.3s ease"
+                }}
+              >
+                <h3 style={{ margin: "0 0 16px 0", fontSize: "18px", fontWeight: 800, color: "var(--text-main)", display: "flex", alignItems: "center", gap: "8px" }}>
+                  💸 Direct Wallet Top-Up / Send Money
+                </h3>
+                <form onSubmit={handleSendMoneyToWorker} style={{ display: "flex", gap: "16px", flexWrap: "wrap", alignItems: "flex-end" }}>
+                  <div style={{ flex: 1, minWidth: "200px" }}>
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "var(--text-muted)", marginBottom: "6px" }}>Select Worker</label>
+                    <select
+                      value={sendMoneyWorkerId}
+                      onChange={(e) => setSendMoneyWorkerId(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "10px 14px",
+                        borderRadius: "8px",
+                        border: "1.5px solid #e2e8f0",
+                        fontSize: "14px",
+                        backgroundColor: "var(--bg-card)",
+                        color: "var(--text-main)",
+                        outline: "none"
+                      }}
+                    >
+                      <option value="">-- Choose a Worker --</option>
+                      {workers.map(w => (
+                        <option key={w._id} value={w._id}>{w.name} ({w.service} - Bal: ₹{w.walletBalance || 0})</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div style={{ width: "150px" }}>
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "var(--text-muted)", marginBottom: "6px" }}>Amount (₹)</label>
+                    <input
+                      type="number"
+                      placeholder="Amount"
+                      value={sendMoneyWorkerAmount}
+                      onChange={(e) => setSendMoneyWorkerAmount(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "10px 14px",
+                        borderRadius: "8px",
+                        border: "1.5px solid #e2e8f0",
+                        fontSize: "14px",
+                        outline: "none",
+                        boxSizing: "border-box"
+                      }}
+                    />
+                  </div>
+                  <div style={{ flex: 1.5, minWidth: "200px" }}>
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "var(--text-muted)", marginBottom: "6px" }}>Reason / Note</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Compensation, loyalty reward"
+                      value={sendMoneyWorkerReason}
+                      onChange={(e) => setSendMoneyWorkerReason(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "10px 14px",
+                        borderRadius: "8px",
+                        border: "1.5px solid #e2e8f0",
+                        fontSize: "14px",
+                        outline: "none",
+                        boxSizing: "border-box"
+                      }}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    style={{
+                      backgroundColor: "var(--primary)",
+                      color: "white",
+                      border: "none",
+                      padding: "11px 24px",
+                      borderRadius: "8px",
+                      fontSize: "14px",
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    Send Funds
+                  </button>
+                </form>
+              </div>
+
               <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
                 {/* Workers Filter Bar */}
                 <div style={{ display: "flex", gap: "16px", marginBottom: "24px", flexWrap: "wrap", alignItems: "center" }}>
@@ -1318,6 +1505,7 @@ function AdminDashboard() {
                       <th style={{ padding: "12px" }}>Specialty</th>
                       <th style={{ padding: "12px" }}>Location</th>
                       <th style={{ padding: "12px" }}>Base Rate (₹)</th>
+                      <th style={{ padding: "12px" }}>Wallet Balance (₹)</th>
                       <th style={{ padding: "12px" }}>Rating</th>
                       <th style={{ padding: "12px" }}>Status</th>
                       <th style={{ padding: "12px", textAlign: "right" }}>Actions</th>
@@ -1330,6 +1518,7 @@ function AdminDashboard() {
                         <td style={{ padding: "12px" }}>{w.service}</td>
                         <td style={{ padding: "12px" }}>📍 {w.city}</td>
                         <td style={{ padding: "12px", fontWeight: "800", color: "var(--success)" }}>₹{w.price || 0}</td>
+                        <td style={{ padding: "12px", fontWeight: "800", color: "#16a34a" }}>₹{w.walletBalance || 0}</td>
                         <td style={{ padding: "12px" }}>
                           <span style={{ color: "#f59e0b", marginRight: "4px" }}>⭐</span>
                           <strong>{w.rating}</strong> ({w.reviews} reviews)
@@ -1349,6 +1538,27 @@ function AdminDashboard() {
                           </span>
                         </td>
                         <td style={{ padding: "12px", textAlign: "right" }}>
+                          {/* 💸 SEND MONEY ACTION */}
+                          <button
+                            onClick={() => {
+                              setSendMoneyWorkerId(w._id);
+                              document.getElementById("worker-send-money-card")?.scrollIntoView({ behavior: "smooth" });
+                            }}
+                            style={{
+                              backgroundColor: "#e0e7ff",
+                              color: "#4338ca",
+                              border: "none",
+                              padding: "6px 12px",
+                              borderRadius: "6px",
+                              fontWeight: "bold",
+                              fontSize: "12px",
+                              cursor: "pointer",
+                              marginRight: "8px"
+                            }}
+                          >
+                            Send Money
+                          </button>
+                          
                           {/* 📈 EDIT RATE ACTION */}
                           <button
                             onClick={() => updateWorkerPrice(w._id, w.price)}
@@ -1414,6 +1624,100 @@ function AdminDashboard() {
                 Manage Registered Customers
               </h2>
 
+              {/* Send Money Card */}
+              <div 
+                id="customer-send-money-card"
+                style={{
+                  backgroundColor: "var(--bg-card)",
+                  border: "1.5px solid #cbd5e1",
+                  borderRadius: "12px",
+                  padding: "24px",
+                  marginBottom: "24px",
+                  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)",
+                  animation: "fadeIn 0.3s ease"
+                }}
+              >
+                <h3 style={{ margin: "0 0 16px 0", fontSize: "18px", fontWeight: 800, color: "var(--text-main)", display: "flex", alignItems: "center", gap: "8px" }}>
+                  💸 Direct Wallet Top-Up / Send Money
+                </h3>
+                <form onSubmit={handleSendMoneyToCustomer} style={{ display: "flex", gap: "16px", flexWrap: "wrap", alignItems: "flex-end" }}>
+                  <div style={{ flex: 1, minWidth: "200px" }}>
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "var(--text-muted)", marginBottom: "6px" }}>Select Customer</label>
+                    <select
+                      value={sendMoneyCustomerId}
+                      onChange={(e) => setSendMoneyCustomerId(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "10px 14px",
+                        borderRadius: "8px",
+                        border: "1.5px solid #e2e8f0",
+                        fontSize: "14px",
+                        backgroundColor: "var(--bg-card)",
+                        color: "var(--text-main)",
+                        outline: "none"
+                      }}
+                    >
+                      <option value="">-- Choose a Customer --</option>
+                      {customers.map(c => (
+                        <option key={c.id} value={c.id}>{c.name} ({c.email} - Bal: ₹{c.walletBalance || 0})</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div style={{ width: "150px" }}>
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "var(--text-muted)", marginBottom: "6px" }}>Amount (₹)</label>
+                    <input
+                      type="number"
+                      placeholder="Amount"
+                      value={sendMoneyCustomerAmount}
+                      onChange={(e) => setSendMoneyCustomerAmount(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "10px 14px",
+                        borderRadius: "8px",
+                        border: "1.5px solid #e2e8f0",
+                        fontSize: "14px",
+                        outline: "none",
+                        boxSizing: "border-box"
+                      }}
+                    />
+                  </div>
+                  <div style={{ flex: 1.5, minWidth: "200px" }}>
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "var(--text-muted)", marginBottom: "6px" }}>Reason / Note</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Refund, loyalty reward"
+                      value={sendMoneyCustomerReason}
+                      onChange={(e) => setSendMoneyCustomerReason(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "10px 14px",
+                        borderRadius: "8px",
+                        border: "1.5px solid #e2e8f0",
+                        fontSize: "14px",
+                        outline: "none",
+                        boxSizing: "border-box"
+                      }}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    style={{
+                      backgroundColor: "var(--primary)",
+                      color: "white",
+                      border: "none",
+                      padding: "11px 24px",
+                      borderRadius: "8px",
+                      fontSize: "14px",
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    Send Funds
+                  </button>
+                </form>
+              </div>
+
               <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
                 {/* Customers Filter Bar */}
                 <div style={{ display: "flex", gap: "16px", marginBottom: "24px", flexWrap: "wrap", alignItems: "center" }}>
@@ -1447,6 +1751,7 @@ function AdminDashboard() {
                       <th style={{ padding: "12px" }}>Phone</th>
                       <th style={{ padding: "12px" }}>Total Bookings</th>
                       <th style={{ padding: "12px" }}>Payments Spent</th>
+                      <th style={{ padding: "12px" }}>Wallet Balance (₹)</th>
                       <th style={{ padding: "12px", textAlign: "right" }}>Actions</th>
                     </tr>
                   </thead>
@@ -1458,7 +1763,29 @@ function AdminDashboard() {
                         <td style={{ padding: "12px" }}>{c.phone}</td>
                         <td style={{ padding: "12px", fontWeight: "bold" }}>{c.bookings} bookings</td>
                         <td style={{ padding: "12px", fontWeight: 800, color: "var(--primary-dark)" }}>{getCustomerSpent(c.name)}</td>
+                        <td style={{ padding: "12px", fontWeight: "800", color: "#16a34a" }}>₹{c.walletBalance || 0}</td>
                         <td style={{ padding: "12px", textAlign: "right" }}>
+                          {/* 💸 SEND MONEY ACTION */}
+                          <button
+                            onClick={() => {
+                              setSendMoneyCustomerId(c.id);
+                              document.getElementById("customer-send-money-card")?.scrollIntoView({ behavior: "smooth" });
+                            }}
+                            style={{
+                              backgroundColor: "#e0e7ff",
+                              color: "#4338ca",
+                              border: "none",
+                              padding: "6px 12px",
+                              borderRadius: "6px",
+                              fontWeight: "bold",
+                              fontSize: "12px",
+                              cursor: "pointer",
+                              marginRight: "8px"
+                            }}
+                          >
+                            Send Money
+                          </button>
+                          
                           <button
                             onClick={() => handleDeleteCustomer(c.id, c.name)}
                             style={{
@@ -1987,6 +2314,7 @@ function AdminDashboard() {
                       <thead>
                         <tr style={{ borderBottom: "2px solid #f1f5f9", color: "var(--text-muted)", fontSize: "13px" }}>
                           <th style={{ padding: "12px 8px" }}>Booking ID</th>
+                          <th style={{ padding: "12px 8px" }}>Customer Details</th>
                           <th style={{ padding: "12px 8px" }}>Service</th>
                           <th style={{ padding: "12px 8px" }}>Locked Amt</th>
                           <th style={{ padding: "12px 8px" }}>Current Status</th>
@@ -2026,6 +2354,14 @@ function AdminDashboard() {
                                     </button>
                                   </div>
                                 )}
+                              </td>
+                              <td style={{ padding: "14px 8px" }}>
+                                <div style={{ fontWeight: 700, color: "#334155" }}>{b.customer_name}</div>
+                                <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>
+                                  Email: {b.customerEmail || "N/A"}<br />
+                                  Phone: {b.customerPhone || "N/A"}<br />
+                                  City: {b.customerCity || "N/A"}
+                                </div>
                               </td>
                               <td style={{ padding: "14px 8px", fontWeight: 600, color: "#334155" }}>{b.service}</td>
                               <td style={{ padding: "14px 8px", fontWeight: 700, color: "#16a34a" }}>₹{b.price}</td>

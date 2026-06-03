@@ -129,6 +129,19 @@ export const getBookings = async (req, res) => {
           // Ignore lookup errors
         }
       }
+      if (b.customer_id) {
+        try {
+          const customerObj = await User.findById(b.customer_id);
+          if (customerObj) {
+            bObj.customerEmail = customerObj.email;
+            bObj.customerPhone = customerObj.phone;
+            bObj.customerCity = customerObj.city;
+            bObj.customerWallet = customerObj.walletBalance;
+          }
+        } catch (e) {
+          // Ignore lookup errors
+        }
+      }
       return bObj;
     }));
 
@@ -327,26 +340,20 @@ export const declineEscrow = async (req, res) => {
     booking.status = "Escrow Declined";
     await booking.save();
 
-    const customer = await User.findById(booking.customer_id);
-    if (customer) {
-      customer.walletBalance = (customer.walletBalance || 0) + booking.price;
-      await customer.save();
-
-      await Transaction.create({
-         customer: booking.customer_name,
-         worker: "System Refund",
-         service: `Escrow Refund: ${booking.service}`,
-         amount: booking.price,
-         status: "Refunded",
-         method: "Admin Escrow Decline"
-      });
-    }
+    await Transaction.create({
+       customer: booking.customer_name,
+       worker: "System Decline",
+       service: `Escrow Declined: ${booking.service}`,
+       amount: booking.price,
+       status: "Declined",
+       method: "Admin Escrow Decline"
+    });
 
     await Notification.create({
       role: "user",
       user_id: booking.customer_id,
-      title: "❌ Escrow Declined & Refunded",
-      message: `The escrow payment of ₹${booking.price} for your ${booking.service} service was declined by Admin and refunded to your wallet.`,
+      title: "❌ Escrow Declined",
+      message: `The escrow payment of ₹${booking.price} for your ${booking.service} service was declined by Admin.`,
       type: "warning",
       is_read: false
     });
@@ -360,7 +367,7 @@ export const declineEscrow = async (req, res) => {
             role: "worker",
             user_id: workerUser._id.toString(),
             title: "🚫 Escrow Payment Declined",
-            message: `Your pending escrow payment for the ${booking.service} service was declined by Administration. Funds were returned to the customer.`,
+            message: `Your pending escrow payment for the ${booking.service} service was declined by Administration.`,
             type: "warning",
             is_read: false
           });
@@ -370,7 +377,7 @@ export const declineEscrow = async (req, res) => {
       console.error("Error creating escrow decline notification for worker:", err);
     }
 
-    res.status(200).json({ success: true, message: "Escrow declined and customer fully refunded." });
+    res.status(200).json({ success: true, message: "Escrow declined by administration." });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -1,4 +1,6 @@
 import User from "../models/User.js";
+import Transaction from "../models/Transaction.js";
+import Notification from "../models/Notification.js";
 
 export const getUsers = async (req, res) => {
   try {
@@ -26,5 +28,46 @@ export const deleteUser = async (req, res) => {
     res.status(200).json({ success: true, message: "User account deleted" });
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+};
+
+export const sendMoneyToCustomer = async (req, res) => {
+  try {
+    const { amount, reason } = req.body;
+    if (!amount || isNaN(amount) || amount <= 0) {
+      return res.status(400).json({ error: "Invalid amount specified." });
+    }
+
+    const customer = await User.findById(req.params.id);
+    if (!customer) {
+      return res.status(404).json({ error: "Customer not found." });
+    }
+
+    customer.walletBalance = (customer.walletBalance || 0) + Number(amount);
+    await customer.save();
+
+    // Create Transaction record
+    await Transaction.create({
+      customer: customer.name,
+      worker: "Admin Deposit",
+      service: reason || "Admin Top-up / Compensation",
+      amount: Number(amount),
+      status: "Refunded",
+      method: "Admin Adjustment"
+    });
+
+    // Create Notification for the customer
+    await Notification.create({
+      role: "user",
+      user_id: customer._id.toString(),
+      title: "💰 Money Received from Admin",
+      message: `Admin has credited ₹${amount} to your wallet. Note: ${reason || "No reason specified."}`,
+      type: "success",
+      is_read: false
+    });
+
+    res.status(200).json({ success: true, message: `Successfully sent ₹${amount} to customer ${customer.name}.`, walletBalance: customer.walletBalance });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
