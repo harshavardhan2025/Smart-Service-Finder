@@ -135,11 +135,7 @@ function Login() {
     <div style={{ 
       minHeight: "100vh", 
       display: "flex", 
-      flexDirection: "column", 
-      backgroundImage: `url(${authBg})`, 
-      backgroundSize: "100% 100%", 
-      backgroundPosition: "center", 
-      backgroundRepeat: "no-repeat" 
+      flexDirection: "column"
     }}>
       <Navbar />
 
@@ -149,7 +145,11 @@ function Login() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          padding: "20px"
+          padding: "20px",
+          backgroundImage: `url(${authBg})`, 
+          backgroundSize: "cover", 
+          backgroundPosition: "center", 
+          backgroundRepeat: "no-repeat"
         }}
       >
         <div
@@ -300,6 +300,21 @@ function Login() {
 
         </div>
       </div>
+
+      {/* Modern Footer */}
+      <footer
+        style={{
+          textAlign: "center",
+          padding: "24px",
+          color: "var(--text-secondary)",
+          fontSize: "14px",
+          backgroundColor: "var(--bg-card)",
+          borderTop: "1px solid var(--border-color)",
+          fontWeight: 500
+        }}
+      >
+        © 2026 Workzy Inc. All rights reserved. Made with ❤️ by PS-152 Team.
+      </footer>
 
       {/* Spinner animation */}
       <style>{`
