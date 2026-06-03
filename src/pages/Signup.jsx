@@ -406,7 +406,9 @@ function Signup() {
                     <div style={{ fontWeight: 700, fontSize: "15px", color: "#15803d" }}>Sign up as Worker</div>
                     <div style={{ fontSize: "12px", color: "#4ade80", marginTop: "2px" }}>Offer your services. Fill a few details first.</div>
                   </div>
-                  <div style={{ marginLeft: "auto", fontSize: "18px", color: "#15803d" }}>→</div>
+                  <div style={{ marginLeft: "auto" }}>
+                    <GoogleIcon />
+                  </div>
                 </button>
               </div>
 
