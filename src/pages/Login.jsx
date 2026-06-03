@@ -137,10 +137,9 @@ function Login() {
       display: "flex", 
       flexDirection: "column", 
       backgroundImage: `url(${authBg})`, 
-      backgroundSize: "cover", 
+      backgroundSize: "100% 100%", 
       backgroundPosition: "center", 
-      backgroundRepeat: "no-repeat", 
-      backgroundAttachment: "fixed" 
+      backgroundRepeat: "no-repeat" 
     }}>
       <Navbar />
 
