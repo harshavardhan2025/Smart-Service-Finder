@@ -11,44 +11,44 @@
 [data-theme="light"] {
 
   /* MAIN COLORS */
-  --primary: #4f46e5;
-  --secondary: #6366f1;
-  --accent: #10b981;
-  --success: #10b981;
-  --warning: #f59e0b;
+  --primary: #31525B;
+  --secondary: #B3DEE5;
+  --accent: #FFA101;
+  --success: #31525B;
+  --warning: #FFA101;
   --danger: #ef4444;
 
   /* BACKGROUNDS */
   --bg-main:
     linear-gradient(135deg,
-      #eef2ff 0%,
-      #f5f3ff 50%,
-      #ecfdf5 100%);
+      #FAF9F6 0%,
+      #FAE6B1 50%,
+      #F0F8F9 100%);
 
   --bg-card:
-    rgba(255, 255, 255, 0.75);
+    rgba(255, 255, 255, 0.85);
 
   --bg-card-hover:
-    rgba(255, 255, 255, 0.95);
+    rgba(255, 255, 255, 0.98);
 
   /* TEXT */
-  --text-main: #0f172a;
-  --text-muted: #475569;
+  --text-main: #132024;
+  --text-muted: #455C62;
   --text-primary: var(--text-main);
   --text-secondary: var(--text-muted);
 
   /* BORDER */
   --border:
-    rgba(226, 232, 240, 0.8);
+    rgba(49, 82, 91, 0.15);
   --border-color: var(--border);
 
   /* SHADOWS */
   --shadow-3d:
-    0 10px 25px -5px rgba(79, 70, 229, 0.04),
-    0 8px 10px -6px rgba(0, 0, 0, 0.02);
+    0 10px 25px -5px rgba(49, 82, 91, 0.08),
+    0 8px 10px -6px rgba(0, 0, 0, 0.03);
 
   --shadow-hover:
-    0 20px 40px -10px rgba(79, 70, 229, 0.15);
+    0 20px 40px -10px rgba(49, 82, 91, 0.2);
 
   --blur: blur(20px);
 }
@@ -59,38 +59,38 @@
 
 [data-theme="dark"] {
 
-  --primary: #818cf8;
-  --secondary: #6366f1;
-  --accent: #34d399;
-  --success: #34d399;
-  --warning: #fbbf24;
+  --primary: #B3DEE5;
+  --secondary: #31525B;
+  --accent: #FFA101;
+  --success: #B3DEE5;
+  --warning: #FFA101;
   --danger: #f87171;
 
   --bg-main:
     radial-gradient(circle at 20% 20%,
-      rgba(99, 102, 241, 0.18),
-      transparent 40%),
-    radial-gradient(circle at 80% 80%,
-      rgba(52, 211, 153, 0.12),
+      rgba(255, 161, 1, 0.12),
       transparent 45%),
+    radial-gradient(circle at 80% 80%,
+      rgba(179, 222, 229, 0.15),
+      transparent 40%),
     linear-gradient(135deg,
-      #0b0f19 0%,
-      #090d16 50%,
-      #020617 100%);
+      #0C1618 0%,
+      #152528 50%,
+      #090F10 100%);
 
   --bg-card:
-    rgba(30, 41, 59, 0.7);
+    rgba(49, 82, 91, 0.35);
 
   --bg-card-hover:
-    rgba(30, 41, 59, 0.9);
+    rgba(49, 82, 91, 0.55);
 
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
+  --text-main: #FAF8F5;
+  --text-muted: #A1B3B6;
   --text-primary: var(--text-main);
   --text-secondary: var(--text-muted);
 
   --border:
-    rgba(51, 65, 85, 0.6);
+    rgba(179, 222, 229, 0.25);
   --border-color: var(--border);
 
   /* SHADOWS */
@@ -99,11 +99,11 @@
     0 10px 10px -5px rgba(0, 0, 0, 0.4);
 
   --shadow-hover:
-    0 25px 50px -12px rgba(99, 102, 241, 0.25);
+    0 25px 50px -12px rgba(179, 222, 229, 0.25);
 
   --blur: blur(26px);
-  --primary-light: rgba(129, 140, 248, 0.15);
-  --primary-dark: #f8fafc;
+  --primary-light: rgba(179, 222, 229, 0.15);
+  --primary-dark: #FAF8F5;
 }
 
 /* =========================================================
@@ -208,8 +208,8 @@ body,
 
   background:
     linear-gradient(135deg,
-      rgba(255, 78, 205, 0.35),
-      rgba(0, 224, 255, 0.2),
+      rgba(255, 161, 1, 0.45),
+      rgba(179, 222, 229, 0.35),
       transparent);
 
   -webkit-mask:
@@ -358,7 +358,7 @@ button {
   border-radius: 18px;
 
   box-shadow:
-    0 12px 30px rgba(255, 78, 205, 0.25);
+    0 12px 30px rgba(49, 82, 91, 0.25);
 
   animation:
     gradientMove 5s ease infinite;
@@ -370,7 +370,7 @@ button {
     translateY(-4px) scale(1.03);
 
   box-shadow:
-    0 20px 45px rgba(78, 237, 255, 0.168);
+    0 20px 45px rgba(179, 222, 229, 0.25);
 }
 
 /* SECONDARY */
@@ -394,8 +394,8 @@ button {
 
   background:
     linear-gradient(135deg,
-      rgba(255, 78, 205, 0.08),
-      rgba(0, 224, 255, 0.06));
+      rgba(255, 161, 1, 0.08),
+      rgba(179, 222, 229, 0.06));
 
   transform: translateY(-3px);
 }
@@ -462,8 +462,8 @@ button {
 
   background:
     linear-gradient(135deg,
-      rgba(255, 78, 205, 0.14),
-      rgba(0, 224, 255, 0.08));
+      rgba(255, 161, 1, 0.14),
+      rgba(179, 222, 229, 0.08));
 
   opacity: 0;
 
@@ -520,7 +520,7 @@ button {
   color: white;
 
   box-shadow:
-    0 0 30px rgba(255, 78, 205, 0.35);
+    0 0 30px rgba(255, 161, 1, 0.35);
 }
 
 /* =========================================================
