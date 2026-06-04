@@ -43,7 +43,7 @@ function Sidebar() {
       sidebarSubtitle = "Worker Navigation";
       links.push(
         { to: "/worker-dashboard", icon: <FaUser />, label: "Worker Dashboard" },
-        { to: "/profile", icon: <FaUser />, label: "My Profile" }
+        { to: "/worker-dashboard", state: { resetTab: "profile" }, icon: <FaUser />, label: "My Profile" }
       );
     } else if (userRole === "admin") {
       sidebarSubtitle = "Administrator Navigation";
@@ -148,10 +148,11 @@ function Sidebar() {
 
         {/* Nav Links */}
         <nav style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1, overflowY: "auto" }}>
-          {links.map(({ to, icon, label }) => (
+          {links.map(({ to, state, icon, label }) => (
             <Link
-              key={to}
+              key={label}
               to={to}
+              state={state}
               onClick={() => setOpen(false)}
               style={{
                 color: "#e2e8f0",
