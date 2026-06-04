@@ -1867,7 +1867,14 @@ function AdminDashboard() {
                           return (
                             <tr key={c._id} style={{ borderBottom: "1px solid #f1f5f9" }}>
                               <td style={{ padding: "12px", fontWeight: "bold", fontSize: 11 }}>{c._id?.substr(-6).toUpperCase()}</td>
-                              <td style={{ padding: "12px" }}>{c.reported_by || "User"}</td>
+                              <td style={{ padding: "12px" }}>
+                                 <div style={{ fontWeight: 700 }}>{c.reported_by || "User"}</div>
+                                 {linkedBooking && (
+                                   <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>
+                                     Address: {linkedBooking.address || "N/A"}
+                                   </div>
+                                 )}
+                               </td>
                               <td style={{ padding: "12px" }}>
                                 {/* Worker Info */}
                                 {complaintWorker ? (
@@ -2360,7 +2367,8 @@ function AdminDashboard() {
                                 <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>
                                   Email: {b.customerEmail || "N/A"}<br />
                                   Phone: {b.customerPhone || "N/A"}<br />
-                                  City: {b.customerCity || "N/A"}
+                                  City: {b.customerCity || "N/A"}<br />
+                                  Address: {b.address || "N/A"}
                                 </div>
                               </td>
                               <td style={{ padding: "14px 8px", fontWeight: 600, color: "#334155" }}>{b.service}</td>
@@ -2482,7 +2490,10 @@ function AdminDashboard() {
                       {liveRealTimeBookings.filter(b => b.status === "Cancellation Pending").map(b => (
                         <tr key={b._id} style={{ borderBottom: "1px solid #f1f5f9" }}>
                           <td style={{ padding: "14px 8px", fontFamily: "monospace", fontSize: "12px" }}>#{b._id.substr(-6).toUpperCase()}</td>
-                          <td style={{ padding: "14px 8px", fontWeight: 700, color: "#334155" }}>{b.customer_name}</td>
+                           <td style={{ padding: "14px 8px" }}>
+                             <div style={{ fontWeight: 700, color: "#334155" }}>{b.customer_name}</div>
+                             <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>Address: {b.address || "N/A"}</div>
+                           </td>
                           <td style={{ padding: "14px 8px", fontWeight: 600, color: "#475569" }}>{b.service}</td>
                           <td style={{ padding: "14px 8px", fontWeight: 800, color: "#059669" }}>₹{b.price}</td>
                           <td style={{ padding: "14px 8px", fontStyle: "italic", fontSize: "13px", color: "#64748b" }}>{b.cancelReason || "Client Request"}</td>
@@ -2720,7 +2731,7 @@ function AdminDashboard() {
                             <td style={{ padding: "14px 8px", fontFamily: "monospace", fontSize: "12px", fontWeight: 700 }}>#{b._id.substr(-6).toUpperCase()}</td>
                             <td style={{ padding: "14px 8px" }}>
                               <div style={{ fontWeight: 700, color: "var(--text-main)", fontSize: "13px" }}>{b.customer_name}</div>
-                              <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>{b.date} at {b.time}</div>
+                              <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>{b.date} at {b.time}<br />Address: {b.address || "N/A"}</div>
                             </td>
                             <td style={{ padding: "14px 8px", fontWeight: 600, color: "#334155" }}>{b.service}</td>
                             <td style={{ padding: "14px 8px", fontWeight: 700, color: "#16a34a" }}>₹{b.price}</td>

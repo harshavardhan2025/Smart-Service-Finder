@@ -59,6 +59,15 @@ const validateCancellationTime = (booking) => {
 
 export const createBooking = async (req, res) => {
   try {
+    // Dynamically resolve worker's real address if no address is provided or if it's the default
+    const { worker_id, address } = req.body;
+    if (worker_id && (!address || address === "Pending Dispatch Location" || address === "Kakinada Main Road, 533001" || address.trim() === "")) {
+      const worker = await Worker.findById(worker_id);
+      if (worker) {
+        req.body.address = `${worker.location || "Central Area"}, ${worker.city}`;
+      }
+    }
+
     const booking = await Booking.create(req.body);
     
     // Log the booking creation event

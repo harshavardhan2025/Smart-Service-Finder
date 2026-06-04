@@ -236,7 +236,7 @@ const seedDatabase = async () => {
           time: "10:00 AM",
           service: worker.service,
           price: worker.price,
-          address: "Kakinada Main Road, 533001",
+          address: `${worker.location || "Central Area"}, ${worker.city}`,
           status: i === 0 ? "Upcoming" : "Completed" // First is upcoming, rest completed
        });
 

@@ -2,6 +2,9 @@ import express from "express";
 import SosAlert from "../models/SosAlert.js";
 import ActivityLog from "../models/ActivityLog.js";
 import Notification from "../models/Notification.js";
+import Booking from "../models/Booking.js";
+import Worker from "../models/Worker.js";
+import User from "../models/User.js";
 
 const router = express.Router();
 
@@ -14,6 +17,49 @@ router.post("/sos", async (req, res) => {
       return res.status(400).json({ error: "user_id, name, and role are required parameters" });
     }
 
+    let worker_name = "N/A";
+    let worker_location = "N/A";
+
+    if (role === "user") {
+      // Find active booking for this customer
+      let booking = null;
+      if (booking_id) {
+        booking = await Booking.findById(booking_id);
+      }
+      if (!booking) {
+        booking = await Booking.findOne({
+          customer_id: user_id,
+          status: { $in: ["Accepted", "On the Way", "Started"] }
+        }).sort({ updatedAt: -1 });
+      }
+      if (!booking) {
+        // Fallback to any recent booking
+        booking = await Booking.findOne({ customer_id: user_id }).sort({ createdAt: -1 });
+      }
+
+      if (booking) {
+        const worker = await Worker.findById(booking.worker_id);
+        if (worker) {
+          worker_name = worker.name;
+          worker_location = worker.location || worker.city || "Kakinada";
+        }
+      }
+    } else if (role === "worker") {
+      // If a worker triggers the SOS
+      const user = await User.findById(user_id);
+      let worker = null;
+      if (user) {
+        worker = await Worker.findOne({ email: user.email });
+      }
+      if (!worker) {
+        worker = await Worker.findOne({ name: name });
+      }
+      if (worker) {
+        worker_name = worker.name;
+        worker_location = worker.location || worker.city || "Kakinada";
+      }
+    }
+
     // Create the active emergency log
     const alert = await SosAlert.create({
       user_id,
@@ -23,6 +69,8 @@ router.post("/sos", async (req, res) => {
       lat,
       lng,
       location_name: location_name || "Coordinates-based SOS Location",
+      worker_name,
+      worker_location,
       status: "Triggered"
     });
 
@@ -31,7 +79,15 @@ router.post("/sos", async (req, res) => {
       role: "admin", // Routed strictly to administrators!
       user_id: "",
       title: `🚨 SOS EMERGENCY SIGNAL FROM ${role.toUpperCase()}: ${name}`,
-      message: `Active panic warning triggered. Location: ${location_name || "Coordinates Provided"}. Linked Booking: ${booking_id || "N/A"}.`,
+      message: `⚠️ EMERGENCY SOS ACTIVATED!
+----------------------------------------
+Distress Initiator: ${name} (${role.toUpperCase()})
+Location: ${location_name || "Coordinates Provided"}
+Assigned Worker: ${worker_name}
+Worker Location: ${worker_location}
+Linked Booking: ${booking_id || "N/A"}
+Status: Live Emergency
+Reported At: ${new Date().toLocaleString()}`,
       type: "emergency",
       is_read: false
     });

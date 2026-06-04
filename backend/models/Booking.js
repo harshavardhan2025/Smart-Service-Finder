@@ -8,7 +8,7 @@ const bookingSchema = new mongoose.Schema({
   time: { type: String, required: true },
   service: { type: String, required: true },
   price: { type: Number, required: true },
-  address: { type: String, default: "Kakinada Main Road, 533001" },
+  address: { type: String, default: "Pending Dispatch Location" },
   status: { type: String, default: "Upcoming" },
   cancelReason: { type: String },
   rejectReason: { type: String }
