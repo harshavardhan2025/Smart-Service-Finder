@@ -14,7 +14,7 @@ const SERVICE_BASE_PRICES = {
   "Car Wash": 300,
   "House Cleaning": 1500,
   "Photography": 2500,
-  "Doctors & Medical": 500,
+  "Doctors & Medical": 539,
   "Interior Painting": 2000,
   "Packers & Movers": 10000,
   "AC Repair": 700,
@@ -143,34 +143,45 @@ export const loginUser = async (req, res) => {
 };
 
 export const googleAuth = async (req, res) => {
+  console.log("📡 [googleAuth] Request received. Body:", req.body);
   try {
     const { accessToken, role, profession, city, phone, name: customName } = req.body;
 
     if (!accessToken) {
+      console.warn("⚠️ [googleAuth] Access token is missing");
       return res.status(400).json({ error: "Access token is required" });
     }
 
     // 1. Verify access token with Google UserInfo endpoint
     let googleRes;
+    const googleUserinfoUrl = `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`;
+    console.log("📡 [googleAuth] Verifying access token with Google: fetching", googleUserinfoUrl);
     try {
-      googleRes = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`);
+      googleRes = await fetch(googleUserinfoUrl);
     } catch (netErr) {
+      console.error("💥 [googleAuth] Network error reaching Google UserInfo:", netErr.message);
       return res.status(503).json({ error: "Could not reach Google servers. Please check your connection and try again." });
     }
 
+    console.log("📡 [googleAuth] Google UserInfo response status:", googleRes.status);
     if (!googleRes.ok) {
+      const errText = await googleRes.text();
+      console.error("❌ [googleAuth] Google token verification failed. Response body:", errText);
       return res.status(401).json({ error: "Google authentication failed. Your session may have expired. Please try again." });
     }
 
     const googleUser = await googleRes.json();
+    console.log("📡 [googleAuth] Google UserInfo returned user:", googleUser);
     const { email, name } = googleUser;
 
     if (!email) {
+      console.warn("⚠️ [googleAuth] Google account returned no verified email address");
       return res.status(400).json({ error: "Google account does not have a verified email address." });
     }
 
     // 2. Check if user already exists in database
     let user = await User.findOne({ email });
+    console.log("📡 [googleAuth] Found existing user in DB:", user ? `${user.email} (${user.role})` : "None");
     const placeholderPassword = `GoogleOAuthSecurePassword123!`;
     const isSignupFlow = !!role; // if role is passed, it's a signup attempt
 
@@ -227,30 +238,45 @@ export const googleAuth = async (req, res) => {
     // ── LOGIN FLOW: no role passed ───────────────────────────
     } else {
       if (!user) {
-        // No account found — user needs to register first
-        return res.status(404).json({
-          error: `No account found for ${email}. Please sign up first to create your account.`
+        // No account found — auto-create a user account for seamless Google Sign-In
+        user = await User.create({
+          name: name || email.split("@")[0],
+          email,
+          password: `GoogleOAuth_${Date.now()}`,
+          role: "user",
+          city: "Mumbai",
+          phone: ""
+        });
+
+        await ActivityLog.create({
+          user_id: user._id,
+          email: user.email,
+          role: user.role,
+          action: "SIGNUP",
+          device: req.headers["user-agent"] || "Google OAuth",
+          ip: req.ip || "127.0.0.1",
+          city: "Mumbai"
+        });
+      } else {
+        // Existing user — block check for workers
+        if (user.role === "worker") {
+          const associatedWorker = await Worker.findOne({ email: user.email });
+          if (associatedWorker && associatedWorker.status === "Blocked") {
+            return res.status(403).json({ error: "Your worker account has been blocked by admin. Please contact support." });
+          }
+        }
+
+        // Log login event
+        await ActivityLog.create({
+          user_id: user._id,
+          email: user.email,
+          role: user.role,
+          action: "LOGIN",
+          device: req.headers["user-agent"] || "Generic Web Client",
+          ip: req.ip || "127.0.0.1",
+          city: user.city || "Unknown"
         });
       }
-
-      // Block check for workers
-      if (user.role === "worker") {
-        const associatedWorker = await Worker.findOne({ email: user.email });
-        if (associatedWorker && associatedWorker.status === "Blocked") {
-          return res.status(403).json({ error: "Your worker account has been blocked by admin. Please contact support." });
-        }
-      }
-
-      // Log login event
-      await ActivityLog.create({
-        user_id: user._id,
-        email: user.email,
-        role: user.role,
-        action: "LOGIN",
-        device: req.headers["user-agent"] || "Generic Web Client",
-        ip: req.ip || "127.0.0.1",
-        city: user.city || "Unknown"
-      });
     }
 
     res.status(200).json({
@@ -272,3 +298,67 @@ export const googleAuth = async (req, res) => {
   }
 };
 
+export const googleMockAuth = async (req, res) => {
+  try {
+    const { email, name } = req.body;
+
+    if (!email || !name) {
+      return res.status(400).json({ error: "Email and name are required for mock Google auth." });
+    }
+
+    // Find existing user or auto-create a regular user
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = await User.create({
+        name,
+        email,
+        password: `GoogleMockAuth_${Date.now()}`,
+        role: "user",
+        city: "Mumbai",
+        phone: ""
+      });
+      await ActivityLog.create({
+        user_id: user._id,
+        email: user.email,
+        role: user.role,
+        action: "SIGNUP",
+        device: req.headers["user-agent"] || "Google Mock Auth",
+        ip: req.ip || "127.0.0.1",
+        city: "Mumbai"
+      });
+    } else {
+      if (user.role === "worker") {
+        const associatedWorker = await Worker.findOne({ email: user.email });
+        if (associatedWorker && associatedWorker.status === "Blocked") {
+          return res.status(403).json({ error: "Your worker account has been blocked by admin." });
+        }
+      }
+      await ActivityLog.create({
+        user_id: user._id,
+        email: user.email,
+        role: user.role,
+        action: "LOGIN",
+        device: req.headers["user-agent"] || "Google Mock Auth",
+        ip: req.ip || "127.0.0.1",
+        city: user.city || "Unknown"
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Google Mock Authentication successful",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        city: user.city,
+      },
+      token: generateToken(user._id),
+    });
+  } catch (error) {
+    console.error("[googleMockAuth] Error:", error.message);
+    res.status(500).json({ error: `Mock Google auth failed: ${error.message}` });
+  }
+};

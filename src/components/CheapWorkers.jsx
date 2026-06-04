@@ -21,6 +21,15 @@ function getShortLocation(fullAddress) {
   return firstSegment.toLowerCase();
 }
 
+const truncateLocation = (loc) => {
+  if (!loc) return "";
+  const parts = loc.split(",");
+  if (parts.length > 2) {
+    return parts.slice(0, 2).join(",").trim();
+  }
+  return loc;
+};
+
 function CheapWorkers({ searchedLocation, userCoords }) {
   const [cloudWorkers, setCloudWorkers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -56,13 +65,13 @@ function CheapWorkers({ searchedLocation, userCoords }) {
     .slice(0, 4);
 
   return (
-    <div className="fade-in" style={{ padding: "20px", margin: "20px 0" }}>
+    <div className="fade-in" style={{ padding: "10px 20px 14px 20px", margin: "0" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
         <h2 style={{ margin: "0 0 4px 0", color: "var(--text-primary)", fontWeight: 800 }}>
           💰 Recommended Value
         </h2>
       </div>
-      <p style={{ color: "var(--text-secondary)", marginBottom: "15px" }}>
+      <p style={{ color: "var(--text-secondary)", marginBottom: "8px" }}>
         Highly rated professionals at great value rates near your location!
       </p>
 
@@ -79,7 +88,7 @@ function CheapWorkers({ searchedLocation, userCoords }) {
           {cheapWorkers.map((worker) => (
             <div
               key={worker._id}
-              className="premium-card"
+              className="premium-card worker-card"
               style={{ minWidth: "220px", flex: "0 0 auto" }}
             >
               <h3 style={{ margin: "0 0 5px 0", color: "var(--text-primary)" }}>{worker.name}</h3>
@@ -87,7 +96,7 @@ function CheapWorkers({ searchedLocation, userCoords }) {
                 {worker.service}
               </p>
               <p style={{ margin: "4px 0", fontSize: "13px", color: "var(--primary)", fontWeight: "bold" }}>
-                📍 {worker.city}
+                📍 {truncateLocation(worker.city)}
               </p>
               {worker.distanceKm !== undefined && (
                 <span
@@ -106,9 +115,7 @@ function CheapWorkers({ searchedLocation, userCoords }) {
                   🗺️ {worker.distanceKm < 0.5 ? "below 0.5 km" : `${worker.distanceKm} km away`}
                 </span>
               )}
-              <p style={{ fontWeight: 800, color: "var(--success)", margin: "8px 0", fontSize: "16px" }}>
-                ₹{worker.price}
-              </p>
+              <span className="price-badge">₹{worker.price}</span>
               <p style={{ margin: "5px 0" }}>
                 <span style={{ color: "#f59e0b" }}>⭐</span> {worker.rating}
               </p>

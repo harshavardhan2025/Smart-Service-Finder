@@ -134,6 +134,15 @@ function getShortLocation(fullAddress) {
   return firstSegment.toLowerCase();
 }
 
+const truncateLocation = (loc) => {
+  if (!loc) return "";
+  const parts = loc.split(",");
+  if (parts.length > 2) {
+    return parts.slice(0, 2).join(",").trim();
+  }
+  return loc;
+};
+
 function NearbyWorkers({ searchedLocation, userCoords }) {
   const [selectedService, setSelectedService] = useState(null);
   const [cloudWorkers, setCloudWorkers] = useState([]);
@@ -234,11 +243,11 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
     : [];
 
   return (
-    <div className="fade-in" style={{ padding: "20px", fontFamily: "'Outfit', sans-serif" }}>
-      <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 8px 0" }}>
+    <div className="fade-in" style={{ padding: "10px 20px 14px 20px", fontFamily: "'Outfit', sans-serif" }}>
+      <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 6px 0" }}>
         🛠️ Explore & Book Services
       </h2>
-      <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: "0 0 24px 0" }}>
+      <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: "0 0 10px 0" }}>
         Select a category below to view verified available professionals near you.
       </p>
 
@@ -491,6 +500,7 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
               </div>
             ) : (
               <div
+                className="explore-workers-grid"
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
@@ -500,7 +510,7 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
                 {filteredWorkers.map((worker, index) => (
                   <div
                     key={index}
-                    className="premium-card"
+                    className="premium-card worker-card"
                     style={{
                       display: "flex",
                       flexDirection: "column",
@@ -525,7 +535,7 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
                         {worker.service}
                       </span>
                       <p style={{ margin: "14px 0 4px 0", fontSize: "14px", color: "var(--primary)", fontWeight: "bold" }}>
-                        🏙️ {worker.city}
+                        🏙️ {truncateLocation(worker.city)}
                       </p>
                       {worker.distanceKm !== undefined ? (
                         <p style={{ margin: "4px 0", fontSize: "13px", display: "flex", alignItems: "center", gap: "6px" }}>
@@ -551,9 +561,7 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
                       <p style={{ margin: "4px 0 4px 0", fontSize: "14px", color: "#eab308", fontWeight: "bold" }}>
                         ⭐ {worker.rating}
                       </p>
-                      <p style={{ margin: "12px 0 20px 0", fontSize: "16px", color: "var(--text-primary)", fontWeight: 800 }}>
-                        💰 Price: <span style={{ color: "var(--success)" }}>₹{worker.price || (worker.service.includes("Carpentry") ? 399 : worker.service.includes("Plumbing") ? 299 : worker.service.includes("Doctors") ? 599 : 349)}</span>
-                      </p>
+                      <span className="price-badge">₹{worker.price || (worker.service.includes("Carpentry") ? 399 : worker.service.includes("Plumbing") ? 299 : worker.service.includes("Doctors") ? 599 : 349)}</span>
                     </div>
 
                     <Link to="/worker" style={{ textDecoration: "none" }} onClick={() => localStorage.setItem("selected_worker", JSON.stringify(worker))}>

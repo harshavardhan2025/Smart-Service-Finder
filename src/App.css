@@ -655,12 +655,46 @@ button {
   margin-bottom: 30px;
 }
 
-/* Home Module Map toggle */
+/* Home Module Map toggle - visible on all screen sizes */
+.map-toggle-container {
+  display: block;
+}
+/* Keep old mobile-map-toggle-container as fallback alias */
 .mobile-map-toggle-container {
-  display: none;
+  display: block;
 }
 .home-map-wrapper {
+  display: none;
+}
+.home-map-wrapper.map-visible {
   display: block;
+}
+.home-map-wrapper.map-hidden {
+  display: none;
+}
+
+/* Home section spacing — subtle separator, small gap */
+.home-section {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-top: 1px solid var(--border-color);
+  margin-top: 4px;
+}
+
+/* Price badge highlight — used on all worker cards */
+.price-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  padding: 5px 14px;
+  border-radius: 20px;
+  box-shadow: 0 3px 10px rgba(22, 163, 74, 0.3);
+  letter-spacing: 0.02em;
+  margin: 8px 0 4px 0;
 }
 
 /* MOBILE MEDIA QUERY */
@@ -745,16 +779,16 @@ button {
 
   /* Scale down inputs, selects, textareas */
   input, select, textarea {
-    padding: 10px 12px !important;
-    border-radius: 10px !important;
-    font-size: 13px !important;
+    padding: 8px 10px !important;
+    border-radius: 8px !important;
+    font-size: 12px !important;
   }
 
   /* Scale down buttons */
   button, .btn-primary, .btn-secondary {
-    padding: 10px 16px !important;
-    border-radius: 10px !important;
-    font-size: 13px !important;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    font-size: 12px !important;
   }
 
   /* Customize specific dashboard layouts */
@@ -827,121 +861,306 @@ button {
   }
 
   /* Map Toggler Mobile */
+  .map-toggle-container,
   .mobile-map-toggle-container {
     display: block !important;
-    padding: 0 20px 10px 20px !important;
+    padding: 0 16px 10px 16px !important;
   }
   .home-map-wrapper.map-hidden {
     display: none !important;
   }
   .home-map-wrapper.map-visible {
     display: block !important;
-    padding: 0 10px !important;
+    padding: 0 8px !important;
+  }
+  .home-section {
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+    margin-top: 2px !important;
+  }
+  /* Price badge mobile scale */
+  .price-badge {
+    font-size: 13px !important;
+    padding: 4px 10px !important;
+    border-radius: 14px !important;
+    margin: 5px 0 3px 0 !important;
   }
 
   /* Profile responsiveness */
   .profile-content {
-    margin-top: -24px !important;
-    padding: 0 12px !important;
+    margin-top: -20px !important;
+    padding: 0 10px !important;
   }
   .profile-card {
-    padding: 16px !important;
-    border-radius: 16px !important;
-    margin-bottom: 16px !important;
+    padding: 12px 14px !important;
+    border-radius: 14px !important;
+    margin-bottom: 10px !important;
+  }
+  /* Profile avatar card: tighter flex layout */
+  .profile-card[style*="align-items: center"] {
+    gap: 12px !important;
+  }
+  /* Wallet & loyalty cards: stack vertically and reduce gap */
+  .profile-card > div[style*="display: flex"][style*="gap: \"20px\""],
+  .profile-card > div[style*="flexWrap"] {
+    gap: 8px !important;
   }
   .wallet-loyalty-card {
-    min-width: 100% !important;
-    padding: 14px 16px !important;
-    border-radius: 12px !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    padding: 10px 12px !important;
+    border-radius: 10px !important;
+    flex: none !important;
+  }
+  /* Section headings inside cards: reduce bottom margin */
+  .profile-card h3 {
+    margin-bottom: 10px !important;
+    font-size: 13px !important;
+  }
+  /* Edit form fields: smaller gap */
+  .profile-card div[style*="flex-direction: column"][style*="gap"] {
+    gap: 8px !important;
   }
   .profile-info-row {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 4px !important;
-    padding: 10px 0 !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 6px !important;
+    padding: 8px 0 !important;
+  }
+  .profile-info-row span:first-child {
+    font-size: 11.5px !important;
+    flex-shrink: 0 !important;
   }
   .profile-info-row span:last-child {
-    font-size: 14px !important;
-    word-break: break-all !important;
+    font-size: 12.5px !important;
+    word-break: break-word !important;
+    text-align: right !important;
   }
   .txn-expanded-receipt {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+    padding: 10px !important;
+  }
+  /* Wallet cards row: stack vertically, tight gap */
+  .wallet-cards-row {
+    flex-direction: column !important;
     gap: 8px !important;
-    padding: 12px !important;
+  }
+  /* Payment history header: smaller margin */
+  .payment-history-header {
+    margin-bottom: 10px !important;
+  }
+  /* Transaction status pills: tighter spacing */
+  .txn-status-pills {
+    gap: 5px !important;
+    margin-bottom: 8px !important;
+  }
+  .txn-status-pills span {
+    font-size: 11px !important;
+    padding: 2px 8px !important;
+  }
+  /* Profile avatar card h2 */
+  .profile-card h2 {
+    font-size: 15px !important;
+    margin-bottom: 3px !important;
+  }
+  /* Quick links card: smaller gap and padding for links */
+  .quick-links-card {
+    padding: 12px 14px !important;
+    margin-bottom: 16px !important;
+  }
+  .quick-links-card h3 {
+    margin-bottom: 8px !important;
+  }
+  .quick-links-card a {
+    padding: 7px 12px !important;
+    font-size: 12px !important;
+    border-radius: 8px !important;
+  }
+  .quick-links-card > div {
+    gap: 8px !important;
+  }
+  /* Profile page header section: reduce large padding */
+  .dashboard-header-block {
+    padding: 20px 16px 40px 16px !important;
   }
 
   /* My Bookings responsiveness */
+  .bookings-content {
+    padding: 14px 12px !important;
+  }
+  /* Summary pills on bookings: tighter spacing */
+  .bookings-content > div:first-child {
+    gap: 6px !important;
+    margin-bottom: 14px !important;
+  }
   .booking-card {
-    padding: 14px 16px !important;
-    border-radius: 14px !important;
-    margin-bottom: 12px !important;
+    padding: 10px 12px !important;
+    border-radius: 12px !important;
+    margin-bottom: 8px !important;
   }
   .booking-card-details {
     flex-direction: column !important;
     align-items: flex-start !important;
-    gap: 6px !important;
-    padding-top: 10px !important;
+    gap: 4px !important;
+    padding-top: 8px !important;
   }
   .booking-card-details span {
-    font-size: 12.5px !important;
+    font-size: 12px !important;
   }
   .custom-modal {
-    padding: 20px !important;
-    border-radius: 16px !important;
+    padding: 16px !important;
+    border-radius: 14px !important;
   }
   .custom-modal h3 {
-    font-size: 18px !important;
+    font-size: 15px !important;
   }
   .custom-modal p {
-    font-size: 12.5px !important;
-    margin-bottom: 16px !important;
+    font-size: 12px !important;
+    margin-bottom: 10px !important;
   }
   .custom-modal select, .custom-modal textarea {
-    font-size: 13px !important;
-    padding: 8px 10px !important;
+    font-size: 12px !important;
+    padding: 7px 9px !important;
     border-radius: 8px !important;
   }
 
   /* Reviews & Rewards responsiveness */
   .points-dashboard-card {
-    padding: 16px !important;
-    border-radius: 14px !important;
-    margin-bottom: 16px !important;
+    padding: 12px 14px !important;
+    border-radius: 12px !important;
+    margin-bottom: 10px !important;
   }
   .points-dashboard-card h2 {
-    font-size: 30px !important;
+    font-size: 26px !important;
   }
   .pending-review-card {
-    padding: 14px 16px !important;
-    border-radius: 14px !important;
+    padding: 10px 12px !important;
+    border-radius: 12px !important;
+    margin-bottom: 8px !important;
   }
   .pending-review-card h3 {
-    font-size: 15px !important;
+    font-size: 13px !important;
   }
   .pending-review-card textarea {
-    font-size: 12.5px !important;
-    padding: 8px 10px !important;
+    font-size: 12px !important;
+    padding: 7px 9px !important;
   }
   .rewards-grid {
     grid-template-columns: 1fr 1fr !important;
-    gap: 10px !important;
+    gap: 8px !important;
   }
   .reward-card {
-    padding: 12px 10px !important;
-    border-radius: 12px !important;
+    padding: 10px 8px !important;
+    border-radius: 10px !important;
   }
   .reward-card h3 {
-    font-size: 13px !important;
+    font-size: 12px !important;
   }
   .reward-card p {
-    font-size: 10.5px !important;
+    font-size: 10px !important;
   }
   .reward-card button {
-    font-size: 11.5px !important;
-    padding: 6px 8px !important;
+    font-size: 11px !important;
+    padding: 5px 7px !important;
   }
   .past-review-card {
-    padding: 12px 14px !important;
-    border-radius: 12px !important;
+    padding: 10px 12px !important;
+    border-radius: 10px !important;
+    margin-bottom: 6px !important;
+  }
+
+  /* Service search overrides */
+  .service-search-container {
+    padding: 10px 12px !important;
+  }
+  #service-search-input {
+    padding: 8px 36px 8px 10px !important;
+    font-size: 12px !important;
+    border-radius: 8px !important;
+  }
+  #service-search-btn {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Homepage Location Bar overrides */
+  .homepage-location-bar {
+    margin: 8px 12px 0 12px !important;
+    padding: 10px !important;
+    border-radius: 10px !important;
+  }
+  .homepage-location-bar input {
+    font-size: 12px !important;
+    padding: 6px 8px !important;
+    border-radius: 6px !important;
+  }
+  .homepage-location-bar .location-action-buttons {
+    max-width: 100% !important;
+  }
+  .homepage-location-bar .location-action-buttons button {
+    padding: 6px 8px !important;
+    font-size: 11px !important;
+    border-radius: 6px !important;
+  }
+
+  /* Booking Page responsiveness overrides */
+  .booking-page-container {
+    padding: 16px 12px !important;
+  }
+  .booking-page-card {
+    padding: 16px !important;
+    border-radius: 16px !important;
+  }
+  .booking-page-card h1 {
+    font-size: 22px !important;
+    margin-bottom: 4px !important;
+  }
+  .booking-page-card h3 {
+    font-size: 15px !important;
+  }
+  .booking-page-card p {
+    font-size: 12px !important;
+  }
+  .booking-page-card select, .booking-page-card textarea {
+    padding: 8px 10px !important;
+    font-size: 12px !important;
+    border-radius: 8px !important;
+  }
+  .booking-page-card button {
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Worker card responsiveness overrides */
+  .worker-card {
+    min-width: 155px !important;
+    padding: 10px !important;
+    border-radius: 10px !important;
+  }
+  .worker-card h3, .worker-card h4 {
+    font-size: 13px !important;
+    margin-bottom: 2px !important;
+  }
+  .worker-card p, .worker-card span {
+    font-size: 10.5px !important;
+    margin: 2px 0 !important;
+  }
+  .worker-card div {
+    margin-top: 8px !important;
+    padding-top: 6px !important;
+  }
+  .worker-card button {
+    padding: 6px 8px !important;
+    font-size: 10.5px !important;
+    border-radius: 5px !important;
+  }
+
+  .explore-workers-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+    gap: 12px !important;
   }
 }

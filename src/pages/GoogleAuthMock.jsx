@@ -46,6 +46,8 @@ function GoogleAuthMock() {
             },
             window.location.origin
           );
+          // Close the popup after sending the message
+          setTimeout(() => window.close(), 300);
         }
       }, 1500); // 1.5s realistic verification delay
       return () => clearTimeout(timer);

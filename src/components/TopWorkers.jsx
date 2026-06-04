@@ -21,6 +21,15 @@ function getShortLocation(fullAddress) {
   return firstSegment.toLowerCase();
 }
 
+const truncateLocation = (loc) => {
+  if (!loc) return "";
+  const parts = loc.split(",");
+  if (parts.length > 2) {
+    return parts.slice(0, 2).join(",").trim();
+  }
+  return loc;
+};
+
 function TopWorkers({ searchedLocation, userCoords }) {
   const [cloudWorkers, setCloudWorkers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -56,12 +65,12 @@ function TopWorkers({ searchedLocation, userCoords }) {
     .slice(0, 4);
 
   return (
-    <div className="fade-in" style={{ padding: "20px" }}>
+    <div className="fade-in" style={{ padding: "10px 20px 14px 20px" }}>
       <h2 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 4px 0", color: "var(--text-primary)" }}>
         🔥 Top-Rated Professionals
       </h2>
       {searchedLocation && (
-        <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: "0 0 15px 0" }}>
+        <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: "0 0 8px 0" }}>
           Near <strong style={{ color: "var(--primary)" }}>{searchedLocation.split(",")[0]}</strong>
         </p>
       )}
@@ -79,7 +88,7 @@ function TopWorkers({ searchedLocation, userCoords }) {
           {topWorkers.map((worker) => (
             <div
               key={worker._id}
-              className="premium-card"
+              className="premium-card worker-card"
               style={{ minWidth: "220px", flex: "0 0 auto" }}
             >
               <h3 style={{ margin: "0 0 5px 0", fontSize: "18px", color: "var(--text-primary)" }}>
@@ -89,7 +98,7 @@ function TopWorkers({ searchedLocation, userCoords }) {
                 {worker.service}
               </p>
               <p style={{ margin: "5px 0", fontSize: "13px", color: "var(--primary)", fontWeight: "bold" }}>
-                📍 {worker.city}
+                📍 {truncateLocation(worker.city)}
               </p>
               {worker.distanceKm !== undefined && (
                 <span
@@ -111,9 +120,7 @@ function TopWorkers({ searchedLocation, userCoords }) {
               <p style={{ margin: "8px 0", fontWeight: "bold", fontSize: "14px" }}>
                 <span style={{ color: "#f59e0b" }}>⭐</span> {worker.rating}
               </p>
-              <p style={{ margin: "4px 0 10px 0", fontWeight: "800", fontSize: "16px", color: "var(--success)" }}>
-                ₹{worker.price || 350}
-              </p>
+              <span className="price-badge">₹{worker.price || 350}</span>
 
               <Link
                 to="/worker"

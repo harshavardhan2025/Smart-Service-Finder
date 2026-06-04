@@ -44,7 +44,15 @@ function Login() {
   }, []);
 
   const handleLoginSuccess = (data) => {
+    console.log("🔑 handleLoginSuccess called with data:", data);
     const user = data.user;
+    if (!user) {
+      console.error("❌ user object is missing in response data!");
+      setLoginStatus({ type: "error", message: "Authentication response is missing user data." });
+      setIsLoading(false);
+      return;
+    }
+    console.log("👤 Logged in user:", user);
     sessionStorage.setItem("userRole", user.role);
     sessionStorage.setItem("userName", user.name);
     sessionStorage.setItem("userEmail", user.email);
@@ -54,9 +62,11 @@ function Login() {
     if (user.role === "worker") {
       sessionStorage.setItem("loggedInWorkerId", user.id);
       setLoginStatus({ type: "success", message: `Welcome ${user.name}! Redirecting to dashboard... 🛠️` });
+      console.log("🚀 Redirecting worker to /worker-dashboard...");
       setTimeout(() => navigate("/worker-dashboard"), 600);
     } else if (user.role === "admin") {
       setLoginStatus({ type: "success", message: "Welcome Administrator! Redirecting... 👑" });
+      console.log("🚀 Redirecting admin to /admin-dashboard...");
       setTimeout(() => navigate("/admin-dashboard"), 600);
     } else {
       setLoginStatus({ type: "success", message: `Welcome ${user.name}! Redirecting... 🎉` });
@@ -66,12 +76,15 @@ function Login() {
         localStorage.setItem("userCity", user.city);
       }
 
+      console.log("🚀 Redirecting customer to /...");
       setTimeout(() => navigate("/"), 600);
 
       const targetCity = user.city || "Mumbai";
+      console.log("🛰️ Fetching geocode for user city:", targetCity);
       fetch(`/api/workers/geocode?q=${encodeURIComponent(targetCity)}`)
         .then(res => res.ok ? res.json() : null)
         .then(geoData => {
+          console.log("🛰️ Geocode response received:", geoData);
           if (geoData?.lat && geoData?.lon) {
             localStorage.setItem("userLocation", geoData.label || targetCity);
             localStorage.setItem("userCoordsLat", String(parseFloat(geoData.lat)));
@@ -80,7 +93,10 @@ function Login() {
             localStorage.setItem("userLocation", targetCity);
           }
         })
-        .catch(() => localStorage.setItem("userLocation", targetCity));
+        .catch((err) => {
+          console.error("💥 Geocode fetch failed:", err);
+          localStorage.setItem("userLocation", targetCity);
+        });
     }
   };
 
@@ -117,47 +133,71 @@ function Login() {
   };
 
   const handleGoogleSignIn = () => {
-    if (!window.google) {
-      setLoginStatus({ type: "error", message: "Google SDK is not loaded yet. Please refresh or try again!" });
-      return;
-    }
-
-    const client = window.google.accounts.oauth2.initTokenClient({
-      client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID || "849555982996-giolb22mkrfbg8c4ut0ohbv1ps9giv2o.apps.googleusercontent.com",
-      scope: "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
-      callback: async (tokenResponse) => {
-        if (tokenResponse && tokenResponse.access_token) {
-          setIsLoading(true);
-          setLoginStatus({ type: "success", message: "Verifying Google Authentication... 🔑" });
-
-          try {
-            const response = await fetch("/api/auth/google", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                accessToken: tokenResponse.access_token
-              })
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-              setIsLoading(false);
-              setLoginStatus({ type: "error", message: data.error || "Google Sign-In failed!" });
-              return;
+    console.log("🔍 handleGoogleSignIn clicked.");
+    // Wait for Google SDK to be ready (loaded async)
+    const trySignIn = (attemptsLeft) => {
+      console.log(`🔍 Checking for Google SDK... attempts left: ${attemptsLeft}`);
+      if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+        console.log("🔍 Google SDK is loaded. Initializing token client...");
+        const client = window.google.accounts.oauth2.initTokenClient({
+          client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID || "849555982996-giolb22mkrfbg8c4ut0ohbv1ps9giv2o.apps.googleusercontent.com",
+          scope: "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
+          callback: async (tokenResponse) => {
+            console.log("🔍 Google SDK callback received tokenResponse:", tokenResponse);
+            if (tokenResponse && tokenResponse.access_token) {
+              setIsLoading(true);
+              setLoginStatus({ type: "success", message: "Verifying Google Authentication... 🔑" });
+              console.log("📡 Sending token to backend /api/auth/google...");
+              try {
+                const response = await fetch("/api/auth/google", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ accessToken: tokenResponse.access_token })
+                });
+                console.log(`📡 Backend responded with status: ${response.status}`);
+                const data = await response.json();
+                console.log("📡 Backend responded with data:", data);
+                if (!response.ok) {
+                  console.error("❌ Backend token verification failed:", data.error);
+                  setIsLoading(false);
+                  setLoginStatus({ type: "error", message: data.error || "Google Sign-In failed!" });
+                  return;
+                }
+                console.log("✅ Google login verified successfully, calling handleLoginSuccess...");
+                handleLoginSuccess(data);
+              } catch (err) {
+                console.error("💥 Fetch error verifying Google token:", err);
+                setIsLoading(false);
+                setLoginStatus({ type: "error", message: "Network error during Google Sign-In!" });
+              }
+            } else if (tokenResponse && tokenResponse.error) {
+              console.error("❌ Google Sign-In returned tokenResponse error:", tokenResponse.error);
+              setLoginStatus({ type: "error", message: `Google Sign-In cancelled or failed: ${tokenResponse.error}` });
+            } else {
+              console.warn("⚠️ tokenResponse has no access_token and no error:", tokenResponse);
+              setLoginStatus({ type: "error", message: "Google Authentication response invalid." });
             }
-
-            handleLoginSuccess(data);
-          } catch (err) {
-            setIsLoading(false);
-            setLoginStatus({ type: "error", message: "Network error during Google Sign-In!" });
+          },
+          error_callback: (err) => {
+            console.error("💥 Google SDK error_callback triggered:", err);
+            setLoginStatus({ type: "error", message: `Google Sign-In error: ${err.message || "Unknown error"}` });
           }
-        }
+        });
+        console.log("🔍 Requesting access token...");
+        client.requestAccessToken({ prompt: "consent" });
+      } else if (attemptsLeft > 0) {
+        // SDK not ready yet, retry after 500ms
+        console.log("🔍 Google SDK not ready. Retrying in 500ms...");
+        setLoginStatus({ type: "success", message: "Loading Google Sign-In... please wait" });
+        setTimeout(() => trySignIn(attemptsLeft - 1), 500);
+      } else {
+        console.error("❌ Google SDK failed to load after multiple retries!");
+        setLoginStatus({ type: "error", message: "Google Sign-In could not load. Please refresh the page and try again." });
       }
-    });
-
-    client.requestAccessToken();
+    };
+    trySignIn(6); // retry up to 6 times (3 seconds total)
   };
+
 
   return (
     <div style={{ 

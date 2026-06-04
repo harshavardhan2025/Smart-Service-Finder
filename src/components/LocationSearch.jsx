@@ -127,7 +127,7 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation }) {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div className="service-search-container" style={{ padding: "20px" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
         <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary, #6b7280)", fontWeight: 600 }}>
           🔍 Search Services or Workers

@@ -8,10 +8,10 @@ import AnimatedFailure from "../components/AnimatedFailure";
 
 function BookingPage() {
   const [date, setDate] = useState(new Date());
-  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [selectedSlot, setSelectedSlot] = useState("Instant (10-20 mins)");
   const [isEmergency, setIsEmergency] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("UPI");
-  const [paying, setPaying] = useState(false);
+  const [paying, setPaying] = useState(true);
   const [walletBal, setWalletBal] = useState(0);
   const [dispatchAddress, setDispatchAddress] = useState("");
   const customPrice = null;
@@ -286,13 +286,13 @@ function BookingPage() {
 
 
   return (
-    <div style={{ 
+    <div className="booking-page-container" style={{ 
       minHeight: "100vh", 
       background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)", 
       padding: "40px 20px", 
       fontFamily: "'Inter', sans-serif" 
     }}>
-      <div style={{ 
+      <div className="booking-page-card" style={{ 
         maxWidth: 550, 
         margin: "0 auto", 
         background: "rgba(255, 255, 255, 0.9)", 

@@ -21,6 +21,7 @@ import ReviewsRewards from "./pages/ReviewsRewards";
 import Profile from "./pages/Profile";
 import PlansOffers from "./pages/PlansOffers";
 import AiChatBot from "./components/AiChatBot";
+import GoogleAuthMock from "./pages/GoogleAuthMock";
 
 // 🔐 SECURITY SHIELD: Prevent direct address bar entry by guests!
 function PrivateRoute({ children }) {
@@ -104,6 +105,11 @@ function App() {
         <Route
           path="/plans-offers"
           element={<PlansOffers />}
+        />
+
+        <Route
+          path="/google-auth"
+          element={<GoogleAuthMock />}
         />
 
       </Routes>

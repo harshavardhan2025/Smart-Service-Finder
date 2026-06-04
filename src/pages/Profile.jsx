@@ -122,7 +122,7 @@ function Profile() {
         style={{
           background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)",
           color: "white",
-          padding: "40px 24px 60px 24px"
+          padding: "30px 20px 50px 20px"
         }}
       >
         <Link
@@ -249,10 +249,10 @@ function Profile() {
             marginBottom: "20px"
           }}
         >
-          <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", fontWeight: 700, color: "#1e293b", display: "flex", alignItems: "center", gap: "8px" }}>
+          <h3 style={{ margin: "0 0 14px 0", fontSize: "16px", fontWeight: 700, color: "#1e293b", display: "flex", alignItems: "center", gap: "8px" }}>
             🪙 Wallet & Rewards Dashboard
           </h3>
-          <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+          <div className="wallet-cards-row" style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
             {/* Wallet Balance Card */}
             <div className="wallet-loyalty-card" style={{ flex: 1, minWidth: "200px", padding: "20px", borderRadius: "16px", background: "linear-gradient(135deg, #42a5f5, #1e88e5)", color: "white" }}>
               <div style={{ fontSize: "12px", opacity: 0.9, fontWeight: 600, textTransform: "uppercase" }}>Available Wallet Balance</div>
@@ -293,7 +293,7 @@ function Profile() {
             marginBottom: "20px"
           }}
         >
-          <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", fontWeight: 700, color: "#1e293b" }}>
+          <h3 style={{ margin: "0 0 14px 0", fontSize: "16px", fontWeight: 700, color: "#1e293b" }}>
             📋 Personal Information
           </h3>
 
@@ -451,7 +451,7 @@ function Profile() {
           }}
         >
           {/* Section Header */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px", flexWrap: "wrap", gap: "10px" }}>
+          <div className="payment-history-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", flexWrap: "wrap", gap: "8px" }}>
             <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "#1e293b" }}>
               💳 Payment History
             </h3>
@@ -462,7 +462,7 @@ function Profile() {
           </div>
 
           {/* Summary Pills */}
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "18px" }}>
+          <div className="txn-status-pills" style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "12px" }}>
             {Object.entries(STATUS_STYLE).map(([status, style]) => (
               <span
                 key={status}
@@ -593,14 +593,7 @@ function Profile() {
 
         {/* Quick Links */}
         <div
-          className="profile-card premium-card"
-          style={{
-            backgroundColor: "var(--bg-card)",
-            borderRadius: "20px",
-            padding: "20px 28px",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.07)",
-            marginBottom: "28px"
-          }}
+          className="profile-card premium-card quick-links-card"
         >
           <h3 style={{ margin: "0 0 14px 0", fontSize: "16px", fontWeight: 700, color: "#1e293b" }}>
             🔗 Quick Links

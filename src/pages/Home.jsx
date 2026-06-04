@@ -9,6 +9,15 @@ import NearbyWorkers from "../components/NearbyWorkers";
 import { filterWorkersClientSide } from "../utils/workerService";
 import SkeletonLoader from "../components/SkeletonLoader";
 
+const truncateLocation = (loc) => {
+  if (!loc) return "";
+  const parts = loc.split(",");
+  if (parts.length > 2) {
+    return parts.slice(0, 2).join(",").trim();
+  }
+  return loc;
+};
+
 function Home() {
   const navigate = useNavigate();
   const role = sessionStorage.getItem("userRole") || "user";
@@ -22,6 +31,121 @@ function Home() {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiSuggestedAreas, setAiSuggestedAreas] = useState([]);
   const [showMap, setShowMap] = useState(false);
+  const [locationSearchInput, setLocationSearchInput] = useState(
+    localStorage.getItem("userLocation") || "Kadapa, Andhra Pradesh, India"
+  );
+
+  useEffect(() => {
+    if (searchedLocation) {
+      setLocationSearchInput(searchedLocation);
+    }
+  }, [searchedLocation]);
+
+  const handleAutoDetectLocation = async () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setUserCoords({ lat: latitude, lng: longitude });
+        localStorage.setItem("userCoordsLat", latitude.toString());
+        localStorage.setItem("userCoordsLng", longitude.toString());
+        
+        try {
+          const url = `https://photon.komoot.io/reverse?lon=${longitude}&lat=${latitude}`;
+          const res = await fetch(url);
+          if (res.ok) {
+            const data = await res.json();
+            const f = data?.features?.[0];
+            if (f) {
+              const p = f.properties;
+              const city = p.city || p.town || p.village || p.county || p.name || "";
+              const label = [p.name, p.housenumber, p.street, p.city || p.town || p.village, p.state, p.country]
+                .filter(Boolean).join(", ");
+              
+              setSearchedLocation(label);
+              localStorage.setItem("userLocation", label);
+              localStorage.setItem("userCity", city || "Mumbai");
+            } else {
+              const fallback = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+              setSearchedLocation(fallback);
+              localStorage.setItem("userLocation", fallback);
+              localStorage.setItem("userCity", "Mumbai");
+            }
+          } else {
+            const fallback = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+            setSearchedLocation(fallback);
+            localStorage.setItem("userLocation", fallback);
+            localStorage.setItem("userCity", "Mumbai");
+          }
+        } catch (err) {
+          const fallback = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+          setSearchedLocation(fallback);
+          localStorage.setItem("userLocation", fallback);
+          localStorage.setItem("userCity", "Mumbai");
+        }
+      },
+      (err) => {
+        alert("Failed to auto-detect location. Please search manually.");
+        console.error("Home geolocation failed:", err);
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  };
+
+  const handleSearchLocationSubmit = async () => {
+    if (!locationSearchInput.trim()) return;
+    try {
+      const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(locationSearchInput.trim())}&limit=1`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        const f = data?.features?.[0];
+        if (f) {
+          const [lon, lat] = f.geometry.coordinates;
+          const p = f.properties;
+          const city = p.city || p.town || p.village || p.county || p.name || locationSearchInput;
+          const label = [p.name, p.city || p.town || p.village, p.state, p.country]
+            .filter(Boolean).join(", ");
+          
+          setUserCoords({ lat, lng: lon });
+          setSearchedLocation(label);
+          localStorage.setItem("userLocation", label);
+          localStorage.setItem("userCity", city);
+          localStorage.setItem("userCoordsLat", lat.toString());
+          localStorage.setItem("userCoordsLng", lon.toString());
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn("Photon search failed, trying proxy:", e.message);
+    }
+
+    // Fallback: proxy
+    try {
+      const res = await fetch(`/api/workers/geocode?q=${encodeURIComponent(locationSearchInput.trim())}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.lat && data?.lon) {
+          const lat = parseFloat(data.lat);
+          const lon = parseFloat(data.lon);
+          setUserCoords({ lat, lng: lon });
+          setSearchedLocation(data.label || locationSearchInput);
+          localStorage.setItem("userLocation", data.label || locationSearchInput);
+          localStorage.setItem("userCity", data.city || "");
+          localStorage.setItem("userCoordsLat", lat.toString());
+          localStorage.setItem("userCoordsLng", lon.toString());
+        } else {
+          alert("Location not found. Please try a different search.");
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Location not found.");
+    }
+  };
 
   // Automatic redirect if Admin or Worker tries to visit the general home page directly
   useEffect(() => {
@@ -252,6 +376,7 @@ function Home() {
       </div>
 
       <div style={{ flex: 1, maxWidth: "1200px", width: "100%", margin: "0 auto", padding: "10px" }}>
+
         <LocationSearch
           value={locationText}
           onChange={setLocationText}
@@ -310,8 +435,81 @@ function Home() {
           </div>
         )}
 
-        {/* Mobile map collapse toggle option */}
-        <div className="mobile-map-toggle-container" style={{ padding: "0 20px 10px 20px" }}>
+        {/* Premium Location Search & Auto-Detect Bar */}
+        {!showMap && (
+          <div 
+            className="premium-card homepage-location-bar" 
+            style={{ 
+              margin: "10px 20px 14px 20px", 
+              padding: "16px",
+              backgroundColor: "var(--bg-card)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px"
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-secondary)" }}>
+                📍 Set Service Location
+              </span>
+              {searchedLocation && (
+                <span style={{ fontSize: "11px", color: "#16a34a", fontWeight: "bold" }}>
+                  Active Address Resolved
+                </span>
+              )}
+            </div>
+            
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+              <input
+                type="text"
+                placeholder="Search city, town, street, village..."
+                value={locationSearchInput}
+                onChange={(e) => setLocationSearchInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleSearchLocationSubmit(); }}
+                style={{ 
+                  flex: 1, 
+                  minWidth: "200px",
+                  padding: "10px 12px",
+                  fontSize: "13.5px",
+                  borderRadius: "8px"
+                }}
+              />
+              <div style={{ display: "flex", gap: "8px", width: "100%", maxWidth: "260px" }} className="location-action-buttons">
+                <button
+                  onClick={handleSearchLocationSubmit}
+                  className="btn-primary"
+                  style={{ 
+                    flex: 1,
+                    padding: "10px",
+                    fontSize: "13px",
+                    borderRadius: "8px",
+                    whiteSpace: "nowrap"
+                  }}
+                >
+                  Search
+                </button>
+                <button
+                  onClick={handleAutoDetectLocation}
+                  className="btn-secondary"
+                  style={{ 
+                    flex: 1,
+                    padding: "10px",
+                    fontSize: "13px",
+                    borderRadius: "8px",
+                    backgroundColor: "#0284c7",
+                    color: "white",
+                    whiteSpace: "nowrap"
+                  }}
+                >
+                  📍 Auto Detect
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Map collapse toggle option - visible on all screen sizes */}
+        <div className="map-toggle-container" style={{ padding: "0 20px 14px 20px" }}>
           <button
             onClick={() => setShowMap(!showMap)}
             style={{
@@ -343,8 +541,8 @@ function Home() {
         </div>
 
         {/* 🚨 Instant Booking Services (Active Online Workers) */}
-        <div className="fade-in" style={{ padding: "20px", marginBottom: "10px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+        <div className="fade-in home-section" style={{ padding: "12px 20px 8px 20px", marginBottom: "4px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
             <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-primary)", margin: 0 }}>
               ⚡ Instant Booking Services
             </h2>
@@ -353,7 +551,7 @@ function Home() {
               10-20 MINS ARRIVAL
             </span>
           </div>
-          <p style={{ margin: "0 0 20px 0", fontSize: "14px", color: "var(--text-secondary)" }}>
+          <p style={{ margin: "0 0 10px 0", fontSize: "14px", color: "var(--text-secondary)" }}>
             The following certified professionals are currently online, active, and dispatched instantly for emergency assistance.
           </p>
 
@@ -380,7 +578,7 @@ function Home() {
               ).map((worker) => (
                 <div
                   key={worker._id || worker.id}
-                  className="premium-card"
+                  className="premium-card worker-card"
                   onClick={() => {
                     localStorage.setItem("selected_worker", JSON.stringify(worker));
                     navigate("/worker");
@@ -400,8 +598,8 @@ function Home() {
                   <p style={{ margin: "0 0 8px 0", fontSize: "13px", color: "var(--text-secondary)", fontWeight: 500 }}>{worker.service}</p>
                   
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "16px", borderTop: "1px solid var(--border-color)", paddingTop: "12px" }}>
-                    <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>📍 {worker.city}</span>
-                    <strong style={{ color: "var(--primary-dark)", fontSize: "14px" }}>₹{worker.price || 399}</strong>
+                    <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>📍 {truncateLocation(worker.city)}</span>
+                    <span className="price-badge">₹{worker.price || 399}</span>
                   </div>
                 </div>
               ))}
@@ -409,9 +607,15 @@ function Home() {
           )}
         </div>
 
-        <TopWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
-        <CheapWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
-        <NearbyWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
+        <div className="home-section" style={{ marginBottom: "0" }}>
+          <TopWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
+        </div>
+        <div className="home-section" style={{ marginBottom: "0" }}>
+          <CheapWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
+        </div>
+        <div className="home-section" style={{ marginBottom: "0" }}>
+          <NearbyWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
+        </div>
       </div>
 
       {/* Modern Footer */}
