@@ -1,19 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
-/* Global Variables & Design System */
 :root {
-  --primary: #6b4f4f;
-  --primary-hover: #523a3a;
-  --primary-light: #f5eae2;
-  --primary-dark: #3a2a2a;
-  --secondary: #8b6b61;
-  --success: #8b6b61;
-  --primary-glow: rgba(107, 79, 79, 0.15);
-  --primary-grad: linear-gradient(135deg, #6b4f4f 0%, #8b6b61 100%);
-  --success-grad: linear-gradient(135deg, var(--success) 0%, #6b4f4f 100%);
+  --primary: #4f46e5;
+  --primary-hover: #3730a3;
+  --primary-light: #e0e7ff;
+  --primary-dark: #1e1b4b;
+  --secondary: #6366f1;
+  --success: #10b981;
+  --primary-glow: rgba(79, 70, 229, 0.15);
+  --primary-grad: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  --success-grad: linear-gradient(135deg, #10b981 0%, #059669 100%);
   --danger-grad: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-  --card-shadow: 0 10px 30px -5px rgba(107, 79, 79, 0.05), 0 4px 12px -2px rgba(107, 79, 79, 0.03);
-  --hover-shadow: 0 20px 40px -5px rgba(107, 79, 79, 0.12), 0 8px 24px -2px rgba(0, 0, 0, 0.08);
+  --card-shadow: 0 10px 30px -5px rgba(79, 70, 229, 0.05), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+  --hover-shadow: 0 20px 40px -5px rgba(79, 70, 229, 0.12), 0 8px 24px -2px rgba(0, 0, 0, 0.08);
 }
 
 body {
