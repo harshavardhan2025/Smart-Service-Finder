@@ -7,7 +7,8 @@ import SkeletonLoader from "../components/SkeletonLoader";
 // Dynamically enhanced to consume real Mongo cloud telemetry
 
 function WorkerDashboard() {
-  const [activeTab, setActiveTab] = useState("status");
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [activeTab, setActiveTab] = useState(window.innerWidth <= 768 ? "menu" : "status");
   const [isActive, setIsActive] = useState(true);
   const [openMapId, setOpenMapId] = useState(null);
   const [editMode, setEditMode] = useState(false);
@@ -16,6 +17,18 @@ function WorkerDashboard() {
   const [sosLoading, setSosLoading] = useState(false);
   const [activeSosNotificationId, setActiveSosNotificationId] = useState(() => sessionStorage.getItem("activeSosNotificationId") || null);
   const [adminResolvedAlert, setAdminResolvedAlert] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (!mobile && activeTab === "menu") {
+        setActiveTab("status");
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [activeTab]);
 
   // Load the logged-in worker ID dynamically from localStorage, fallback to 1 (Rahul Sharma)
   const selectedWorkerId = Number(sessionStorage.getItem("loggedInWorkerId")) || 1;
@@ -386,7 +399,8 @@ Reported At: ${new Date().toLocaleString()}`,
       <div className="dashboard-body">
 
         {/* ── LEFT SIDEBAR ── */}
-        <div className="dashboard-sidebar">
+        {(!isMobile || activeTab === "menu") && (
+          <div className="dashboard-sidebar">
           
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
             <span style={{ fontSize: 36 }}>{profile.photo || "👷"}</span>
@@ -437,9 +451,33 @@ Reported At: ${new Date().toLocaleString()}`,
             );
           })}
         </div>
+        )}
 
         {/* ── MAIN CONTENT ── */}
-        <div className="dashboard-content">
+        {(!isMobile || activeTab !== "menu") && (
+          <div className="dashboard-content">
+            {isMobile && (
+              <button 
+                onClick={() => setActiveTab("menu")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "10px 16px",
+                  backgroundColor: "var(--bg-card)",
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "10px",
+                  color: "var(--primary)",
+                  fontSize: "14px",
+                  fontWeight: "700",
+                  cursor: "pointer",
+                  marginBottom: "20px",
+                  borderBottom: "4px solid var(--primary-dark)"
+                }}
+              >
+                ← Back to Dashboard Menu
+              </button>
+            )}
 
           {/* STATUS TAB */}
           {activeTab === "status" && (
@@ -1309,6 +1347,7 @@ Reported At: ${new Date().toLocaleString()}`,
           )}
 
         </div>
+        )}
       </div>
 
       {/* 🚨 FLOATING SOS IN-APP PANIC TRIGGER */}
