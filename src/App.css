@@ -619,3 +619,67 @@ button {
 .payment-module {
   border-left: 5px solid #5cd2f6;
 }
+
+/* =========================================================
+   RESPONSIVE DASHBOARD LAYOUTS
+========================================================= */
+
+.dashboard-body {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+}
+
+.dashboard-sidebar {
+  width: 270px;
+  background-color: var(--bg-card);
+  border-right: 1px solid var(--border-color);
+  padding: 28px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: background-color 0.3s, transform 0.3s;
+  flex-shrink: 0;
+}
+
+.dashboard-content {
+  flex: 1;
+  padding: 36px;
+  overflow-y: auto;
+}
+
+.dashboard-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+/* MOBILE MEDIA QUERY */
+@media (max-width: 768px) {
+  .dashboard-body {
+    flex-direction: column;
+  }
+
+  .dashboard-sidebar {
+    width: 100% !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    padding: 20px 16px !important;
+  }
+
+  .dashboard-content {
+    padding: 24px 16px !important;
+  }
+
+  .dashboard-header-container {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+  }
+
+  /* Force 1-column layouts for responsive grids on mobile */
+  .responsive-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+}

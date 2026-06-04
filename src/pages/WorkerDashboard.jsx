@@ -383,10 +383,10 @@ Reported At: ${new Date().toLocaleString()}`,
   return (
     <div className="dashboard-container" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Navbar />
-      <div style={{ display: "flex", flex: 1 }}>
+      <div className="dashboard-body">
 
         {/* ── LEFT SIDEBAR ── */}
-        <div style={{ width: 270, backgroundColor: "var(--bg-card)", borderRight: "1px solid var(--border-color)", padding: "28px 16px", display: "flex", flexDirection: "column", gap: 8, transition: "background-color 0.3s" }}>
+        <div className="dashboard-sidebar">
           
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
             <span style={{ fontSize: 36 }}>{profile.photo || "👷"}</span>
@@ -439,7 +439,7 @@ Reported At: ${new Date().toLocaleString()}`,
         </div>
 
         {/* ── MAIN CONTENT ── */}
-        <div style={{ flex: 1, padding: 36, overflowY: "auto" }}>
+        <div className="dashboard-content">
 
           {/* STATUS TAB */}
           {activeTab === "status" && (
@@ -494,59 +494,61 @@ Reported At: ${new Date().toLocaleString()}`,
                 ) : bookings.length === 0 ? (
                   <p style={{ color: "var(--text-secondary)", textAlign: "center", padding: "40px" }}>No jobs booked under your profile yet.</p>
                 ) : (
-                  <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-                    <thead>
-                      <tr style={{ borderBottom: "1.5px solid var(--border-color)", color: "var(--text-secondary)" }}>
-                        <th style={{ padding: "12px 8px" }}>Customer</th>
-                        <th style={{ padding: "12px 8px" }}>Service</th>
-                        <th style={{ padding: "12px 8px" }}>Timings</th>
-                        <th style={{ padding: "12px 8px" }}>Address</th>
-                        <th style={{ padding: "12px 8px" }}>Payment</th>
-                        <th style={{ padding: "12px 8px" }}>Status</th>
-                        <th style={{ padding: "12px 8px" }}>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {bookings.map(b => (
-                        <tr key={b._id} style={{ borderBottom: "1px solid #e2e8f0", fontSize: 14 }}>
-                          <td style={{ padding: "14px 8px", fontWeight: 700 }}>{b.customer_name || "Verified Customer"}</td>
-                          <td style={{ padding: "14px 8px" }}>{b.service}</td>
-                          <td style={{ padding: "14px 8px" }}>📅 {b.date}<br />🕐 {b.time}</td>
-                          <td style={{ padding: "14px 8px" }}>{b.address}</td>
-                          <td style={{ padding: "14px 8px", fontWeight: 700, color: "var(--primary)" }}>₹{b.price}</td>
-                          <td style={{ padding: "14px 8px" }}>
-                            <span style={statusStyle(b.status)}>{b.status}</span>
-                          </td>
-                          <td style={{ padding: "14px 8px" }}>
-                            {["Accepted", "On the Way", "Started"].includes(b.status) && (
-                              <button 
-                                onClick={() => {
-                                  setSosCategory(`Ongoing Emergency during Job with ${b.customer_name || 'Customer'}`);
-                                  setActiveTab("sos");
-                                }}
-                                style={{ 
-                                  padding: "6px 14px", 
-                                  backgroundColor: "#ef4444", 
-                                  color: "white", 
-                                  border: "none", 
-                                  borderRadius: "8px", 
-                                  fontSize: "12px", 
-                                  fontWeight: 800, 
-                                  cursor: "pointer",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: "4px",
-                                  boxShadow: "0 2px 8px rgba(239,68,68,0.2)"
-                                }}
-                              >
-                                🚨 SOS
-                              </button>
-                            )}
-                          </td>
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", minWidth: "800px", borderCollapse: "collapse", textAlign: "left" }}>
+                      <thead>
+                        <tr style={{ borderBottom: "1.5px solid var(--border-color)", color: "var(--text-secondary)" }}>
+                          <th style={{ padding: "12px 8px" }}>Customer</th>
+                          <th style={{ padding: "12px 8px" }}>Service</th>
+                          <th style={{ padding: "12px 8px" }}>Timings</th>
+                          <th style={{ padding: "12px 8px" }}>Address</th>
+                          <th style={{ padding: "12px 8px" }}>Payment</th>
+                          <th style={{ padding: "12px 8px" }}>Status</th>
+                          <th style={{ padding: "12px 8px" }}>Action</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {bookings.map(b => (
+                          <tr key={b._id} style={{ borderBottom: "1px solid #e2e8f0", fontSize: 14 }}>
+                            <td style={{ padding: "14px 8px", fontWeight: 700 }}>{b.customer_name || "Verified Customer"}</td>
+                            <td style={{ padding: "14px 8px" }}>{b.service}</td>
+                            <td style={{ padding: "14px 8px" }}>📅 {b.date}<br />🕐 {b.time}</td>
+                            <td style={{ padding: "14px 8px" }}>{b.address}</td>
+                            <td style={{ padding: "14px 8px", fontWeight: 700, color: "var(--primary)" }}>₹{b.price}</td>
+                            <td style={{ padding: "14px 8px" }}>
+                              <span style={statusStyle(b.status)}>{b.status}</span>
+                            </td>
+                            <td style={{ padding: "14px 8px" }}>
+                              {["Accepted", "On the Way", "Started"].includes(b.status) && (
+                                <button 
+                                  onClick={() => {
+                                    setSosCategory(`Ongoing Emergency during Job with ${b.customer_name || 'Customer'}`);
+                                    setActiveTab("sos");
+                                  }}
+                                  style={{ 
+                                    padding: "6px 14px", 
+                                    backgroundColor: "#ef4444", 
+                                    color: "white", 
+                                    border: "none", 
+                                    borderRadius: "8px", 
+                                    fontSize: "12px", 
+                                    fontWeight: 800, 
+                                    cursor: "pointer",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "4px",
+                                    boxShadow: "0 2px 8px rgba(239,68,68,0.2)"
+                                  }}
+                                >
+                                  🚨 SOS
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 )}
               </div>
             </div>
@@ -789,7 +791,7 @@ Reported At: ${new Date().toLocaleString()}`,
           {activeTab === "profile" && (
             <div className="fade-in">
               <h2 style={{ margin: "0 0 24px", fontWeight: 800, color: "var(--text-primary)" }}>My Profile</h2>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, alignItems: "start" }}>
+              <div className="responsive-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, alignItems: "start" }}>
 
                 {/* Profile Card */}
                 <div className="premium-card">
@@ -877,7 +879,7 @@ Reported At: ${new Date().toLocaleString()}`,
             <div className="fade-in" style={{ maxWidth: 800, margin: "0 auto" }}>
               <h2 style={{ margin: "0 0 24px", fontWeight: 800, color: "var(--text-primary)" }}>⭐ Customer Reviews & Feedback</h2>
               
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 24, marginBottom: 28 }}>
+              <div className="responsive-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 24, marginBottom: 28 }}>
                 {/* Stats Panel */}
                 <div className="premium-card" style={{ padding: 24, textAlign: "center" }}>
                   <h3 style={{ margin: "0 0 8px", color: "var(--text-secondary)", fontSize: 14 }}>AVERAGE RATING</h3>

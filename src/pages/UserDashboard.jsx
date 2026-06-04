@@ -266,7 +266,7 @@ function UserDashboard() {
       <Navbar />
       
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "40px 20px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
+        <div className="dashboard-header-container">
           <div>
             <h1 style={{ margin: "0 0 8px 0", fontSize: "28px", color: "var(--text-main)" }}>User Dashboard</h1>
             <p style={{ margin: 0, color: "var(--text-muted)" }}>Manage your bookings, wallet, and history.</p>
@@ -278,7 +278,7 @@ function UserDashboard() {
           </Link>
         </div>
  
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px", marginBottom: "40px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "24px", marginBottom: "40px" }}>
           <div className="premium-card" ref={walletCardRef} style={{ padding: "24px", display: "flex", alignItems: "center", gap: "20px" }}>
             <div style={{ width: "60px", height: "60px", borderRadius: "12px", backgroundColor: "var(--border)", display: "flex", justifyContent: "center", alignItems: "center", color: "var(--primary)", fontSize: "24px" }}>
               <FaWallet />
@@ -385,7 +385,7 @@ function UserDashboard() {
           )}
         </div>
  
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "30px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "30px" }}>
           <div className="premium-card" style={{ padding: "24px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
               <h3 style={{ margin: 0, fontSize: "18px", color: "var(--text-main)" }}>Recent Bookings</h3>
