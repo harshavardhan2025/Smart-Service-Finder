@@ -86,6 +86,16 @@ function UserDashboard() {
   const activeCardRef = use3dTilt();
   const totalCardRef = use3dTilt();
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const [sosActive, setSosActive] = useState(false);
   const [sosCountdown, setSosCountdown] = useState(5);
   const [sosTriggered, setSosTriggered] = useState(false);
@@ -277,6 +287,82 @@ function UserDashboard() {
             </button>
           </Link>
         </div>
+
+        {/* 🏷️ MOBILE-FIRST QUICK ACCESS FOR PLANS & OFFERS */}
+        {isMobile && (
+          <div className="premium-card" style={{
+            padding: "20px 24px",
+            marginBottom: "32px",
+            background: "linear-gradient(135deg, rgba(234, 179, 8, 0.08) 0%, rgba(249, 115, 22, 0.08) 100%)",
+            border: "1.5px solid rgba(234, 179, 8, 0.25)",
+            boxShadow: "0 10px 20px rgba(0,0,0,0.05)",
+            borderRadius: "16px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "16px",
+            animation: "fadeIn 0.3s ease-out"
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+              <div style={{
+                width: "48px",
+                height: "48px",
+                borderRadius: "12px",
+                background: "linear-gradient(135deg, #eab308 0%, #f97316 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "22px",
+                flexShrink: 0,
+                boxShadow: "0 4px 10px rgba(234, 179, 8, 0.25)"
+              }}>
+                🏷️
+              </div>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ margin: "0 0 2px 0", fontSize: "16px", fontWeight: 800, color: "var(--text-main)" }}>
+                  Plans & Seasonal Offers
+                </h3>
+                <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)", fontWeight: 500, lineHeight: "1.4" }}>
+                  {isLoggedIn && activePlans.length > 0 
+                    ? `Active Plan: ${activePlans[0].service.replace("Plan Subscription: ", "")}`
+                    : "Save big on utilities with active promo codes & subscriptions!"
+                  }
+                </p>
+              </div>
+            </div>
+            <Link to="/plans-offers" style={{ textDecoration: "none" }}>
+              <button 
+                className="btn-primary" 
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  borderRadius: "10px",
+                  border: "none",
+                  cursor: "pointer",
+                  fontWeight: 700,
+                  fontSize: "14px",
+                  backgroundColor: "#eab308",
+                  color: "#1e293b",
+                  boxShadow: "0 4px 12px rgba(234, 179, 8, 0.2)",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: "6px",
+                  transition: "all 0.2s"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                  e.currentTarget.style.filter = "brightness(1.05)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.filter = "none";
+                }}
+              >
+                Explore Plans & Offers →
+              </button>
+            </Link>
+          </div>
+        )}
  
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "24px", marginBottom: "40px" }}>
           <div className="premium-card" ref={walletCardRef} style={{ padding: "24px", display: "flex", alignItems: "center", gap: "20px" }}>
