@@ -360,7 +360,7 @@ function PlansOffers() {
             : offers.map((offer, i) => (
             <div 
               key={i}
-              className="premium-card"
+              className="premium-card coupon-card"
               style={{
                 backgroundColor: "var(--bg-card)",
                 borderRadius: 14,

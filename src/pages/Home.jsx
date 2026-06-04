@@ -21,6 +21,7 @@ function Home() {
   const [aiSuggestedWorkers, setAiSuggestedWorkers] = useState([]);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiSuggestedAreas, setAiSuggestedAreas] = useState([]);
+  const [showMap, setShowMap] = useState(false);
 
   // Automatic redirect if Admin or Worker tries to visit the general home page directly
   useEffect(() => {
@@ -309,10 +310,37 @@ function Home() {
           </div>
         )}
 
-        <MapPicker
-          onLocationChange={(loc) => setSearchedLocation(loc)}
-          onCoordsChange={(coords) => setUserCoords(coords)}
-        />
+        {/* Mobile map collapse toggle option */}
+        <div className="mobile-map-toggle-container" style={{ padding: "0 20px 10px 20px" }}>
+          <button
+            onClick={() => setShowMap(!showMap)}
+            style={{
+              width: "100%",
+              padding: "12px",
+              borderRadius: "10px",
+              fontWeight: "bold",
+              fontSize: "14px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              backgroundColor: showMap ? "#f1f5f9" : "var(--primary-light)",
+              color: showMap ? "var(--text-primary)" : "var(--primary-dark)",
+              border: "1.5px solid var(--border-color)",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
+            }}
+          >
+            {showMap ? "🗺️ Hide Interactive Map ▲" : "🗺️ Show Interactive Map ▼"}
+          </button>
+        </div>
+
+        <div className={`home-map-wrapper ${showMap ? "map-visible" : "map-hidden"}`}>
+          <MapPicker
+            onLocationChange={(loc) => setSearchedLocation(loc)}
+            onCoordsChange={(coords) => setUserCoords(coords)}
+          />
+        </div>
 
         {/* 🚨 Instant Booking Services (Active Online Workers) */}
         <div className="fade-in" style={{ padding: "20px", marginBottom: "10px" }}>

@@ -328,9 +328,11 @@ function Signup() {
         navigate={navigate}
       />
 
-      <div style={{
-        flex: 1,
-        display: "flex", justifyContent: "center", alignItems: "center",
+      <div
+        className="auth-wrapper"
+        style={{
+          flex: 1,
+          display: "flex", justifyContent: "center", alignItems: "center",
         padding: "40px 20px",
         backgroundImage: `url(${isMobile ? authMobileBg : authBg})`,
         backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat"

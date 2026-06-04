@@ -365,7 +365,7 @@ function UserDashboard() {
         )}
  
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "24px", marginBottom: "40px" }}>
-          <div className="premium-card" ref={walletCardRef} style={{ padding: "24px", display: "flex", alignItems: "center", gap: "20px" }}>
+          <div className="premium-card metric-card" ref={walletCardRef} style={{ padding: "24px", display: "flex", alignItems: "center", gap: "20px" }}>
             <div style={{ width: "60px", height: "60px", borderRadius: "12px", backgroundColor: "var(--border)", display: "flex", justifyContent: "center", alignItems: "center", color: "var(--primary)", fontSize: "24px" }}>
               <FaWallet />
             </div>
@@ -375,7 +375,7 @@ function UserDashboard() {
             </div>
           </div>
           
-          <div className="premium-card" ref={activeCardRef} style={{ padding: "24px", display: "flex", alignItems: "center", gap: "20px" }}>
+          <div className="premium-card metric-card" ref={activeCardRef} style={{ padding: "24px", display: "flex", alignItems: "center", gap: "20px" }}>
             <div style={{ width: "60px", height: "60px", borderRadius: "12px", backgroundColor: "var(--border)", display: "flex", justifyContent: "center", alignItems: "center", color: "#16a34a", fontSize: "24px" }}>
               <FaCalendarCheck />
             </div>
@@ -385,7 +385,7 @@ function UserDashboard() {
             </div>
           </div>
 
-          <div className="premium-card" ref={totalCardRef} style={{ padding: "24px", display: "flex", alignItems: "center", gap: "20px" }}>
+          <div className="premium-card metric-card" ref={totalCardRef} style={{ padding: "24px", display: "flex", alignItems: "center", gap: "20px" }}>
             <div style={{ width: "60px", height: "60px", borderRadius: "12px", backgroundColor: "var(--border)", display: "flex", justifyContent: "center", alignItems: "center", color: "#d97706", fontSize: "24px" }}>
               <FaRegClock />
             </div>
@@ -489,7 +489,7 @@ function UserDashboard() {
             ) : bookings.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 {bookings.map(b => (
-                  <div key={b._id || b.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "16px", borderBottom: "1px solid var(--border)" }}>
+                  <div key={b._id || b.id} className="dashboard-list-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "16px", borderBottom: "1px solid var(--border)" }}>
                     <div>
                       <p style={{ margin: "0 0 4px 0", fontWeight: "600", color: "var(--text-main)" }}>{b.service}</p>
                       <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)" }}>{b.date || "Scheduled"} • {b.workerName || "Pending Worker"}</p>
@@ -520,7 +520,7 @@ function UserDashboard() {
             ) : transactions.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 {transactions.map(t => (
-                  <div key={t._id || t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "16px", borderBottom: "1px solid var(--border)" }}>
+                  <div key={t._id || t.id} className="dashboard-list-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "16px", borderBottom: "1px solid var(--border)" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                       <div style={{ width: "40px", height: "40px", borderRadius: "50%", backgroundColor: "var(--border)", display: "flex", justifyContent: "center", alignItems: "center", fontSize: "18px" }}>
                         {t.icon || "💰"}

@@ -183,7 +183,7 @@ function MyBookings() {
 
       {/* Content */}
       <div
-        className="dashboard-content"
+        className="bookings-content dashboard-content"
         style={{
           maxWidth: "700px",
           margin: "0 auto",
@@ -246,6 +246,7 @@ function MyBookings() {
               return (
                 <div
                   key={bid}
+                  className="booking-card"
                   style={{
                     backgroundColor: "var(--bg-card)",
                     borderRadius: "14px",
@@ -260,6 +261,7 @@ function MyBookings() {
                 >
                   {/* Card Header */}
                   <div
+                    className="booking-card-header"
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
@@ -299,6 +301,7 @@ function MyBookings() {
 
                   {/* Details Row */}
                   <div
+                    className="booking-card-details"
                     style={{
                       display: "flex",
                       gap: "20px",
@@ -408,15 +411,18 @@ function MyBookings() {
           backdropFilter: "blur(8px)",
           animation: "fadeIn 0.2s ease-out forwards"
         }}>
-          <div style={{
-            maxWidth: "400px",
-            width: "90%",
-            backgroundColor: "white",
-            borderRadius: "20px",
-            padding: "28px",
-            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-            border: "1px solid rgba(0,0,0,0.05)"
-          }}>
+          <div
+            className="custom-modal"
+            style={{
+              maxWidth: "400px",
+              width: "90%",
+              backgroundColor: "white",
+              borderRadius: "20px",
+              padding: "28px",
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+              border: "1px solid rgba(0,0,0,0.05)"
+            }}
+          >
             <h3 style={{ margin: "0 0 8px 0", fontSize: "20px", fontWeight: 800, color: "#1e293b" }}>
               Cancel Booking Order?
             </h3>
@@ -495,15 +501,18 @@ function MyBookings() {
           backdropFilter: "blur(8px)",
           animation: "fadeIn 0.2s ease-out forwards"
         }}>
-          <div style={{
-            maxWidth: "440px",
-            width: "90%",
-            backgroundColor: "white",
-            borderRadius: "20px",
-            padding: "28px",
-            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-            border: "1px solid rgba(0,0,0,0.05)"
-          }}>
+          <div
+            className="custom-modal"
+            style={{
+              maxWidth: "440px",
+              width: "90%",
+              backgroundColor: "white",
+              borderRadius: "20px",
+              padding: "28px",
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+              border: "1px solid rgba(0,0,0,0.05)"
+            }}
+          >
             <h3 style={{ margin: "0 0 6px 0", fontSize: "20px", fontWeight: 800, color: "#b91c1c", display: "flex", alignItems: "center", gap: 8 }}>
               <span>⚠️</span> Report Abuse or Grievance
             </h3>

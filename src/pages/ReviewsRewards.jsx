@@ -283,6 +283,7 @@ function ReviewsRewards() {
 
         {/* Points Dashboard */}
         <div
+          className="points-dashboard-card"
           style={{
             background: "linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%)",
             borderRadius: "16px",
@@ -354,6 +355,7 @@ function ReviewsRewards() {
                 return (
                   <div
                     key={bid}
+                    className="pending-review-card"
                     style={{
                       backgroundColor: "var(--bg-card)",
                       borderRadius: "14px",
@@ -444,6 +446,7 @@ function ReviewsRewards() {
             Use your points on bookings, payments & priority slots
           </p>
           <div
+            className="rewards-grid"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
@@ -456,6 +459,7 @@ function ReviewsRewards() {
               return (
                 <div
                   key={reward.id}
+                  className="reward-card"
                   style={{
                     backgroundColor: redeemed ? "#f0fdf4" : reward.bg,
                     border: `2px solid ${redeemed ? "#16a34a" : canRedeem ? reward.color : "#e2e8f0"}`,
@@ -572,6 +576,7 @@ function ReviewsRewards() {
                 return (
                   <div
                     key={r._id || r.id}
+                    className="past-review-card"
                     style={{
                       backgroundColor: "var(--bg-card)",
                       borderRadius: "12px",

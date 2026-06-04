@@ -118,6 +118,7 @@ function Profile() {
 
       {/* Header */}
       <div
+        className="dashboard-header-block"
         style={{
           background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)",
           color: "white",
@@ -147,8 +148,9 @@ function Profile() {
       </div>
 
       {/* Avatar Card — overlaps header */}
-      <div style={{ maxWidth: "680px", margin: "-36px auto 0 auto", padding: "0 20px" }}>
+      <div className="profile-content" style={{ maxWidth: "680px", margin: "-36px auto 0 auto", padding: "0 20px" }}>
         <div
+          className="profile-card premium-card"
           style={{
             backgroundColor: "var(--bg-card)",
             borderRadius: "20px",
@@ -238,6 +240,7 @@ function Profile() {
 
         {/* ── INTERACTIVE PREMIUM WALLET & LOYALTY CARD ── */}
         <div
+          className="profile-card premium-card"
           style={{
             backgroundColor: "var(--bg-card)",
             borderRadius: "20px",
@@ -251,7 +254,7 @@ function Profile() {
           </h3>
           <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
             {/* Wallet Balance Card */}
-            <div style={{ flex: 1, minWidth: "200px", padding: "20px", borderRadius: "16px", background: "linear-gradient(135deg, #42a5f5, #1e88e5)", color: "white" }}>
+            <div className="wallet-loyalty-card" style={{ flex: 1, minWidth: "200px", padding: "20px", borderRadius: "16px", background: "linear-gradient(135deg, #42a5f5, #1e88e5)", color: "white" }}>
               <div style={{ fontSize: "12px", opacity: 0.9, fontWeight: 600, textTransform: "uppercase" }}>Available Wallet Balance</div>
               <div style={{ fontSize: "32px", fontWeight: 800, margin: "8px 0" }}>₹{walletBal.toLocaleString()}</div>
               <button 
@@ -265,7 +268,7 @@ function Profile() {
             </div>
 
             {/* Loyalty Tier Progress Card */}
-            <div style={{ flex: 1, minWidth: "200px", padding: "20px", borderRadius: "16px", background: "linear-gradient(135deg, #ffb300, #ff8f00)", color: "white" }}>
+            <div className="wallet-loyalty-card" style={{ flex: 1, minWidth: "200px", padding: "20px", borderRadius: "16px", background: "linear-gradient(135deg, #ffb300, #ff8f00)", color: "white" }}>
               <div style={{ fontSize: "12px", opacity: 0.9, fontWeight: 600, textTransform: "uppercase" }}>Loyalty Tier Status</div>
               <div style={{ fontSize: "24px", fontWeight: 800, margin: "8px 0", display: "flex", alignItems: "center", gap: "6px" }}>
                 🌟 Gold Member
@@ -281,6 +284,7 @@ function Profile() {
 
         {/* Details Card */}
         <div
+          className="profile-card premium-card"
           style={{
             backgroundColor: "var(--bg-card)",
             borderRadius: "20px",
@@ -414,6 +418,7 @@ function Profile() {
               ].map(({ label, value, icon }, i, arr) => (
                 <div
                   key={label}
+                  className="profile-info-row"
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
@@ -436,6 +441,7 @@ function Profile() {
 
         {/* Payment History */}
         <div
+          className="profile-card premium-card"
           style={{
             backgroundColor: "var(--bg-card)",
             borderRadius: "20px",
@@ -522,6 +528,7 @@ function Profile() {
                   {/* Expanded Receipt */}
                   {isOpen && (
                     <div
+                      className="txn-expanded-receipt"
                       style={{
                         backgroundColor: "#f8fafc",
                         borderTop: "1px solid #e2e8f0",
@@ -586,6 +593,7 @@ function Profile() {
 
         {/* Quick Links */}
         <div
+          className="profile-card premium-card"
           style={{
             backgroundColor: "var(--bg-card)",
             borderRadius: "20px",

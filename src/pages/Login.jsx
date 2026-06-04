@@ -168,6 +168,7 @@ function Login() {
       <Navbar />
 
       <div
+        className="auth-wrapper"
         style={{
           flex: 1,
           display: "flex",
