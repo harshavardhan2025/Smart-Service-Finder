@@ -24,6 +24,7 @@ function AdminDashboard() {
   const [liveRealTimeBookings, setLiveRealTimeBookings] = useState([]);
   const [adminNotifications, setAdminNotifications] = useState([]);
   const [overdueBookings, setOverdueBookings] = useState([]);
+  const [expandedMaps, setExpandedMaps] = useState({});
 
   // Initial Services Mock State (Category management with Sub-categories matching NearbyWorkers.jsx)
   const [services, setServices] = useState([
@@ -2663,27 +2664,54 @@ function AdminDashboard() {
 
                               if (!coords || isNaN(coords.lat) || isNaN(coords.lng)) return null;
 
+                              const isMapVisible = expandedMaps[alertItem._id] !== false; // Visible by default
+
                               return (
-                                <div style={{ marginBottom: "20px", borderRadius: "12px", overflow: "hidden", border: "2px solid #ef4444", boxShadow: "0 4px 12px rgba(239, 68, 68, 0.12)" }}>
-                                  <div style={{ height: "200px", width: "100%" }}>
-                                    <MapContainer
-                                      center={[coords.lat, coords.lng]}
-                                      zoom={14}
-                                      style={{ height: "100%", width: "100%" }}
-                                      scrollWheelZoom={false}
-                                    >
-                                      <TileLayer
-                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                      />
-                                      <Marker position={[coords.lat, coords.lng]} icon={sosMarkerIcon}>
-                                        <Popup>
-                                          <strong>🚨 SOS Incident</strong><br />
-                                          Lat: {coords.lat.toFixed(5)}, Lng: {coords.lng.toFixed(5)}
-                                        </Popup>
-                                      </Marker>
-                                    </MapContainer>
-                                  </div>
+                                <div style={{ marginBottom: "20px" }}>
+                                  <button
+                                    onClick={() => setExpandedMaps(prev => ({ ...prev, [alertItem._id]: !isMapVisible }))}
+                                    style={{
+                                      backgroundColor: isMapVisible ? "#f1f5f9" : "#fee2e2",
+                                      color: isMapVisible ? "#475569" : "#dc2626",
+                                      border: "1.5px solid " + (isMapVisible ? "#cbd5e1" : "#fca5a5"),
+                                      padding: "8px 16px",
+                                      borderRadius: "8px",
+                                      fontWeight: 700,
+                                      fontSize: "12px",
+                                      cursor: "pointer",
+                                      marginBottom: "12px",
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      gap: "8px",
+                                      transition: "all 0.2s"
+                                    }}
+                                  >
+                                    {isMapVisible ? "🗺️ Hide Map" : "🗺️ Show Map"}
+                                  </button>
+
+                                  {isMapVisible && (
+                                    <div style={{ borderRadius: "12px", overflow: "hidden", border: "2px solid #ef4444", boxShadow: "0 4px 12px rgba(239, 68, 68, 0.12)" }}>
+                                      <div style={{ height: "200px", width: "100%" }}>
+                                        <MapContainer
+                                          center={[coords.lat, coords.lng]}
+                                          zoom={14}
+                                          style={{ height: "100%", width: "100%" }}
+                                          scrollWheelZoom={false}
+                                        >
+                                          <TileLayer
+                                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                          />
+                                          <Marker position={[coords.lat, coords.lng]} icon={sosMarkerIcon}>
+                                            <Popup>
+                                              <strong>🚨 SOS Incident</strong><br />
+                                              Lat: {coords.lat.toFixed(5)}, Lng: {coords.lng.toFixed(5)}
+                                            </Popup>
+                                          </Marker>
+                                        </MapContainer>
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               );
                             })()}
