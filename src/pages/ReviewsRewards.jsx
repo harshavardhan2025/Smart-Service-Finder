@@ -249,6 +249,7 @@ function ReviewsRewards() {
 
       {/* Header */}
       <div
+        className="dashboard-header-block"
         style={{
           background: "linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%)",
           color: "white",
@@ -278,7 +279,7 @@ function ReviewsRewards() {
       </div>
 
 
-      <div style={{ maxWidth: "750px", margin: "0 auto", padding: "28px 20px" }}>
+      <div className="dashboard-content" style={{ maxWidth: "750px", margin: "0 auto", padding: "28px 20px" }}>
 
         {/* Points Dashboard */}
         <div

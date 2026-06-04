@@ -275,7 +275,7 @@ function UserDashboard() {
     <div style={{ minHeight: "100vh" }}>
       <Navbar />
       
-      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "40px 20px" }}>
+      <div className="dashboard-content" style={{ maxWidth: "1200px", margin: "0 auto", padding: "40px 20px" }}>
         <div className="dashboard-header-container">
           <div>
             <h1 style={{ margin: "0 0 8px 0", fontSize: "28px", color: "var(--text-main)" }}>User Dashboard</h1>

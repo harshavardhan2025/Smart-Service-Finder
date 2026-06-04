@@ -67,6 +67,7 @@ function Navbar() {
     <>
       <Sidebar />
       <div
+        className="navbar"
         style={{
           display: "flex",
           justifyContent: "space-between",

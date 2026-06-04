@@ -88,7 +88,7 @@ function SupportPage() {
       {/* Dynamic Navbar */}
       <Navbar />
 
-      <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "60px 20px" }}>
+      <div className="dashboard-content" style={{ maxWidth: "1100px", margin: "0 auto", padding: "60px 20px" }}>
         {/* Support Header */}
         <div style={{ textAlign: "center", marginBottom: "50px" }}>
           <span style={{ backgroundColor: "var(--border)", color: "var(--primary)", padding: "6px 16px", borderRadius: "20px", fontSize: "12px", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>

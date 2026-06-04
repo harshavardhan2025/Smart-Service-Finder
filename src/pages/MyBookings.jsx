@@ -152,6 +152,7 @@ function MyBookings() {
     >
       {/* Header */}
       <div
+        className="dashboard-header-block"
         style={{
           background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
           color: "white",
@@ -182,6 +183,7 @@ function MyBookings() {
 
       {/* Content */}
       <div
+        className="dashboard-content"
         style={{
           maxWidth: "700px",
           margin: "0 auto",
