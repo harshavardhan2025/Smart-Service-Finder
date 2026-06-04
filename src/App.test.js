@@ -2,7 +2,6 @@ import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import Navbar from './components/Navbar';
-import Sidebar from './components/Sidebar';
 
 describe('Global Application Shell Render Dynamics', () => {
   test('Validates dynamic DOM injection lifecycle', () => {

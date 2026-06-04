@@ -34,10 +34,13 @@
   /* TEXT */
   --text-main: #2d1f1f;
   --text-muted: #7b6d6d;
+  --text-primary: var(--text-main);
+  --text-secondary: var(--text-muted);
 
   /* BORDER */
   --border:
     rgba(231, 217, 205, 0.8);
+  --border-color: var(--border);
 
   /* SHADOWS */
   --shadow-3d:
@@ -85,10 +88,14 @@
 
   --text-main: #f8f5f2;
   --text-muted: #b6aaa1;
+  --text-primary: var(--text-main);
+  --text-secondary: var(--text-muted);
 
   --border:
     rgba(59, 49, 43, 0.6);
+  --border-color: var(--border);
 
+  /* SHADOWS */
   --shadow-3d:
     0 14px 35px rgba(0, 0, 0, 0.45),
     0 0 20px rgba(194, 167, 141, 0.1);
@@ -97,6 +104,8 @@
     0 24px 60px rgba(194, 167, 141, 0.2);
 
   --blur: blur(26px);
+  --primary-light: rgba(194, 167, 141, 0.15);
+  --primary-dark: #f8f5f2;
 }
 
 /* =========================================================
@@ -209,7 +218,7 @@ body,
     linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
 
-  -webkit-mask-composite: xor;
+  -webkit-mask-composite: destination-out;
   mask-composite: exclude;
 
   pointer-events: none;
