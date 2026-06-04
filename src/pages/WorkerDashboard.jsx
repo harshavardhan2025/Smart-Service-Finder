@@ -245,7 +245,7 @@ function WorkerDashboard() {
     setSosLoading(true);
     let locationStr = "Location coordinates unavailable";
 
-    const sendAlert = async (locStr) => {
+    const sendAlert = async (locStr, latVal = null, lngVal = null) => {
       try {
         const body = {
           role: "admin",
@@ -260,6 +260,8 @@ Real-time Location: ${locStr}
 Reported At: ${new Date().toLocaleString()}`,
           type: "emergency",
           user_id: profile.mongoId || "unknown",
+          lat: latVal,
+          lng: lngVal
         };
 
         const res = await fetch("/api/notifications", {
@@ -290,7 +292,7 @@ Reported At: ${new Date().toLocaleString()}`,
         (position) => {
           const { latitude, longitude } = position.coords;
           locationStr = `Latitude: ${latitude}, Longitude: ${longitude}`;
-          sendAlert(locationStr);
+          sendAlert(locationStr, latitude, longitude);
         },
         (error) => {
           locationStr = `GPS permission denied / unavailable (Fallback to Profile City: ${profile.city})`;

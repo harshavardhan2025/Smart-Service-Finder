@@ -6,7 +6,9 @@ const notificationSchema = new mongoose.Schema({
   message: { type: String, required: true },
   type: { type: String, default: "info" },
   user_id: { type: String },
-  is_read: { type: Boolean, default: false }
+  is_read: { type: Boolean, default: false },
+  lat: { type: Number },
+  lng: { type: Number }
 }, { timestamps: true });
 
 const Notification = mongoose.model("Notification", notificationSchema);

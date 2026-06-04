@@ -3,6 +3,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { use3dTilt } from "../utils/use3dTilt";
 import SecurityLogs from "../components/SecurityLogs";
+import L from "leaflet";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 
 
 function AdminDashboard() {
@@ -2630,6 +2633,60 @@ function AdminDashboard() {
                             <div style={{ margin: "0 0 20px", color: "var(--text-main)", whiteSpace: "pre-wrap", fontSize: "14px", fontWeight: 600, fontFamily: "'JetBrains Mono', Courier, monospace", backgroundColor: "var(--bg-card)", padding: "20px", borderRadius: "12px", border: "1.5px solid #e2e8f0", lineHeight: 1.6 }}>
                               {alertItem.message}
                             </div>
+
+                            {(() => {
+                              // Custom DivIcon for the pulsating SOS marker
+                              const sosMarkerIcon = new L.DivIcon({
+                                html: `<div style="font-size: 32px; filter: drop-shadow(0px 4px 8px rgba(239,68,68,0.55)); animation: pulse-sos-shield 1s infinite alternate;">🚨</div>`,
+                                className: "custom-sos-pin",
+                                iconSize: [36, 36],
+                                iconAnchor: [18, 32]
+                              });
+
+                              // Try to find lat & lng coordinates
+                              let coords = null;
+                              if (alertItem.lat && alertItem.lng) {
+                                coords = { lat: alertItem.lat, lng: alertItem.lng };
+                              } else {
+                                const latLngRegex = /Latitude:\s*([\d.-]+),\s*Longitude:\s*([\d.-]+)/i;
+                                const match1 = alertItem.message.match(latLngRegex);
+                                if (match1) {
+                                  coords = { lat: parseFloat(match1[1]), lng: parseFloat(match1[2]) };
+                                } else {
+                                  const coordsRegex = /Coordinates:\s*([\d.-]+),\s*([\d.-]+)/i;
+                                  const match2 = alertItem.message.match(coordsRegex);
+                                  if (match2) {
+                                    coords = { lat: parseFloat(match2[1]), lng: parseFloat(match2[2]) };
+                                  }
+                                }
+                              }
+
+                              if (!coords || isNaN(coords.lat) || isNaN(coords.lng)) return null;
+
+                              return (
+                                <div style={{ marginBottom: "20px", borderRadius: "12px", overflow: "hidden", border: "2px solid #ef4444", boxShadow: "0 4px 12px rgba(239, 68, 68, 0.12)" }}>
+                                  <div style={{ height: "200px", width: "100%" }}>
+                                    <MapContainer
+                                      center={[coords.lat, coords.lng]}
+                                      zoom={14}
+                                      style={{ height: "100%", width: "100%" }}
+                                      scrollWheelZoom={false}
+                                    >
+                                      <TileLayer
+                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                      />
+                                      <Marker position={[coords.lat, coords.lng]} icon={sosMarkerIcon}>
+                                        <Popup>
+                                          <strong>🚨 SOS Incident</strong><br />
+                                          Lat: {coords.lat.toFixed(5)}, Lng: {coords.lng.toFixed(5)}
+                                        </Popup>
+                                      </Marker>
+                                    </MapContainer>
+                                  </div>
+                                </div>
+                              );
+                            })()}
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                               <div style={{ fontSize: "13px", color: "var(--text-muted)", fontWeight: 600 }}>
                                 Broadcast Captured: <strong style={{ color: "var(--text-main)" }}>{new Date(alertItem.createdAt).toLocaleString()}</strong>
