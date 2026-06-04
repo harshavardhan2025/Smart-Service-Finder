@@ -21,9 +21,9 @@
   /* BACKGROUNDS */
   --bg-main:
     linear-gradient(135deg,
-      #f8fafc 0%,
-      #e2e8f0 50%,
-      #f8fafc 100%);
+      #eef2ff 0%,
+      #f5f3ff 50%,
+      #ecfdf5 100%);
 
   --bg-card:
     rgba(255, 255, 255, 0.75);
@@ -67,18 +67,16 @@
   --danger: #f87171;
 
   --bg-main:
-    radial-gradient(circle at top left,
-      rgba(99, 102, 241, 0.12),
-      transparent 30%),
-
-    radial-gradient(circle at bottom right,
-      rgba(52, 211, 153, 0.05),
-      transparent 30%),
-
+    radial-gradient(circle at 20% 20%,
+      rgba(99, 102, 241, 0.18),
+      transparent 40%),
+    radial-gradient(circle at 80% 80%,
+      rgba(52, 211, 153, 0.12),
+      transparent 45%),
     linear-gradient(135deg,
-      #0f172a 0%,
-      #1e293b 45%,
-      #0f172a 100%);
+      #0b0f19 0%,
+      #090d16 50%,
+      #020617 100%);
 
   --bg-card:
     rgba(30, 41, 59, 0.7);
