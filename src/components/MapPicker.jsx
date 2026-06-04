@@ -58,7 +58,14 @@ const pinIcon = new L.DivIcon({
 
 function ChangeMapView({ center }) {
   const map = useMap();
-  map.setView(center, 13);
+  useEffect(() => {
+    if (map) {
+      map.setView(center, 13);
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 100);
+    }
+  }, [center, map]);
   return null;
 }
 

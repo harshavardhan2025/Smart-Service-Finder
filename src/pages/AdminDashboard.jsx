@@ -4,7 +4,7 @@ import Navbar from "../components/Navbar";
 import { use3dTilt } from "../utils/use3dTilt";
 import SecurityLogs from "../components/SecurityLogs";
 import L from "leaflet";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
 
@@ -2692,23 +2692,40 @@ function AdminDashboard() {
                                   {isMapVisible && (
                                     <div style={{ borderRadius: "12px", overflow: "hidden", border: "2px solid #ef4444", boxShadow: "0 4px 12px rgba(239, 68, 68, 0.12)" }}>
                                       <div style={{ height: "200px", width: "100%" }}>
-                                        <MapContainer
-                                          center={[coords.lat, coords.lng]}
-                                          zoom={14}
-                                          style={{ height: "100%", width: "100%" }}
-                                          scrollWheelZoom={false}
-                                        >
-                                          <TileLayer
-                                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                          />
-                                          <Marker position={[coords.lat, coords.lng]} icon={sosMarkerIcon}>
-                                            <Popup>
-                                              <strong>🚨 SOS Incident</strong><br />
-                                              Lat: {coords.lat.toFixed(5)}, Lng: {coords.lng.toFixed(5)}
-                                            </Popup>
-                                          </Marker>
-                                        </MapContainer>
+                                        {(() => {
+                                          const SOSMapResize = () => {
+                                            const map = useMap();
+                                            useEffect(() => {
+                                              if (map) {
+                                                setTimeout(() => {
+                                                  map.invalidateSize();
+                                                }, 100);
+                                              }
+                                            }, [map]);
+                                            return null;
+                                          };
+
+                                          return (
+                                            <MapContainer
+                                              center={[coords.lat, coords.lng]}
+                                              zoom={14}
+                                              style={{ height: "100%", width: "100%" }}
+                                              scrollWheelZoom={false}
+                                            >
+                                              <SOSMapResize />
+                                              <TileLayer
+                                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                              />
+                                              <Marker position={[coords.lat, coords.lng]} icon={sosMarkerIcon}>
+                                                <Popup>
+                                                  <strong>🚨 SOS Incident</strong><br />
+                                                  Lat: {coords.lat.toFixed(5)}, Lng: {coords.lng.toFixed(5)}
+                                                </Popup>
+                                              </Marker>
+                                            </MapContainer>
+                                          );
+                                        })()}
                                       </div>
                                     </div>
                                   )}
