@@ -58,14 +58,25 @@ const pinIcon = new L.DivIcon({
 
 function ChangeMapView({ center }) {
   const map = useMap();
+  const [lat, lng] = center;
   useEffect(() => {
     if (map) {
-      map.setView(center, 13);
+      const currentCenter = map.getCenter();
+      const latDiff = Math.abs(currentCenter.lat - lat);
+      const lngDiff = Math.abs(currentCenter.lng - lng);
+      
+      // Only call setView if the target center coordinate has moved significantly.
+      // This prevents the map from constantly snapping and resetting user's zoom/pan on minor updates.
+      if (latDiff > 0.0001 || lngDiff > 0.0001) {
+        const currentZoom = map.getZoom();
+        map.setView([lat, lng], currentZoom || 13);
+      }
+      
       setTimeout(() => {
         map.invalidateSize();
       }, 100);
     }
-  }, [center, map]);
+  }, [lat, lng, map]);
   return null;
 }
 
@@ -285,9 +296,9 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
           <ChangeMapView center={position} />
           <MapEventsHandler />
           <TileLayer
-            attribution='&copy; <a href="https://www.cyclosm.org">CyclOSM</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png"
-            maxZoom={20}
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            maxZoom={19}
           />
           <Marker
             position={position}
