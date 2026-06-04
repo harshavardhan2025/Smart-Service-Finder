@@ -100,18 +100,18 @@ function Navbar() {
         <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
           
           {/* PLANS & OFFERS NAV LINK */}
-          {isCustomerView && !isMobile && (
+          {isCustomerView && (
             <Link
               to="/plans-offers"
               style={{ 
                 textDecoration: "none", 
                 color: "var(--text-secondary)", 
                 fontWeight: 700, 
-                fontSize: "14px", 
+                fontSize: isMobile ? "13px" : "14px", 
                 display: "flex", 
                 alignItems: "center", 
                 gap: "6px",
-                marginRight: "8px",
+                marginRight: isMobile ? "2px" : "8px",
                 cursor: "pointer",
                 transition: "color 0.2s"
               }}
