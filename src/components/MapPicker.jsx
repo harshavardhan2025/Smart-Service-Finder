@@ -64,14 +64,14 @@ function ChangeMapView({ center }) {
       const currentCenter = map.getCenter();
       const latDiff = Math.abs(currentCenter.lat - lat);
       const lngDiff = Math.abs(currentCenter.lng - lng);
-      
+
       // Only call setView if the target center coordinate has moved significantly.
       // This prevents the map from constantly snapping and resetting user's zoom/pan on minor updates.
       if (latDiff > 0.0001 || lngDiff > 0.0001) {
         const currentZoom = map.getZoom();
         map.setView([lat, lng], currentZoom || 13);
       }
-      
+
       setTimeout(() => {
         map.invalidateSize();
       }, 100);
@@ -98,7 +98,19 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
 
   const [isSearching, setIsSearching] = useState(false);
 
-  // On mount, sync persisted coords → parent
+  const applyLocation = (lat, lon, label, city) => {
+    setPosition([lat, lon]);
+    setSearch(label);
+    setDetectedLabel(label);
+    localStorage.setItem("userLocation", label);
+    localStorage.setItem("userCity", city);
+    localStorage.setItem("userCoordsLat", lat.toString());
+    localStorage.setItem("userCoordsLng", lon.toString());
+    if (onLocationChange) onLocationChange(label);
+    if (onCoordsChange) onCoordsChange({ lat, lng: lon });
+  };
+
+  // On mount, sync persisted coords → parent and auto-detect geolocation automatically
   useEffect(() => {
     const savedLat = parseFloat(localStorage.getItem("userCoordsLat")) || 14.471306;
     const savedLng = parseFloat(localStorage.getItem("userCoordsLng")) || 78.824165;
@@ -117,21 +129,33 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
     setDetectedLabel(savedLocation);
     if (onLocationChange) onLocationChange(savedLocation);
     if (onCoordsChange) onCoordsChange({ lat: savedLat, lng: savedLng });
+
+    // Automatically detect location on mount
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const { latitude, longitude } = pos.coords;
+          try {
+            const result = await photonReverse(latitude, longitude);
+            if (result) {
+              applyLocation(latitude, longitude, result.label, result.city);
+            } else {
+              applyLocation(latitude, longitude, `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`, "");
+            }
+          } catch (err) {
+            applyLocation(latitude, longitude, `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`, "");
+          }
+        },
+        (err) => {
+          console.warn("Automatic geolocation auto-detect failed or permission denied on mount:", err);
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Helpers ────────────────────────────────────────────────────────────────
-  const applyLocation = (lat, lon, label, city) => {
-    setPosition([lat, lon]);
-    setSearch(label);
-    setDetectedLabel(label);
-    localStorage.setItem("userLocation", label);
-    localStorage.setItem("userCity", city);
-    localStorage.setItem("userCoordsLat", lat.toString());
-    localStorage.setItem("userCoordsLng", lon.toString());
-    if (onLocationChange) onLocationChange(label);
-    if (onCoordsChange) onCoordsChange({ lat, lng: lon });
-  };
 
   // Dragging / clicking the map → Photon reverse geocode with coordinates fallback
   const handleMapInteraction = async (lat, lng) => {
@@ -191,7 +215,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
     }
 
     setIsSearching(false);
-    alert("Location not found. Please try a different search term.");
+    alert("Location not found. Please try with another location.");
   };
 
   const handleKeyDown = (e) => {

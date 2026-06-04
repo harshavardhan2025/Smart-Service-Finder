@@ -664,13 +664,22 @@ button {
   display: block;
 }
 .home-map-wrapper {
-  display: none;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 .home-map-wrapper.map-visible {
-  display: block;
+  height: auto;
+  visibility: visible;
+  opacity: 1;
 }
 .home-map-wrapper.map-hidden {
-  display: none;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  opacity: 0;
 }
 
 /* Home section spacing — subtle separator, small gap */
@@ -867,9 +876,16 @@ button {
     padding: 0 16px 10px 16px !important;
   }
   .home-map-wrapper.map-hidden {
-    display: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    display: block !important;
   }
   .home-map-wrapper.map-visible {
+    height: auto !important;
+    visibility: visible !important;
+    opacity: 1 !important;
     display: block !important;
     padding: 0 8px !important;
   }

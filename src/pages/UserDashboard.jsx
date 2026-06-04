@@ -58,14 +58,21 @@ function UserLocationMap({ isLoggedIn }) {
         </span>
       </div>
 
-      {open && (
-        <div style={{ borderTop: "1px solid var(--border)" }}>
-          <MapPicker
-            onLocationChange={(lbl) => setLocation(lbl)}
-            onCoordsChange={() => {}}
-          />
-        </div>
-      )}
+      <div
+        style={{
+          borderTop: open ? "1px solid var(--border)" : "none",
+          height: open ? "auto" : "0px",
+          overflow: "hidden",
+          visibility: open ? "visible" : "hidden",
+          opacity: open ? 1 : 0,
+          transition: "opacity 0.2s ease, visibility 0.2s ease"
+        }}
+      >
+        <MapPicker
+          onLocationChange={(lbl) => setLocation(lbl)}
+          onCoordsChange={() => {}}
+        />
+      </div>
     </div>
   );
 }
