@@ -59,16 +59,48 @@ function SearchResults() {
         // Get nearby workers
         const allLocalWorkers = await filterWorkersClientSide(userCoords, locationKey);
         
-        // Filter by search query (service or name matching)
+        // Fetch AI semantic categories mapping
+        let aiServices = [];
+        try {
+          const aiResp = await fetch(`/api/ai/search?q=${encodeURIComponent(query)}`);
+          if (aiResp.ok) {
+            const aiData = await aiResp.json();
+            if (aiData.success && Array.isArray(aiData.services)) {
+              aiServices = aiData.services.map(s => s.toLowerCase());
+            }
+          }
+        } catch (e) {
+          console.error("AI semantic query failed:", e);
+        }
+
+        // Filter by search query (normal search)
         const qLower = query.toLowerCase().trim();
-        const filtered = allLocalWorkers.filter(w => {
+        const normalFiltered = allLocalWorkers.filter(w => {
           const serviceMatch = w.service && w.service.toLowerCase().includes(qLower);
           const nameMatch = w.name && w.name.toLowerCase().includes(qLower);
           const cityMatch = w.city && w.city.toLowerCase().includes(qLower);
           return serviceMatch || nameMatch || cityMatch;
         });
 
-        setWorkers(filtered);
+        // Filter by AI recommendation search mapping
+        const aiFiltered = allLocalWorkers.filter(w => {
+          return w.service && aiServices.includes(w.service.toLowerCase());
+        });
+
+        // Merge and de-duplicate both sets
+        const mergedMap = new Map();
+        normalFiltered.forEach(w => {
+          const id = w._id || w.id;
+          mergedMap.set(id, w);
+        });
+        aiFiltered.forEach(w => {
+          const id = w._id || w.id;
+          if (!mergedMap.has(id)) {
+            mergedMap.set(id, w);
+          }
+        });
+
+        setWorkers(Array.from(mergedMap.values()));
       } catch (err) {
         console.error("Search fetch failed:", err);
       } finally {

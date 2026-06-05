@@ -70,4 +70,105 @@ router.get("/recommendations", async (req, res) => {
   }
 });
 
+// 🤖 AI SEMANTIC SEARCH QUERY EXPANSION
+router.get("/search", async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) {
+      return res.status(200).json({ success: true, services: [] });
+    }
+    const qLower = q.toLowerCase();
+    const matchedServices = [];
+
+    const semanticMap = {
+      plumbing: ["Plumbing"],
+      pipe: ["Plumbing"],
+      leak: ["Plumbing"],
+      clog: ["Plumbing"],
+      sink: ["Plumbing"],
+      water: ["Plumbing", "Water Purifier"],
+      tap: ["Plumbing"],
+      
+      electrical: ["Electrical"],
+      wire: ["Electrical"],
+      short: ["Electrical"],
+      switch: ["Electrical"],
+      light: ["Electrical"],
+      fan: ["Electrical"],
+      power: ["Electrical"],
+      current: ["Electrical"],
+      shock: ["Electrical"],
+      
+      carpentry: ["Carpentry"],
+      wood: ["Carpentry"],
+      door: ["Carpentry"],
+      table: ["Carpentry"],
+      chair: ["Carpentry"],
+      sofa: ["Carpentry"],
+      furniture: ["Carpentry"],
+      
+      painting: ["Painting", "Interior Painting", "Exterior Painting"],
+      paint: ["Painting", "Interior Painting", "Exterior Painting"],
+      wall: ["Painting", "Interior Painting", "Exterior Painting", "Wall Putty Coating", "Wallpaper Installation"],
+      putty: ["Wall Putty Coating"],
+      wallpaper: ["Wallpaper Installation"],
+      color: ["Painting", "Interior Painting", "Exterior Painting"],
+      
+      cleaning: ["House Cleaning", "Floor cleaning", "Utensils Cleaning", "Car Wash", "Bike Wash"],
+      clean: ["House Cleaning", "Floor cleaning", "Utensils Cleaning"],
+      floor: ["Floor cleaning", "House Cleaning"],
+      house: ["House Cleaning"],
+      dust: ["House Cleaning", "Floor cleaning"],
+      wash: ["Car Wash", "Bike Wash", "Utensils Cleaning"],
+      utensil: ["Utensils Cleaning"],
+      plate: ["Utensils Cleaning"],
+      car: ["Car Wash", "Four-Wheeler (Cars)"],
+      bike: ["Bike Wash", "Two-Wheeler (Bikes)"],
+      
+      ac: ["AC Repair"],
+      cool: ["AC Repair", "Refrigerator"],
+      fridge: ["Refrigerator"],
+      refrigerator: ["Refrigerator"],
+      geyser: ["Geyser"],
+      heater: ["Geyser"],
+      machine: ["Washing Machine"],
+      washing: ["Washing Machine"],
+      grinder: ["Grinder"],
+      mixer: ["Mixer"],
+      purifier: ["Water Purifier"],
+      
+      doctor: ["Doctors & Medical", "Doctors"],
+      medical: ["Doctors & Medical", "Doctors"],
+      fever: ["Doctors & Medical", "Doctors"],
+      sick: ["Doctors & Medical", "Doctors"],
+      pain: ["Doctors & Medical", "Doctors"],
+      health: ["Doctors & Medical", "Doctors"],
+      ill: ["Doctors & Medical", "Doctors"],
+      
+      photo: ["Photography"],
+      wedding: ["Photography", "Decor", "Mehandi"],
+      event: ["Photography", "Decor", "Mehandi"],
+      camera: ["Photography"],
+      decor: ["Decor"],
+      decoration: ["Decor"],
+      mehandi: ["Mehandi"],
+      henna: ["Mehandi"]
+    };
+
+    Object.entries(semanticMap).forEach(([keyword, services]) => {
+      if (qLower.includes(keyword)) {
+        services.forEach(s => {
+          if (!matchedServices.includes(s)) {
+            matchedServices.push(s);
+          }
+        });
+      }
+    });
+
+    res.status(200).json({ success: true, services: matchedServices });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
