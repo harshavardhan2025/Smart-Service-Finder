@@ -115,8 +115,8 @@ function PaymentPage() {
                        style={{
                           padding: "16px",
                           borderRadius: "16px",
-                          border: `2px solid ${isSelected ? "#3b82f6" : "#e2e8f0"}`,
-                          backgroundColor: isSelected ? "#eff6ff" : "white",
+                          border: `2px solid ${isSelected ? "var(--primary)" : "#e2e8f0"}`,
+                          backgroundColor: isSelected ? "var(--primary-light)" : "white",
                           display: "flex",
                           alignItems: "center",
                           gap: "14px",
@@ -131,10 +131,10 @@ function PaymentPage() {
                            <div style={{ fontSize: "12px", color: "#64748b" }}>{opt.desc}</div>
                         </div>
                         <div style={{
-                           width: "20px", height: "20px", borderRadius: "50%", border: "2px solid " + (isSelected ? "#3b82f6" : "#cbd5e1"),
+                           width: "20px", height: "20px", borderRadius: "50%", border: "2px solid " + (isSelected ? "var(--primary)" : "#cbd5e1"),
                            display: "flex", justifyContent: "center", alignItems: "center"
                         }}>
-                           {isSelected && <div style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: "#3b82f6" }} />}
+                           {isSelected && <div style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: "var(--primary)" }} />}
                         </div>
                      </div>
                   );

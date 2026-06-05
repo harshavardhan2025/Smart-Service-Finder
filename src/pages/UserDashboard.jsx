@@ -38,7 +38,7 @@ function UserLocationMap({ isLoggedIn }) {
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{
             width: "44px", height: "44px", borderRadius: "12px",
-            background: "linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)",
+            background: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)",
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: "20px", flexShrink: 0,
           }}>
@@ -757,13 +757,13 @@ function UserDashboard() {
                       alignItems: "center",
                       justifyContent: "center",
                       gap: "10px",
-                      backgroundColor: "#3b82f6",
+                      backgroundColor: "var(--secondary)",
                       color: "white",
                       padding: "14px",
                       borderRadius: "12px",
                       textDecoration: "none",
                       fontWeight: 800,
-                      boxShadow: "0 4px 12px rgba(59, 130, 246, 0.2)"
+                      boxShadow: "0 4px 12px rgba(74, 95, 193, 0.2)"
                     }}
                   >
                     📞 Call Medical Response (108)

@@ -425,15 +425,15 @@ function BookingPage() {
                     padding: "14px 0", 
                     textAlign: "center",
                     borderRadius: 12, 
-                    border: selected ? "2px solid #3b82f6" : "1px solid #e2e8f0",
-                    backgroundColor: isBusy ? "#fee2e2" : (disabled ? "#f8fafc" : (selected ? "#eff6ff" : "white")),
-                    color: isBusy ? "#b91c1c" : (disabled ? "#cbd5e1" : (selected ? "#1d4ed8" : "#334155")),
+                    border: selected ? "2px solid var(--primary)" : "1px solid #e2e8f0",
+                    backgroundColor: isBusy ? "#fee2e2" : (disabled ? "#f8fafc" : (selected ? "var(--primary-light)" : "white")),
+                    color: isBusy ? "#b91c1c" : (disabled ? "#cbd5e1" : (selected ? "var(--primary)" : "#334155")),
                     cursor: disabled ? "not-allowed" : "pointer", 
                     fontWeight: 700,
                     fontSize: 15,
                     transition: "all 0.2s ease",
                     transform: selected ? "translateY(-2px)" : "none",
-                    boxShadow: selected ? "0 4px 12px rgba(59, 130, 246, 0.2)" : "none",
+                    boxShadow: selected ? "0 4px 12px rgba(57, 79, 138, 0.2)" : "none",
                     position: "relative"
                   }}>
                   {isBusy ? "Occupied" : slot.label}

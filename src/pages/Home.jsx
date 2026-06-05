@@ -359,12 +359,12 @@ function Home() {
       {/* Hero Welcome Banner */}
       <div
         style={{
-          background: "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)",
-          borderBottom: "4px solid #172554",
+          background: "linear-gradient(135deg, #394f8a 0%, #4a5fc1 100%)",
+          borderBottom: "4px solid #18233c",
           color: "white",
           padding: "50px 20px",
           textAlign: "center",
-          boxShadow: "0 10px 30px rgba(30, 64, 175, 0.15)"
+          boxShadow: "0 10px 30px rgba(57, 79, 138, 0.15)"
         }}
       >
         <h1 style={{ margin: "0 0 10px 0", fontSize: "32px", fontWeight: 800, color: "white" }}>

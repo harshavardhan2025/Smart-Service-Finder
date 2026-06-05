@@ -672,7 +672,7 @@ Reported At: ${new Date().toLocaleString()}`,
                                   </span>
                                 ) : (
                                   <button onClick={() => handleStatusChange(n.bookingId, "On the Way")}
-                                    style={{ padding: "10px 20px", backgroundColor: "#3b82f6", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", display: "inline-flex", gap: 6, alignItems: "center" }}>
+                                    style={{ padding: "10px 20px", backgroundColor: "var(--primary)", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", display: "inline-flex", gap: 6, alignItems: "center" }}>
                                     Mark as 'On the Way' 🛵
                                   </button>
                                 );
