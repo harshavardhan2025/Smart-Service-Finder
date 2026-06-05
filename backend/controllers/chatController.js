@@ -24,7 +24,52 @@ const levenshtein = (a, b) => {
 };
 
 // Mathematically optimized search matching engine using scaled Levenshtein distances and stop-words filters
-const findBestServiceMatch = (queryText) => {
+export const findBestServiceMatch = (queryText) => {
+  const qLower = queryText.toLowerCase();
+
+  const servicesList = [
+    { name: "Plumbing", keywords: ["plumber", "pluber", "leak", "pipe", "tap", "sink", "toilet", "drain", "clog", "water line", "faucet", "shower", "basin", "clogged", "leakage", "washbasin", "overflow", "flush", "burst", "pressure", "blockage", "grouting", "plumbing", "spigot", "valve", "trap", "sump pump", "hose", "sprinkler", "fixture"] },
+    { name: "Electrical", keywords: ["electrician", "electrican", "wire", "switch", "fuse", "fan", "light", "current", "power", "short circuit", "spark", "bulb", "socket", "meter", "shock", "tripping", "mcb", "wiring", "blackout", "installation", "breaker", "grounding", "outlet", "voltage", "conduit", "phase", "choke", "holder", "regulator", "mainboard"] },
+    { name: "Carpentry", keywords: ["carpenter", "wood", "door", "chair", "sofa", "furniture", "table", "wooden", "wardrobe", "cabinet", "latch", "lock", "handle", "hinge", "drawer", "bed", "woodwork", "almirah", "repair", "plywood", "laminate", "veneer", "framing", "cushion", "re-upholstery", "creak", "squeak", "slide", "fitting", "bolt"] },
+    { name: "AC Repair", keywords: ["ac", "air conditioner", "cooling", "coolng", "cool", "condenser", "compressor", "heating", "servicing", "gas fill", "remote", "leak", "noise", "filter", "hvac", "ventilation", "split ac", "window ac", "duct", "blower", "coil", "thermostat", "freon", "inverter ac", "odour", "chilling", "fan speed", "ac install", "ac gas", "ac service"] },
+    { name: "Washing Machine", keywords: ["washing machine", "washer", "dryer", "laundry", "wash", "spin cycle", "not draining", "drum", "fully automatic", "semi automatic", "front load", "top load", "vibration", "noise", "error code", "water inlet", "drain hose", "motor", "belt", "lid", "agitator", "tub", "rinse", "detergent dispenser", "leakage", "door lock", "washing", "appliance", "circuit board", "dry"] },
+    { name: "Geyser", keywords: ["geyser", "heater", "hot water", "boiler", "thermostat", "heating element", "electric geyser", "gas geyser", "water heater", "geyser shock", "no hot water", "overheating", "pressure valve", "leakage", "geyser repair", "geyser install", "tank leak", "rust water", "slow heating", "tripping", "pilot light", "ignition", "burner", "coil", "thermo", "geyser noise", "water pipe", "power cord", "indicator", "reset button"] },
+    { name: "Grinder", keywords: ["grinder", "grind", "wet grinder", "jar", "blade", "grinding", "motor", "coupler", "stone", "carbon brush", "switch", "noise", "jammed", "spindle", "belt", "drum", "ventilation", "overload", "reset", "lid", "shaft", "winding", "cord", "washer", "gasket", "bush", "speed", "vibration", "body", "leakage"] },
+    { name: "Mixer", keywords: ["mixer", "juicer", "blender", "mixie", "mixer grinder", "jar", "blade", "coupler", "motor", "speed control", "overload protector", "noise", "smoke", "jammed", "gasket", "lid", "jar leak", "carbon brush", "whipping", "puree", "grinding", "liquidizing", "chutney jar", "dry grinding", "wet grinding", "switch", "knob", "coupling", "base", "vibration"] },
+    { name: "Refrigerator", keywords: ["fridge", "refrigerator", "freezer", "cool", "double door", "single door", "compressor", "gas leak", "not cooling", "food spoiling", "defrost", "ice maker", "gasket", "door seal", "thermostat", "fan", "noise", "water leaking", "bulb", "tray", "shelf", "condenser coil", "evaporator", "refrigerant", "coolant", "gas charging", "overheating", "stabilizer", "frost", "inverter fridge"] },
+    { name: "Water Purifier", keywords: ["purifier", "filter", "ro", "water taste", "alkaline", "ro service", "kent", "aquaguard", "uv", "uf", "tds", "membrane", "pre-filter", "carbon filter", "sediment", "pump", "adapter", "water dripping", "tank cleaning", "smell", "purification", "alkaline filter", "mineral", "flow restrictor", "auto cut", "solenoid valve", "service", "installation", "water pressure", "cartridge"] },
+    { name: "House Cleaning", keywords: ["cleaning", "clean", "maid", "sweep", "house clean", "deep clean", "vacuum", "kitchen", "bathroom", "sofa cleaning", "dusting", "carpet", "disinfection", "pest", "cobweb", "window pane", "balcony", "wardrobe clean", "closet organizing", "scrubbing", "sanitization", "curtain cleaning", "mattress cleaning", "stain removal", "odor control", "chimney cleaning", "tiles cleaning", "garbage disposal", "dust", "broom"] },
+    { name: "Floor cleaning", keywords: ["floor clean", "mop", "scrub", "floor", "marble polishing", "tiles cleaning", "scrubbing", "floor polish", "grout clean", "granite polish", "floor washing", "sweeping", "floor waxing", "stain removal", "acid wash", "wooden floor care", "terrazzo", "mop bucket", "floor machine", "disinfectant", "dirt", "mud", "spill", "floor shine", "buffing", "sealant", "epoxy floor", "laminate", "vinyl floor", "restoration"] },
+    { name: "Utensils Cleaning", keywords: ["utensil", "dish", "plate", "pot", "dishwashing", "vessels", "sink cleaning", "scrubbing", "dishwasher", "grease removal", "burnt pot", "glassware", "cutlery", "washing dishes", "pan", "cookware", "silver cleaning", "copper polish", "utensil cleaner", "soap", "sponge", "rinse", "stain", "oil", "food residue", "daily helper", "maid", "sink", "tap", "rack"] },
+    { name: "Wall Putty Coating", keywords: ["putty", "coating", "wall putty", "wall", "birla putty", "jk putty", "smooth walls", "dampness", "patch work", "crack filling", "sanding", "primer preparation", "interior putty", "exterior putty", "acrylic putty", "wall repair", "peeling paint", "moisture barrier", "putty blade", "base coat", "wall leveling", "plaster", "drywall", "gypsum", "finishing", "cement putty", "texture base", "scraping", "wall prep", "surface"] },
+    { name: "Interior Painting", keywords: ["paint", "interior", "indoor paint", "room paint", "wall", "color", "brush", "roller", "distemper", "primer", "asian paints", "wall painting", "home painting", "bedroom paint", "emulsion", "royale", "tractor emulsion", "ceiling paint", "stencil", "accent wall", "living room", "kitchen paint", "washable paint", "texture", "sheen", "matte finish", "glossy", "painter", "painting service", "color consultation"] },
+    { name: "Exterior Painting", keywords: ["exterior paint", "outdoor paint", "building paint", "weatherproof", "asian paints", "outside walls", "apex", "ultima", "waterproof paint", "fungus resistant", "crack bridging", "elevation painting", "gate painting", "grill paint", "texture exterior", "primer exterior", "rain protection", "sun protection", "scaffolding", "pressure washing", "facade", "wall coat", "damp proof", "exterior walls", "terrace paint", "boundary wall", "acrylic emulsion", "weathercoat", "painting", "exterior"] },
+    { name: "Texture & Designer Finishers", keywords: ["texture", "designer finish", "wall art", "finish", "design", "textured paint", "royal play", "stencil", "accent wall", "metallic texture", "non-metallic texture", "spatula finish", "rustic finish", "crackle effect", "canvas painting", "wood grain finish", "marble effect", "plaster texture", "designer wallpaper", "custom mural", "glitter finish", "velvet finish", "sand texture", "swirl pattern", "comb texture", "slapbrush", "knockdown", "pop design", "ceiling border", "paneling"] },
+    { name: "Wallpaper Installation", keywords: ["wallpaper", "wall paper", "wall sticker", "decal", "vinyl wallpaper", "pasting", "wallpaper roll", "custom wallpaper", "3d wallpaper", "wallpaper removal", "peel and stick", "wallpaper adhesive", "glue", "bubble removal", "seamless installation", "pattern matching", "non-woven wallpaper", "fabric wallpaper", "kids room wallpaper", "living room wall", "borders", "trimming", "wall prep", "accent wall", "textured wallpaper", "damp check", "installer", "paperhanging", "decals", "stickers"] },
+    { name: "Wood Polishing", keywords: ["wood polish", "polish", "varnish", "wood", "pu polish", "french polish", "furniture polish", "melamine", "spirit polish", "sanding", "wood staining", "teak wood", "rosewood", "dining table polish", "sofa polishing", "door polishing", "wardrobe polish", "matte polish", "glossy polish", "wood sealer", "wax polish", "restoration", "furniture painting", "scratch removal", "wood filler", "grain filler", "polyurethane", "lacquer", "laminate polish", "antique finish"] },
+    { name: "Two-Wheeler (Bikes)", keywords: ["bike", "motorcycle", "scooter", "two-wheeler", "puncture", "repair", "mechanic", "engine", "brake", "oil change", "chain lock", "starting trouble", "activa", "pulsar", "scooty", "clutch", "accelerator", "spark plug", "battery check", "wiring", "indicator", "headlight", "tyre replacement", "shock absorber", "air filter", "carburetor", "tuning", "mileage check", "general service", "breakdown"] },
+    { name: "Four-Wheeler (Cars)", keywords: ["car", "automobile", "mechanic", "four-wheeler", "puncture", "repair", "engine", "brake", "denting", "painting", "wheel alignment", "clutch", "breakdown", "car ac", "radiator", "suspension", "battery replacement", "self starter", "alternator", "bumper repair", "windshield", "gearbox", "engine oil", "coolant", "silencer", "wiper", "headlight alignment", "car service", "diagnostics", "roadside assistance"] },
+    { name: "Others (Heavy)", keywords: ["tractor", "crane", "heavy mech", "truck", "heavy", "jcb", "lorry", "commercial vehicle", "loader", "dumper", "excavator", "heavy engine", "hydraulic leak", "heavy vehicle brake", "road roller", "forklift", "generator repair", "diesel engine", "transmission", "leaf spring", "axle", "chassis", "pneumatic system", "heavy duty clutch", "towing", "heavy machinery", "harvester", "truck mechanic", "crane operator", "greasing"] },
+    { name: "Bike Wash", keywords: ["bike wash", "scooter wash", "wash", "bike cleaning", "water wash", "foam wash", "chain cleaning", "chain lubrication", "polish bike", "detailing bike", "mud removal", "wheel cleaning", "engine wash", "high pressure wash", "dry wash", "matte bike polish", "body wax", "bike spa", "scooty cleaning", "quick wash", "rust removal", "spoke cleaning", "seat cleaning", "washing", "shampoo", "scrubbing", "air dry", "microfiber", "bike care", "gloss wash"] },
+    { name: "Car Wash", keywords: ["car wash", "car vacuum", "wash", "interior cleaning", "foam wash", "car cleaning", "detailing", "exterior wash", "underbody wash", "dashboard polish", "seat dry cleaning", "carpet vacuuming", "tyre polish", "glass cleaning", "wax coating", "ceramic wash", "steam cleaning", "rubbing rubbing", "car polish", "odor removal", "car spa", "washing", "water wash", "pressure washer", "microfiber wipe", "mud flap cleaning", "roof cleaning", "trunk cleaning", "engine bay wash", "detailing studio"] },
+    { name: "Photography", keywords: ["photo", "video", "shoot", "camera", "wedding shoot", "wedding", "marriage", "party", "event", "photographer", "videographer", "pre-wedding", "birthday photography", "candid", "maternity shoot", "baby photoshoot", "drone shoot", "cinematography", "album design", "photo editing", "videography", "event coverage", "studio", "outdoor shoot", "portrait", "product shoot", "fashion photography", "model portfolio", "framing", "high-resolution"] },
+    { name: "Purohit", keywords: ["priest", "pandit", "pooja", "purohit", "havan", "homam", "satyanarayana", "marriage priest", "griha pravesh", "house warming", "naming ceremony", "engagement pooja", "shraddham", "ganapathi pooja", "rudrabhishek", "vastu pooja", "panditji", "sloka", "mantra", "astrology", "horoscope", "kundali", "hindu ritual", "festival pooja", "diwali pooja", "office opening", "pooja samagri", "sankalpam", "puja", "purohitudu"] },
+    { name: "Decor", keywords: ["decor", "balloon", "flower decoration", "stage", "flower", "decoration", "birthday decor", "party decorator", "wedding decor", "reception stage", "haldi decor", "mehandi decor", "naming ceremony decor", "balloon arch", "backdrop", "led lighting", "flower garland", "theme decor", "cradle decoration", "entrance decor", "table centerpiece", "canopy setup", "drapes", "props", "corporate event decor", "anniversary decor", "party planner", "artificial flowers", "fresh flowers", "decoration items"] },
+    { name: "Mehandi", keywords: ["mehandi", "henna", "bride", "wedding", "bridal mehandi", "arabic", "mehndi artist", "henna design", "marwari mehandi", "designer mehandi", "baby shower mehandi", "karwa chauth", "eid mehandi", "party mehandi", "engagement mehandi", "henna cone", "organic henna", "guest mehandi", "arabic fusion", "indian mehandi", "zardosi mehandi", "floral mehandi", "portraits mehandi", "mehandi functions", "bridal henna", "leg mehandi", "hand design", "henna paste", "mehndi", "mehendi"] },
+    { name: "Makeup", keywords: ["makeup", "bridal makeup", "bride", "wedding", "makeup artist", "party makeup", "mac makeup", "hd makeup", "airbrush makeup", "engagement makeup", "reception look", "saree draping", "hair styling", "eyelashes", "makeup kit", "cosmetics", "groom makeup", "fashion makeup", "photoshoot makeup", "natural makeup", "dewy finish", "waterproof makeup", "kryolan", "draping", "eyebrows", "foundation", "lipstick", "eye shadow", "makeover", "beauty artist"] },
+    { name: "Beauty, Salon & Spa", keywords: ["salon", "parlor", "beauty", "haircut", "facial", "spa", "nail", "grooming", "shave", "beard", "massage", "waxing", "threading", "pedicure", "manicure", "hair coloring", "bleach", "detan", "hair spa", "body massage", "head massage", "oil massage", "scrub", "eyebrow threading", "body waxing", "cleanup", "bridal glow", "hair straightening", "hair smoothening", "keratin"] },
+    { name: "Doctors", keywords: ["doctor", "doctr", "medical", "consultation", "physician", "clinic", "sick", "health", "ill", "fever", "pain", "injury", "medicine", "cough", "cold", "flu", "hospital", "patient", "pediatrician", "cardiologist", "dermatologist", "orthopedic", "gynecologist", "fever consultation", "prescription", "general practitioner", "medical specialist", "stomach pain", "headache", "checkup"] }
+  ];
+
+  // Fast-path: Check direct substring occurrence of any keyword
+  for (const service of servicesList) {
+    for (const keyword of service.keywords) {
+      if (qLower.includes(keyword)) {
+        return service.name;
+      }
+    }
+  }
+
   const stopWords = new Set([
     "need", "want", "have", "with", "this", "that", "your", "from", "near", "best", "some", "good", "find", "show", "here", "there", 
     "what", "where", "when", "about", "book", "free", "how", "to", "do", "you", "a", "an", "the", "is", "are", "was", "were", 
@@ -32,43 +77,9 @@ const findBestServiceMatch = (queryText) => {
     "safety", "verified", "time", "hours", "location", "cities", "help", "complaint"
   ]);
 
-  const words = queryText.toLowerCase().split(/[\s,./?#@!$%^&*()_+={}[\]|\\:;"'-]+/);
+  const words = qLower.split(/[\s,./?#@!$%^&*()_+={}[\]|\\:;"'-]+/);
   let bestService = null;
   let minDistance = Infinity;
-
-  const servicesList = [
-    { name: "Plumbing", keywords: ["plumber", "pluber", "leak", "pipe", "tap", "sink", "toilet", "drain", "water line", "faucet", "shower", "basin", "clog"] },
-    { name: "Electrical", keywords: ["electrician", "electrican", "wire", "switch", "fuse", "fan", "light", "current", "power", "short circuit", "spark", "bulb", "socket", "meter", "shock"] },
-    { name: "Carpentry", keywords: ["carpenter", "wood", "door", "chair", "sofa", "furniture", "table", "wooden", "wardrobe", "cabinet", "latch", "lock", "handle"] },
-    { name: "AC Repair", keywords: ["ac", "air conditioner", "cooling", "coolng", "cool", "condenser", "compressor", "heating"] },
-    { name: "Washing Machine", keywords: ["washing machine", "washer", "dryer", "laundry", "wash"] },
-    { name: "Geyser", keywords: ["geyser", "heater", "hot water", "boiler"] },
-    { name: "Grinder", keywords: ["grinder", "grind"] },
-    { name: "Mixer", keywords: ["mixer", "juicer", "blender"] },
-    { name: "Refrigerator", keywords: ["fridge", "refrigerator", "freezer", "cool"] },
-    { name: "Water Purifier", keywords: ["purifier", "filter", "ro", "water"] },
-    { name: "House Cleaning", keywords: ["cleaning", "clean", "maid", "sweep", "house clean", "deep clean", "vacuum", "kitchen", "bathroom"] },
-    { name: "Floor cleaning", keywords: ["floor clean", "mop", "scrub", "floor"] },
-    { name: "Utensils Cleaning", keywords: ["utensil", "dish", "plate", "pot", "wash"] },
-    { name: "Wall Putty Coating", keywords: ["putty", "coating", "wall putty", "wall"] },
-    { name: "Interior Painting", keywords: ["paint", "interior", "indoor paint", "room paint", "wall", "color", "brush", "roller", "distemper", "primer"] },
-    { name: "Exterior Painting", keywords: ["exterior paint", "outdoor paint", "building paint", "wall", "color", "brush", "roller", "distemper", "primer"] },
-    { name: "Texture & Designer Finishers", keywords: ["texture", "designer finish", "wall art", "finish", "design"] },
-    { name: "Wallpaper Installation", keywords: ["wallpaper", "wall paper", "wall sticker"] },
-    { name: "Wood Polishing", keywords: ["wood polish", "polish", "varnish", "wood"] },
-    { name: "Two-Wheeler (Bikes)", keywords: ["bike", "motorcycle", "scooter", "two-wheeler", "puncture", "repair", "mechanic", "engine", "brake"] },
-    { name: "Four-Wheeler (Cars)", keywords: ["car", "automobile", "mechanic", "four-wheeler", "puncture", "repair", "engine", "brake"] },
-    { name: "Others (Heavy)", keywords: ["tractor", "crane", "heavy mech", "truck", "heavy"] },
-    { name: "Bike Wash", keywords: ["bike wash", "scooter wash", "wash"] },
-    { name: "Car Wash", keywords: ["car wash", "car vacuum", "wash"] },
-    { name: "Photography", keywords: ["photo", "video", "shoot", "camera", "wedding shoot", "wedding", "marriage", "party", "event"] },
-    { name: "Purohit", keywords: ["priest", "pandit", "pooja", "purohit", "havan"] },
-    { name: "Decor", keywords: ["decor", "balloon", "flower decoration", "stage", "flower", "decoration"] },
-    { name: "Mehandi", keywords: ["mehandi", "henna", "bride", "wedding", "marriage", "party", "event"] },
-    { name: "Makeup", keywords: ["makeup", "bridal makeup", "bride", "wedding", "marriage", "party", "event"] },
-    { name: "Beauty, Salon & Spa", keywords: ["salon", "parlor", "beauty", "haircut", "facial", "spa", "nail", "grooming", "shave", "beard", "massage"] },
-    { name: "Doctors", keywords: ["doctor", "doctr", "medical", "consultation", "physician", "clinic", "sick", "health", "ill", "fever", "pain", "injury", "medicine", "cough", "cold", "flu", "hospital", "patient"] }
-  ];
 
   for (const w of words) {
     if (w.length < 3 || stopWords.has(w)) continue;
@@ -103,6 +114,7 @@ const findBestServiceMatch = (queryText) => {
   return bestService;
 };
 
+
 // Legacy stub fallback wrapper
 const hasFuzzyWordMatch = (queryText, targetWord) => {
   return findBestServiceMatch(queryText) === targetWord;
@@ -113,37 +125,37 @@ export const normalizeServiceCategory = (category) => {
   if (!category) return null;
   const clean = category.toLowerCase().trim();
   
-  if (clean.includes("plumb") || clean.includes("pluber") || clean.includes("leak") || clean.includes("pipe") || clean.includes("tap") || clean.includes("sink") || clean.includes("toilet") || clean.includes("drain")) return "Plumbing";
-  if (clean.includes("electr") || clean.includes("wire") || clean.includes("switch") || clean.includes("fan") || clean.includes("light") || clean.includes("power") || clean.includes("current") || clean.includes("fuse") || clean.includes("spark")) return "Electrical";
-  if (clean.includes("carpen") || clean.includes("wood") || clean.includes("furniture") || clean.includes("door") || clean.includes("chair") || clean.includes("table")) return "Carpentry";
-  if (clean.includes("ac") || clean.includes("air cond") || clean.includes("cooling") || clean.includes("coolng") || clean.includes("cooler") || clean.includes("condenser")) return "AC Repair";
-  if (clean.includes("wash") && (clean.includes("machine") || clean.includes("laundry") || clean.includes("dryer") || clean.includes("washer"))) return "Washing Machine";
-  if (clean.includes("geyser") || clean.includes("heater") || clean.includes("hot water")) return "Geyser";
-  if (clean.includes("grinder")) return "Grinder";
-  if (clean.includes("mixer") || clean.includes("blender") || clean.includes("juicer")) return "Mixer";
-  if (clean.includes("fridge") || clean.includes("refrigerator") || clean.includes("freezer")) return "Refrigerator";
-  if (clean.includes("purifier") || clean.includes("ro filter") || clean.includes("water filter")) return "Water Purifier";
-  if (clean.includes("deep") || (clean.includes("house") && clean.includes("clean")) || clean.includes("maid") || clean.includes("home clean")) return "House Cleaning";
-  if (clean.includes("floor") && clean.includes("clean")) return "Floor cleaning";
-  if (clean.includes("utensil") || clean.includes("dish") || clean.includes("plate") || clean.includes("pot")) return "Utensils Cleaning";
-  if (clean.includes("putty") || clean.includes("coating")) return "Wall Putty Coating";
-  if (clean.includes("interior") || (clean.includes("paint") && !clean.includes("exterior") && !clean.includes("wood") && !clean.includes("wallpaper"))) return "Interior Painting";
-  if (clean.includes("exterior") || clean.includes("outdoor paint") || clean.includes("building paint")) return "Exterior Painting";
-  if (clean.includes("texture") || clean.includes("designer finish")) return "Texture & Designer Finishers";
-  if (clean.includes("wallpaper") || clean.includes("wall sticker")) return "Wallpaper Installation";
-  if (clean.includes("wood polish") || clean.includes("varnish") || clean.includes("polishing")) return "Wood Polishing";
-  if (clean.includes("bike") && (clean.includes("repair") || clean.includes("mechanic") || clean.includes("two-wheeler") || clean.includes("motorcycle"))) return "Two-Wheeler (Bikes)";
-  if (clean.includes("car") && (clean.includes("repair") || clean.includes("mechanic") || clean.includes("four-wheeler") || clean.includes("sedan") || clean.includes("suv"))) return "Four-Wheeler (Cars)";
-  if (clean.includes("tractor") || clean.includes("crane") || clean.includes("heavy")) return "Others (Heavy)";
-  if (clean.includes("bike") && clean.includes("wash")) return "Bike Wash";
-  if (clean.includes("car") && clean.includes("wash")) return "Car Wash";
-  if (clean.includes("photo") || clean.includes("video") || clean.includes("camera") || clean.includes("shoot")) return "Photography";
-  if (clean.includes("priest") || clean.includes("pandit") || clean.includes("pooja") || clean.includes("purohit") || clean.includes("havan")) return "Purohit";
-  if (clean.includes("decor") || clean.includes("balloon") || clean.includes("flower")) return "Decor";
-  if (clean.includes("mehandi") || clean.includes("henna")) return "Mehandi";
-  if (clean.includes("makeup") || clean.includes("cosmetic")) return "Makeup";
-  if (clean.includes("salon") || clean.includes("haircut") || clean.includes("facial") || clean.includes("parlor") || clean.includes("beauty") || clean.includes("spa") || clean.includes("nail") || clean.includes("grooming") || clean.includes("shave") || clean.includes("beard")) return "Beauty, Salon & Spa";
-  if (clean.includes("doctor") || clean.includes("medical") || clean.includes("physician") || clean.includes("sick") || clean.includes("health") || clean.includes("hospital") || clean.includes("clinic") || clean.includes("doctr") || clean.includes("fever") || clean.includes("pain") || clean.includes("cough") || clean.includes("cold")) return "Doctors";
+  if (clean.includes("plumb") || clean.includes("pluber") || clean.includes("leak") || clean.includes("pipe") || clean.includes("tap") || clean.includes("sink") || clean.includes("toilet") || clean.includes("drain") || clean.includes("clog") || clean.includes("faucet") || clean.includes("shower") || clean.includes("basin") || clean.includes("blockage") || clean.includes("pressure") || clean.includes("grouting")) return "Plumbing";
+  if (clean.includes("electr") || clean.includes("wire") || clean.includes("switch") || clean.includes("fan") || clean.includes("light") || clean.includes("power") || clean.includes("current") || clean.includes("fuse") || clean.includes("spark") || clean.includes("bulb") || clean.includes("socket") || clean.includes("meter") || clean.includes("shock") || clean.includes("tripping") || clean.includes("mcb")) return "Electrical";
+  if (clean.includes("carpen") || clean.includes("wood") || clean.includes("furniture") || clean.includes("door") || clean.includes("chair") || clean.includes("table") || clean.includes("wardrobe") || clean.includes("cabinet") || clean.includes("latch") || clean.includes("lock") || clean.includes("handle") || clean.includes("hinge") || clean.includes("drawer") || clean.includes("bed")) return "Carpentry";
+  if (clean.includes("ac") || clean.includes("air cond") || clean.includes("cooling") || clean.includes("coolng") || clean.includes("cooler") || clean.includes("condenser") || clean.includes("compressor") || clean.includes("heating") || clean.includes("hvac") || clean.includes("split ac") || clean.includes("window ac")) return "AC Repair";
+  if (clean.includes("wash") && (clean.includes("machine") || clean.includes("laundry") || clean.includes("dryer") || clean.includes("washer") || clean.includes("drum") || clean.includes("spin"))) return "Washing Machine";
+  if (clean.includes("geyser") || clean.includes("heater") || clean.includes("hot water") || clean.includes("boiler") || clean.includes("thermostat")) return "Geyser";
+  if (clean.includes("grinder") || clean.includes("wet grinder") || clean.includes("stone") || clean.includes("carbon brush")) return "Grinder";
+  if (clean.includes("mixer") || clean.includes("blender") || clean.includes("juicer") || clean.includes("mixie")) return "Mixer";
+  if (clean.includes("fridge") || clean.includes("refrigerator") || clean.includes("freezer") || clean.includes("double door") || clean.includes("single door")) return "Refrigerator";
+  if (clean.includes("purifier") || clean.includes("ro filter") || clean.includes("water filter") || clean.includes("ro service") || clean.includes("alkaline") || clean.includes("kent") || clean.includes("aquaguard")) return "Water Purifier";
+  if (clean.includes("deep") || (clean.includes("house") && clean.includes("clean")) || clean.includes("maid") || clean.includes("home clean") || clean.includes("vacuum") || clean.includes("dusting") || clean.includes("sofa clean") || clean.includes("carpet clean")) return "House Cleaning";
+  if (clean.includes("floor") && (clean.includes("clean") || clean.includes("mop") || clean.includes("scrub") || clean.includes("polish") || clean.includes("marble"))) return "Floor cleaning";
+  if (clean.includes("utensil") || clean.includes("dish") || clean.includes("plate") || clean.includes("pot") || clean.includes("dishwash") || clean.includes("vessel")) return "Utensils Cleaning";
+  if (clean.includes("putty") || clean.includes("coating") || clean.includes("wall putty") || clean.includes("birla putty") || clean.includes("jk putty")) return "Wall Putty Coating";
+  if (clean.includes("interior") || (clean.includes("paint") && !clean.includes("exterior") && !clean.includes("wood") && !clean.includes("wallpaper") && !clean.includes("building"))) return "Interior Painting";
+  if (clean.includes("exterior") || clean.includes("outdoor paint") || clean.includes("building paint") || clean.includes("weatherproof") || clean.includes("apex") || clean.includes("ultima")) return "Exterior Painting";
+  if (clean.includes("texture") || clean.includes("designer finish") || clean.includes("wall art") || clean.includes("royal play") || clean.includes("stencil") || clean.includes("metallic")) return "Texture & Designer Finishers";
+  if (clean.includes("wallpaper") || clean.includes("wall paper") || clean.includes("wall sticker") || clean.includes("decal") || clean.includes("vinyl")) return "Wallpaper Installation";
+  if (clean.includes("wood polish") || clean.includes("varnish") || clean.includes("polishing") || clean.includes("melamine") || clean.includes("spirit polish")) return "Wood Polishing";
+  if (clean.includes("bike") && (clean.includes("repair") || clean.includes("mechanic") || clean.includes("two-wheeler") || clean.includes("motorcycle") || clean.includes("puncture") || clean.includes("engine") || clean.includes("brake") || clean.includes("scooter") || clean.includes("activa") || clean.includes("pulsar"))) return "Two-Wheeler (Bikes)";
+  if (clean.includes("car") && (clean.includes("repair") || clean.includes("mechanic") || clean.includes("four-wheeler") || clean.includes("sedan") || clean.includes("suv") || clean.includes("puncture") || clean.includes("engine") || clean.includes("brake") || clean.includes("denting") || clean.includes("wheel alignment"))) return "Four-Wheeler (Cars)";
+  if (clean.includes("tractor") || clean.includes("crane") || clean.includes("heavy") || clean.includes("truck") || clean.includes("jcb") || clean.includes("lorry")) return "Others (Heavy)";
+  if (clean.includes("bike") && clean.includes("wash") || clean.includes("scooter wash") || clean.includes("bike clean")) return "Bike Wash";
+  if (clean.includes("car") && clean.includes("wash") || clean.includes("car clean") || clean.includes("car vacuum")) return "Car Wash";
+  if (clean.includes("photo") || clean.includes("video") || clean.includes("camera") || clean.includes("shoot") || clean.includes("photographer") || clean.includes("wedding shoot")) return "Photography";
+  if (clean.includes("priest") || clean.includes("pandit") || clean.includes("pooja") || clean.includes("purohit") || clean.includes("havan") || clean.includes("homam") || clean.includes("satyanarayana")) return "Purohit";
+  if (clean.includes("decor") || clean.includes("balloon") || clean.includes("flower") || clean.includes("stage") || clean.includes("decoration")) return "Decor";
+  if (clean.includes("mehandi") || clean.includes("henna") || clean.includes("bridal mehandi") || clean.includes("mehndi")) return "Mehandi";
+  if (clean.includes("makeup") || clean.includes("cosmetic") || clean.includes("bridal makeup") || clean.includes("makeover")) return "Makeup";
+  if (clean.includes("salon") || clean.includes("haircut") || clean.includes("facial") || clean.includes("parlor") || clean.includes("beauty") || clean.includes("spa") || clean.includes("nail") || clean.includes("grooming") || clean.includes("shave") || clean.includes("beard") || clean.includes("massage") || clean.includes("waxing") || clean.includes("threading")) return "Beauty, Salon & Spa";
+  if (clean.includes("doctor") || clean.includes("medical") || clean.includes("physician") || clean.includes("sick") || clean.includes("health") || clean.includes("hospital") || clean.includes("clinic") || clean.includes("doctr") || clean.includes("fever") || clean.includes("pain") || clean.includes("cough") || clean.includes("cold") || clean.includes("flu") || clean.includes("consultation") || clean.includes("pediatrician")) return "Doctors";
 
   // Exact matching fallback checks
   const services = ["Plumbing", "Electrical", "Carpentry", "AC Repair", "Washing Machine", "Geyser", "Grinder", "Mixer", "Refrigerator", "Water Purifier", "House Cleaning", "Floor cleaning", "Utensils Cleaning", "Wall Putty Coating", "Interior Painting", "Exterior Painting", "Texture & Designer Finishers", "Wallpaper Installation", "Wood Polishing", "Two-Wheeler (Bikes)", "Four-Wheeler (Cars)", "Others (Heavy)", "Bike Wash", "Car Wash", "Photography", "Purohit", "Decor", "Mehandi", "Makeup", "Beauty, Salon & Spa", "Doctors"];
@@ -194,6 +206,65 @@ const generateZhipuToken = (apiKey) => {
   return `${headerPart}.${payloadPart}.${signature}`;
 };
 
+// Fuzzy matching for general support/FAQ topics to handle typos and synonyms gracefully
+const findBestSupportMatch = (queryText) => {
+  const qLower = queryText.toLowerCase();
+  
+  const supportTopics = [
+    { name: "booking", keywords: ["book", "booking", "boking", "reservation", "appoint", "appointment", "schedule"] },
+    { name: "payment", keywords: ["payment", "paymnt", "pay", "money", "cash", "upi", "card", "wallet", "transaction", "bill", "invoice"] },
+    { name: "refund", keywords: ["refund", "refnd", "cashback", "return money", "reimburse"] },
+    { name: "complaint", keywords: ["complaint", "complain", "support", "issue", "problem", "help", "ticket", "grievance", "contact", "agent"] },
+    { name: "price", keywords: ["price", "cost", "charge", "rate", "fee", "tariff", "expensive", "how much", "payment rate"] },
+    { name: "discount", keywords: ["discount", "discont", "offer", "coupon", "promo", "code", "deal", "voucher"] },
+    { name: "cancel", keywords: ["cancel", "cancle", "reschedule", "change time", "postpone", "cancelation"] },
+    { name: "safety", keywords: ["safety", "safe", "verify", "verified", "background check", "trust", "secure", "guarantee", "warranty"] },
+    { name: "location", keywords: ["location", "city", "cities", "where", "area", "neighborhood", "operate"] }
+  ];
+
+  for (const topic of supportTopics) {
+    for (const keyword of topic.keywords) {
+      if (qLower.includes(keyword)) {
+        return topic.name;
+      }
+    }
+  }
+
+  const words = qLower.split(/[\s,./?#@!$%^&*()_+={}[\]|\\:;"'-]+/);
+  let bestTopic = null;
+  let minDistance = Infinity;
+
+  for (const w of words) {
+    if (w.length < 3) continue;
+
+    for (const topic of supportTopics) {
+      for (const keyword of topic.keywords) {
+        if (w === keyword) {
+          return topic.name;
+        }
+        if (w.includes(keyword) || keyword.includes(w)) {
+          const distance = Math.abs(w.length - keyword.length);
+          if (distance < minDistance) {
+            minDistance = distance;
+            bestTopic = topic.name;
+          }
+        }
+        
+        const minLen = Math.min(w.length, keyword.length);
+        const allowedDistance = minLen <= 3 ? 0 : minLen === 4 ? 1 : 2;
+        const dist = levenshtein(w, keyword);
+        
+        if (dist <= allowedDistance && dist < minDistance) {
+          minDistance = dist;
+          bestTopic = topic.name;
+        }
+      }
+    }
+  }
+
+  return bestTopic;
+};
+
 // Fallback in-memory NLP engine utilizing fuzzy matching and a rich guide database
 const localAIEngine = (userQuery, userLocation) => {
   const query = userQuery.toLowerCase().trim();
@@ -215,27 +286,29 @@ const localAIEngine = (userQuery, userLocation) => {
   let aiResponse = "";
   let workerSearch = false;
 
+  const matchedTopic = findBestSupportMatch(query);
+
   if (matchedService) {
     workerSearch = true;
     const targetCity = matchedCity || userLocation.split(",")[0].trim();
     aiResponse = `I would be glad to help you find the best expert for **${matchedService}** in ${targetCity}! 🛠️✨ Here are the top-rated professionals matched from our database.`;
-  } else if (query.includes("how to book") || query.includes("booking") || query.includes("how do i book")) {
+  } else if (matchedTopic === "booking") {
     aiResponse = "To book a service:\n1. Open the homepage.\n2. Tap on any main category (like Painting, Events, Beauty) to view its sub-services.\n3. Click on your desired sub-service (e.g. AC Repair, Makeup).\n4. Select a nearby professional, click 'View Profile & Book', select your date and time slot, and confirm! 📅✨";
-  } else if (query.includes("payment") || query.includes("refund") || query.includes("money")) {
+  } else if (matchedTopic === "payment") {
     aiResponse = "We support multiple secure payment gateways including Google Pay / UPI, Secure Wallet, Credit/Debit Cards, and Cash on Delivery. To see your transaction statements, please head to your 'Profile' section! 💵🛡️";
-  } else if (query.includes("complaint") || query.includes("support") || query.includes("issue") || query.includes("help")) {
+  } else if (matchedTopic === "refund") {
+    aiResponse = "Refunds are processed automatically to your source payment method within 3-5 business days upon cancellation of a booked service. You can track refund statuses in your transaction history! 💵🛡️";
+  } else if (matchedTopic === "complaint") {
     aiResponse = "I can record any feedback or complaints here. You can also head over to our support portal to generate an official complaint ticket, and our team will get in touch with you within 24 hours. ⚖️🤝";
-  } else if (query.includes("price") || query.includes("cost") || query.includes("charge") || query.includes("rate") || query.includes("how much")) {
+  } else if (matchedTopic === "price") {
     aiResponse = "Pricing is dynamic and depends on the specific professional you choose! 💰 Basic visits start at ₹150, and rates are listed transparently on each worker's profile.";
-  } else if (query.includes("discount") || query.includes("offer") || query.includes("coupon") || query.includes("promo")) {
+  } else if (matchedTopic === "discount") {
     aiResponse = "Yes! 🎁 We have awesome promo coupons running (like **DOCFREE** for flat ₹150 off or **FESTIVE25** for 25% off). Apply them at checkout to save!";
-  } else if (query.includes("plan") || query.includes("subscribe")) {
-    aiResponse = "We offer premium annual packages (like our **Unlimited Annual Car Wash** or **Doctors Annual Family Plan**)! 💎 Check out the 'Plans & Offers' page to subscribe!";
-  } else if (query.includes("safety") || query.includes("safe") || query.includes("verify") || query.includes("background check")) {
+  } else if (matchedTopic === "cancel") {
+    aiResponse = "You can easily cancel or reschedule bookings free of charge up to 2 hours before the appointment via the 'My Bookings' tab! 🕐✨";
+  } else if (matchedTopic === "safety") {
     aiResponse = "Your safety is our top priority! 🛡️ Every service provider on Workzy undergoes rigorous background checks and government ID verifications.";
-  } else if (query.includes("time") || query.includes("hours") || query.includes("open") || query.includes("available")) {
-    aiResponse = "Our professionals are typically active from 8:00 AM to 9:00 PM, 7 days a week. During checkout, you can select any available time slot that perfectly fits your schedule! 🕐✨";
-  } else if (query.includes("where") || query.includes("city") || query.includes("cities") || query.includes("location") || query.includes("bangalore") || query.includes("mumbai") || query.includes("delhi")) {
+  } else if (matchedTopic === "location") {
     aiResponse = "We currently operate in major cities including Mumbai, Bangalore, Delhi, Chennai, and Hyderabad. The platform automatically detects your searched location to show you the nearest available experts! 🗺️📍";
   } else if (query.includes("how are you")) {
     aiResponse = "I'm doing absolutely fantastic, thank you for asking! 😊 I'm ready and excited to help you find the best home services today. How can I assist you today?";

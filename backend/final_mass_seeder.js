@@ -7,100 +7,132 @@ import { geocodeCity } from "./utils/geoUtils.js";
 dotenv.config();
 
 const definitions = [
-  // AC Repair & Electronics
-  { name: "Harsha Cooling Solutions", email: "ac1@local33.com", service: "AC Repair", price: 850 },
-  { name: "Ravi Appliances", email: "ac2@local33.com", service: "AC Repair", price: 750 },
-  { name: "Smart Geyser Service", email: "geyser@local33.com", service: "Geyser", price: 450 },
-  { name: "Quick Washing Machine Repair", email: "washing@local33.com", service: "Washing Machine", price: 600 },
-  { name: "Krishna Water Purifiers", email: "purifier@local33.com", service: "Water Purifier", price: 500 },
-  
-  // Cleaning sub-types
-  { name: "Sparkle Floor Cleaners", email: "floor@local33.com", service: "Floor cleaning", price: 800 },
-  { name: "Homely Maid Servants", email: "utensil@local33.com", service: "Utensils Cleaning", price: 300 },
-  
-  // Auto Wash & Mech sub-types
-  { name: "Turbo Car Wash Kakinada", email: "carwash@local33.com", service: "Car Wash", price: 400 },
-  { name: "Speedy Bike Cleaners", email: "bikewash@local33.com", service: "Bike Wash", price: 150 },
-  { name: "Apex Car Mechanics", email: "apexcar@local33.com", service: "Four-Wheeler (Cars)", price: 1200 },
-  
-  // Painting & Decor sub-types
-  { name: "Royal Wall Putty", email: "putty@local33.com", service: "Wall Putty Coating", price: 2000 },
-  { name: "Modern Wallpapers Hub", email: "wallpapers@local33.com", service: "Wallpaper Installation", price: 3500 },
-  { name: "Fine Texture Finishers", email: "texture@local33.com", service: "Texture & Designer Finishers", price: 4500 },
-  
-  // Beauty / Spa sub-types
-  { name: "Glow Beauty Salon", email: "facial@local33.com", service: "Facials (Women)", price: 1200 },
-  { name: "Vibe Hairstyling Lounge", email: "hairstyl@local33.com", service: "Hairstyling (Women)", price: 800 },
-  { name: "Elegant Threading Experts", email: "threading@local33.com", service: "Threading (Women)", price: 150 },
-  { name: "Classic Men Grooming", email: "grooming@local33.com", service: "Grooming (Men)", price: 400 },
-  { name: "Serene Spa Sanctuary", email: "menspa@local33.com", service: "Spa (Men)", price: 1800 },
-  
-  // Events sub-types
-  { name: "Sri Purohit Services", email: "purohit@local33.com", service: "Purohit", price: 1500 },
-  { name: "Grand Decorators & Balloons", email: "decor@local33.com", service: "Decor", price: 5000 },
-  { name: "Radha Mehandi Designs", email: "mehandi@local33.com", service: "Mehandi", price: 2000 },
-  { name: "Bridal Bliss Makeup", email: "makeup@local33.com", service: "Makeup", price: 6000 },
-
-  // Core Basics saturation
-  { name: "Raju Emergency Plumber", email: "plumber9@local33.com", service: "Plumbing", price: 299 },
-  { name: "Sai Teja Carpentry", email: "carpentry9@local33.com", service: "Carpentry", price: 600 },
-  { name: "Ganesh Electrical Fixes", email: "electric9@local33.com", service: "Electrical", price: 400 },
-  
-  // Special niches
-  { name: "Sweet Angels Caretakers", email: "babycare@local33.com", service: "Care takers (baby)", price: 10000 },
+  // 1. Plumbing
+  { name: "Srinivas Rao", email: "plumber1@workzy.com", service: "Plumbing", price: 299 },
+  { name: "Raju Plumber", email: "plumber2@workzy.com", service: "Plumbing", price: 250 },
+  // 2. Electrical
+  { name: "Ganesh Prasad", email: "electrician1@workzy.com", service: "Electrical", price: 399 },
+  { name: "Satya Murthy", email: "electrician2@workzy.com", service: "Electrical", price: 450 },
+  // 3. Carpentry
+  { name: "Sai Teja", email: "carpenter1@workzy.com", service: "Carpentry", price: 499 },
+  { name: "Veerraju", email: "carpenter2@workzy.com", service: "Carpentry", price: 599 },
+  // 4. AC Repair
+  { name: "Harsha Vardhan", email: "ac1@workzy.com", service: "AC Repair", price: 799 },
+  { name: "Prasad Rao", email: "ac2@workzy.com", service: "AC Repair", price: 850 },
+  // 5. Washing Machine
+  { name: "Ravi Kumar", email: "washing1@workzy.com", service: "Washing Machine", price: 550 },
+  // 6. Geyser
+  { name: "Suresh Babu", email: "geyser1@workzy.com", service: "Geyser", price: 450 },
+  // 7. Grinder
+  { name: "Naidu wet-grind", email: "grinder1@workzy.com", service: "Grinder", price: 350 },
+  // 8. Mixer
+  { name: "Chowdary Mixie", email: "mixer1@workzy.com", service: "Mixer", price: 300 },
+  // 9. Refrigerator
+  { name: "Kiran Fridge", email: "fridge1@workzy.com", service: "Refrigerator", price: 750 },
+  // 10. Water Purifier
+  { name: "Krishna Murthy", email: "purifier1@workzy.com", service: "Water Purifier", price: 490 },
+  // 11. House Cleaning
+  { name: "Lakshmi Kumari", email: "cleaning1@workzy.com", service: "House Cleaning", price: 999 },
+  // 12. Floor cleaning
+  { name: "Ramana Floorcare", email: "floor1@workzy.com", service: "Floor cleaning", price: 699 },
+  // 13. Utensils Cleaning
+  { name: "Sita Devi", email: "utensils1@workzy.com", service: "Utensils Cleaning", price: 350 },
+  // 14. Wall Putty Coating
+  { name: "Mohan Putty", email: "putty1@workzy.com", service: "Wall Putty Coating", price: 2500 },
+  // 15. Interior Painting
+  { name: "Venkatesh Paint", email: "interior1@workzy.com", service: "Interior Painting", price: 3500 },
+  // 16. Exterior Painting
+  { name: "Apparao Paint", email: "exterior1@workzy.com", service: "Exterior Painting", price: 5500 },
+  // 17. Texture & Designer Finishers
+  { name: "Subbarao Texture", email: "texture1@workzy.com", service: "Texture & Designer Finishers", price: 4500 },
+  // 18. Wallpaper Installation
+  { name: "Narayana Walls", email: "wallpaper1@workzy.com", service: "Wallpaper Installation", price: 2999 },
+  // 19. Wood Polishing
+  { name: "Bhaskar Polish", email: "woodpolish1@workzy.com", service: "Wood Polishing", price: 1999 },
+  // 20. Two-Wheeler (Bikes)
+  { name: "Vamsi Krishna", email: "bike1@workzy.com", service: "Two-Wheeler (Bikes)", price: 350 },
+  // 21. Four-Wheeler (Cars)
+  { name: "Suresh Garage", email: "car1@workzy.com", service: "Four-Wheeler (Cars)", price: 1200 },
+  // 22. Others (Heavy)
+  { name: "Chowdary Heavy", email: "heavy1@workzy.com", service: "Others (Heavy)", price: 8500 },
+  // 23. Bike Wash
+  { name: "Durga Wash", email: "bikewash1@workzy.com", service: "Bike Wash", price: 150 },
+  // 24. Car Wash
+  { name: "Rambabu Clean", email: "carwash1@workzy.com", service: "Car Wash", price: 499 },
+  // 25. Photography
+  { name: "Rao Clickz", email: "photo1@workzy.com", service: "Photography", price: 6500 },
+  // 26. Purohit
+  { name: "Shastri Purohit", email: "purohit1@workzy.com", service: "Purohit", price: 1500 },
+  // 27. Decor
+  { name: "Prakash Decor", email: "decor1@workzy.com", service: "Decor", price: 8000 },
+  // 28. Mehandi
+  { name: "Radha Henna", email: "mehandi1@workzy.com", service: "Mehandi", price: 1800 },
+  // 29. Makeup
+  { name: "Devi Makeups", email: "makeup1@workzy.com", service: "Makeup", price: 5500 },
+  // 30. Beauty, Salon & Spa
+  { name: "Sridevi Beauty Salon", email: "beauty1@workzy.com", service: "Beauty, Salon & Spa", price: 1200 },
+  // 31. Doctors
+  { name: "Dr. Ananya", email: "doctor1@workzy.com", service: "Doctors", price: 500 }
 ];
 
-const cities = ["Kakinada", "Rajahmundry"];
+const cities = ["Kakinada", "Rajahmundry", "Kadapa"];
 
 const runSeeder = async () => {
   try {
      console.log("🚀 Initiating Mass Deep-Level Dataset Saturation...");
      await mongoose.connect(process.env.MONGO_URI);
+
+     // Wipe existing workers and their user records to allow clean redistribution
+     await Worker.deleteMany({});
+     await User.deleteMany({ role: "worker" });
+     console.log("🧹 Wiped existing worker and user worker records.");
      
      let createdCount = 0;
      for (let i = 0; i < definitions.length; i++) {
         const def = definitions[i];
-        const existing = await Worker.findOne({ email: def.email });
-        if (existing) continue;
 
-        // Alternate distribute across cities evenly flawlessly
-        const assignedCity = cities[i % 2];
-        
-        // Generate highly-rated authentic random performance metrics flawlessly
-        const genRating = (4.0 + Math.random() * 1.0).toFixed(1);
-        const genReviews = Math.floor(Math.random() * 80) + 10;
-        const exp = (Math.floor(Math.random() * 8) + 2) + "+ Years";
+        for (const assignedCity of cities) {
+           // Generate highly-rated authentic random performance metrics flawlessly
+           const genRating = (4.0 + Math.random() * 1.0).toFixed(1);
+           const genReviews = Math.floor(Math.random() * 80) + 10;
+           const exp = (Math.floor(Math.random() * 8) + 2) + "+ Years";
 
-        const locationStr = assignedCity === "Kakinada" ? "Bhanugudi Junction" : "Danavaipeta";
-        const coords = await geocodeCity(locationStr);
+           const locationStr = assignedCity === "Kakinada" ? "Bhanugudi Junction" : 
+                               assignedCity === "Rajahmundry" ? "Danavaipeta" : "Kadapa Central Area";
+           const coords = await geocodeCity(locationStr);
+           
+           const emailParts = def.email.split('@');
+           const cityEmail = `${emailParts[0]}_${assignedCity.toLowerCase()}@${emailParts[1]}`;
+           const displayName = `${def.name} (${assignedCity})`;
 
-        // Step 1: Commit to main Worker Collection
-        const finalWorker = await Worker.create({
-           name: def.name,
-           email: def.email,
-           service: def.service,
-           city: assignedCity,
-           location: locationStr,
-           lat: coords ? coords.lat : null,
-           lon: coords ? coords.lon : null,
-           rating: Number(genRating),
-           reviews: genReviews,
-           price: def.price,
-           experience: exp,
-           status: "Active"
-        });
+           // Step 1: Commit to main Worker Collection
+           const finalWorker = await Worker.create({
+              name: displayName,
+              email: cityEmail,
+              service: def.service,
+              city: assignedCity,
+              location: locationStr,
+              lat: coords ? coords.lat : null,
+              lon: coords ? coords.lon : null,
+              rating: Number(genRating),
+              reviews: genReviews,
+              price: def.price,
+              experience: exp,
+              status: "Active"
+           });
 
-        // Step 2: Simultaneously guarantee Auth capability instantly!
-        await User.create({
-           name: def.name,
-           email: def.email,
-           password: "password123", // Def standard password
-           role: "worker",
-           city: assignedCity
-        });
-        
-        createdCount++;
-        console.log(`✅ Inserted ${def.service} Expert: ${def.name} in ${assignedCity}`);
+           // Step 2: Simultaneously guarantee Auth capability instantly!
+           await User.create({
+              name: displayName,
+              email: cityEmail,
+              password: "password123", // Def standard password
+              role: "worker",
+              city: assignedCity
+           });
+           
+           createdCount++;
+           console.log(`✅ Inserted ${def.service} Expert: ${displayName} in ${assignedCity}`);
+        }
      }
 
      console.log(`\n🏆 MASS SATURATION COMPLETE! Deployed ${createdCount} active sub-service experts flawlessly!`);

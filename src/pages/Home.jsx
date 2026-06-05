@@ -52,6 +52,7 @@ function Home() {
         setUserCoords({ lat: latitude, lng: longitude });
         localStorage.setItem("userCoordsLat", latitude.toString());
         localStorage.setItem("userCoordsLng", longitude.toString());
+        localStorage.setItem("manualLocationSet", "true");
         
         try {
           const url = `https://photon.komoot.io/reverse?lon=${longitude}&lat=${latitude}`;
@@ -116,6 +117,7 @@ function Home() {
           localStorage.setItem("userCity", city);
           localStorage.setItem("userCoordsLat", lat.toString());
           localStorage.setItem("userCoordsLng", lon.toString());
+          localStorage.setItem("manualLocationSet", "true");
           return;
         }
       }
@@ -137,6 +139,7 @@ function Home() {
           localStorage.setItem("userCity", data.city || "");
           localStorage.setItem("userCoordsLat", lat.toString());
           localStorage.setItem("userCoordsLng", lon.toString());
+          localStorage.setItem("manualLocationSet", "true");
         } else {
           alert("Location not found. Please try a different search.");
         }
@@ -163,10 +166,11 @@ function Home() {
       const savedLng = localStorage.getItem("userCoordsLng");
       const savedLoc = localStorage.getItem("userLocation");
       const registeredCity = sessionStorage.getItem("userCity") || localStorage.getItem("userCity");
+      const isManualLocation = localStorage.getItem("manualLocationSet") === "true";
       
-      // Always use the registered city as the source of truth
-      const needsGeocode = !savedLat || !savedLng || !savedLoc || 
-        (registeredCity && !savedLoc.toLowerCase().includes(registeredCity.toLowerCase()));
+      // Always use the registered city as the source of truth if not manually set
+      const needsGeocode = !isManualLocation && (!savedLat || !savedLng || !savedLoc || 
+        (registeredCity && !savedLoc.toLowerCase().includes(registeredCity.toLowerCase())));
       
       if (needsGeocode) {
         const targetCity = registeredCity || "Mumbai";
@@ -203,9 +207,11 @@ function Home() {
         
         geocodeProfileCity();
       } else {
-        // Coords already match the registered city — use them instantly!
-        setSearchedLocation(savedLoc);
-        setUserCoords({ lat: parseFloat(savedLat), lng: parseFloat(savedLng) });
+        // Coords already match the registered city or manual location is set — use them instantly!
+        if (savedLoc && savedLat && savedLng) {
+          setSearchedLocation(savedLoc);
+          setUserCoords({ lat: parseFloat(savedLat), lng: parseFloat(savedLng) });
+        }
       }
     }
   }, [role]);

@@ -106,6 +106,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
     localStorage.setItem("userCity", city);
     localStorage.setItem("userCoordsLat", lat.toString());
     localStorage.setItem("userCoordsLng", lon.toString());
+    localStorage.setItem("manualLocationSet", "true");
     if (onLocationChange) onLocationChange(label);
     if (onCoordsChange) onCoordsChange({ lat, lng: lon });
   };
@@ -130,8 +131,8 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
     if (onLocationChange) onLocationChange(savedLocation);
     if (onCoordsChange) onCoordsChange({ lat: savedLat, lng: savedLng });
 
-    // Automatically detect location on mount
-    if (navigator.geolocation) {
+    // Automatically detect location on mount ONLY if not manually set before
+    if (localStorage.getItem("manualLocationSet") !== "true" && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           const { latitude, longitude } = pos.coords;

@@ -291,6 +291,7 @@ function Signup() {
           sessionStorage.setItem("userEmail", data.user.email);
           sessionStorage.setItem("userId", data.user.id || data.user._id);
           sessionStorage.setItem("authToken", data.token);
+          localStorage.removeItem("manualLocationSet");
           if (data.user.role === "worker") {
             sessionStorage.setItem("loggedInWorkerId", data.user.id);
           } else if (data.user.city) {

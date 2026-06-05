@@ -62,6 +62,7 @@ function Login() {
     sessionStorage.setItem("userEmail", user.email);
     sessionStorage.setItem("userId", user.id || user._id);
     sessionStorage.setItem("authToken", data.token);
+    localStorage.removeItem("manualLocationSet");
 
     if (user.role === "worker") {
       sessionStorage.setItem("loggedInWorkerId", user.id);

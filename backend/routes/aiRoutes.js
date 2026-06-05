@@ -2,6 +2,7 @@ import express from "express";
 import Booking from "../models/Booking.js";
 import Service from "../models/Service.js";
 import Worker from "../models/Worker.js";
+import { findBestServiceMatch } from "../controllers/chatController.js";
 
 const router = express.Router();
 
@@ -77,8 +78,13 @@ router.get("/search", async (req, res) => {
     if (!q) {
       return res.status(200).json({ success: true, services: [] });
     }
-    const qLower = q.toLowerCase();
+    const qLower = q.toLowerCase().trim();
     const matchedServices = [];
+
+    const fuzzyMatch = findBestServiceMatch(qLower);
+    if (fuzzyMatch) {
+      matchedServices.push(fuzzyMatch);
+    }
 
     const semanticMap = {
       // 🔧 Plumbing
@@ -244,7 +250,7 @@ router.get("/search", async (req, res) => {
     };
 
     Object.entries(semanticMap).forEach(([keyword, services]) => {
-      if (qLower.includes(keyword)) {
+      if (qLower.includes(keyword) || (qLower.length >= 2 && keyword.includes(qLower))) {
         services.forEach(s => {
           if (!matchedServices.includes(s)) {
             matchedServices.push(s);
