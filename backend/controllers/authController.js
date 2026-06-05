@@ -3,6 +3,37 @@ import Worker from "../models/Worker.js";
 import jwt from "jsonwebtoken";
 import ActivityLog from "../models/ActivityLog.js";
 import { getPriceMultiplier } from "../utils/geoUtils.js";
+import mongoose from "mongoose";
+
+// Helper to wait for DB connection to be fully ready
+const ensureDbConnection = async () => {
+  if (mongoose.connection.readyState === 1) return;
+  console.log("⏳ [DB Connect] Database connection not ready. State:", mongoose.connection.readyState);
+  // Wait for up to 5 seconds
+  for (let i = 0; i < 10; i++) {
+    if (mongoose.connection.readyState === 1) return;
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
+};
+
+// Retry helper for async operations
+const executeWithRetry = async (fn, retries = 3, initialDelay = 500) => {
+  let lastError;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      console.warn(`⚠️ [Retry Helper] Operation failed (Attempt ${attempt}/${retries}): ${error.message}`);
+      if (attempt < retries) {
+        const delay = initialDelay * Math.pow(2, attempt - 1);
+        console.log(`⏳ [Retry Helper] Waiting ${delay}ms before retrying...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  throw lastError;
+};
 
 // Base prices per service category (Tier-2 city baseline)
 const SERVICE_BASE_PRICES = {
@@ -152,12 +183,12 @@ export const googleAuth = async (req, res) => {
       return res.status(400).json({ error: "Access token is required" });
     }
 
-    // 1. Verify access token with Google UserInfo endpoint
+    // 1. Verify access token with Google UserInfo endpoint with automated retry
     let googleRes;
     const googleUserinfoUrl = `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`;
     console.log("📡 [googleAuth] Verifying access token with Google: fetching", googleUserinfoUrl);
     try {
-      googleRes = await fetch(googleUserinfoUrl);
+      googleRes = await executeWithRetry(() => fetch(googleUserinfoUrl), 3, 500);
     } catch (netErr) {
       console.error("💥 [googleAuth] Network error reaching Google UserInfo:", netErr.message);
       return res.status(503).json({ error: "Could not reach Google servers. Please check your connection and try again." });
@@ -179,8 +210,11 @@ export const googleAuth = async (req, res) => {
       return res.status(400).json({ error: "Google account does not have a verified email address." });
     }
 
-    // 2. Check if user already exists in database
-    let user = await User.findOne({ email });
+    // Ensure database connection is ready
+    await ensureDbConnection();
+
+    // 2. Check if user already exists in database with retry
+    let user = await executeWithRetry(() => User.findOne({ email }));
     console.log("📡 [googleAuth] Found existing user in DB:", user ? `${user.email} (${user.role})` : "None");
     const placeholderPassword = `GoogleOAuthSecurePassword123!`;
     const isSignupFlow = !!role; // if role is passed, it's a signup attempt
@@ -196,22 +230,22 @@ export const googleAuth = async (req, res) => {
 
       const finalName = customName || name;
 
-      // Create new user
-      user = await User.create({
+      // Create new user with retry
+      user = await executeWithRetry(() => User.create({
         name: finalName,
         email,
         password: placeholderPassword,
         role: role || "user",
         city: city || "Mumbai",
         phone: phone || ""
-      });
+      }));
 
       if (user.role === "worker") {
         const basePrice = SERVICE_BASE_PRICES[profession || "Carpentry"] || 350;
         const multiplier = getPriceMultiplier(city || "");
         const locationPrice = Math.round(basePrice * multiplier);
 
-        await Worker.create({
+        await executeWithRetry(() => Worker.create({
           name: finalName,
           email,
           service: profession || "Carpentry",
@@ -221,11 +255,11 @@ export const googleAuth = async (req, res) => {
           reviews: 0,
           price: locationPrice,
           status: "Active"
-        });
+        }));
       }
 
-      // Log signup event
-      await ActivityLog.create({
+      // Log signup event with retry
+      await executeWithRetry(() => ActivityLog.create({
         user_id: user._id,
         email: user.email,
         role: user.role,
@@ -233,22 +267,22 @@ export const googleAuth = async (req, res) => {
         device: req.headers["user-agent"] || "Generic Web Client",
         ip: req.ip || "127.0.0.1",
         city: city || "Mumbai"
-      });
+      }));
 
     // ── LOGIN FLOW: no role passed ───────────────────────────
     } else {
       if (!user) {
-        // No account found — auto-create a user account for seamless Google Sign-In
-        user = await User.create({
+        // No account found — auto-create a user account for seamless Google Sign-In with retry
+        user = await executeWithRetry(() => User.create({
           name: name || email.split("@")[0],
           email,
           password: `GoogleOAuth_${Date.now()}`,
           role: "user",
           city: "Mumbai",
           phone: ""
-        });
+        }));
 
-        await ActivityLog.create({
+        await executeWithRetry(() => ActivityLog.create({
           user_id: user._id,
           email: user.email,
           role: user.role,
@@ -256,18 +290,18 @@ export const googleAuth = async (req, res) => {
           device: req.headers["user-agent"] || "Google OAuth",
           ip: req.ip || "127.0.0.1",
           city: "Mumbai"
-        });
+        }));
       } else {
         // Existing user — block check for workers
         if (user.role === "worker") {
-          const associatedWorker = await Worker.findOne({ email: user.email });
+          const associatedWorker = await executeWithRetry(() => Worker.findOne({ email: user.email }));
           if (associatedWorker && associatedWorker.status === "Blocked") {
             return res.status(403).json({ error: "Your worker account has been blocked by admin. Please contact support." });
           }
         }
 
-        // Log login event
-        await ActivityLog.create({
+        // Log login event with retry
+        await executeWithRetry(() => ActivityLog.create({
           user_id: user._id,
           email: user.email,
           role: user.role,
@@ -275,7 +309,7 @@ export const googleAuth = async (req, res) => {
           device: req.headers["user-agent"] || "Generic Web Client",
           ip: req.ip || "127.0.0.1",
           city: user.city || "Unknown"
-        });
+        }));
       }
     }
 
@@ -306,19 +340,22 @@ export const googleMockAuth = async (req, res) => {
       return res.status(400).json({ error: "Email and name are required for mock Google auth." });
     }
 
-    // Find existing user or auto-create a regular user
-    let user = await User.findOne({ email });
+    // Ensure database connection is ready
+    await ensureDbConnection();
+
+    // Find existing user or auto-create a regular user with retry
+    let user = await executeWithRetry(() => User.findOne({ email }));
 
     if (!user) {
-      user = await User.create({
+      user = await executeWithRetry(() => User.create({
         name,
         email,
         password: `GoogleMockAuth_${Date.now()}`,
         role: "user",
         city: "Mumbai",
         phone: ""
-      });
-      await ActivityLog.create({
+      }));
+      await executeWithRetry(() => ActivityLog.create({
         user_id: user._id,
         email: user.email,
         role: user.role,
@@ -326,15 +363,15 @@ export const googleMockAuth = async (req, res) => {
         device: req.headers["user-agent"] || "Google Mock Auth",
         ip: req.ip || "127.0.0.1",
         city: "Mumbai"
-      });
+      }));
     } else {
       if (user.role === "worker") {
-        const associatedWorker = await Worker.findOne({ email: user.email });
+        const associatedWorker = await executeWithRetry(() => Worker.findOne({ email: user.email }));
         if (associatedWorker && associatedWorker.status === "Blocked") {
           return res.status(403).json({ error: "Your worker account has been blocked by admin." });
         }
       }
-      await ActivityLog.create({
+      await executeWithRetry(() => ActivityLog.create({
         user_id: user._id,
         email: user.email,
         role: user.role,
@@ -342,7 +379,7 @@ export const googleMockAuth = async (req, res) => {
         device: req.headers["user-agent"] || "Google Mock Auth",
         ip: req.ip || "127.0.0.1",
         city: user.city || "Unknown"
-      });
+      }));
     }
 
     return res.status(200).json({
