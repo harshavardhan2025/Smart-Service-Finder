@@ -952,8 +952,8 @@ function AdminDashboard() {
                               <stop offset="100%" stopColor="var(--success)" />
                             </linearGradient>
                             <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.25" />
-                              <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.0" />
+                              <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.25" />
+                              <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.0" />
                             </linearGradient>
                             <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
                               <feGaussianBlur stdDeviation="4" result="blur" />
@@ -980,10 +980,10 @@ function AdminDashboard() {
                                 cy={pt.y} 
                                 r="6" 
                                 fill="white" 
-                                stroke="#8b5cf6" 
+                                stroke="var(--primary)" 
                                 strokeWidth="3" 
                               />
-                              <circle cx={pt.x} cy={pt.y} r="3" fill="#8b5cf6" />
+                              <circle cx={pt.x} cy={pt.y} r="3" fill="var(--primary)" />
                               <title>{`₹${Math.round(pt.value).toLocaleString()}`}</title>
                             </g>
                           ))}
@@ -2790,8 +2790,8 @@ function AdminDashboard() {
                   <div style={{ fontSize: "11px", color: "#ef4444", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Overdue (&gt;24h)</div>
                   <div style={{ fontSize: "28px", fontWeight: 850, color: "#ef4444", marginTop: "4px" }}>{overdueBookings.length}</div>
                 </div>
-                <div style={{ backgroundColor: "var(--bg-card)", padding: "20px", borderRadius: "12px", borderLeft: "4px solid #8b5cf6", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                  <div style={{ fontSize: "11px", color: "#8b5cf6", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Locked Revenue at Risk</div>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "20px", borderRadius: "12px", borderLeft: "4px solid var(--secondary)", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                  <div style={{ fontSize: "11px", color: "var(--secondary)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Locked Revenue at Risk</div>
                   <div style={{ fontSize: "28px", fontWeight: 850, color: "var(--text-main)", marginTop: "4px" }}>₹{overdueBookings.reduce((sum, b) => sum + (b.price || 0), 0)}</div>
                 </div>
               </div>

@@ -229,8 +229,8 @@ function Navbar() {
                           style={{
                             padding: "10px",
                             borderRadius: "10px",
-                            backgroundColor: n.is_read ? "rgba(0,0,0,0.02)" : "rgba(139, 92, 246, 0.08)",
-                            borderLeft: n.is_read ? "3px solid transparent" : "3px solid #8b5cf6",
+                            backgroundColor: n.is_read ? "rgba(0,0,0,0.02)" : "rgba(66, 86, 100, 0.08)",
+                            borderLeft: n.is_read ? "3px solid transparent" : "3px solid var(--primary)",
                             fontSize: "12px",
                             transition: "background-color 0.2s"
                           }}

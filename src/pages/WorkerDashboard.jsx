@@ -1020,12 +1020,12 @@ Reported At: ${new Date().toLocaleString()}`,
                         {/* Threaded Reply Segment */}
                         <div style={{ borderTop: "1.5px dashed var(--border-color)", paddingTop: 16, marginTop: 14 }}>
                           {r.reply ? (
-                            <div style={{ backgroundColor: "#f5f3ff", border: "1px solid #ddd6fe", borderRadius: 12, padding: "12px 16px", marginLeft: 20 }}>
+                            <div style={{ backgroundColor: "rgba(198, 173, 143, 0.15)", border: "1px solid var(--accent)", borderRadius: 12, padding: "12px 16px", marginLeft: 20 }}>
                               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                                <span style={{ fontSize: 12, fontWeight: 800, color: "#6d28d9" }}>💬 Your Professional Response</span>
-                                <span style={{ fontSize: 11, color: "#8b5cf6" }}>📅 {r.replyDate}</span>
+                                <span style={{ fontSize: 12, fontWeight: 800, color: "var(--primary)" }}>💬 Your Professional Response</span>
+                                <span style={{ fontSize: 11, color: "var(--secondary)" }}>📅 {r.replyDate}</span>
                               </div>
-                              <p style={{ margin: 0, fontSize: 13, color: "#4c1d95", lineHeight: 1.5 }}>
+                              <p style={{ margin: 0, fontSize: 13, color: "var(--text-main)", lineHeight: 1.5 }}>
                                 {r.reply}
                               </p>
                             </div>

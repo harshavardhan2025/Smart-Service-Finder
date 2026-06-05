@@ -466,7 +466,7 @@ function UserDashboard() {
                   >
                     <div style={{ fontSize: "36px", marginBottom: "10px" }}>{serviceIcons[serviceName] || "🛠️"}</div>
                     <h4 style={{ margin: "0 0 6px 0", fontSize: "15px", color: "var(--text-main)" }}>{serviceName}</h4>
-                    <span style={{ fontSize: "11px", fontWeight: "bold", color: "#8b5cf6", backgroundColor: "rgba(139, 92, 246, 0.1)", padding: "4px 8px", borderRadius: "10px" }}>
+                    <span style={{ fontSize: "11px", fontWeight: "bold", color: "var(--primary)", backgroundColor: "rgba(66, 86, 100, 0.1)", padding: "4px 8px", borderRadius: "10px" }}>
                       Match 98%
                     </span>
                   </div>

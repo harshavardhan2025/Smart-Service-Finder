@@ -75,7 +75,7 @@ function AiPriceEstimator({ initialService = "Electrical", onEstimateApply = nul
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
         <h3 style={{ margin: 0, fontSize: "19px", fontWeight: 800, color: "var(--primary)", display: "flex", alignItems: "center", gap: "10px" }}>
-          <FaBrain style={{ color: "#8b5cf6", animation: loading ? "pulse-brain 1s infinite alternate" : "none" }} /> 
+          <FaBrain style={{ color: "var(--primary)", animation: loading ? "pulse-brain 1s infinite alternate" : "none" }} /> 
           AI Smart Price Estimator
         </h3>
         <FaQuestionCircle 
@@ -204,10 +204,10 @@ function AiPriceEstimator({ initialService = "Electrical", onEstimateApply = nul
           borderRadius: "12px",
           fontWeight: 800,
           fontSize: "15px",
-          background: "linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)",
+          background: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)",
           color: "white",
           border: "none",
-          borderBottom: "4px solid #4f46e5",
+          borderBottom: "4px solid var(--secondary)",
           cursor: "pointer"
         }}
       >
@@ -299,9 +299,9 @@ function AiPriceEstimator({ initialService = "Electrical", onEstimateApply = nul
                   padding: "8px 12px",
                   fontSize: "11px",
                   fontWeight: 800,
-                  backgroundColor: "rgba(139, 92, 246, 0.1)",
-                  color: "#8b5cf6",
-                  border: "1.5px dashed #8b5cf6",
+                  backgroundColor: "rgba(66, 86, 100, 0.1)",
+                  color: "var(--primary)",
+                  border: "1.5px dashed var(--primary)",
                   borderRadius: "8px",
                   cursor: "pointer",
                   width: "100%",
@@ -318,8 +318,8 @@ function AiPriceEstimator({ initialService = "Electrical", onEstimateApply = nul
       {/* Styled Brain Pulse keyframe */}
       <style>{`
         @keyframes pulse-brain {
-          from { transform: scale(1); filter: drop-shadow(0 0 2px rgba(139,92,246,0.3)); }
-          to { transform: scale(1.15); filter: drop-shadow(0 0 8px rgba(139,92,246,0.6)); }
+          from { transform: scale(1); filter: drop-shadow(0 0 2px rgba(66,86,100,0.3)); }
+          to { transform: scale(1.15); filter: drop-shadow(0 0 8px rgba(66,86,100,0.6)); }
         }
       `}</style>
     </div>
