@@ -159,7 +159,7 @@ const RouteMap = ({ startAddress, endAddress }) => {
         {posA && posB && (
           <Polyline
             positions={[posA, posB]}
-            color="#3b82f6"
+            color="#425664"
             weight={4}
             dashArray="10, 10"
             opacity={0.8}

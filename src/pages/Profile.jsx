@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 const STATUS_STYLE = {
   Paid:     { color: "#16a34a", bg: "#dcfce7" },
   Pending:  { color: "#d97706", bg: "#fef3c7" },
-  Refunded: { color: "#2563eb", bg: "#dbeafe" },
+  Refunded: { color: "#425664", bg: "#b4d0e7" },
   Completed: { color: "#16a34a", bg: "#dcfce7" }
 };
 
@@ -190,8 +190,8 @@ function Profile() {
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
               <span
                 style={{
-                  backgroundColor: "#dbeafe",
-                  color: "#2563eb",
+                  backgroundColor: "#b4d0e7",
+                  color: "var(--primary)",
                   padding: "3px 10px",
                   borderRadius: "20px",
                   fontSize: "12px",
@@ -254,12 +254,12 @@ function Profile() {
           </h3>
           <div className="wallet-cards-row" style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
             {/* Wallet Balance Card */}
-            <div className="wallet-loyalty-card" style={{ flex: 1, minWidth: "200px", padding: "20px", borderRadius: "16px", background: "linear-gradient(135deg, #42a5f5, #1e88e5)", color: "white" }}>
+            <div className="wallet-loyalty-card" style={{ flex: 1, minWidth: "200px", padding: "20px", borderRadius: "16px", background: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)", color: "white" }}>
               <div style={{ fontSize: "12px", opacity: 0.9, fontWeight: 600, textTransform: "uppercase" }}>Available Wallet Balance</div>
               <div style={{ fontSize: "32px", fontWeight: 800, margin: "8px 0" }}>₹{walletBal.toLocaleString()}</div>
               <button 
                 onClick={() => navigate("/payment")}
-                style={{ padding: "8px 16px", backgroundColor: "var(--bg-card)", color: "#1e88e5", border: "none", borderRadius: "8px", fontWeight: 700, fontSize: "12px", cursor: "pointer", transition: "all 0.2s" }}
+                style={{ padding: "8px 16px", backgroundColor: "var(--bg-card)", color: "var(--primary)", border: "none", borderRadius: "8px", fontWeight: 700, fontSize: "12px", cursor: "pointer", transition: "all 0.2s" }}
                 onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
                 onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
               >
@@ -574,9 +574,9 @@ function Profile() {
                 width: "100%",
                 marginTop: "12px",
                 padding: "11px",
-                backgroundColor: showAllTxn ? "#f1f5f9" : "#eff6ff",
-                color: showAllTxn ? "#64748b" : "#2563eb",
-                border: `1.5px dashed ${showAllTxn ? "#cbd5e1" : "#93c5fd"}`,
+                backgroundColor: showAllTxn ? "#f1f5f9" : "rgba(198, 173, 143, 0.15)",
+                color: showAllTxn ? "#64748b" : "var(--primary)",
+                border: `1.5px dashed ${showAllTxn ? "#cbd5e1" : "var(--accent)"}`,
                 borderRadius: "10px",
                 fontWeight: 700,
                 fontSize: "13px",

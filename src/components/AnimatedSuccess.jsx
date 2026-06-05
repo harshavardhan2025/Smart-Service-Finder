@@ -6,7 +6,7 @@ function AnimatedSuccess({ bookingDetails, onClose }) {
 
   useEffect(() => {
     const list = [];
-    const colors = ["#8b5cf6", "#3b82f6", "#10b981", "#f59e0b", "#ec4899", "#06b6d4"];
+    const colors = ["#425664", "#61082b", "#c6ad8f", "#4d724d", "#b4d0e7"];
     for (let i = 0; i < 60; i++) {
       list.push({
         id: i,
@@ -106,7 +106,7 @@ function AnimatedSuccess({ bookingDetails, onClose }) {
             width: "80px",
             height: "80px",
             borderRadius: "50%",
-            backgroundColor: "#ecfdf5",
+            backgroundColor: "rgba(77, 114, 77, 0.1)",
             display: "inline-flex",
             justifyContent: "center",
             alignItems: "center",
@@ -114,7 +114,7 @@ function AnimatedSuccess({ bookingDetails, onClose }) {
             animation: "scale-up 0.5s ease-out forwards"
           }}
         >
-          <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <polyline
               points="20 6 9 17 4 12"
               style={{
@@ -154,11 +154,11 @@ function AnimatedSuccess({ bookingDetails, onClose }) {
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "10px", borderBottom: "1px solid #e2e8f0", marginBottom: "10px" }}>
             <span style={{ color: "#64748b", fontWeight: 500 }}>Total Cost Paid:</span>
-            <span style={{ color: "#0284c7", fontWeight: 800 }}>₹{bookingDetails?.price || 399}</span>
+            <span style={{ color: "var(--primary)", fontWeight: 800 }}>₹{bookingDetails?.price || 399}</span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ color: "#64748b", fontWeight: 500 }}>Instant Cash Rewards:</span>
-            <span style={{ backgroundColor: "#fef3c7", color: "#d97706", padding: "4px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: 700, border: "1px solid #fde68a" }}>
+            <span style={{ backgroundColor: "rgba(198, 173, 143, 0.15)", color: "var(--primary)", padding: "4px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: 700, border: "1px solid var(--accent)" }}>
               ⭐ Wallet Cashback Active
             </span>
           </div>
@@ -168,7 +168,7 @@ function AnimatedSuccess({ bookingDetails, onClose }) {
           onClick={onClose}
           style={{
             width: "100%",
-            background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+            background: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)",
             color: "white",
             border: "none",
             padding: "14px 20px",
@@ -176,7 +176,7 @@ function AnimatedSuccess({ bookingDetails, onClose }) {
             fontWeight: "bold",
             fontSize: "15px",
             cursor: "pointer",
-            boxShadow: "0 8px 16px rgba(16, 185, 129, 0.25)",
+            boxShadow: "0 8px 16px rgba(66, 86, 100, 0.25)",
             transition: "all 0.2s"
           }}
           onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-1px)")}

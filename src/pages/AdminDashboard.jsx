@@ -677,9 +677,9 @@ function AdminDashboard() {
     const total = (morningCount + afternoonCount + eveningCount) || 1;
     
     return [
-      { label: "🌅 Morning Rush (9 AM - 12 PM)", pct: Math.round((morningCount / total) * 100), color: "#f59e0b", count: `${morningCount} Jobs` },
-      { label: "☀️ Afternoon Slots (12 PM - 4 PM)", pct: Math.round((afternoonCount / total) * 100), color: "#3b82f6", count: `${afternoonCount} Jobs` },
-      { label: "🌇 Evening Demands (4 PM - 9 PM)", pct: Math.round((eveningCount / total) * 100), color: "#10b981", count: `${eveningCount} Jobs` }
+      { label: "🌅 Morning Rush (9 AM - 12 PM)", pct: Math.round((morningCount / total) * 100), color: "#c6ad8f", count: `${morningCount} Jobs` },
+      { label: "☀️ Afternoon Slots (12 PM - 4 PM)", pct: Math.round((afternoonCount / total) * 100), color: "#425664", count: `${afternoonCount} Jobs` },
+      { label: "🌇 Evening Demands (4 PM - 9 PM)", pct: Math.round((eveningCount / total) * 100), color: "#4d724d", count: `${eveningCount} Jobs` }
     ];
   };
 
@@ -823,7 +823,7 @@ function AdminDashboard() {
                 </div>
                 <div ref={averageCardRef} style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
                   <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Average Booking Value</span>
-                  <h2 style={{ margin: "10px 0 0 0", fontSize: "32px", fontWeight: 800, color: "#3b82f6" }}>₹{averageBookingValue.toFixed(0)}</h2>
+                  <h2 style={{ margin: "10px 0 0 0", fontSize: "32px", fontWeight: 800, color: "var(--primary)" }}>₹{averageBookingValue.toFixed(0)}</h2>
                 </div>
                 <div ref={workersCardRef} style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
                   <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Total Registered Workers</span>
@@ -933,7 +933,7 @@ function AdminDashboard() {
                   { name: "Plumbing", pct: 35, count: 7 },
                   { name: "Cleaning", pct: 25, count: 5 }
                 ];
-                const categoryColors = ["#8b5cf6", "#3b82f6", "#10b981"];
+                const categoryColors = ["var(--secondary)", "var(--primary)", "var(--success)"];
 
                 return (
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: "25px", marginBottom: "40px" }}>
@@ -947,9 +947,9 @@ function AdminDashboard() {
                         <svg viewBox="0 0 400 150" style={{ width: "100%", height: "100%", overflow: "visible" }}>
                           <defs>
                             <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
-                              <stop offset="0%" stopColor="#3b82f6" />
-                              <stop offset="50%" stopColor="#8b5cf6" />
-                              <stop offset="100%" stopColor="#10b981" />
+                              <stop offset="0%" stopColor="var(--primary)" />
+                              <stop offset="50%" stopColor="var(--secondary)" />
+                              <stop offset="100%" stopColor="var(--success)" />
                             </linearGradient>
                             <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                               <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.25" />
@@ -1253,7 +1253,7 @@ function AdminDashboard() {
                       />
                       <button 
                         type="submit" 
-                        style={{ padding: "10px 20px", backgroundColor: "#3b82f6", color: "white", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: "pointer" }}
+                        style={{ padding: "10px 20px", backgroundColor: "var(--primary)", color: "white", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: "pointer" }}
                       >
                         Add Sub-Category
                       </button>
@@ -2124,7 +2124,7 @@ function AdminDashboard() {
                                 setEditingPlan(p);
                                 setPlanForm({ title: p.title, price: p.price, features: p.features.join(", "), color: p.color || "#4f46e5", btnText: p.btnText || "Subscribe Now", workerId: p.workerId || "" });
                               }}
-                              style={{ backgroundColor: "#3b82f6", color: "white", border: "none", padding: "4px 8px", borderRadius: "4px", fontSize: "11px", marginRight: "6px", cursor: "pointer" }}
+                              style={{ backgroundColor: "var(--primary)", color: "white", border: "none", padding: "4px 8px", borderRadius: "4px", fontSize: "11px", marginRight: "6px", cursor: "pointer" }}
                             >
                               Edit
                             </button>
@@ -2247,7 +2247,7 @@ function AdminDashboard() {
                                 setEditingOffer(o);
                                 setOfferForm({ code: o.code, discount: o.discount, desc: o.desc, expiry: o.expiry });
                               }}
-                              style={{ backgroundColor: "#3b82f6", color: "white", border: "none", padding: "4px 8px", borderRadius: "4px", fontSize: "11px", marginRight: "6px", cursor: "pointer" }}
+                              style={{ backgroundColor: "var(--primary)", color: "white", border: "none", padding: "4px 8px", borderRadius: "4px", fontSize: "11px", marginRight: "6px", cursor: "pointer" }}
                             >
                               Edit
                             </button>

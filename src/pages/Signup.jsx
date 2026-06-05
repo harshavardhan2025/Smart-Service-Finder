@@ -549,10 +549,10 @@ function Signup() {
                 <div style={{
                   display: "flex", alignItems: "center", gap: "8px",
                   padding: "10px 14px",
-                  background: "rgba(37,99,235,0.06)",
+                  background: "rgba(66, 86, 100, 0.06)",
                   borderRadius: "10px",
-                  border: "1px dashed rgba(37,99,235,0.2)",
-                  fontSize: "12.5px", color: "#1d4ed8"
+                  border: "1px dashed rgba(66, 86, 100, 0.2)",
+                  fontSize: "12.5px", color: "var(--primary)"
                 }}>
                   <span>ℹ️</span>
                   <span>After submitting, you'll be taken to Google to authenticate your account.</span>
@@ -565,7 +565,7 @@ function Signup() {
                     padding: "13px",
                     fontSize: "14px", fontWeight: 700,
                     borderRadius: "10px",
-                    background: isLoading ? "#94a3b8" : "linear-gradient(135deg, #1d4ed8, #2563eb)",
+                    background: isLoading ? "#94a3b8" : "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)",
                     color: "white",
                     border: "none",
                     cursor: isLoading ? "not-allowed" : "pointer",

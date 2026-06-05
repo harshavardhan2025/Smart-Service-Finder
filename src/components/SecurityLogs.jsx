@@ -31,15 +31,15 @@ function SecurityLogs({ userId = "admin" }) {
   const getActionIcon = (action) => {
     switch(action) {
       case "LOGIN":
-        return <FaKey style={{ color: "#10b981" }} />;
+        return <FaKey style={{ color: "var(--success)" }} />;
       case "SIGNUP":
-        return <FaShieldAlt style={{ color: "#3b82f6" }} />;
+        return <FaShieldAlt style={{ color: "var(--primary)" }} />;
       case "SOS_TRIGGERED":
-        return <FaExclamationTriangle style={{ color: "#ef4444" }} />;
+        return <FaExclamationTriangle style={{ color: "var(--danger)" }} />;
       case "BOOKING_CANCELLED":
-        return <FaSignOutAlt style={{ color: "#ea580c" }} />;
+        return <FaSignOutAlt style={{ color: "var(--secondary)" }} />;
       default:
-        return <FaShieldAlt style={{ color: "#64748b" }} />;
+        return <FaShieldAlt style={{ color: "var(--text-secondary)" }} />;
     }
   };
 

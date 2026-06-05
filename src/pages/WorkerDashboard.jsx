@@ -775,9 +775,9 @@ Reported At: ${new Date().toLocaleString()}`,
                   <div style={{ fontSize: 40, fontWeight: 900, color: "#ea580c", marginTop: 10 }}>₹{pendingEscrow}</div>
                   <div style={{ fontSize: 12, color: "#64748b", marginTop: 6, fontWeight: 600 }}>Awaiting admin disbursement</div>
                 </div>
-                <div className="premium-card" style={{ borderTop: "6px solid #2563eb", textAlign: "center", padding: "28px 20px", boxShadow: "0 10px 20px rgba(37,99,235,0.05)" }}>
-                  <div style={{ fontSize: 11, color: "#2563eb", fontWeight: 850, textTransform: "uppercase", letterSpacing: "0.8px" }}>⏳ Projected Intake</div>
-                  <div style={{ fontSize: 40, fontWeight: 900, color: "#2563eb", marginTop: 10 }}>₹{upcomingProjected}</div>
+                <div className="premium-card" style={{ borderTop: "6px solid var(--primary)", textAlign: "center", padding: "28px 20px", boxShadow: "0 10px 20px rgba(66,86,100,0.05)" }}>
+                  <div style={{ fontSize: 11, color: "var(--primary)", fontWeight: 850, textTransform: "uppercase", letterSpacing: "0.8px" }}>⏳ Projected Intake</div>
+                  <div style={{ fontSize: 40, fontWeight: 900, color: "var(--primary)", marginTop: 10 }}>₹{upcomingProjected}</div>
                   <div style={{ fontSize: 12, color: "#64748b", marginTop: 6, fontWeight: 600 }}>Active outstanding workflows</div>
                 </div>
                 <div className="premium-card" style={{ borderTop: "6px solid #64748b", textAlign: "center", padding: "28px 20px" }}>

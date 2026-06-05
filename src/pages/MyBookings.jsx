@@ -124,7 +124,7 @@ function MyBookings() {
     switch (status) {
       case "Completed":
       case "Paid Out":
-        return { color: "#2563eb", bg: "#dbeafe" };
+        return { color: "var(--primary)", bg: "#b4d0e7" };
       case "Accepted":
       case "Confirmed":
         return { color: "#16a34a", bg: "#dcfce7" };
@@ -203,7 +203,7 @@ function MyBookings() {
             { label: "Total", count: liveBookings.length, color: "#1e293b", bg: "#f1f5f9" },
             { label: "Confirmed/Accepted", count: liveBookings.filter(b => b.status === "Confirmed" || b.status === "Accepted").length, color: "#16a34a", bg: "#dcfce7" },
             { label: "Upcoming/Pending", count: liveBookings.filter(b => b.status === "Upcoming").length, color: "#d97706", bg: "#fef3c7" },
-            { label: "Completed", count: liveBookings.filter(b => b.status === "Completed" || b.status === "Paid Out").length, color: "#2563eb", bg: "#dbeafe" }
+            { label: "Completed", count: liveBookings.filter(b => b.status === "Completed" || b.status === "Paid Out").length, color: "var(--primary)", bg: "#b4d0e7" }
           ].map(({ label, count, color, bg }) => (
             <div
               key={label}
@@ -314,7 +314,7 @@ function MyBookings() {
                   >
                     <span>📅 Date: {booking.date}</span>
                     <span>🕐 Time: {booking.time}</span>
-                    <span style={{ fontWeight: 700, color: "#0284c7" }}>💰 Cost: ₹{booking.price || booking.amount || 0}</span>
+                    <span style={{ fontWeight: 700, color: "var(--primary)" }}>💰 Cost: ₹{booking.price || booking.amount || 0}</span>
                   </div>
 
                   {(booking.status === "Completed" || booking.status === "Paid Out") && (
