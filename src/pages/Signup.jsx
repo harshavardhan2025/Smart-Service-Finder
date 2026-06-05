@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import authBg from "../assets/auth-bg.jpg";
@@ -19,7 +19,12 @@ const PROFESSIONS = [
 function ResultPopup({ result, onClose, navigate }) {
   useEffect(() => {
     if (result?.type === "success") {
-      const timer = setTimeout(() => navigate("/login"), 2500);
+      const role = sessionStorage.getItem("userRole");
+      let targetPath = "/login";
+      if (role) {
+        targetPath = role === "worker" ? "/worker-dashboard" : "/";
+      }
+      const timer = setTimeout(() => navigate(targetPath), 2500);
       return () => clearTimeout(timer);
     }
   }, [result, navigate]);
@@ -79,7 +84,9 @@ function ResultPopup({ result, onClose, navigate }) {
         </p>
 
         {result.type === "success" && (
-          <p style={{ fontSize: "13px", color: "#94a3b8" }}>Redirecting to login page...</p>
+          <p style={{ fontSize: "13px", color: "#94a3b8" }}>
+            {sessionStorage.getItem("userRole") ? "Logging you in and redirecting to your dashboard..." : "Redirecting..."}
+          </p>
         )}
 
         {result.type === "exists" && (
@@ -276,6 +283,19 @@ function Signup() {
           if (!data.user?.email) {
             setPopupResult({ type: "fail", message: "Account verification failed. Could not confirm your account in our database." });
             return;
+          }
+
+          // Auto log-in on successful signup
+          sessionStorage.setItem("userRole", data.user.role);
+          sessionStorage.setItem("userName", data.user.name);
+          sessionStorage.setItem("userEmail", data.user.email);
+          sessionStorage.setItem("userId", data.user.id || data.user._id);
+          sessionStorage.setItem("authToken", data.token);
+          if (data.user.role === "worker") {
+            sessionStorage.setItem("loggedInWorkerId", data.user.id);
+          } else if (data.user.city) {
+            sessionStorage.setItem("userCity", data.user.city);
+            localStorage.setItem("userCity", data.user.city);
           }
 
           setPopupResult({

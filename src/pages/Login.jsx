@@ -39,8 +39,12 @@ function Login() {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
     };
+
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   const handleLoginSuccess = (data) => {
