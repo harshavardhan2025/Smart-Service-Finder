@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import LocationSearch from "../components/LocationSearch";
 import MapPicker from "../components/MapPicker";
@@ -330,12 +330,12 @@ function Home() {
           });
           
           if (suggested.length > 0) {
-            setAiSuggestedWorkers(suggested.slice(0, 3));
+            setAiSuggestedWorkers(suggested.slice(0, 5));
           } else {
-            setAiSuggestedWorkers(matchingWorkers.slice(0, 3));
+            setAiSuggestedWorkers(matchingWorkers.slice(0, 5));
           }
         } else {
-          setAiSuggestedWorkers(matchingWorkers.slice(0, 3));
+          setAiSuggestedWorkers(matchingWorkers.slice(0, 5));
         }
       } catch(e) { console.error("Home cloud workers fail", e); }
     };
@@ -382,11 +382,23 @@ function Home() {
           onChange={setLocationText}
           onSearch={(query) => setServiceQuery(query)}
           detectedLocation={searchedLocation}
+          onLocationClick={() => {
+            setShowMap(true);
+            setTimeout(() => {
+              document.querySelector(".home-map-wrapper")?.scrollIntoView({ behavior: "smooth" });
+            }, 100);
+          }}
         />
 
         {/* Location context banner */}
         {searchedLocation && (
           <div
+            onClick={() => {
+              setShowMap(true);
+              setTimeout(() => {
+                document.querySelector(".home-map-wrapper")?.scrollIntoView({ behavior: "smooth" });
+              }, 100);
+            }}
             style={{
               margin: "0 20px 10px 20px",
               padding: "14px 16px",
@@ -397,8 +409,12 @@ function Home() {
               color: "var(--primary-dark)",
               display: "flex",
               flexDirection: "column",
-              gap: "6px"
+              gap: "6px",
+              cursor: "pointer",
+              transition: "transform 0.15s ease"
             }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.01)"}
+            onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <span style={{ fontSize: "18px" }}>🤖</span>
@@ -419,11 +435,21 @@ function Home() {
                 <strong style={{ fontSize: "13px", color: "var(--primary-dark)" }}>AI Recommended Experts for You:</strong>
                 <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "8px" }}>
                   {aiSuggestedWorkers.map((worker, idx) => (
-                    <div key={idx} style={{ backgroundColor: "white", padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--primary-light)", display: "flex", flexDirection: "column", gap: "4px", minWidth: "140px" }}>
-                      <span style={{ fontWeight: 800, fontSize: "14px", color: "var(--text-primary)" }}>{worker.name}</span>
-                      <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{worker.service}</span>
-                      <span style={{ fontSize: "12px", color: "#eab308", fontWeight: "bold" }}>⭐ {worker.rating}</span>
-                    </div>
+                    <Link 
+                      key={idx} 
+                      to="/worker" 
+                      onClick={() => localStorage.setItem("selected_worker", JSON.stringify(worker))}
+                      style={{ textDecoration: "none" }}
+                    >
+                      <div style={{ backgroundColor: "white", padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--primary-light)", display: "flex", flexDirection: "column", gap: "4px", minWidth: "140px", cursor: "pointer", transition: "transform 0.2s" }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.03)"}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
+                      >
+                        <span style={{ fontWeight: 800, fontSize: "14px", color: "var(--text-primary)" }}>{worker.name}</span>
+                        <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{worker.service}</span>
+                        <span style={{ fontSize: "12px", color: "#eab308", fontWeight: "bold" }}>⭐ {worker.rating}</span>
+                      </div>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -568,7 +594,7 @@ function Home() {
               <p style={{ margin: "4px 0 0 0", fontSize: "12px" }}>You can still reserve any provider using standard time slots below!</p>
             </div>
           ) : (
-            <div style={{ display: "flex", overflowX: "auto", gap: "16px", paddingBottom: "10px" }}>
+            <div className="horizontal-scroll-container" style={{ display: "flex", overflowX: "auto", gap: "16px", paddingBottom: "10px" }}>
               {(serviceQuery
                 ? onlineWorkers.filter((w) =>
                     w.service &&

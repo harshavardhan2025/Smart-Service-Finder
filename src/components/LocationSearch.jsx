@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { FaMicrophone } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const SERVICE_SUGGESTIONS = [
   "Plumber", "Electrician", "Carpenter", "Painter", "Doctor",
@@ -8,7 +9,8 @@ const SERVICE_SUGGESTIONS = [
   "Tutor", "Cook", "Driver", "Mechanic", "Yoga Trainer",
 ];
 
-function LocationSearch({ value, onChange, onSearch, detectedLocation }) {
+function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocationClick }) {
+  const navigate = useNavigate();
   const [suggestions, setSuggestions] = useState([]);
   const [focused, setFocused] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -81,7 +83,7 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation }) {
 
     const finalQuery = matchedCategory || speech;
     onChange(finalQuery);
-    onSearch(finalQuery);
+    navigate(`/search?q=${encodeURIComponent(finalQuery)}`);
   };
 
   const handleVoiceClick = () => {
@@ -112,7 +114,7 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation }) {
   const handleSearch = () => {
     if (value.trim()) {
       setSuggestions([]);
-      onSearch(value.trim());
+      navigate(`/search?q=${encodeURIComponent(value.trim())}`);
     }
   };
 
@@ -123,7 +125,7 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation }) {
   const pickSuggestion = (s) => {
     onChange(s);
     setSuggestions([]);
-    onSearch(s);
+    navigate(`/search?q=${encodeURIComponent(s)}`);
   };
 
   return (
@@ -133,18 +135,22 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation }) {
           🔍 Search Services or Workers
         </p>
         {detectedLocation && (
-          <div style={{ 
-            display: "inline-flex", 
-            alignItems: "center", 
-            gap: "6px", 
-            backgroundColor: "#dcfce7", 
-            color: "#15803d", 
-            padding: "4px 12px", 
-            borderRadius: "20px", 
-            fontSize: "12px", 
-            fontWeight: 600,
-            border: "1px solid #bbf7d0"
-          }}>
+          <div 
+            onClick={onLocationClick}
+            style={{ 
+              display: "inline-flex", 
+              alignItems: "center", 
+              gap: "6px", 
+              backgroundColor: "#dcfce7", 
+              color: "#15803d", 
+              padding: "4px 12px", 
+              borderRadius: "20px", 
+              fontSize: "12px", 
+              fontWeight: 600,
+              border: "1px solid #bbf7d0",
+              cursor: onLocationClick ? "pointer" : "default"
+            }}
+          >
             <span>📍</span>
             {detectedLocation.split(",").slice(0, 2).join(",").trim()}
           </div>

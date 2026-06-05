@@ -84,7 +84,7 @@ function TopWorkers({ searchedLocation, userCoords }) {
           No top-rated professionals found near this location.
         </p>
       ) : (
-        <div style={{ display: "flex", overflowX: "auto", gap: "15px", paddingBottom: "10px" }}>
+        <div className="horizontal-scroll-container" style={{ display: "flex", overflowX: "auto", gap: "15px", paddingBottom: "10px" }}>
           {topWorkers.map((worker) => (
             <div
               key={worker._id}
@@ -140,7 +140,7 @@ function TopWorkers({ searchedLocation, userCoords }) {
                     cursor: "pointer",
                   }}
                 >
-                  View Profile
+                  Book
                 </button>
               </Link>
             </div>

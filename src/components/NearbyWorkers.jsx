@@ -253,6 +253,7 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
 
       {/* Services Grid (Main Categories) */}
       <div
+        className="services-grid-container"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
@@ -572,7 +573,7 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
                           color: "white",
                         }}
                       >
-                        View Profile & Book
+                        Book
                       </button>
                     </Link>
                   </div>

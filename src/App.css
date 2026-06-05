@@ -1177,4 +1177,59 @@ button {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
     gap: 12px !important;
   }
+
+  /* Full screen vertical scrolling: prevent layout-level scroll containment on mobile */
+  .dashboard-content {
+    overflow-y: visible !important;
+    height: auto !important;
+  }
+
+  /* Premium edge-to-edge horizontal scrolling container */
+  .horizontal-scroll-container {
+    display: flex !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    margin-left: -20px !important;
+    margin-right: -20px !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    width: calc(100% + 40px) !important;
+    scrollbar-width: none !important; /* Hide scrollbars for look & feel */
+    scroll-behavior: smooth !important;
+  }
+
+  .horizontal-scroll-container::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .horizontal-scroll-container > * {
+    scroll-snap-align: start !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Make categories grid a responsive horizontal list on mobile */
+  .services-grid-container {
+    display: flex !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 12px !important;
+    margin-left: -20px !important;
+    margin-right: -20px !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    width: calc(100% + 40px) !important;
+    scrollbar-width: none !important;
+    margin-bottom: 24px !important;
+  }
+
+  .services-grid-container::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .services-grid-container > * {
+    scroll-snap-align: start !important;
+    flex: 0 0 120px !important;
+  }
 }

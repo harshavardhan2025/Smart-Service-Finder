@@ -7,6 +7,7 @@ import {
 
 
 import Home from "./pages/Home";
+import SearchResults from "./pages/SearchResults";
 import WorkerProfile from "./pages/WorkerProfile";
 import BookingPage from "./pages/BookingPage";
 import PaymentPage from "./pages/PaymentPage";
@@ -39,6 +40,11 @@ function App() {
         <Route
           path="/"
           element={<Home />}
+        />
+
+        <Route
+          path="/search"
+          element={<SearchResults />}
         />
 
         <Route

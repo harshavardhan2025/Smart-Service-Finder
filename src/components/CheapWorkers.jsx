@@ -84,7 +84,7 @@ function CheapWorkers({ searchedLocation, userCoords }) {
           No budget-friendly professionals found near this location.
         </p>
       ) : (
-        <div style={{ display: "flex", overflowX: "auto", gap: "15px", paddingBottom: "10px" }}>
+        <div className="horizontal-scroll-container" style={{ display: "flex", overflowX: "auto", gap: "15px", paddingBottom: "10px" }}>
           {cheapWorkers.map((worker) => (
             <div
               key={worker._id}
@@ -138,7 +138,7 @@ function CheapWorkers({ searchedLocation, userCoords }) {
                     cursor: "pointer",
                   }}
                 >
-                  View Profile
+                  Book
                 </button>
               </Link>
             </div>
