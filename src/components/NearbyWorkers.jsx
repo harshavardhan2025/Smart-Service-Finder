@@ -467,104 +467,14 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
         }}
       >
         {!activeServiceText ? (
-          <div>
-            <h3 style={{ fontSize: "20px", fontWeight: 800, color: "var(--text-primary)", marginBottom: "16px" }}>
-              ✨ AI Recommended Experts near You
-            </h3>
-            {allWorkers.length === 0 ? (
-              <div className="premium-card" style={{ textAlign: "center", backgroundColor: "var(--bg-primary)" }}>
-                <p style={{ fontSize: "36px", margin: "0 0 12px 0" }}>👉</p>
-                <h4 style={{ fontSize: "18px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 4px 0" }}>
-                  Ready to find a Professional?
-                </h4>
-                <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: 0 }}>
-                  Tap on any service category above or set your location to view available experts.
-                </p>
-              </div>
-            ) : (
-              <div
-                className="explore-workers-grid"
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-                  gap: "24px"
-                }}
-              >
-                {[...allWorkers]
-                  .sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0))
-                  .slice(0, 6)
-                  .map((worker, index) => (
-                    <div
-                      key={index}
-                      className="premium-card worker-card"
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <div>
-                        <h4 style={{ margin: "0 0 8px 0", fontSize: "20px", color: "var(--text-primary)", fontWeight: 800 }}>
-                          {worker.name}
-                        </h4>
-                        <span
-                          style={{
-                            display: "inline-block",
-                            backgroundColor: "var(--primary-light)",
-                            color: "var(--primary-dark)",
-                            padding: "6px 12px",
-                            borderRadius: "8px",
-                            fontSize: "12px",
-                            fontWeight: "bold"
-                          }}
-                        >
-                          {worker.service}
-                        </span>
-                        <p style={{ margin: "14px 0 4px 0", fontSize: "14px", color: "var(--primary)", fontWeight: "bold" }}>
-                          🏙️ {truncateLocation(worker.city)}
-                        </p>
-                        {worker.distanceKm !== undefined ? (
-                          <p style={{ margin: "4px 0", fontSize: "13px", display: "flex", alignItems: "center", gap: "6px" }}>
-                            <span
-                              style={{
-                                backgroundColor: "#eff6ff",
-                                color: "#1d4ed8",
-                                border: "1px solid #bfdbfe",
-                                borderRadius: "12px",
-                                padding: "2px 10px",
-                                fontSize: "12px",
-                                fontWeight: 700,
-                              }}
-                            >
-                              🗺️ {worker.distanceKm < 0.5 ? "below 0.5 km" : `${worker.distanceKm} km away`}
-                            </span>
-                          </p>
-                        ) : (
-                          <p style={{ margin: "4px 0 4px 0", fontSize: "14px", color: "var(--text-secondary)", fontWeight: 600 }}>
-                            📍 {worker.distance} Away
-                          </p>
-                        )}
-                        <p style={{ margin: "4px 0 4px 0", fontSize: "14px", color: "#eab308", fontWeight: "bold" }}>
-                          ⭐ {worker.rating}
-                        </p>
-                        <span className="price-badge">₹{worker.price || (worker.service.includes("Carpentry") ? 399 : worker.service.includes("Plumbing") ? 299 : worker.service.includes("Doctors") ? 599 : 349)}</span>
-                      </div>
-
-                      <Link to="/worker" style={{ textDecoration: "none" }} onClick={() => localStorage.setItem("selected_worker", JSON.stringify(worker))}>
-                        <button
-                          style={{
-                            width: "100%",
-                            background: "var(--primary-grad)",
-                            color: "white",
-                          }}
-                        >
-                          Book
-                        </button>
-                      </Link>
-                    </div>
-                  ))}
-              </div>
-            )}
+          <div className="premium-card" style={{ textAlign: "center", backgroundColor: "var(--bg-primary)" }}>
+            <p style={{ fontSize: "36px", margin: "0 0 12px 0" }}>👉</p>
+            <h4 style={{ fontSize: "18px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 4px 0" }}>
+              Ready to find a Professional?
+            </h4>
+            <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: 0 }}>
+              Tap on any service category above to view available experts.
+            </p>
           </div>
         ) : (
           <div className="fade-in">

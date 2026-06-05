@@ -5,66 +5,6 @@ import Worker from "../models/Worker.js";
 
 const router = express.Router();
 
-// 🤖 DYNAMIC AI COST ESTIMATOR
-router.get("/estimate-price", async (req, res) => {
-  try {
-    const { service, complexity, urgency, hours, details } = req.query;
-
-    if (!service) {
-      return res.status(400).json({ error: "Service category is required" });
-    }
-
-    const baseHours = Number(hours) || 1;
-    
-    // Find typical base price for this service category in DB or fallback
-    let baselinePrice = 349;
-    const dbService = await Worker.findOne({ service: new RegExp(`^${service}$`, "i") });
-    if (dbService && dbService.price) {
-      baselinePrice = dbService.price;
-    }
-
-    // Complexity multiplier
-    let complexityMultiplier = 1.0;
-    if (complexity === "Medium") complexityMultiplier = 1.3;
-    if (complexity === "High") complexityMultiplier = 1.6;
-
-    // Urgency surcharge
-    const rushSurcharge = urgency === "Rush" ? 150 : 0;
-
-    // Natural Language Text Parsing Scope Adjustment
-    let scopeAdjustment = 0;
-    const lowercaseDetails = (details || "").toLowerCase();
-    
-    if (lowercaseDetails.includes("heavy") || lowercaseDetails.includes("large") || lowercaseDetails.includes("premium")) {
-      scopeAdjustment += 200;
-    }
-    if (lowercaseDetails.includes("install") || lowercaseDetails.includes("replace")) {
-      scopeAdjustment += 150;
-    }
-    if (lowercaseDetails.includes("leak") || lowercaseDetails.includes("urgent") || lowercaseDetails.includes("clog")) {
-      scopeAdjustment += 100;
-    }
-
-    const basePrice = Math.round(baselinePrice * baseHours);
-    const complexityPremium = Math.round(basePrice * (complexityMultiplier - 1));
-    const totalEstimate = Math.round(basePrice + complexityPremium + scopeAdjustment + rushSurcharge);
-
-    res.status(200).json({
-      success: true,
-      service,
-      breakdown: {
-        basePrice,
-        complexityPremium,
-        scopeAdjustment,
-        rushSurcharge,
-        totalEstimate
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
 // 🧠 AI RECOMMENDATION SYSTEM (Collaborative Filtering & Affinity Association)
 router.get("/recommendations", async (req, res) => {
   try {
