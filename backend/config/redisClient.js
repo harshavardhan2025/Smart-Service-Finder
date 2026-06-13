@@ -14,7 +14,12 @@ const client = createClient({
         return 10000;
       }
       return Math.min(retries * 1000, 5000);
-    }
+    },
+    // Dynamic TLS/SSL support for global hosting (Vercel, Render, Railway, etc.)
+    ...(redisUrl.startsWith('rediss://') ? {
+      rejectUnauthorized: false,
+      tls: true
+    } : {})
   }
 });
 
