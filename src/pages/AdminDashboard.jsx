@@ -828,7 +828,7 @@ function AdminDashboard() {
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "20px", marginBottom: "40px" }}>
                 <div ref={revenueCardRef} style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
                   <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Total Payments Volume</span>
-                  <h2 style={{ margin: "10px 0 0 0", fontSize: "32px", fontWeight: 800, color: "var(--primary)" }}>₹{totalRevenue}</h2>
+                  <h2 style={{ margin: "10px 0 0 0", fontSize: "32px", fontWeight: 800, color: "var(--primary)" }}>₹{Number(totalRevenue).toFixed(2)}</h2>
                 </div>
                 <div ref={averageCardRef} style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
                   <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Average Booking Value</span>
