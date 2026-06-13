@@ -139,28 +139,10 @@ function Sidebar() {
       >
         {/* Logo / Title */}
         <div style={{ marginBottom: "30px", paddingTop: "24px", borderBottom: "1px solid rgba(255,255,255,0.08)", paddingBottom: "20px" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "2px", marginBottom: "6px" }}>
-            <span style={{ 
-              fontFamily: "'Outfit', sans-serif", 
-              fontWeight: 900, 
-              fontSize: "26px", 
-              letterSpacing: "-0.5px",
-              background: "linear-gradient(135deg, #ffffff 0%, var(--secondary) 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent"
-            }}>
-              Workzy
-            </span>
-            <span style={{
-              width: "6px",
-              height: "6px",
-              backgroundColor: "var(--secondary)",
-              borderRadius: "50%",
-              display: "inline-block",
-              transform: "translateY(5px)"
-            }}></span>
-          </div>
-          <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: "#94a3b8", fontWeight: 500 }}>
+          <h2 style={{ margin: 0, fontSize: "22px", fontWeight: 800, letterSpacing: "0.5px", display: "flex", alignItems: "center", gap: "10px" }}>
+            🛠️ Work<span style={{ color: "#ff7e15" }}>zy</span>
+          </h2>
+          <p style={{ margin: "6px 0 0 0", fontSize: "12px", color: "#94a3b8" }}>
             {sidebarSubtitle}
           </p>
         </div>
