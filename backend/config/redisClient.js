@@ -23,7 +23,7 @@ const client = createClient({
   }
 });
 
-let isReady = false;
+let connectionPromise = null;
 let lastLoggedErrorTime = 0;
 
 client.on('connect', () => {
@@ -32,43 +32,48 @@ client.on('connect', () => {
 
 client.on('ready', () => {
   console.log('Redis client ready to use');
-  isReady = true;
 });
 
 client.on('error', (err) => {
-  isReady = false;
   const now = Date.now();
   // Throttle error logging to once every 60 seconds to prevent console spam
   if (now - lastLoggedErrorTime > 60000) {
-    console.warn('⚠️ Redis is not running locally (ECONNREFUSED). Running in offline fallback mode (connecting directly to MongoDB).');
+    console.warn('⚠️ Redis connection error. Running in offline fallback mode (connecting directly to MongoDB).');
     lastLoggedErrorTime = now;
   }
 });
 
 client.on('end', () => {
   console.log('Redis client connection closed');
-  isReady = false;
-});
-
-// Try to connect asynchronously; do not block server startup if offline
-client.connect().catch((err) => {
-  // Silence initial error stack as it is handled by the throttled error event above
 });
 
 async function ensureConnected() {
-  if (!client.isOpen) {
-    try {
-      await client.connect();
-    } catch (err) {
-      // Ignore if already connecting or error
-    }
+  if (client.isOpen) {
+    return;
   }
+  
+  if (connectionPromise) {
+    return connectionPromise;
+  }
+  
+  connectionPromise = client.connect()
+    .then(() => {
+      connectionPromise = null;
+    })
+    .catch((err) => {
+      connectionPromise = null;
+    });
+    
+  return connectionPromise;
 }
 
+// Warm up connection immediately on file load
+ensureConnected();
+
 export async function getCache(key) {
-  await ensureConnected();
-  if (!client.isOpen || !isReady) return null;
   try {
+    await ensureConnected();
+    if (!client.isOpen) return null;
     const value = await client.get(key);
     return value ? JSON.parse(value) : null;
   } catch (err) {
@@ -78,9 +83,9 @@ export async function getCache(key) {
 }
 
 export async function setCache(key, value, ttlSeconds = 120) {
-  await ensureConnected();
-  if (!client.isOpen || !isReady) return false;
   try {
+    await ensureConnected();
+    if (!client.isOpen) return false;
     const serializedValue = JSON.stringify(value);
     await client.set(key, serializedValue, {
       EX: ttlSeconds
@@ -93,9 +98,9 @@ export async function setCache(key, value, ttlSeconds = 120) {
 }
 
 export async function delCache(key) {
-  await ensureConnected();
-  if (!client.isOpen || !isReady) return false;
   try {
+    await ensureConnected();
+    if (!client.isOpen) return false;
     await client.del(key);
     return true;
   } catch (err) {
@@ -105,9 +110,9 @@ export async function delCache(key) {
 }
 
 export async function getVersion(prefix) {
-  await ensureConnected();
-  if (!client.isOpen || !isReady) return "1";
   try {
+    await ensureConnected();
+    if (!client.isOpen) return "1";
     let version = await client.get(`${prefix}:version`);
     if (!version) {
       version = Date.now().toString();
@@ -120,9 +125,9 @@ export async function getVersion(prefix) {
 }
 
 export async function invalidateVersion(prefix) {
-  await ensureConnected();
-  if (!client.isOpen || !isReady) return;
   try {
+    await ensureConnected();
+    if (!client.isOpen) return;
     await client.set(`${prefix}:version`, Date.now().toString());
   } catch (err) {
     // Ignore error
