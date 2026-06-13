@@ -95,7 +95,7 @@ function Navbar() {
           }}
         >
           <h2 style={{ margin: 0, fontWeight: 800, fontSize: "22px", letterSpacing: "-0.5px" }}>
-            🛠️ Work<span style={{ color: "#ff7e15" }}>zy</span>
+            🛠️ Work<span style={{ color: "#c1851dff" }}>zy</span>
           </h2>
         </Link>
 
