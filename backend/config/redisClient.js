@@ -35,6 +35,8 @@ client.on('ready', () => {
 });
 
 client.on('error', (err) => {
+  // Silence transient errors if connection socket is open/reconnecting
+  if (client.isOpen) return;
   const now = Date.now();
   // Throttle error logging to once every 60 seconds to prevent console spam
   if (now - lastLoggedErrorTime > 60000) {
