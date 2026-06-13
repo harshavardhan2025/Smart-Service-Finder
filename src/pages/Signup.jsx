@@ -242,8 +242,77 @@ function Signup() {
 
   // ── Google Auth Core ──────────────────────────────────────
   const launchGoogleAuth = (extraBody = {}) => {
-    if (!window.google) {
-      setPopupResult({ type: "fail", message: "Google SDK is not loaded. Please refresh the page and try again." });
+    // Setup listener for Mock Google Auth popup
+    const handlePopupMessage = async (event) => {
+      if (event.origin !== window.location.origin) return;
+
+      if (event.data && event.data.type === "GOOGLE_AUTH_SUCCESS") {
+        console.log("✅ Mock Google Sign-Up Success message received:", event.data);
+        setIsLoading(true);
+        try {
+          const response = await fetch("/api/auth/google-mock", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: event.data.email,
+              name: event.data.name,
+              ...extraBody
+            })
+          });
+          const data = await response.json();
+
+          // ── Account already exists (409 from backend) ──
+          if (response.status === 409) {
+            setPopupResult({
+              type: "exists",
+              message: data.error || "An account with this Google email already exists. Please sign in instead."
+            });
+            return;
+          }
+
+          if (!response.ok) {
+            setPopupResult({ type: "fail", message: data.error || "Registration failed. Please try again." });
+            return;
+          }
+
+          if (!data.user?.email) {
+            setPopupResult({ type: "fail", message: "Account verification failed. Could not confirm your account in our database." });
+            return;
+          }
+
+          // Auto log-in on successful signup
+          sessionStorage.setItem("userRole", data.user.role);
+          sessionStorage.setItem("userName", data.user.name);
+          sessionStorage.setItem("userEmail", data.user.email);
+          sessionStorage.setItem("userId", data.user.id || data.user._id);
+          sessionStorage.setItem("authToken", data.token);
+          localStorage.removeItem("manualLocationSet");
+          if (data.user.role === "worker") {
+            sessionStorage.setItem("loggedInWorkerId", data.user.id);
+          } else if (data.user.city) {
+            sessionStorage.setItem("userCity", data.user.city);
+            localStorage.setItem("userCity", data.user.city);
+          }
+
+          setPopupResult({
+            type: "success",
+            message: extraBody.role === "worker"
+              ? `Welcome, ${data.user.name}! Your Worker account as ${extraBody.profession} in ${extraBody.city} has been created successfully.`
+              : `Welcome, ${data.user.name}! Your Customer account has been created successfully.`
+          });
+        } catch (err) {
+          setPopupResult({ type: "fail", message: `Technical Error: ${err.message}. Please check your connection.` });
+        } finally {
+          setIsLoading(false);
+          window.removeEventListener("message", handlePopupMessage);
+        }
+      }
+    };
+    window.addEventListener("message", handlePopupMessage);
+
+    if (!window.google || !window.google.accounts || !window.google.accounts.oauth2) {
+      console.log("⚠️ Google SDK not loaded. Launching Mock Google Auth popup fallback...");
+      window.open("/google-auth", "google_auth_popup", "width=450,height=600");
       return;
     }
 

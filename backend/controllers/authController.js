@@ -334,7 +334,7 @@ export const googleAuth = async (req, res) => {
 
 export const googleMockAuth = async (req, res) => {
   try {
-    const { email, name } = req.body;
+    const { email, name, role, profession, city, phone } = req.body;
 
     if (!email || !name) {
       return res.status(400).json({ error: "Email and name are required for mock Google auth." });
@@ -345,16 +345,43 @@ export const googleMockAuth = async (req, res) => {
 
     // Find existing user or auto-create a regular user with retry
     let user = await executeWithRetry(() => User.findOne({ email }));
+    const isSignupFlow = !!role;
 
-    if (!user) {
+    if (isSignupFlow) {
+      if (user) {
+        return res.status(409).json({
+          error: `An account with this email (${email}) already exists. Please go to the login page and sign in instead.`
+        });
+      }
+
+      // Create new user
       user = await executeWithRetry(() => User.create({
         name,
         email,
         password: `GoogleMockAuth_${Date.now()}`,
-        role: "user",
-        city: "Mumbai",
-        phone: ""
+        role: role || "user",
+        city: city || "Mumbai",
+        phone: phone || ""
       }));
+
+      if (user.role === "worker") {
+        const basePrice = SERVICE_BASE_PRICES[profession || "Carpentry"] || 350;
+        const multiplier = getPriceMultiplier(city || "");
+        const locationPrice = Math.round(basePrice * multiplier);
+
+        await executeWithRetry(() => Worker.create({
+          name,
+          email,
+          service: profession || "Carpentry",
+          city: city || "Mumbai",
+          rating: 2.7,
+          ratingSum: 0,
+          reviews: 0,
+          price: locationPrice,
+          status: "Active"
+        }));
+      }
+
       await executeWithRetry(() => ActivityLog.create({
         user_id: user._id,
         email: user.email,
@@ -362,24 +389,48 @@ export const googleMockAuth = async (req, res) => {
         action: "SIGNUP",
         device: req.headers["user-agent"] || "Google Mock Auth",
         ip: req.ip || "127.0.0.1",
-        city: "Mumbai"
+        city: city || "Mumbai"
       }));
+
     } else {
-      if (user.role === "worker") {
-        const associatedWorker = await executeWithRetry(() => Worker.findOne({ email: user.email }));
-        if (associatedWorker && associatedWorker.status === "Blocked") {
-          return res.status(403).json({ error: "Your worker account has been blocked by admin." });
+      // Login flow
+      if (!user) {
+        // Auto-create user for seamless sign-in
+        user = await executeWithRetry(() => User.create({
+          name,
+          email,
+          password: `GoogleMockAuth_${Date.now()}`,
+          role: "user",
+          city: "Mumbai",
+          phone: ""
+        }));
+
+        await executeWithRetry(() => ActivityLog.create({
+          user_id: user._id,
+          email: user.email,
+          role: user.role,
+          action: "SIGNUP",
+          device: req.headers["user-agent"] || "Google Mock Auth",
+          ip: req.ip || "127.0.0.1",
+          city: "Mumbai"
+        }));
+      } else {
+        if (user.role === "worker") {
+          const associatedWorker = await executeWithRetry(() => Worker.findOne({ email: user.email }));
+          if (associatedWorker && associatedWorker.status === "Blocked") {
+            return res.status(403).json({ error: "Your worker account has been blocked by admin." });
+          }
         }
+        await executeWithRetry(() => ActivityLog.create({
+          user_id: user._id,
+          email: user.email,
+          role: user.role,
+          action: "LOGIN",
+          device: req.headers["user-agent"] || "Google Mock Auth",
+          ip: req.ip || "127.0.0.1",
+          city: user.city || "Unknown"
+        }));
       }
-      await executeWithRetry(() => ActivityLog.create({
-        user_id: user._id,
-        email: user.email,
-        role: user.role,
-        action: "LOGIN",
-        device: req.headers["user-agent"] || "Google Mock Auth",
-        ip: req.ip || "127.0.0.1",
-        city: user.city || "Unknown"
-      }));
     }
 
     return res.status(200).json({

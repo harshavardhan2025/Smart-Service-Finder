@@ -139,6 +139,42 @@ function Login() {
 
   const handleGoogleSignIn = () => {
     console.log("🔍 handleGoogleSignIn clicked.");
+
+    // Setup listener for Mock Google Auth popup
+    const handlePopupMessage = async (event) => {
+      if (event.origin !== window.location.origin) return;
+
+      if (event.data && event.data.type === "GOOGLE_AUTH_SUCCESS") {
+        console.log("✅ Mock Google Sign-In Success message received:", event.data);
+        setIsLoading(true);
+        setLoginStatus({ type: "success", message: "Verifying Mock Google Auth... 🔑" });
+        try {
+          const response = await fetch("/api/auth/google-mock", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: event.data.email,
+              name: event.data.name
+            })
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            setIsLoading(false);
+            setLoginStatus({ type: "error", message: data.error || "Google Sign-In failed!" });
+            return;
+          }
+          console.log("✅ Mock Google login verified successfully, calling handleLoginSuccess...");
+          handleLoginSuccess(data);
+        } catch (err) {
+          setIsLoading(false);
+          setLoginStatus({ type: "error", message: "Network error during Google Sign-In!" });
+        } finally {
+          window.removeEventListener("message", handlePopupMessage);
+        }
+      }
+    };
+    window.addEventListener("message", handlePopupMessage);
+
     // Wait for Google SDK to be ready (loaded async)
     const trySignIn = (attemptsLeft) => {
       console.log(`🔍 Checking for Google SDK... attempts left: ${attemptsLeft}`);
@@ -180,12 +216,14 @@ function Login() {
               setLoginStatus({ type: "error", message: `Google Sign-In cancelled or failed: ${tokenResponse.error}` });
             } else {
               console.warn("⚠️ tokenResponse has no access_token and no error:", tokenResponse);
-              setLoginStatus({ type: "error", message: "Google Authentication response invalid." });
+              setLoginStatus({ type: "error", message: "Google Authentication response invalid. Launching mock fallback..." });
+              window.open("/google-auth", "google_auth_popup", "width=450,height=600");
             }
           },
           error_callback: (err) => {
             console.error("💥 Google SDK error_callback triggered:", err);
-            setLoginStatus({ type: "error", message: `Google Sign-In error: ${err.message || "Unknown error"}` });
+            console.log("Launching Mock Google Auth popup fallback...");
+            window.open("/google-auth", "google_auth_popup", "width=450,height=600");
           }
         });
         console.log("🔍 Requesting access token...");
@@ -196,8 +234,9 @@ function Login() {
         setLoginStatus({ type: "success", message: "Loading Google Sign-In... please wait" });
         setTimeout(() => trySignIn(attemptsLeft - 1), 500);
       } else {
-        console.error("❌ Google SDK failed to load after multiple retries!");
-        setLoginStatus({ type: "error", message: "Google Sign-In could not load. Please refresh the page and try again." });
+        console.error("❌ Google SDK failed to load. Launching Mock Google Auth popup fallback...");
+        setLoginStatus({ type: "success", message: "Launching Mock Google Auth..." });
+        window.open("/google-auth", "google_auth_popup", "width=450,height=600");
       }
     };
     trySignIn(6); // retry up to 6 times (3 seconds total)
