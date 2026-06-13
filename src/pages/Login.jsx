@@ -88,27 +88,7 @@ function Login() {
         localStorage.setItem("userCity", user.city);
       }
 
-      // Eagerly resolve city coordinates locally using presets to avoid geocoding latency on home page mount
-      const presets = {
-        "kakinada": { lat: 16.98906, lon: 82.24747, label: "Kakinada, Andhra Pradesh, India" },
-        "rajahmundry": { lat: 17.00053, lon: 81.80403, label: "Rajahmundry, Andhra Pradesh, India" },
-        "kadapa": { lat: 14.4673, lon: 78.8242, label: "Kadapa, Andhra Pradesh, India" },
-        "new delhi": { lat: 28.6139, lon: 77.2090, label: "New Delhi, Delhi, India" },
-        "delhi": { lat: 28.6139, lon: 77.2090, label: "New Delhi, Delhi, India" },
-        "hyderabad": { lat: 17.3850, lon: 78.4867, label: "Hyderabad, Telangana, India" },
-        "mumbai": { lat: 19.0760, lon: 72.8777, label: "Mumbai, Maharashtra, India" },
-        "bangalore": { lat: 12.9716, lon: 77.5946, label: "Bengaluru, Karnataka, India" },
-        "bengaluru": { lat: 12.9716, lon: 77.5946, label: "Bengaluru, Karnataka, India" }
-      };
-
       const targetCity = user.city || "Mumbai";
-      const normCity = targetCity.toLowerCase().trim();
-      if (presets[normCity]) {
-        const p = presets[normCity];
-        localStorage.setItem("userLocation", p.label);
-        localStorage.setItem("userCoordsLat", String(p.lat));
-        localStorage.setItem("userCoordsLng", String(p.lon));
-      }
 
       console.log("🚀 Redirecting customer to /...");
       setTimeout(() => navigate("/"), 600);
