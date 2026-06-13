@@ -686,6 +686,7 @@ button {
   padding-bottom: 4px;
   border-top: 1px solid var(--border-color);
   margin-top: 4px;
+  min-height: 310px; /* Stabilizes height during skeleton/loading/empty states to prevent CLS */
 }
 
 /* Price badge highlight — used on all worker cards */

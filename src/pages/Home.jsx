@@ -508,77 +508,75 @@ function Home() {
         )}
 
         {/* Premium Location Search & Auto-Detect Bar */}
-        {!showMap && (
-          <div 
-            className="premium-card homepage-location-bar" 
-            style={{ 
-              margin: "10px 20px 14px 20px", 
-              padding: "16px",
-              backgroundColor: "var(--bg-card)",
-              display: "flex",
-              flexDirection: "column",
-              gap: "10px"
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-secondary)" }}>
-                📍 Set Service Location
+        <div 
+          className="premium-card homepage-location-bar" 
+          style={{ 
+            margin: "10px 20px 14px 20px", 
+            padding: "16px",
+            backgroundColor: "var(--bg-card)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px"
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-secondary)" }}>
+              📍 Set Service Location
+            </span>
+            {searchedLocation && (
+              <span style={{ fontSize: "11px", color: "#16a34a", fontWeight: "bold" }}>
+                Active Address Resolved
               </span>
-              {searchedLocation && (
-                <span style={{ fontSize: "11px", color: "#16a34a", fontWeight: "bold" }}>
-                  Active Address Resolved
-                </span>
-              )}
-            </div>
-            
-            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
-              <input
-                type="text"
-                placeholder="Search city, town, street, village..."
-                value={locationSearchInput}
-                onChange={(e) => setLocationSearchInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") handleSearchLocationSubmit(); }}
+            )}
+          </div>
+          
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+            <input
+              type="text"
+              placeholder="Search city, town, street, village..."
+              value={locationSearchInput}
+              onChange={(e) => setLocationSearchInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handleSearchLocationSubmit(); }}
+              style={{ 
+                flex: 1, 
+                minWidth: "200px",
+                padding: "10px 12px",
+                fontSize: "13.5px",
+                borderRadius: "8px"
+              }}
+            />
+            <div style={{ display: "flex", gap: "8px", width: "100%", maxWidth: "260px" }} className="location-action-buttons">
+              <button
+                onClick={handleSearchLocationSubmit}
+                className="btn-primary"
                 style={{ 
-                  flex: 1, 
-                  minWidth: "200px",
-                  padding: "10px 12px",
-                  fontSize: "13.5px",
-                  borderRadius: "8px"
+                  flex: 1,
+                  padding: "10px",
+                  fontSize: "13px",
+                  borderRadius: "8px",
+                  whiteSpace: "nowrap"
                 }}
-              />
-              <div style={{ display: "flex", gap: "8px", width: "100%", maxWidth: "260px" }} className="location-action-buttons">
-                <button
-                  onClick={handleSearchLocationSubmit}
-                  className="btn-primary"
-                  style={{ 
-                    flex: 1,
-                    padding: "10px",
-                    fontSize: "13px",
-                    borderRadius: "8px",
-                    whiteSpace: "nowrap"
-                  }}
-                >
-                  Search
-                </button>
-                <button
-                  onClick={handleAutoDetectLocation}
-                  className="btn-secondary"
-                  style={{ 
-                    flex: 1,
-                    padding: "10px",
-                    fontSize: "13px",
-                    borderRadius: "8px",
-                    backgroundColor: "#0284c7",
-                    color: "white",
-                    whiteSpace: "nowrap"
-                  }}
-                >
-                  📍 Auto Detect
-                </button>
-              </div>
+              >
+                Search
+              </button>
+              <button
+                onClick={handleAutoDetectLocation}
+                className="btn-secondary"
+                style={{ 
+                  flex: 1,
+                  padding: "10px",
+                  fontSize: "13px",
+                  borderRadius: "8px",
+                  backgroundColor: "#0284c7",
+                  color: "white",
+                  whiteSpace: "nowrap"
+                }}
+              >
+                📍 Auto Detect
+              </button>
             </div>
           </div>
-        )}
+        </div>
 
         {/* Map collapse toggle option - visible on all screen sizes */}
         <div className="map-toggle-container" style={{ padding: "0 20px 14px 20px" }}>
