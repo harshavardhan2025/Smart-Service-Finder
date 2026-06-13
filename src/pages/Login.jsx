@@ -18,6 +18,13 @@ function Login() {
   // Prefetch workers & location data while user is on login page
   // so home page loads workers instantly after login
   useEffect(() => {
+    // Check for mock redirect auth errors
+    const redirectError = sessionStorage.getItem("google_auth_error");
+    if (redirectError) {
+      setLoginStatus({ type: "error", message: redirectError });
+      sessionStorage.removeItem("google_auth_error");
+    }
+
     // Warm up the worker cache in background
     fetchAllWorkersCached();
 
@@ -139,6 +146,13 @@ function Login() {
 
   const handleGoogleSignIn = () => {
     console.log("🔍 handleGoogleSignIn clicked.");
+    sessionStorage.setItem("google_auth_flow", "login");
+
+    if (isMobile) {
+      console.log("📱 Mobile device detected. Redirecting to Mock Google Auth...");
+      window.location.href = "/google-auth?redirect=true";
+      return;
+    }
 
     // Setup listener for Mock Google Auth popup
     const handlePopupMessage = async (event) => {

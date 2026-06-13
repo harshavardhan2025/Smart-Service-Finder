@@ -181,6 +181,12 @@ function Signup() {
   const signupCardRef = use3dTilt();
 
   useEffect(() => {
+    const redirectError = sessionStorage.getItem("google_auth_error");
+    if (redirectError) {
+      setPopupResult({ type: "fail", message: redirectError });
+      sessionStorage.removeItem("google_auth_error");
+    }
+
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -240,8 +246,16 @@ function Signup() {
     }
   };
 
-  // ── Google Auth Core ──────────────────────────────────────
   const launchGoogleAuth = (extraBody = {}) => {
+    sessionStorage.setItem("google_auth_flow", "signup");
+    sessionStorage.setItem("pending_google_signup", JSON.stringify(extraBody));
+
+    if (isMobile) {
+      console.log("📱 Mobile device detected. Redirecting to Mock Google Auth...");
+      window.location.href = "/google-auth?redirect=true";
+      return;
+    }
+
     // Setup listener for Mock Google Auth popup
     const handlePopupMessage = async (event) => {
       if (event.origin !== window.location.origin) return;

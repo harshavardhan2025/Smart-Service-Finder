@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 function GoogleAuthMock() {
   const [step, setStep] = useState("choose"); // "choose", "custom", "loading"
@@ -6,6 +7,10 @@ function GoogleAuthMock() {
   const [nameInput, setNameInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
+  
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isRedirectMode = searchParams.get("redirect") === "true" || !window.opener;
 
   const mockAccounts = [
     { name: "Harsha Vardhan", email: "khars.harsha@gmail.com", avatar: "👤" },
@@ -35,24 +40,82 @@ function GoogleAuthMock() {
   useEffect(() => {
     if (step === "loading") {
       setIsLoading(true);
-      const timer = setTimeout(() => {
-        // Send message back to parent window
-        if (window.opener) {
-          window.opener.postMessage(
-            {
-              type: "GOOGLE_AUTH_SUCCESS",
-              email: selectedAccount.email,
-              name: selectedAccount.name
-            },
-            window.location.origin
-          );
-          // Close the popup after sending the message
-          setTimeout(() => window.close(), 300);
+
+      const authenticateDirectly = async () => {
+        try {
+          const pendingSignupStr = sessionStorage.getItem("pending_google_signup");
+          const extraBody = pendingSignupStr ? JSON.parse(pendingSignupStr) : {};
+          const isLoginOnly = sessionStorage.getItem("google_auth_flow") === "login";
+
+          const requestBody = isLoginOnly 
+            ? { email: selectedAccount.email, name: selectedAccount.name }
+            : { email: selectedAccount.email, name: selectedAccount.name, ...extraBody };
+
+          const response = await fetch("/api/auth/google-mock", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestBody)
+          });
+          const data = await response.json();
+
+          if (response.status === 409) {
+            sessionStorage.setItem("google_auth_error", data.error || "An account with this Google email already exists.");
+            navigate("/signup");
+            return;
+          }
+
+          if (!response.ok) {
+            sessionStorage.setItem("google_auth_error", data.error || "Google Authentication failed.");
+            navigate(isLoginOnly ? "/login" : "/signup");
+            return;
+          }
+
+          const user = data.user;
+          sessionStorage.setItem("userRole", user.role);
+          sessionStorage.setItem("userName", user.name);
+          sessionStorage.setItem("userEmail", user.email);
+          sessionStorage.setItem("userId", user.id || user._id);
+          sessionStorage.setItem("authToken", data.token);
+          localStorage.removeItem("manualLocationSet");
+
+          if (user.role === "worker") {
+            sessionStorage.setItem("loggedInWorkerId", user.id);
+            navigate("/worker-dashboard");
+          } else if (user.role === "admin") {
+            navigate("/admin-dashboard");
+          } else {
+            if (user.city) {
+              sessionStorage.setItem("userCity", user.city);
+              localStorage.setItem("userCity", user.city);
+            }
+            navigate("/");
+          }
+        } catch (err) {
+          sessionStorage.setItem("google_auth_error", `Technical Error: ${err.message}`);
+          navigate("/login");
         }
-      }, 1500); // 1.5s realistic verification delay
-      return () => clearTimeout(timer);
+      };
+
+      if (isRedirectMode) {
+        authenticateDirectly();
+      } else {
+        const timer = setTimeout(() => {
+          if (window.opener) {
+            window.opener.postMessage(
+              {
+                type: "GOOGLE_AUTH_SUCCESS",
+                email: selectedAccount.email,
+                name: selectedAccount.name
+              },
+              window.location.origin
+            );
+            setTimeout(() => window.close(), 300);
+          }
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
     }
-  }, [step, selectedAccount]);
+  }, [step, selectedAccount, isRedirectMode, navigate]);
 
   return (
     <div style={{
