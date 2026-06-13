@@ -94,9 +94,28 @@ function Navbar() {
             transition: "padding-left 0.25s ease-in-out" 
           }}
         >
-          <h2 style={{ margin: 0, fontWeight: 800, fontSize: "22px", letterSpacing: "-0.5px" }}>
-            🛠️ Work<span style={{ color: "var(--primary)" }}>zy</span>
-          </h2>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "2px" }}>
+            <span style={{ 
+              fontFamily: "'Outfit', sans-serif", 
+              fontWeight: 900, 
+              fontSize: "24px", 
+              letterSpacing: "-0.5px",
+              background: "linear-gradient(135deg, var(--primary) 0%, #0ea5e9 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.05))"
+            }}>
+              Workzy
+            </span>
+            <span style={{
+              width: "6px",
+              height: "6px",
+              backgroundColor: "#0ea5e9",
+              borderRadius: "50%",
+              display: "inline-block",
+              transform: "translateY(4px)"
+            }}></span>
+          </div>
         </Link>
 
         <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
