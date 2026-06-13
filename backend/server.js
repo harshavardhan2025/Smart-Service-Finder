@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import compression from "compression";
+import rateLimit from "express-rate-limit";
 import connectDB from "./config/db.js";
 
 dotenv.config();
@@ -24,10 +26,22 @@ import aiRoutes from "./routes/aiRoutes.js";
 import securityRoutes from "./routes/securityRoutes.js";
 import { checkBookingTimeouts } from "./controllers/bookingController.js";
 
-dotenv.config();
-
 const app = express();
 
+// Trust proxy headers for rate limiting (needed behind reverse proxies like Vercel/Webpack)
+app.set("trust proxy", 1);
+
+const isDev = process.env.NODE_ENV === "development" || !process.env.NODE_ENV;
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: isDev ? 5000 : 300, // limit to 5000 requests in dev to avoid blocking local testing/subagents
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests from this IP, please try again after 15 minutes." }
+});
+
+app.use(compression());
+app.use(limiter);
 app.use(cors());
 app.use(express.json());
 
@@ -48,6 +62,12 @@ app.use("/api/security", securityRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend Running");
+});
+
+// Global Error Handling Middleware
+app.use((err, req, res, next) => {
+  console.error("💥 Unhandled Server Error:", err);
+  res.status(500).json({ error: "An unhandled server error occurred." });
 });
 
 const PORT = process.env.PORT || 5000;

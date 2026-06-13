@@ -19,6 +19,12 @@ export const getReviews = async (req, res) => {
 
 export const createReview = async (req, res) => {
   try {
+    if (req.body.booking_id) {
+      const existingReview = await Review.findOne({ booking_id: req.body.booking_id });
+      if (existingReview) {
+        return res.status(409).json({ error: "You have already submitted a review for this booking." });
+      }
+    }
     const review = await Review.create({
       ...req.body,
       date: new Date().toISOString().slice(0, 10)

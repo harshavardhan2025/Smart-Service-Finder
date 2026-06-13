@@ -19,6 +19,13 @@ export const getPlans = async (req, res) => {
 
 export const createPlan = async (req, res) => {
   try {
+    const { title } = req.body;
+    if (title) {
+      const existingPlan = await Plan.findOne({ title: { $regex: new RegExp(`^${title.trim()}$`, "i") } });
+      if (existingPlan) {
+        return res.status(409).json({ error: "A subscription plan with this title already exists." });
+      }
+    }
     const plan = await Plan.create(req.body);
     res.status(201).json({ success: true, plan });
   } catch (error) {
@@ -28,6 +35,16 @@ export const createPlan = async (req, res) => {
 
 export const updatePlan = async (req, res) => {
   try {
+    const { title } = req.body;
+    if (title) {
+      const existingPlan = await Plan.findOne({
+        _id: { $ne: req.params.id },
+        title: { $regex: new RegExp(`^${title.trim()}$`, "i") }
+      });
+      if (existingPlan) {
+        return res.status(409).json({ error: "A subscription plan with this title already exists." });
+      }
+    }
     const plan = await Plan.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.status(200).json({ success: true, plan });
   } catch (error) {

@@ -23,21 +23,21 @@ function MyBookings() {
     if (!customerId) return;
 
     try {
-       // 🛰️ COMPOSITE SYNCHRONIZATION: Load Bookings & Real Reviews simultaneously!
-       const [bResp, rResp] = await Promise.all([
-          fetch(`/api/bookings?customer_id=${customerId}`),
-          fetch(`/api/reviews?customer_name=${encodeURIComponent(cName)}`)
-       ]);
-       const bData = await bResp.json();
-       const rData = await rResp.json();
+      // 🛰️ COMPOSITE SYNCHRONIZATION: Load Bookings & Real Reviews simultaneously!
+      const [bResp, rResp] = await Promise.all([
+        fetch(`/api/bookings?customer_id=${customerId}`),
+        fetch(`/api/reviews?customer_name=${encodeURIComponent(cName)}`)
+      ]);
+      const bData = await bResp.json();
+      const rData = await rResp.json();
 
-       if (Array.isArray(bData)) setLiveBookings(bData);
-       if (Array.isArray(rData)) {
-          // Auto-Hydrate accurate reviewed ID matrix flawlessly!
-          const committedIds = new Set(rData.map(r => r.booking_id));
-          setReviewedIds(committedIds);
-       }
-    } catch(err) { console.error("Cloud bookings sync failed."); }
+      if (Array.isArray(bData)) setLiveBookings(bData);
+      if (Array.isArray(rData)) {
+        // Auto-Hydrate accurate reviewed ID matrix flawlessly!
+        const committedIds = new Set(rData.map(r => r.booking_id));
+        setReviewedIds(committedIds);
+      }
+    } catch (err) { console.error("Cloud bookings sync failed."); }
   };
 
   useEffect(() => {
@@ -57,8 +57,8 @@ function MyBookings() {
   const [submittingCancel, setSubmittingCancel] = useState(false);
 
   const handleReview = (booking) => {
-     // 🚀 DYNAMIC PASSTHROUGH: The backend auto-filters correctly, simply redirect effortlessly!
-     navigate("/reviews");
+    // 🚀 DYNAMIC PASSTHROUGH: The backend auto-filters correctly, simply redirect effortlessly!
+    navigate("/reviews");
   };
 
   const handleConfirmCancel = async () => {
@@ -83,7 +83,7 @@ function MyBookings() {
       } else {
         alert(`🛑 Cancellation Request Failed!\n\n${data.error || "Unable to request cancellation. Please try again later."}`);
       }
-    } catch(e) {
+    } catch (e) {
       console.error(e);
       alert("🛑 Network Error: Could not reach the server. Please check your connection and try again.");
     } finally {
@@ -107,13 +107,13 @@ function MyBookings() {
         })
       });
       if (res.ok) {
-        alert("⚖️ Grievance Formally Recorded!\n\nYour complaint has been logged in the secure database. Administrators will review and take necessary action.");
+        alert("⚖️ Grievance Formally Recorded!\n\nYour complaint has been logged. Administrators will review and take necessary action.");
         setActiveComplaintBooking(null);
         setComplaintDesc("");
       } else {
         alert("Failed to record grievance.");
       }
-    } catch(e) {
+    } catch (e) {
       console.error(e);
     } finally {
       setSubmittingComplaint(false);
@@ -242,7 +242,7 @@ function MyBookings() {
               const { color, bg } = getStatusStyles(booking.status);
               const bid = booking._id || booking.id;
               const isReviewed = reviewedIds.has(bid);
-              
+
               return (
                 <div
                   key={bid}
@@ -319,7 +319,7 @@ function MyBookings() {
 
                   {(booking.status === "Completed" || booking.status === "Paid Out") && (
                     <div style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px dashed #cbd5e1", display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
-                      <button 
+                      <button
                         onClick={() => handleReview(booking)}
                         disabled={isReviewed}
                         style={{
@@ -340,7 +340,7 @@ function MyBookings() {
                       </button>
 
                       {isReviewed && booking.status !== "Paid Out" && (
-                        <button 
+                        <button
                           onClick={() => setActiveComplaintBooking(booking)}
                           style={{
                             backgroundColor: "#fee2e2",
@@ -367,7 +367,7 @@ function MyBookings() {
 
                   {!["Completed", "Paid Out", "Cancelled", "Rejected", "Cancellation Pending", "Refund Declined", "Escrow Declined"].includes(booking.status) && (
                     <div style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px dashed #cbd5e1" }}>
-                      <button 
+                      <button
                         onClick={() => setActiveCancelBooking(booking)}
                         style={{
                           backgroundColor: "#fee2e2",
@@ -432,8 +432,8 @@ function MyBookings() {
 
             <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "20px" }}>
               <label style={{ fontSize: "12px", fontWeight: 700, color: "#475569" }}>Select Cancellation Reason</label>
-              <select 
-                value={cancelReason} 
+              <select
+                value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}
                 style={{ width: "100%", padding: "10px", borderRadius: "10px", border: "1px solid #cbd5e1" }}
               >
@@ -522,8 +522,8 @@ function MyBookings() {
 
             <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "16px" }}>
               <label style={{ fontSize: "12px", fontWeight: 700, color: "#475569" }}>Incident / Grievance Type</label>
-              <select 
-                value={issueType} 
+              <select
+                value={issueType}
                 onChange={(e) => setIssueType(e.target.value)}
                 style={{ width: "100%", padding: "10px", borderRadius: "10px", border: "1px solid #cbd5e1" }}
               >

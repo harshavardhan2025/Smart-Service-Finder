@@ -4,6 +4,7 @@ import User from "../models/User.js";
 import Transaction from "../models/Transaction.js";
 import Notification from "../models/Notification.js";
 import { haversineKm, geocodeCity, getPriceMultiplier } from "../utils/geoUtils.js";
+import { getCache, setCache, getVersion, invalidateVersion } from "../config/redisClient.js";
 
 // 🧠 AI SPATIAL CACHE: Prevents redundant LLM hits, accelerating repeat searches flawlessly!
 const aiRadiusCache = {};
@@ -153,6 +154,20 @@ const analyzeLocationWithAi = async (cityName) => {
 export const getWorkers = async (req, res) => {
   try {
     const { city, service } = req.query;
+    const adminView = req.query.adminView || "false";
+    const page = req.query.page ? parseInt(req.query.page, 10) : null;
+    const limit = req.query.limit ? parseInt(req.query.limit, 10) : null;
+
+    // Check Redis cache first
+    const version = await getVersion("workers");
+    const cacheKey = `workers:list:v${version}:${city || ''}:${service || ''}:${adminView}:${page || ''}:${limit || ''}`;
+    
+    const cachedData = await getCache(cacheKey);
+    if (cachedData) {
+      console.log(`🚀 [REDIS CACHE HIT] Serving workers list for key: ${cacheKey}`);
+      return res.status(200).json(cachedData);
+    }
+
     let filter = {};
     
     if (city) {
@@ -183,8 +198,21 @@ export const getWorkers = async (req, res) => {
     }
 
     // 🔒 CRITICAL AVAILABILITY CONTAINMENT: Default to exposing only Active professionals unless explicit request!
-    const statusFilter = req.query.adminView === "true" ? {} : { status: "Active" };
-    const workers = await Worker.find({ ...filter, ...statusFilter });
+    const statusFilter = adminView === "true" ? {} : { status: "Active" };
+
+    let query = Worker.find({ ...filter, ...statusFilter })
+      .select("_id name email service city location lat lon rating reviews price status experience walletBalance");
+
+    if (page && limit) {
+      const skip = (page - 1) * limit;
+      query = query.skip(skip).limit(limit);
+    }
+
+    const workers = await query;
+    
+    // Save to Redis cache
+    await setCache(cacheKey, workers, 120);
+
     res.status(200).json(workers);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -205,6 +233,15 @@ export const getNearbyWorkers = async (req, res) => {
 
     if (isNaN(userLat) || isNaN(userLng)) {
       return res.status(400).json({ error: "lat and lng query params are required." });
+    }
+
+    // Check Redis cache first
+    const version = await getVersion("workers");
+    const cacheKey = `workers:nearby:v${version}:${userLat}:${userLng}:${radius}:${service}`;
+    const cachedData = await getCache(cacheKey);
+    if (cachedData) {
+      console.log(`🚀 [REDIS CACHE HIT] Serving nearby workers for key: ${cacheKey}`);
+      return res.status(200).json(cachedData);
     }
 
     // Build service filter
@@ -267,6 +304,10 @@ export const getNearbyWorkers = async (req, res) => {
       .sort((a, b) => a.distanceKm - b.distanceKm);
 
     console.log(`[NearbyWorkers] ${nearby.length} workers within ${radius}km of (${userLat},${userLng})`);
+    
+    // Save to Redis cache
+    await setCache(cacheKey, nearby, 120);
+
     res.status(200).json(nearby);
   } catch (error) {
     console.error("[getNearbyWorkers] Error:", error);
@@ -281,8 +322,15 @@ export const updateWorker = async (req, res) => {
       return res.status(404).json({ error: "Worker profile not found." });
     }
 
+    if (req.user.role !== "admin" && req.user.email !== worker.email) {
+      return res.status(403).json({ error: "Access denied. You can only update your own profile." });
+    }
+
     Object.assign(worker, req.body);
     await worker.save();
+
+    // Invalidate Redis cache
+    await invalidateVersion("workers");
 
     res.status(200).json({ success: true, worker });
   } catch (error) {
@@ -293,6 +341,10 @@ export const updateWorker = async (req, res) => {
 export const deleteWorker = async (req, res) => {
   try {
     await Worker.findByIdAndDelete(req.params.id);
+    
+    // Invalidate Redis cache
+    await invalidateVersion("workers");
+
     res.status(200).json({ success: true, message: "Worker profile deleted" });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -302,6 +354,10 @@ export const deleteWorker = async (req, res) => {
 export const createWorker = async (req, res) => {
   try {
     const worker = await Worker.create(req.body);
+
+    // Invalidate Redis cache
+    await invalidateVersion("workers");
+
     res.status(201).json(worker);
   } catch (error) {
     res.status(400).json({ error: error.message });

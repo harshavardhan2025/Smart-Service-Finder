@@ -68,5 +68,8 @@ workerSchema.pre("save", async function () {
   }
 });
 
+workerSchema.index({ city: 1, service: 1 });
+workerSchema.index({ rating: -1 });
+
 const Worker = mongoose.model("Worker", workerSchema);
 export default Worker;

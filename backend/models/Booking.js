@@ -14,5 +14,10 @@ const bookingSchema = new mongoose.Schema({
   rejectReason: { type: String }
 }, { timestamps: true });
 
+bookingSchema.index({ customer_id: 1 });
+bookingSchema.index({ worker_id: 1 });
+bookingSchema.index({ status: 1, createdAt: 1 }); // For efficient timeout background job queries
+bookingSchema.index({ worker_id: 1, date: 1, time: 1, status: 1 }); // For double-booking conflict checks
+
 const Booking = mongoose.model("Booking", bookingSchema);
 export default Booking;

@@ -8,7 +8,14 @@ import Transaction from "../models/Transaction.js";
 export const getComplaints = async (req, res) => {
   try {
     const filter = {};
-    if (req.query.reported_by) filter.reported_by = req.query.reported_by;
+    if (req.user.role !== "admin") {
+      filter.$or = [
+        { reported_by: req.user.name },
+        { reported_by: req.user._id.toString() }
+      ];
+    } else {
+      if (req.query.reported_by) filter.reported_by = req.query.reported_by;
+    }
     const list = await Complaint.find(filter).sort({ createdAt: -1 });
     res.status(200).json(list);
   } catch (error) {
@@ -18,6 +25,15 @@ export const getComplaints = async (req, res) => {
 
 export const submitComplaint = async (req, res) => {
   try {
+    if (req.body.booking_id) {
+      const existingComplaint = await Complaint.findOne({
+        booking_id: req.body.booking_id,
+        status: { $ne: "Resolved" }
+      });
+      if (existingComplaint) {
+        return res.status(409).json({ error: "A complaint is already active/under review for this booking." });
+      }
+    }
     const complaint = await Complaint.create(req.body);
 
     // Notify administrators about the new complaint

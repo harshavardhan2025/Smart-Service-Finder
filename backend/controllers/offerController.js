@@ -19,6 +19,13 @@ export const getOffers = async (req, res) => {
 
 export const createOffer = async (req, res) => {
   try {
+    const { code } = req.body;
+    if (code) {
+      const existingOffer = await Offer.findOne({ code: { $regex: new RegExp(`^${code.trim()}$`, "i") } });
+      if (existingOffer) {
+        return res.status(409).json({ error: "An offer with this code already exists." });
+      }
+    }
     const offer = await Offer.create(req.body);
     res.status(201).json({ success: true, offer });
   } catch (error) {
@@ -28,6 +35,16 @@ export const createOffer = async (req, res) => {
 
 export const updateOffer = async (req, res) => {
   try {
+    const { code } = req.body;
+    if (code) {
+      const existingOffer = await Offer.findOne({
+        _id: { $ne: req.params.id },
+        code: { $regex: new RegExp(`^${code.trim()}$`, "i") }
+      });
+      if (existingOffer) {
+        return res.status(409).json({ error: "An offer with this code already exists." });
+      }
+    }
     const offer = await Offer.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.status(200).json({ success: true, offer });
   } catch (error) {

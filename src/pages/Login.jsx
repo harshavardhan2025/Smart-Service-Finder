@@ -219,7 +219,7 @@ function Login() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          padding: "40px 20px",
+          padding: isMobile ? "20px 12px" : "40px 20px",
           backgroundImage: `url(${isMobile ? authMobileBg : authBg})`, 
           backgroundSize: "cover", 
           backgroundPosition: "center", 
@@ -230,17 +230,17 @@ function Login() {
           className="premium-card"
           ref={loginCardRef}
           style={{
-            width: "100%",
-            maxWidth: "400px",
+            width: isMobile ? "92%" : "100%",
+            maxWidth: isMobile ? "340px" : "400px",
             backgroundColor: "var(--bg-card)",
-            padding: "40px"
+            padding: isMobile ? "24px 20px" : "40px"
           }}
         >
-          <div style={{ textAlign: "center", marginBottom: "30px" }}>
-            <h1 style={{ margin: "0 0 8px 0", fontSize: "28px", fontWeight: 800, color: "var(--text-main)" }}>
+          <div style={{ textAlign: "center", marginBottom: isMobile ? "20px" : "30px" }}>
+            <h1 style={{ margin: isMobile ? "0 0 4px 0" : "0 0 8px 0", fontSize: isMobile ? "22px" : "28px", fontWeight: 800, color: "var(--text-main)" }}>
               Welcome Back
             </h1>
-            <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14px" }}>
+            <p style={{ margin: 0, color: "var(--text-muted)", fontSize: isMobile ? "12px" : "14px" }}>
               Login to manage your bookings and services
             </p>
           </div>
@@ -249,10 +249,10 @@ function Login() {
           {loginStatus && (
             <div
               style={{
-                padding: "12px 16px",
+                padding: isMobile ? "10px 14px" : "12px 16px",
                 borderRadius: "10px",
-                marginBottom: "18px",
-                fontSize: "13px",
+                marginBottom: isMobile ? "12px" : "18px",
+                fontSize: isMobile ? "12px" : "13px",
                 fontWeight: 600,
                 display: "flex",
                 alignItems: "center",
@@ -263,16 +263,16 @@ function Login() {
                 border: `1px solid ${loginStatus.type === "success" ? "#bbf7d0" : "#fecaca"}`
               }}
             >
-              <span style={{ fontSize: "18px" }}>
+              <span style={{ fontSize: "16px" }}>
                 {loginStatus.type === "success" ? "✅" : "❌"}
               </span>
               {loginStatus.message}
             </div>
           )}
 
-          <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-main)" }}>Email Address</label>
+          <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: isMobile ? "14px" : "20px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ fontSize: isMobile ? "13px" : "14px", fontWeight: 600, color: "var(--text-main)" }}>Email Address</label>
               <input
                 type="email"
                 placeholder="name@example.com"
@@ -281,14 +281,15 @@ function Login() {
                 style={{ 
                   width: "100%", 
                   boxSizing: "border-box",
+                  padding: isMobile ? "10px" : "12px",
                   borderColor: loginStatus?.type === "error" ? "#fecaca" : undefined,
                   transition: "border-color 0.2s"
                 }}
               />
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-main)" }}>Password</label>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ fontSize: isMobile ? "13px" : "14px", fontWeight: 600, color: "var(--text-main)" }}>Password</label>
               <input
                 type="password"
                 placeholder="••••••••"
@@ -297,6 +298,7 @@ function Login() {
                 style={{ 
                   width: "100%", 
                   boxSizing: "border-box",
+                  padding: isMobile ? "10px" : "12px",
                   borderColor: loginStatus?.type === "error" ? "#fecaca" : undefined,
                   transition: "border-color 0.2s"
                 }}
@@ -308,9 +310,9 @@ function Login() {
               className="btn-primary"
               disabled={isLoading}
               style={{
-                padding: "12px",
-                fontSize: "15px",
-                marginTop: "10px",
+                padding: isMobile ? "10px" : "12px",
+                fontSize: isMobile ? "14px" : "15px",
+                marginTop: "6px",
                 width: "100%",
                 opacity: isLoading ? 0.7 : 1,
                 cursor: isLoading ? "not-allowed" : "pointer",
@@ -320,7 +322,7 @@ function Login() {
               {isLoading ? (
                 <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
                   <span style={{ 
-                    width: "16px", height: "16px", 
+                    width: "14px", height: "14px", 
                     border: "2px solid rgba(255,255,255,0.3)", 
                     borderTopColor: "white", 
                     borderRadius: "50%", 
@@ -334,9 +336,9 @@ function Login() {
           </form>
 
           {/* Social Divider */}
-          <div style={{ display: "flex", alignItems: "center", margin: "20px 0" }}>
+          <div style={{ display: "flex", alignItems: "center", margin: isMobile ? "16px 0" : "20px 0" }}>
             <div style={{ flex: 1, height: "1px", backgroundColor: "var(--border)" }}></div>
-            <span style={{ padding: "0 10px", color: "var(--text-muted)", fontSize: "13px" }}>or continue with</span>
+            <span style={{ padding: "0 10px", color: "var(--text-muted)", fontSize: "12px" }}>or continue with</span>
             <div style={{ flex: 1, height: "1px", backgroundColor: "var(--border)" }}></div>
           </div>
 
@@ -346,8 +348,8 @@ function Login() {
             onClick={handleGoogleSignIn}
             className="btn-secondary"
             style={{
-              padding: "12px",
-              fontSize: "15px",
+              padding: isMobile ? "10px" : "12px",
+              fontSize: isMobile ? "14px" : "15px",
               width: "100%",
               display: "flex",
               justifyContent: "center",
@@ -364,7 +366,7 @@ function Login() {
             Sign In with Google
           </button>
 
-          <p style={{ textAlign: "center", marginTop: "24px", margin: "24px 0 0 0", fontSize: "14px", color: "var(--text-muted)" }}>
+          <p style={{ textAlign: "center", marginTop: isMobile ? "16px" : "24px", margin: isMobile ? "16px 0 0 0" : "24px 0 0 0", fontSize: isMobile ? "13px" : "14px", color: "var(--text-muted)" }}>
             Don't have an account?{" "}
             <Link to="/signup" style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>
               Sign up

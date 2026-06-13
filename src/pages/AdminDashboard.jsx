@@ -118,6 +118,12 @@ function AdminDashboard() {
 
   const [workerSearch, setWorkerSearch] = useState("");
   const [workerFilterStatus, setWorkerFilterStatus] = useState("All");
+  const [workerPage, setWorkerPage] = useState(1);
+  const workersPerPage = 30;
+
+  useEffect(() => {
+    setWorkerPage(1);
+  }, [workerSearch, workerFilterStatus]);
 
   const [customerSearch, setCustomerSearch] = useState("");
   const [escrowSearch, setEscrowSearch] = useState("");
@@ -152,6 +158,9 @@ function AdminDashboard() {
     const matchesStatus = workerFilterStatus === "All" || w.status === workerFilterStatus;
     return matchesSearch && matchesStatus;
   });
+
+  const totalWorkerPages = Math.ceil(filteredWorkers.length / workersPerPage);
+  const paginatedWorkers = filteredWorkers.slice((workerPage - 1) * workersPerPage, workerPage * workersPerPage);
 
   const filteredCustomers = customers.filter((c) => {
     return c.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
@@ -1516,7 +1525,7 @@ function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredWorkers.map((w) => (
+                    {paginatedWorkers.map((w) => (
                       <tr key={w._id} style={{ borderBottom: "1px solid #f1f5f9" }}>
                         <td style={{ padding: "12px", fontWeight: 700, color: "var(--text-main)" }}>{w.name}</td>
                         <td style={{ padding: "12px" }}>{w.service}</td>
@@ -1617,6 +1626,30 @@ function AdminDashboard() {
                     ))}
                   </tbody>
                 </table>
+
+                {totalWorkerPages > 1 && (
+                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "15px", marginTop: "24px" }}>
+                    <button 
+                      onClick={() => setWorkerPage(p => Math.max(1, p - 1))} 
+                      disabled={workerPage === 1} 
+                      className="btn-secondary" 
+                      style={{ padding: "8px 16px", cursor: workerPage === 1 ? "not-allowed" : "pointer" }}
+                    >
+                      Prev
+                    </button>
+                    <span style={{ color: "var(--text-main)", fontWeight: "700", fontSize: "14px" }}>
+                      Page {workerPage} of {totalWorkerPages}
+                    </span>
+                    <button 
+                      onClick={() => setWorkerPage(p => Math.min(totalWorkerPages, p + 1))} 
+                      disabled={workerPage === totalWorkerPages} 
+                      className="btn-secondary" 
+                      style={{ padding: "8px 16px", cursor: workerPage === totalWorkerPages ? "not-allowed" : "pointer" }}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}

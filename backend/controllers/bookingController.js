@@ -22,19 +22,28 @@ const parseBookingDateTime = (dateStr, timeStr) => {
   }
 };
 
+const isInstantBooking = (booking) => {
+  if (booking.time && (booking.time.includes("Instant") || booking.time.includes("Emergency"))) {
+    return true;
+  }
+  const createdTime = new Date(booking.createdAt || new Date());
+  const scheduledDateTime = parseBookingDateTime(booking.date, booking.time);
+  if (scheduledDateTime && !isNaN(scheduledDateTime.getTime())) {
+    const timeGapMinutes = (scheduledDateTime - createdTime) / 60000;
+    if (timeGapMinutes <= 60) {
+      return true;
+    }
+  }
+  return false;
+};
+
 const validateCancellationTime = (booking) => {
   const now = new Date();
   const createdTime = new Date(booking.createdAt || now);
   const scheduledDateTime = parseBookingDateTime(booking.date, booking.time);
+  const isInstant = isInstantBooking(booking);
   
-  if (!scheduledDateTime || isNaN(scheduledDateTime.getTime())) {
-    // If we can't parse the scheduled time, default to allowing it
-    return { allowed: true };
-  }
-
-  const timeGapMinutes = (scheduledDateTime - createdTime) / 60000;
-  
-  if (timeGapMinutes <= 60) {
+  if (isInstant) {
     // ⚡ Instant Booking: Allowed ONLY within 5 minutes of creation
     const elapsedMinutes = (now - createdTime) / 60000;
     if (elapsedMinutes > 5) {
@@ -44,6 +53,10 @@ const validateCancellationTime = (booking) => {
       };
     }
   } else {
+    if (!scheduledDateTime || isNaN(scheduledDateTime.getTime())) {
+      // If we can't parse the scheduled time, default to allowing it
+      return { allowed: true };
+    }
     // 📅 Normal Booking: Allowed ONLY before 1 hour of scheduled time
     const minutesBeforeScheduled = (scheduledDateTime - now) / 60000;
     if (minutesBeforeScheduled < 60) {
@@ -59,8 +72,44 @@ const validateCancellationTime = (booking) => {
 
 export const createBooking = async (req, res) => {
   try {
+    const { worker_id, date, time, customer_id, address } = req.body;
+
+    // 🛡️ DOUBLE-BOOKING PREVENTION: Check if this worker already has an active booking at the same date+time
+    if (worker_id && date && time) {
+      const conflictingBooking = await Booking.findOne({
+        worker_id,
+        date,
+        time,
+        status: { $nin: ["Cancelled", "Rejected", "Refund Declined"] }
+      }).lean();
+
+      if (conflictingBooking) {
+        return res.status(409).json({
+          success: false,
+          error: "This worker is already booked for the selected date and time slot. Please choose a different time or another professional."
+        });
+      }
+    }
+
+    // 🛡️ SAME-USER DUPLICATE PREVENTION: Prevent the same customer from booking the same worker at the same time
+    if (customer_id && worker_id && date && time) {
+      const duplicateBooking = await Booking.findOne({
+        customer_id,
+        worker_id,
+        date,
+        time,
+        status: { $nin: ["Cancelled", "Rejected", "Refund Declined"] }
+      }).lean();
+
+      if (duplicateBooking) {
+        return res.status(409).json({
+          success: false,
+          error: "You have already booked this worker for the selected date and time slot."
+        });
+      }
+    }
+
     // Dynamically resolve worker's real address if no address is provided or if it's the default
-    const { worker_id, address } = req.body;
     if (worker_id && (!address || address === "Pending Dispatch Location" || address === "Kakinada Main Road, 533001" || address.trim() === "")) {
       const worker = await Worker.findById(worker_id);
       if (worker) {
@@ -123,36 +172,44 @@ export const getBookings = async (req, res) => {
     if (req.query.customer_id) filter.customer_id = req.query.customer_id;
     if (req.query.worker_id) filter.worker_id = req.query.worker_id;
 
-    const bookings = await Booking.find(filter).sort({ createdAt: -1 });
+    const bookings = await Booking.find(filter).sort({ createdAt: -1 }).lean();
 
-    const populatedBookings = await Promise.all(bookings.map(async (b) => {
-      const bObj = b.toObject();
+    // Batch-load all referenced workers and customers in 2 queries instead of N*2
+    const workerIds = [...new Set(bookings.map(b => b.worker_id).filter(Boolean))];
+    const customerIds = [...new Set(bookings.map(b => b.customer_id).filter(Boolean))];
+
+    const [workers, customers] = await Promise.all([
+      workerIds.length > 0
+        ? Worker.find({ _id: { $in: workerIds } }).select("_id name").lean()
+        : [],
+      customerIds.length > 0
+        ? User.find({ _id: { $in: customerIds } }).select("_id email phone city walletBalance").lean()
+        : []
+    ]);
+
+    // Build lookup maps for O(1) access
+    const workerMap = new Map(workers.map(w => [w._id.toString(), w]));
+    const customerMap = new Map(customers.map(c => [c._id.toString(), c]));
+
+    const populatedBookings = bookings.map(b => {
       if (b.worker_id) {
-        try {
-          const workerObj = await Worker.findById(b.worker_id);
-          if (workerObj) {
-            bObj.workerName = workerObj.name;
-            bObj.worker_name = workerObj.name;
-          }
-        } catch (e) {
-          // Ignore lookup errors
+        const w = workerMap.get(b.worker_id.toString());
+        if (w) {
+          b.workerName = w.name;
+          b.worker_name = w.name;
         }
       }
       if (b.customer_id) {
-        try {
-          const customerObj = await User.findById(b.customer_id);
-          if (customerObj) {
-            bObj.customerEmail = customerObj.email;
-            bObj.customerPhone = customerObj.phone;
-            bObj.customerCity = customerObj.city;
-            bObj.customerWallet = customerObj.walletBalance;
-          }
-        } catch (e) {
-          // Ignore lookup errors
+        const c = customerMap.get(b.customer_id.toString());
+        if (c) {
+          b.customerEmail = c.email;
+          b.customerPhone = c.phone;
+          b.customerCity = c.city;
+          b.customerWallet = c.walletBalance;
         }
       }
-      return bObj;
-    }));
+      return b;
+    });
 
     res.status(200).json(populatedBookings);
   } catch (error) {
@@ -717,21 +774,45 @@ export const declineRefund = async (req, res) => {
 export const checkBookingTimeouts = async () => {
   try {
     const now = new Date();
-    // Query all bookings currently in Pending or Upcoming state
-    const bookings = await Booking.find({ status: { $in: ["Pending", "Upcoming"] } });
+    // Pre-compute the cutoff times so MongoDB filters instead of loading everything
+    const instantCutoff = new Date(now.getTime() - 20 * 60000); // 20 minutes ago
+    const normalCutoff = new Date(now.getTime() - 45 * 60000);  // 45 minutes ago
+
+    // Only fetch bookings that are potentially expired (created before the normal cutoff)
+    const bookings = await Booking.find({
+      status: { $in: ["Pending", "Upcoming"] },
+      createdAt: { $lt: normalCutoff }
+    }).lean();
+
+    if (bookings.length === 0) return;
+
+    // Batch-load all related workers and customers for efficient lookups
+    const workerIds = [...new Set(bookings.map(b => b.worker_id).filter(Boolean))];
+    const customerIds = [...new Set(bookings.map(b => b.customer_id).filter(Boolean))];
+
+    const [workers, customers] = await Promise.all([
+      workerIds.length > 0
+        ? Worker.find({ _id: { $in: workerIds } }).select("_id name email").lean()
+        : [],
+      customerIds.length > 0
+        ? User.find({ _id: { $in: customerIds } }).select("_id walletBalance").lean()
+        : []
+    ]);
+
+    const workerMap = new Map(workers.map(w => [w._id.toString(), w]));
+    const customerMap = new Map(customers.map(c => [c._id.toString(), c]));
+
+    // Pre-fetch worker user accounts for notifications
+    const workerEmails = workers.map(w => w.email).filter(Boolean);
+    const workerUsers = workerEmails.length > 0
+      ? await User.find({ email: { $in: workerEmails } }).select("_id email").lean()
+      : [];
+    const workerUserByEmail = new Map(workerUsers.map(u => [u.email, u]));
 
     for (const booking of bookings) {
       const createdTime = new Date(booking.createdAt || now);
-      const scheduledDateTime = parseBookingDateTime(booking.date, booking.time);
+      const isInstant = isInstantBooking(booking);
       
-      let isInstant = false;
-      if (scheduledDateTime && !isNaN(scheduledDateTime.getTime())) {
-        const timeGapMinutes = (scheduledDateTime - createdTime) / 60000;
-        if (timeGapMinutes <= 60) {
-          isInstant = true;
-        }
-      }
-
       const elapsedMinutes = (now - createdTime) / 60000;
       const limitMinutes = isInstant ? 20 : 45;
 
@@ -739,17 +820,19 @@ export const checkBookingTimeouts = async () => {
         console.log(`⏰ [BOOKING TIMEOUT] Booking #${booking._id} (${isInstant ? "Instant" : "Normal"}) has expired after ${Math.round(elapsedMinutes)} minutes without worker acceptance.`);
 
         // 1. Cancel the booking document
-        booking.status = "Cancelled";
-        booking.cancelReason = "Booking acceptance timeout. Customer refunded.";
-        await booking.save();
+        await Booking.findByIdAndUpdate(booking._id, {
+          status: "Cancelled",
+          cancelReason: "Booking acceptance timeout. Customer refunded."
+        });
 
-        // 2. Perform full wallet refund
-        const customer = await User.findById(booking.customer_id);
+        // 2. Perform full wallet refund using atomic operation
+        const customer = customerMap.get(booking.customer_id?.toString());
         if (customer) {
-          customer.walletBalance = (customer.walletBalance || 0) + booking.price;
-          await customer.save();
+          await User.findByIdAndUpdate(customer._id, {
+            $inc: { walletBalance: booking.price }
+          });
 
-          // WriteTransaction audit ledger
+          // Write Transaction audit ledger
           await Transaction.create({
             customer: booking.customer_name,
             worker: "System Timeout Cancel",
@@ -772,9 +855,9 @@ export const checkBookingTimeouts = async () => {
 
         // 4. Dispatch Notification to Worker
         try {
-          const worker = await Worker.findById(booking.worker_id);
+          const worker = workerMap.get(booking.worker_id?.toString());
           if (worker) {
-            const workerUser = await User.findOne({ email: worker.email });
+            const workerUser = workerUserByEmail.get(worker.email);
             if (workerUser) {
               await Notification.create({
                 role: "worker",

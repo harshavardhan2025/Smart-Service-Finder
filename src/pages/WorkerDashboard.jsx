@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import RouteMap from "../components/RouteMap";
 import SecurityLogs from "../components/SecurityLogs";
 import SkeletonLoader from "../components/SkeletonLoader";
-// Dynamically enhanced to consume real Mongo cloud telemetry
 
 function WorkerDashboard() {
+  const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [activeTab, setActiveTab] = useState(window.innerWidth <= 768 ? "menu" : "status");
   const [isActive, setIsActive] = useState(true);
@@ -68,6 +68,14 @@ function WorkerDashboard() {
   }, [sosActive, activeSosNotificationId]);
 
   const location = useLocation();
+
+  useEffect(() => {
+    const role = sessionStorage.getItem("userRole");
+    const userId = sessionStorage.getItem("userId");
+    if (!userId || role !== "worker") {
+      navigate("/login");
+    }
+  }, [navigate]);
 
   useEffect(() => {
     if (location.state && location.state.resetTab) {
