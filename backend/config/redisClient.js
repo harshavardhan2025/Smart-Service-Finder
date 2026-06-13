@@ -74,12 +74,41 @@ async function ensureConnected() {
 // Warm up connection immediately on file load
 ensureConnected();
 
+// 🚀 L1 HYBRID CACHE: In-Memory cache stage for 0ms local RAM response times
+const l1Cache = new Map();
+
+// Periodically purge expired L1 cache items to prevent memory leaks
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, item] of l1Cache.entries()) {
+    if (item.expiry < now) {
+      l1Cache.delete(key);
+    }
+  }
+}, 30000).unref();
+
 export async function getCache(key) {
+  // 1. Try L1 (In-Memory) Cache - 0ms response time
+  const l1Item = l1Cache.get(key);
+  if (l1Item && l1Item.expiry > Date.now()) {
+    return l1Item.value;
+  }
+
+  // 2. Try L2 (Redis) Cache
   try {
     await ensureConnected();
     if (!client.isOpen) return null;
     const value = await client.get(key);
-    return value ? JSON.parse(value) : null;
+    if (value) {
+      const parsedValue = JSON.parse(value);
+      // Store in L1 for subsequent rapid hits (cached in memory for 30s)
+      l1Cache.set(key, {
+        value: parsedValue,
+        expiry: Date.now() + 30000
+      });
+      return parsedValue;
+    }
+    return null;
   } catch (err) {
     console.error(`Error reading from Redis cache for key "${key}":`, err.message || err);
     return null;
@@ -87,6 +116,13 @@ export async function getCache(key) {
 }
 
 export async function setCache(key, value, ttlSeconds = 120) {
+  // Update L1 Cache
+  l1Cache.set(key, {
+    value: value,
+    expiry: Date.now() + (ttlSeconds * 1000)
+  });
+
+  // Update L2 (Redis) Cache
   try {
     await ensureConnected();
     if (!client.isOpen) return false;
@@ -102,6 +138,10 @@ export async function setCache(key, value, ttlSeconds = 120) {
 }
 
 export async function delCache(key) {
+  // Invalidate L1 Cache
+  l1Cache.delete(key);
+
+  // Invalidate L2 (Redis) Cache
   try {
     await ensureConnected();
     if (!client.isOpen) return false;
@@ -129,6 +169,13 @@ export async function getVersion(prefix) {
 }
 
 export async function invalidateVersion(prefix) {
+  // Invalidate any local L1 caches associated with this prefix to ensure fresh reads
+  for (const key of l1Cache.keys()) {
+    if (key.startsWith(prefix)) {
+      l1Cache.delete(key);
+    }
+  }
+
   try {
     await ensureConnected();
     if (!client.isOpen) return;
