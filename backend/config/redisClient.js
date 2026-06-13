@@ -50,8 +50,19 @@ client.connect().catch((err) => {
   // Silence initial error stack as it is handled by the throttled error event above
 });
 
+async function ensureConnected() {
+  if (!client.isOpen) {
+    try {
+      await client.connect();
+    } catch (err) {
+      // Ignore if already connecting or error
+    }
+  }
+}
+
 export async function getCache(key) {
-  if (!isReady) return null;
+  await ensureConnected();
+  if (!client.isOpen || !isReady) return null;
   try {
     const value = await client.get(key);
     return value ? JSON.parse(value) : null;
@@ -62,7 +73,8 @@ export async function getCache(key) {
 }
 
 export async function setCache(key, value, ttlSeconds = 120) {
-  if (!isReady) return false;
+  await ensureConnected();
+  if (!client.isOpen || !isReady) return false;
   try {
     const serializedValue = JSON.stringify(value);
     await client.set(key, serializedValue, {
@@ -76,7 +88,8 @@ export async function setCache(key, value, ttlSeconds = 120) {
 }
 
 export async function delCache(key) {
-  if (!isReady) return false;
+  await ensureConnected();
+  if (!client.isOpen || !isReady) return false;
   try {
     await client.del(key);
     return true;
@@ -87,7 +100,8 @@ export async function delCache(key) {
 }
 
 export async function getVersion(prefix) {
-  if (!isReady) return "1";
+  await ensureConnected();
+  if (!client.isOpen || !isReady) return "1";
   try {
     let version = await client.get(`${prefix}:version`);
     if (!version) {
@@ -101,7 +115,8 @@ export async function getVersion(prefix) {
 }
 
 export async function invalidateVersion(prefix) {
-  if (!isReady) return;
+  await ensureConnected();
+  if (!client.isOpen || !isReady) return;
   try {
     await client.set(`${prefix}:version`, Date.now().toString());
   } catch (err) {
