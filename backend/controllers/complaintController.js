@@ -63,7 +63,7 @@ export const resolveComplaint = async (req, res) => {
     const complaint = await Complaint.findByIdAndUpdate(
       req.params.id,
       { admin_verdict: verdict, status: "Resolved" },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!complaint) {

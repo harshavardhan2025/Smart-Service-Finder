@@ -44,7 +44,7 @@ export const createReview = async (req, res) => {
         {
           $inc: { ratingSum: newStar, reviews: 1 }
         },
-        { new: true }
+        { returnDocument: 'after' }
       );
 
       if (updatedWorker) {
@@ -94,7 +94,7 @@ export const replyReview = async (req, res) => {
         reply,
         replyDate: new Date().toISOString().slice(0, 10)
       },
-      { new: true }
+      { returnDocument: 'after' }
     );
     if (!review) return res.status(404).json({ error: "Review not found" });
 

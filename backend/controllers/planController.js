@@ -45,7 +45,7 @@ export const updatePlan = async (req, res) => {
         return res.status(409).json({ error: "A subscription plan with this title already exists." });
       }
     }
-    const plan = await Plan.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const plan = await Plan.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
     res.status(200).json({ success: true, plan });
   } catch (error) {
     res.status(400).json({ error: error.message });

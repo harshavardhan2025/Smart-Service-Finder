@@ -335,7 +335,7 @@ export const updateBookingStatus = async (req, res) => {
 
 export const releaseEscrow = async (req, res) => {
   try {
-    const booking = await Booking.findByIdAndUpdate(req.params.id, { status: "Paid Out" }, { new: true });
+    const booking = await Booking.findByIdAndUpdate(req.params.id, { status: "Paid Out" }, { returnDocument: 'after' });
     if (!booking) return res.status(404).json({ error: "Booking not found" });
 
     // Execute the direct balance hydration on the assigned worker document atomicly

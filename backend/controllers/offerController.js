@@ -45,7 +45,7 @@ export const updateOffer = async (req, res) => {
         return res.status(409).json({ error: "An offer with this code already exists." });
       }
     }
-    const offer = await Offer.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const offer = await Offer.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
     res.status(200).json({ success: true, offer });
   } catch (error) {
     res.status(400).json({ error: error.message });

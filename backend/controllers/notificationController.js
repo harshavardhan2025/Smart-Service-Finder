@@ -75,7 +75,7 @@ export const markAllRead = async (req, res) => {
 
 export const updateNotification = async (req, res) => {
   try {
-    const updated = await Notification.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updated = await Notification.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
     res.status(200).json({ success: true, notification: updated });
   } catch (error) {
     res.status(400).json({ error: error.message });

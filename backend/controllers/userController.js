@@ -18,7 +18,7 @@ export const updateUser = async (req, res) => {
     if (req.user.role !== "admin" && req.user._id.toString() !== req.params.id) {
       return res.status(403).json({ error: "Access denied. You can only update your own profile." });
     }
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const user = await User.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
     res.status(200).json({ success: true, user });
   } catch (error) {
     res.status(400).json({ error: error.message });

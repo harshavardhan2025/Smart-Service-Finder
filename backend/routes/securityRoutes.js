@@ -114,7 +114,7 @@ router.patch("/sos/:id/resolve", async (req, res) => {
     const alert = await SosAlert.findByIdAndUpdate(
       req.params.id,
       { status: "Resolved", resolvedAt: new Date() },
-      { new: true }
+      { returnDocument: 'after' }
     );
     if (!alert) {
       return res.status(404).json({ error: "Emergency incident profile not found" });
