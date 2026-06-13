@@ -3,11 +3,14 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-let redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
-// Strip surrounding quotes if present (common in cloud env dashboard setups)
-redisUrl = redisUrl.replace(/^['"]|['"]$/g, '');
+let redisUrl = process.env.REDIS_URL;
+const clientEnabled = !!redisUrl;
 
-const client = createClient({
+if (redisUrl) {
+  redisUrl = redisUrl.replace(/^['"]|['"]$/g, '');
+}
+
+const client = clientEnabled ? createClient({
   url: redisUrl,
   socket: {
     reconnectStrategy: (retries) => {
@@ -23,56 +26,71 @@ const client = createClient({
       tls: true
     } : {})
   }
-});
+}) : null;
 
 let connectionPromise = null;
 let lastLoggedErrorTime = 0;
 
-client.on('connect', () => {
-  console.log('Redis client connecting...');
-});
+if (clientEnabled && client) {
+  client.on('connect', () => {
+    console.log('Redis client connecting...');
+  });
 
-client.on('ready', () => {
-  console.log('Redis client ready to use');
-});
+  client.on('ready', () => {
+    console.log('Redis client ready to use');
+  });
 
-client.on('error', (err) => {
-  // Silence transient errors if connection socket is open/reconnecting
-  if (client.isOpen) return;
-  const now = Date.now();
-  // Throttle error logging to once every 60 seconds to prevent console spam
-  if (now - lastLoggedErrorTime > 60000) {
-    console.warn('⚠️ Redis connection error. Running in offline fallback mode (connecting directly to MongoDB).');
-    lastLoggedErrorTime = now;
-  }
-});
+  client.on('error', (err) => {
+    // Silence transient errors if connection socket is open/reconnecting
+    if (client.isOpen) return;
+    const now = Date.now();
+    // Throttle error logging to once every 60 seconds to prevent console spam
+    if (now - lastLoggedErrorTime > 60000) {
+      console.warn('⚠️ Redis connection error. Running in offline fallback mode (connecting directly to MongoDB).');
+      lastLoggedErrorTime = now;
+    }
+  });
 
-client.on('end', () => {
-  console.log('Redis client connection closed');
-});
+  client.on('end', () => {
+    console.log('Redis client connection closed');
+  });
+}
 
 async function ensureConnected() {
+  if (!clientEnabled || !client) {
+    return;
+  }
   if (client.isOpen) {
     return;
   }
   
-  if (connectionPromise) {
-    return connectionPromise;
+  if (!connectionPromise) {
+    connectionPromise = client.connect()
+      .then(() => {
+        connectionPromise = null;
+      })
+      .catch((err) => {
+        connectionPromise = null;
+      });
   }
   
-  connectionPromise = client.connect()
-    .then(() => {
-      connectionPromise = null;
-    })
-    .catch((err) => {
-      connectionPromise = null;
-    });
-    
-  return connectionPromise;
+  // Race the connection promise against a timeout of 1500ms
+  // so that we don't block requests indefinitely if Redis is down/unreachable
+  let timeoutId;
+  const timeoutPromise = new Promise((resolve) => {
+    timeoutId = setTimeout(() => {
+      resolve();
+    }, 1500);
+  });
+
+  await Promise.race([connectionPromise, timeoutPromise]);
+  clearTimeout(timeoutId);
 }
 
 // Warm up connection immediately on file load
-ensureConnected();
+if (clientEnabled) {
+  ensureConnected().catch(() => {});
+}
 
 // 🚀 L1 HYBRID CACHE: In-Memory cache stage for 0ms local RAM response times
 const l1Cache = new Map();

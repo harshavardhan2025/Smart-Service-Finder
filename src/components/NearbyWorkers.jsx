@@ -115,22 +115,11 @@ const SERVICES = [
 ];
 
 function getShortLocation(fullAddress) {
+  const storedCity = localStorage.getItem("userCity");
+  if (storedCity) return storedCity.toLowerCase().trim();
+
   if (!fullAddress) return "";
-  const lower = fullAddress.toLowerCase();
-  // 🧠 SMART ADAPTIVE RESOLVER: Scan entire address instead of just the first comma segment!
-  if (lower.includes("kakinada")) return "kakinada";
-  if (lower.includes("rajahmundry")) return "rajahmundry";
-  if (lower.includes("new delhi") || lower.includes("delhi")) return "new delhi";
-  if (lower.includes("hyderabad")) return "hyderabad";
-  if (lower.includes("kadapa")) return "kadapa";
-  
-  // Fall back to stored userCity if the first segment is a raw coordinate number
   const firstSegment = fullAddress.split(",")[0].trim();
-  if (!isNaN(parseFloat(firstSegment))) {
-    const storedCity = localStorage.getItem("userCity");
-    if (storedCity) return storedCity.toLowerCase().trim();
-  }
-  
   return firstSegment.toLowerCase();
 }
 

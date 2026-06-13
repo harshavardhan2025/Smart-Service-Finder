@@ -100,52 +100,87 @@ export const fetchAllWorkersCached = async () => {
   return fetchPromise;
 };
 
+const filterCache = new Map();
+const pendingRequests = new Map();
+
 export const filterWorkersClientSide = async (userCoords, locationKey) => {
-  try {
-    if (userCoords && userCoords.lat && userCoords.lng) {
-      // 🛰️ DYNAMIC DATABASE-DRIVEN MATCHING: Fetch nearby active workers straight from MongoDB backend!
-      const resp = await fetch(`/api/workers/nearby?lat=${userCoords.lat}&lng=${userCoords.lng}&radius=40`);
-      if (resp.ok) {
-        return await resp.json();
+  const cacheKey = userCoords && userCoords.lat && userCoords.lng
+    ? `nearby:${userCoords.lat}:${userCoords.lng}`
+    : `city:${locationKey || ''}`;
+
+  // 1. If there is already an active fetch for this cacheKey, reuse that promise to avoid duplicate HTTP requests
+  if (pendingRequests.has(cacheKey)) {
+    return pendingRequests.get(cacheKey);
+  }
+
+  // 2. If we have a cached result that is less than 15 seconds old, return it immediately (instant 0ms response)
+  const cached = filterCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < 15000) {
+    return cached.data;
+  }
+
+  const fetchPromise = (async () => {
+    try {
+      if (userCoords && userCoords.lat && userCoords.lng) {
+        // 🛰️ DYNAMIC DATABASE-DRIVEN MATCHING: Fetch nearby active workers straight from MongoDB backend!
+        const resp = await fetch(`/api/workers/nearby?lat=${userCoords.lat}&lng=${userCoords.lng}&radius=40&city=${encodeURIComponent(locationKey || '')}`);
+        if (resp.ok) {
+          const data = await resp.json();
+          filterCache.set(cacheKey, { data, timestamp: Date.now() });
+          return data;
+        }
+      } else if (locationKey) {
+        // 🛰️ DYNAMIC DATABASE-DRIVEN MATCHING: Fetch workers by city string straight from MongoDB backend!
+        const resp = await fetch(`/api/workers?city=${encodeURIComponent(locationKey)}`);
+        if (resp.ok) {
+          const data = await resp.json();
+          filterCache.set(cacheKey, { data, timestamp: Date.now() });
+          return data;
+        }
       }
-    } else if (locationKey) {
-      // 🛰️ DYNAMIC DATABASE-DRIVEN MATCHING: Fetch workers by city string straight from MongoDB backend!
-      const resp = await fetch(`/api/workers?city=${encodeURIComponent(locationKey)}`);
-      if (resp.ok) {
-        return await resp.json();
-      }
+    } catch (e) {
+      console.error("Failed to query nearby workers from database backend:", e);
     }
-  } catch (e) {
-    console.error("Failed to query nearby workers from database backend:", e);
-  }
 
-  // 🛡️ FAIL-SAFE CLIENT-SIDE FALLBACK: Keep app functioning smoothly under any network offline state
-  const allWorkers = await fetchAllWorkersCached();
-  
-  if (userCoords) {
-    return allWorkers.map(w => {
-      let coords = null;
-      if (w.location) {
-        coords = geocodeCityLocal(w.location);
-      }
-      if (!coords && w.city) {
-        coords = geocodeCityLocal(w.city);
-      }
-      if (!coords) return null;
+    // 🛡️ FAIL-SAFE CLIENT-SIDE FALLBACK: Keep app functioning smoothly under any network offline state
+    const allWorkers = await fetchAllWorkersCached();
+    let result = allWorkers;
+    
+    if (userCoords) {
+      result = allWorkers.map(w => {
+        let coords = null;
+        if (w.location) {
+          coords = geocodeCityLocal(w.location);
+        }
+        if (!coords && w.city) {
+          coords = geocodeCityLocal(w.city);
+        }
+        if (!coords) return null;
 
-      const distance = haversineKm(userCoords.lat, userCoords.lng, coords.lat, coords.lon);
-      return { ...w, distanceKm: Math.round(distance * 10) / 10 };
-    })
-    .filter(w => w !== null && w.distanceKm <= 40)
-    .sort((a, b) => a.distanceKm - b.distanceKm);
-  } else if (locationKey) {
-    const key = locationKey.toLowerCase().trim();
-    return allWorkers.filter(w => {
-      const wCity = w.city ? w.city.toLowerCase().trim() : "";
-      const wLoc = w.location ? w.location.toLowerCase().trim() : "";
-      return wCity.includes(key) || key.includes(wCity) || wLoc.includes(key) || key.includes(wLoc);
-    });
-  }
+        const distance = haversineKm(userCoords.lat, userCoords.lng, coords.lat, coords.lon);
+        return { ...w, distanceKm: Math.round(distance * 10) / 10 };
+      })
+      .filter(w => w !== null && w.distanceKm <= 40)
+      .sort((a, b) => a.distanceKm - b.distanceKm);
+    } else if (locationKey) {
+      const key = locationKey.toLowerCase().trim();
+      result = allWorkers.filter(w => {
+        const wCity = w.city ? w.city.toLowerCase().trim() : "";
+        const wLoc = w.location ? w.location.toLowerCase().trim() : "";
+        return wCity.includes(key) || key.includes(wCity) || wLoc.includes(key) || key.includes(wLoc);
+      });
+    }
+
+    filterCache.set(cacheKey, { data: result, timestamp: Date.now() });
+    return result;
+  })();
+
+  pendingRequests.set(cacheKey, fetchPromise);
   
-  return allWorkers;
+  // Clean up the pending request once it resolves/rejects
+  fetchPromise.finally(() => {
+    pendingRequests.delete(cacheKey);
+  });
+
+  return fetchPromise;
 };

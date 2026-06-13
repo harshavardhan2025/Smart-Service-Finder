@@ -662,19 +662,19 @@ button {
   display: block;
 }
 .home-map-wrapper {
-  height: 0;
+  max-height: 0;
   overflow: hidden;
   visibility: hidden;
   opacity: 0;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
+  transition: max-height 0.4s ease-out, opacity 0.3s ease, visibility 0.3s ease;
 }
 .home-map-wrapper.map-visible {
-  height: auto;
+  max-height: 500px;
   visibility: visible;
   opacity: 1;
 }
 .home-map-wrapper.map-hidden {
-  height: 0;
+  max-height: 0;
   overflow: hidden;
   visibility: hidden;
   opacity: 0;
@@ -874,14 +874,14 @@ button {
     padding: 0 16px 10px 16px !important;
   }
   .home-map-wrapper.map-hidden {
-    height: 0 !important;
+    max-height: 0 !important;
     overflow: hidden !important;
     visibility: hidden !important;
     opacity: 0 !important;
     display: block !important;
   }
   .home-map-wrapper.map-visible {
-    height: auto !important;
+    max-height: 500px !important;
     visibility: visible !important;
     opacity: 1 !important;
     display: block !important;

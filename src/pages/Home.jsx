@@ -23,12 +23,22 @@ function Home() {
   const role = sessionStorage.getItem("userRole") || "user";
 
   const [locationText, setLocationText] = useState("");
-  const [searchedLocation, setSearchedLocation] = useState("");
-  const [userCoords, setUserCoords] = useState(null); // { lat, lng }
+  const [searchedLocation, setSearchedLocation] = useState(
+    () => localStorage.getItem("userLocation") || "Kadapa, Andhra Pradesh, India"
+  );
+  const [userCoords, setUserCoords] = useState(() => {
+    const savedLat = localStorage.getItem("userCoordsLat");
+    const savedLng = localStorage.getItem("userCoordsLng");
+    if (savedLat && savedLng) {
+      return { lat: parseFloat(savedLat), lng: parseFloat(savedLng) };
+    }
+    return { lat: 14.471306, lng: 78.824165 };
+  }); // { lat, lng }
   const [serviceQuery, setServiceQuery] = useState("");
   const [onlineWorkers, setOnlineWorkers] = useState([]);
+  const [isOnlineLoading, setIsOnlineLoading] = useState(true);
   const [aiSuggestedWorkers, setAiSuggestedWorkers] = useState([]);
-  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [isAiLoading, setIsAiLoading] = useState(true);
   const [aiSuggestedAreas, setAiSuggestedAreas] = useState([]);
   const [showMap, setShowMap] = useState(false);
   const [locationSearchInput, setLocationSearchInput] = useState(
@@ -41,9 +51,31 @@ function Home() {
     }
   }, [searchedLocation]);
 
+  const detectIpLocation = async () => {
+    try {
+      const res = await fetch("/api/workers/ip-location");
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.lat && data.lon) {
+          setUserCoords({ lat: data.lat, lng: data.lon });
+          setSearchedLocation(data.label);
+          localStorage.setItem("userLocation", data.label);
+          localStorage.setItem("userCity", data.city);
+          localStorage.setItem("userCoordsLat", data.lat.toString());
+          localStorage.setItem("userCoordsLng", data.lon.toString());
+          localStorage.setItem("manualLocationSet", "true");
+          return true;
+        }
+      }
+    } catch (e) {
+      console.error("IP fallback location fetch failed:", e);
+    }
+    return false;
+  };
+
   const handleAutoDetectLocation = async () => {
     if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser.");
+      await detectIpLocation();
       return;
     }
     navigator.geolocation.getCurrentPosition(
@@ -88,11 +120,14 @@ function Home() {
           localStorage.setItem("userCity", "Mumbai");
         }
       },
-      (err) => {
-        alert("Failed to auto-detect location. Please search manually.");
-        console.error("Home geolocation failed:", err);
+      async (err) => {
+        console.warn("Home browser geolocation failed, trying IP location:", err);
+        const success = await detectIpLocation();
+        if (!success) {
+          alert("Failed to auto-detect location. Please search manually.");
+        }
       },
-      { enableHighAccuracy: true, timeout: 8000 }
+      { enableHighAccuracy: false, timeout: 5000 }
     );
   };
 
@@ -343,7 +378,11 @@ function Home() {
         } else {
           setAiSuggestedWorkers(matchingWorkers.slice(0, 5));
         }
-      } catch(e) { console.error("Home cloud workers fail", e); }
+      } catch(e) {
+        console.error("Home cloud workers fail", e);
+      } finally {
+        setIsOnlineLoading(false);
+      }
     };
     syncOnline();
     const interval = setInterval(syncOnline, 10000); // Keep synced periodically in case database changes
@@ -417,7 +456,8 @@ function Home() {
               flexDirection: "column",
               gap: "6px",
               cursor: "pointer",
-              transition: "transform 0.15s ease"
+              transition: "transform 0.15s ease",
+              minHeight: "155px"
             }}
             onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.01)"}
             onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
@@ -587,7 +627,11 @@ function Home() {
             The following certified professionals are currently online, active, and dispatched instantly for emergency assistance.
           </p>
 
-          {(serviceQuery
+          {isOnlineLoading ? (
+            <div className="horizontal-scroll-container" style={{ display: "flex", overflowX: "auto", gap: "16px", paddingBottom: "10px" }}>
+              <SkeletonLoader type="card" count={4} />
+            </div>
+          ) : (serviceQuery
               ? onlineWorkers.filter((w) =>
                   w.service &&
                   w.service.toLowerCase().includes(serviceQuery.toLowerCase())

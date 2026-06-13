@@ -1,10 +1,11 @@
 import express from "express";
-import { getWorkers, getNearbyWorkers, updateWorker, deleteWorker, createWorker, geocodeLocation, sendMoneyToWorker } from "../controllers/workerController.js";
+import { getWorkers, getNearbyWorkers, updateWorker, deleteWorker, createWorker, geocodeLocation, sendMoneyToWorker, getIpLocation } from "../controllers/workerController.js";
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 router.get("/geocode", geocodeLocation);   // Proxy geosearch to bypass adblockers
+router.get("/ip-location", getIpLocation); // Resolve IP location as fallback
 router.get("/nearby", getNearbyWorkers);   // Radius-based geo search
 router.get("/", getWorkers);               // Public access to discover talent!
 router.post("/", createWorker);            // Register new worker

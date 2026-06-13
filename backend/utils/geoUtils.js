@@ -225,7 +225,7 @@ export async function geocodeCity(location) {
   // 2. Try Primary Provider: Photon (OSM-based Komoot API)
   try {
     const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(location)}&limit=1`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(3000) }); // Fast 3s timeout to prevent backend choke when offline
+    const res = await fetch(url, { signal: AbortSignal.timeout(1000) }); // Ultra-fast 1s timeout to guarantee < 3s responses
 
     if (res.ok) {
       const data = await res.json();
@@ -254,7 +254,7 @@ export async function geocodeCity(location) {
       headers: {
         "User-Agent": "SmartServiceFinder/1.0 (harshavardhan2025/Smart-Service-Finder)"
       },
-      signal: AbortSignal.timeout(3000) // Fast 3s timeout
+      signal: AbortSignal.timeout(1000) // Ultra-fast 1s timeout
     });
 
     if (res.ok) {

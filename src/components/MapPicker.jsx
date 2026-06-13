@@ -111,6 +111,22 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
     if (onCoordsChange) onCoordsChange({ lat, lng: lon });
   };
 
+  const detectIpFallback = async () => {
+    try {
+      const res = await fetch("/api/workers/ip-location");
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.lat && data.lon) {
+          applyLocation(data.lat, data.lon, data.label, data.city);
+          return true;
+        }
+      }
+    } catch (e) {
+      console.error("IP fallback fetch failed:", e);
+    }
+    return false;
+  };
+
   // On mount, sync persisted coords → parent and auto-detect geolocation automatically
   useEffect(() => {
     const savedLat = parseFloat(localStorage.getItem("userCoordsLat")) || 14.471306;
@@ -132,26 +148,31 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
     if (onCoordsChange) onCoordsChange({ lat: savedLat, lng: savedLng });
 
     // Automatically detect location on mount ONLY if not manually set before
-    if (localStorage.getItem("manualLocationSet") !== "true" && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          const { latitude, longitude } = pos.coords;
-          try {
-            const result = await photonReverse(latitude, longitude);
-            if (result) {
-              applyLocation(latitude, longitude, result.label, result.city);
-            } else {
+    if (localStorage.getItem("manualLocationSet") !== "true") {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            const { latitude, longitude } = pos.coords;
+            try {
+              const result = await photonReverse(latitude, longitude);
+              if (result) {
+                applyLocation(latitude, longitude, result.label, result.city);
+              } else {
+                applyLocation(latitude, longitude, `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`, "");
+              }
+            } catch (err) {
               applyLocation(latitude, longitude, `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`, "");
             }
-          } catch (err) {
-            applyLocation(latitude, longitude, `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`, "");
-          }
-        },
-        (err) => {
-          console.warn("Automatic geolocation auto-detect failed or permission denied on mount:", err);
-        },
-        { enableHighAccuracy: true, timeout: 8000 }
-      );
+          },
+          async (err) => {
+            console.warn("Automatic geolocation auto-detect failed on mount, trying IP location:", err);
+            await detectIpFallback();
+          },
+          { enableHighAccuracy: false, timeout: 5000 }
+        );
+      } else {
+        detectIpFallback();
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -200,15 +221,13 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
       console.warn("Photon search failed, trying backend proxy:", e.message);
     }
 
-    // 2. Fallback: backend proxy (which has a robust server-side Nominatim resolver!)
+    // 2. Try Backend Proxy Fallback
     try {
       const res = await fetch(`/api/workers/geocode?q=${encodeURIComponent(search.trim())}`);
       if (res.ok) {
         const data = await res.json();
         if (data?.lat && data?.lon) {
           applyLocation(parseFloat(data.lat), parseFloat(data.lon), data.label || search, data.city || "");
-          setIsSearching(false);
-          return;
         }
       }
     } catch (e) {
@@ -247,11 +266,15 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
         <button
           id="location-autodetect-btn"
           onClick={async () => {
+            setIsSearching(true);
             if (!navigator.geolocation) {
-              alert("Geolocation is not supported by your browser.");
+              const success = await detectIpFallback();
+              setIsSearching(false);
+              if (!success) {
+                alert("Failed to auto-detect location. Please search manually.");
+              }
               return;
             }
-            setIsSearching(true);
             navigator.geolocation.getCurrentPosition(
               async (pos) => {
                 const { latitude, longitude } = pos.coords;
@@ -267,12 +290,15 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
                 }
                 setIsSearching(false);
               },
-              (err) => {
+              async (err) => {
+                console.warn("Manual geolocation auto-detect failed, trying IP location:", err);
+                const success = await detectIpFallback();
                 setIsSearching(false);
-                alert("Failed to auto-detect location. Please search manually or check location permissions.");
-                console.error("Auto-detect failed:", err);
+                if (!success) {
+                  alert("Failed to auto-detect location. Please search manually.");
+                }
               },
-              { enableHighAccuracy: true, timeout: 8000 }
+              { enableHighAccuracy: false, timeout: 5000 }
             );
           }}
           disabled={isSearching}

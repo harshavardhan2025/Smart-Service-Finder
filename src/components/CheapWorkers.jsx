@@ -1,23 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { filterWorkersClientSide } from "../utils/workerService";
+import SkeletonLoader from "./SkeletonLoader";
 
 function getShortLocation(fullAddress) {
+  const storedCity = localStorage.getItem("userCity");
+  if (storedCity) return storedCity.toLowerCase().trim();
+
   if (!fullAddress) return "";
-  const lower = fullAddress.toLowerCase();
-  if (lower.includes("kakinada")) return "kakinada";
-  if (lower.includes("rajahmundry")) return "rajahmundry";
-  if (lower.includes("new delhi") || lower.includes("delhi")) return "new delhi";
-  if (lower.includes("hyderabad")) return "hyderabad";
-  if (lower.includes("kadapa")) return "kadapa";
-  
-  // Fall back to stored userCity if the first segment is a raw coordinate number
   const firstSegment = fullAddress.split(",")[0].trim();
-  if (!isNaN(parseFloat(firstSegment))) {
-    const storedCity = localStorage.getItem("userCity");
-    if (storedCity) return storedCity.toLowerCase().trim();
-  }
-  
   return firstSegment.toLowerCase();
 }
 
@@ -32,7 +23,9 @@ const truncateLocation = (loc) => {
 
 function CheapWorkers({ searchedLocation, userCoords }) {
   const [cloudWorkers, setCloudWorkers] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(() => {
+    return !!(searchedLocation || userCoords);
+  });
 
   useEffect(() => {
     if (!searchedLocation && !userCoords) {
@@ -76,13 +69,17 @@ function CheapWorkers({ searchedLocation, userCoords }) {
       </p>
 
       {loading ? (
-        <p style={{ color: "var(--text-secondary)", fontStyle: "italic" }}>
-          Scanning nearby cloud for budget-friendly workers...
-        </p>
+        <div className="horizontal-scroll-container" style={{ display: "flex", overflowX: "auto", gap: "15px", paddingBottom: "10px" }}>
+          <SkeletonLoader type="card" count={4} />
+        </div>
       ) : cheapWorkers.length === 0 ? (
-        <p style={{ color: "var(--text-secondary)", fontStyle: "italic" }}>
-          No budget-friendly professionals found near this location.
-        </p>
+        <div className="horizontal-scroll-container" style={{ display: "flex", overflowX: "auto", gap: "15px", paddingBottom: "10px" }}>
+          <div className="premium-card" style={{ minWidth: "220px", height: "215px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "20px", color: "var(--text-secondary)" }}>
+            <span style={{ fontSize: "24px", marginBottom: "8px" }}>🔍</span>
+            <p style={{ margin: 0, fontSize: "13px", fontWeight: "bold" }}>No value professionals</p>
+            <p style={{ margin: "4px 0 0 0", fontSize: "11px" }}>found near this location.</p>
+          </div>
+        </div>
       ) : (
         <div className="horizontal-scroll-container" style={{ display: "flex", overflowX: "auto", gap: "15px", paddingBottom: "10px" }}>
           {cheapWorkers.map((worker) => (
