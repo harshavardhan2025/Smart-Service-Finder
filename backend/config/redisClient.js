@@ -3,7 +3,9 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+let redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+// Strip surrounding quotes if present (common in cloud env dashboard setups)
+redisUrl = redisUrl.replace(/^['"]|['"]$/g, '');
 
 const client = createClient({
   url: redisUrl,
