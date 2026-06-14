@@ -15,9 +15,53 @@ function Login() {
   const navigate = useNavigate();
   const loginCardRef = use3dTilt();
 
+  const handleGoogleLoginWithToken = async (accessToken) => {
+    setIsLoading(true);
+    setLoginStatus({ type: "success", message: "Verifying Google Authentication... 🔑" });
+    console.log("📡 Sending token to backend /api/auth/google...");
+    try {
+      const response = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accessToken })
+      });
+      console.log(`📡 Backend responded with status: ${response.status}`);
+      const data = await response.json();
+      console.log("📡 Backend responded with data:", data);
+      if (!response.ok) {
+        console.error("❌ Backend token verification failed:", data.error);
+        setIsLoading(false);
+        setLoginStatus({ type: "error", message: data.error || "Google Sign-In failed!" });
+        return;
+      }
+      console.log("✅ Google login verified successfully, calling handleLoginSuccess...");
+      handleLoginSuccess(data);
+    } catch (err) {
+      console.error("💥 Fetch error verifying Google token:", err);
+      setIsLoading(false);
+      setLoginStatus({ type: "error", message: `Google Sign-In failed: ${err.message}` });
+    }
+  };
+
   // Prefetch workers & location data while user is on login page
   // so home page loads workers instantly after login
   useEffect(() => {
+    // Check for Google OAuth2 redirect token in URL hash
+    const hash = window.location.hash;
+    if (hash) {
+      const params = new URLSearchParams(hash.substring(1));
+      const accessToken = params.get("access_token");
+      if (accessToken) {
+        window.history.replaceState(null, null, window.location.pathname);
+        const flow = sessionStorage.getItem("google_auth_flow");
+        if (flow === "signup") {
+          navigate(`/signup#access_token=${accessToken}`);
+        } else {
+          handleGoogleLoginWithToken(accessToken);
+        }
+      }
+    }
+
     // Check for mock redirect auth errors
     const redirectError = sessionStorage.getItem("google_auth_error");
     if (redirectError) {
@@ -146,112 +190,25 @@ function Login() {
     console.log("🔍 handleGoogleSignIn clicked.");
     sessionStorage.setItem("google_auth_flow", "login");
 
-    if (isMobile) {
-      console.log("📱 Mobile device detected. Redirecting to Mock Google Auth...");
-      window.location.href = "/google-auth?redirect=true";
+    const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || "849555982996-giolb22mkrfbg8c4ut0ohbv1ps9giv2o.apps.googleusercontent.com";
+    const redirectUri = window.location.origin;
+    const scope = encodeURIComponent("https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email");
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${scope}&prompt=select_account`;
+
+    const isLocalIp = window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1" && /^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(window.location.hostname);
+
+    if (isMobile && isLocalIp) {
+      console.log("📱 Mobile device with local IP detected. Google OAuth does not allow local IPs. Redirecting to Mock Google Auth...");
+      setLoginStatus({ type: "success", message: "Real Google Sign-In requires localhost or HTTPS. Launching Mock Google Sign-in for local IP testing..." });
+      setTimeout(() => {
+        window.location.href = "/google-auth?redirect=true";
+      }, 1500);
       return;
     }
 
-    // Setup listener for Mock Google Auth popup
-    const handlePopupMessage = async (event) => {
-      if (event.origin !== window.location.origin) return;
-
-      if (event.data && event.data.type === "GOOGLE_AUTH_SUCCESS") {
-        console.log("✅ Mock Google Sign-In Success message received:", event.data);
-        setIsLoading(true);
-        setLoginStatus({ type: "success", message: "Verifying Mock Google Auth... 🔑" });
-        try {
-          const response = await fetch("/api/auth/google-mock", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: event.data.email,
-              name: event.data.name
-            })
-          });
-          const data = await response.json();
-          if (!response.ok) {
-            setIsLoading(false);
-            setLoginStatus({ type: "error", message: data.error || "Google Sign-In failed!" });
-            return;
-          }
-          console.log("✅ Mock Google login verified successfully, calling handleLoginSuccess...");
-          handleLoginSuccess(data);
-        } catch (err) {
-          setIsLoading(false);
-          setLoginStatus({ type: "error", message: "Network error during Google Sign-In!" });
-        } finally {
-          window.removeEventListener("message", handlePopupMessage);
-        }
-      }
-    };
-    window.addEventListener("message", handlePopupMessage);
-
-    // Wait for Google SDK to be ready (loaded async)
-    const trySignIn = (attemptsLeft) => {
-      console.log(`🔍 Checking for Google SDK... attempts left: ${attemptsLeft}`);
-      if (window.google && window.google.accounts && window.google.accounts.oauth2) {
-        console.log("🔍 Google SDK is loaded. Initializing token client...");
-        const client = window.google.accounts.oauth2.initTokenClient({
-          client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID || "849555982996-giolb22mkrfbg8c4ut0ohbv1ps9giv2o.apps.googleusercontent.com",
-          scope: "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
-          callback: async (tokenResponse) => {
-            console.log("🔍 Google SDK callback received tokenResponse:", tokenResponse);
-            if (tokenResponse && tokenResponse.access_token) {
-              setIsLoading(true);
-              setLoginStatus({ type: "success", message: "Verifying Google Authentication... 🔑" });
-              console.log("📡 Sending token to backend /api/auth/google...");
-              try {
-                const response = await fetch("/api/auth/google", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ accessToken: tokenResponse.access_token })
-                });
-                console.log(`📡 Backend responded with status: ${response.status}`);
-                const data = await response.json();
-                console.log("📡 Backend responded with data:", data);
-                if (!response.ok) {
-                  console.error("❌ Backend token verification failed:", data.error);
-                  setIsLoading(false);
-                  setLoginStatus({ type: "error", message: data.error || "Google Sign-In failed!" });
-                  return;
-                }
-                console.log("✅ Google login verified successfully, calling handleLoginSuccess...");
-                handleLoginSuccess(data);
-              } catch (err) {
-                console.error("💥 Fetch error verifying Google token:", err);
-                setIsLoading(false);
-                setLoginStatus({ type: "error", message: "Network error during Google Sign-In!" });
-              }
-            } else if (tokenResponse && tokenResponse.error) {
-              console.error("❌ Google Sign-In returned tokenResponse error:", tokenResponse.error);
-              setLoginStatus({ type: "error", message: `Google Sign-In cancelled or failed: ${tokenResponse.error}` });
-            } else {
-              console.warn("⚠️ tokenResponse has no access_token and no error:", tokenResponse);
-              setLoginStatus({ type: "error", message: "Google Authentication response invalid. Launching mock fallback..." });
-              window.open("/google-auth", "google_auth_popup", "width=450,height=600");
-            }
-          },
-          error_callback: (err) => {
-            console.error("💥 Google SDK error_callback triggered:", err);
-            console.log("Launching Mock Google Auth popup fallback...");
-            window.open("/google-auth", "google_auth_popup", "width=450,height=600");
-          }
-        });
-        console.log("🔍 Requesting access token...");
-        client.requestAccessToken({ prompt: "consent" });
-      } else if (attemptsLeft > 0) {
-        // SDK not ready yet, retry after 500ms
-        console.log("🔍 Google SDK not ready. Retrying in 500ms...");
-        setLoginStatus({ type: "success", message: "Loading Google Sign-In... please wait" });
-        setTimeout(() => trySignIn(attemptsLeft - 1), 500);
-      } else {
-        console.error("❌ Google SDK failed to load. Launching Mock Google Auth popup fallback...");
-        setLoginStatus({ type: "success", message: "Launching Mock Google Auth..." });
-        window.open("/google-auth", "google_auth_popup", "width=450,height=600");
-      }
-    };
-    trySignIn(6); // retry up to 6 times (3 seconds total)
+    // Always redirect on the same page
+    console.log("📡 Redirecting user to Google OAuth on the same page...");
+    window.location.href = authUrl;
   };
 
 

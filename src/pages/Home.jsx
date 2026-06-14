@@ -46,6 +46,22 @@ function Home() {
   );
 
   useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      const params = new URLSearchParams(hash.substring(1));
+      const accessToken = params.get("access_token");
+      if (accessToken) {
+        const flow = sessionStorage.getItem("google_auth_flow");
+        if (flow === "login") {
+          navigate(`/login#access_token=${accessToken}`);
+        } else if (flow === "signup") {
+          navigate(`/signup#access_token=${accessToken}`);
+        }
+      }
+    }
+  }, [navigate]);
+
+  useEffect(() => {
     if (searchedLocation) {
       setLocationSearchInput(searchedLocation);
     }

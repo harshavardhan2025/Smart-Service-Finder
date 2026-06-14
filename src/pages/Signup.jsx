@@ -180,7 +180,78 @@ function Signup() {
   const navigate = useNavigate();
   const signupCardRef = use3dTilt();
 
+  const handleGoogleSignUpWithToken = async (accessToken, extraBody) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accessToken, ...extraBody })
+      });
+      const data = await response.json();
+
+      // ── Account already exists (409 from backend) ──
+      if (response.status === 409) {
+        setPopupResult({
+          type: "exists",
+          message: data.error || "An account with this Google email already exists. Please sign in instead."
+        });
+        return;
+      }
+
+      if (!response.ok) {
+        setPopupResult({ type: "fail", message: data.error || "Registration failed. Please try again." });
+        return;
+      }
+
+      if (!data.user?.email) {
+        setPopupResult({ type: "fail", message: "Account verification failed. Could not confirm your account in our database." });
+        return;
+      }
+
+      // Auto log-in on successful signup
+      sessionStorage.setItem("userRole", data.user.role);
+      sessionStorage.setItem("userName", data.user.name);
+      sessionStorage.setItem("userEmail", data.user.email);
+      sessionStorage.setItem("userId", data.user.id || data.user._id);
+      sessionStorage.setItem("authToken", data.token);
+      localStorage.removeItem("manualLocationSet");
+      if (data.user.role === "worker") {
+        sessionStorage.setItem("loggedInWorkerId", data.user.id);
+      } else if (data.user.city) {
+        sessionStorage.setItem("userCity", data.user.city);
+        localStorage.setItem("userCity", data.user.city);
+      }
+
+      setPopupResult({
+        type: "success",
+        message: extraBody.role === "worker"
+          ? `Welcome, ${data.user.name}! Your Worker account as ${extraBody.profession} in ${extraBody.city} has been created successfully.`
+          : `Welcome, ${data.user.name}! Your Customer account has been created successfully.`
+      });
+    } catch (err) {
+      setPopupResult({ type: "fail", message: `Technical Error: ${err.message}. Please check your connection.` });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      const params = new URLSearchParams(hash.substring(1));
+      const accessToken = params.get("access_token");
+      if (accessToken) {
+        window.history.replaceState(null, null, window.location.pathname);
+        const flow = sessionStorage.getItem("google_auth_flow");
+        if (flow === "signup") {
+          const pendingSignupStr = sessionStorage.getItem("pending_google_signup");
+          const extraBody = pendingSignupStr ? JSON.parse(pendingSignupStr) : {};
+          handleGoogleSignUpWithToken(accessToken, extraBody);
+        }
+      }
+    }
+
     const redirectError = sessionStorage.getItem("google_auth_error");
     if (redirectError) {
       setPopupResult({ type: "fail", message: redirectError });
@@ -250,151 +321,28 @@ function Signup() {
     sessionStorage.setItem("google_auth_flow", "signup");
     sessionStorage.setItem("pending_google_signup", JSON.stringify(extraBody));
 
-    if (isMobile) {
-      console.log("📱 Mobile device detected. Redirecting to Mock Google Auth...");
-      window.location.href = "/google-auth?redirect=true";
+    const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || "849555982996-giolb22mkrfbg8c4ut0ohbv1ps9giv2o.apps.googleusercontent.com";
+    const redirectUri = window.location.origin;
+    const scope = encodeURIComponent("https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email");
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${scope}&prompt=select_account`;
+
+    const isLocalIp = window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1" && /^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(window.location.hostname);
+
+    if (isMobile && isLocalIp) {
+      console.log("📱 Mobile device with local IP detected. Google OAuth does not allow local IPs. Redirecting to Mock Google Auth...");
+      setPopupResult({ 
+        type: "fail", 
+        message: "Google OAuth does not support local IP addresses (http://192.168.x.x) on mobile devices. Redirecting to Mock Google Sign-In so you can still test the signup flow..." 
+      });
+      setTimeout(() => {
+        window.location.href = "/google-auth?redirect=true";
+      }, 3000);
       return;
     }
 
-    // Setup listener for Mock Google Auth popup
-    const handlePopupMessage = async (event) => {
-      if (event.origin !== window.location.origin) return;
-
-      if (event.data && event.data.type === "GOOGLE_AUTH_SUCCESS") {
-        console.log("✅ Mock Google Sign-Up Success message received:", event.data);
-        setIsLoading(true);
-        try {
-          const response = await fetch("/api/auth/google-mock", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: event.data.email,
-              name: event.data.name,
-              ...extraBody
-            })
-          });
-          const data = await response.json();
-
-          // ── Account already exists (409 from backend) ──
-          if (response.status === 409) {
-            setPopupResult({
-              type: "exists",
-              message: data.error || "An account with this Google email already exists. Please sign in instead."
-            });
-            return;
-          }
-
-          if (!response.ok) {
-            setPopupResult({ type: "fail", message: data.error || "Registration failed. Please try again." });
-            return;
-          }
-
-          if (!data.user?.email) {
-            setPopupResult({ type: "fail", message: "Account verification failed. Could not confirm your account in our database." });
-            return;
-          }
-
-          // Auto log-in on successful signup
-          sessionStorage.setItem("userRole", data.user.role);
-          sessionStorage.setItem("userName", data.user.name);
-          sessionStorage.setItem("userEmail", data.user.email);
-          sessionStorage.setItem("userId", data.user.id || data.user._id);
-          sessionStorage.setItem("authToken", data.token);
-          localStorage.removeItem("manualLocationSet");
-          if (data.user.role === "worker") {
-            sessionStorage.setItem("loggedInWorkerId", data.user.id);
-          } else if (data.user.city) {
-            sessionStorage.setItem("userCity", data.user.city);
-            localStorage.setItem("userCity", data.user.city);
-          }
-
-          setPopupResult({
-            type: "success",
-            message: extraBody.role === "worker"
-              ? `Welcome, ${data.user.name}! Your Worker account as ${extraBody.profession} in ${extraBody.city} has been created successfully.`
-              : `Welcome, ${data.user.name}! Your Customer account has been created successfully.`
-          });
-        } catch (err) {
-          setPopupResult({ type: "fail", message: `Technical Error: ${err.message}. Please check your connection.` });
-        } finally {
-          setIsLoading(false);
-          window.removeEventListener("message", handlePopupMessage);
-        }
-      }
-    };
-    window.addEventListener("message", handlePopupMessage);
-
-    if (!window.google || !window.google.accounts || !window.google.accounts.oauth2) {
-      console.log("⚠️ Google SDK not loaded. Launching Mock Google Auth popup fallback...");
-      window.open("/google-auth", "google_auth_popup", "width=450,height=600");
-      return;
-    }
-
-    setIsLoading(true);
-    const client = window.google.accounts.oauth2.initTokenClient({
-      client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID || "849555982996-giolb22mkrfbg8c4ut0ohbv1ps9giv2o.apps.googleusercontent.com",
-      scope: "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
-      callback: async (tokenResponse) => {
-        setIsLoading(false);
-        if (!tokenResponse?.access_token) {
-          setPopupResult({ type: "fail", message: "Google authentication was cancelled or failed. Please try again." });
-          return;
-        }
-
-        try {
-          const response = await fetch("/api/auth/google", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ accessToken: tokenResponse.access_token, ...extraBody })
-          });
-          const data = await response.json();
-
-          // ── Account already exists (409 from backend) ──
-          if (response.status === 409) {
-            setPopupResult({
-              type: "exists",
-              message: data.error || "An account with this Google email already exists. Please sign in instead."
-            });
-            return;
-          }
-
-          if (!response.ok) {
-            setPopupResult({ type: "fail", message: data.error || "Registration failed. Please try again." });
-            return;
-          }
-
-          if (!data.user?.email) {
-            setPopupResult({ type: "fail", message: "Account verification failed. Could not confirm your account in our database." });
-            return;
-          }
-
-          // Auto log-in on successful signup
-          sessionStorage.setItem("userRole", data.user.role);
-          sessionStorage.setItem("userName", data.user.name);
-          sessionStorage.setItem("userEmail", data.user.email);
-          sessionStorage.setItem("userId", data.user.id || data.user._id);
-          sessionStorage.setItem("authToken", data.token);
-          localStorage.removeItem("manualLocationSet");
-          if (data.user.role === "worker") {
-            sessionStorage.setItem("loggedInWorkerId", data.user.id);
-          } else if (data.user.city) {
-            sessionStorage.setItem("userCity", data.user.city);
-            localStorage.setItem("userCity", data.user.city);
-          }
-
-          setPopupResult({
-            type: "success",
-            message: extraBody.role === "worker"
-              ? `Welcome, ${data.user.name}! Your Worker account as ${extraBody.profession} in ${extraBody.city} has been created successfully.`
-              : `Welcome, ${data.user.name}! Your Customer account has been created successfully.`
-          });
-        } catch (err) {
-          setPopupResult({ type: "fail", message: `Technical Error: ${err.message}. Please check your connection.` });
-        }
-      }
-    });
-
-    client.requestAccessToken();
+    // Always redirect on the same page
+    console.log("📡 Redirecting user to Google OAuth on the same page...");
+    window.location.href = authUrl;
   };
 
   // ── Google Sign-Up for Customer ───────────────────────────
