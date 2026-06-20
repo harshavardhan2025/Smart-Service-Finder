@@ -42,10 +42,10 @@ function GlobalCallManager() {
 
   // Poll for incoming calls
   useEffect(() => {
-    const token = sessionStorage.getItem("authToken");
-    if (!token) return;
-
     const checkIncoming = async () => {
+      const token = sessionStorage.getItem("authToken");
+      if (!token) return;
+
       // Don't poll if we're already in a call
       if (activeCall || incomingCall) return;
 
@@ -175,6 +175,10 @@ function GlobalCallManager() {
 
   // Start outbound call
   const handleStartCall = async (bookingId, recipientName) => {
+    if (activeCall) {
+      alert("You are already in an active call.");
+      return;
+    }
     try {
       const token = sessionStorage.getItem("authToken");
       if (!token) return alert("Not logged in");
@@ -200,15 +204,11 @@ function GlobalCallManager() {
       stream.getTracks().forEach(track => pc.addTrack(track, stream));
 
       pc.ontrack = (event) => {
-        let remoteAudio = document.getElementById("remoteAudio");
-        if (!remoteAudio) {
-          remoteAudio = document.createElement("audio");
-          remoteAudio.id = "remoteAudio";
-          remoteAudio.autoplay = true;
-          document.body.appendChild(remoteAudio);
+        const remoteAudio = document.getElementById("remoteAudio");
+        if (remoteAudio) {
+          remoteAudio.srcObject = event.streams[0];
+          remoteAudio.play().catch(e => console.error("Audio playback error:", e));
         }
-        remoteAudio.srcObject = event.streams[0];
-        remoteAudio.play().catch(e => console.error("Audio playback error:", e));
       };
 
       const offer = await pc.createOffer();
@@ -259,7 +259,7 @@ function GlobalCallManager() {
   // Answer inbound call
   const handleAnswerCall = async () => {
     if (!incomingCall) return;
-    const { sessionId, offerSdp, callerName } = incomingCall;
+    const { sessionId, offerSdp } = incomingCall;
     const token = sessionStorage.getItem("authToken");
 
     try {
@@ -283,15 +283,11 @@ function GlobalCallManager() {
       stream.getTracks().forEach(track => pc.addTrack(track, stream));
 
       pc.ontrack = (event) => {
-        let remoteAudio = document.getElementById("remoteAudio");
-        if (!remoteAudio) {
-          remoteAudio = document.createElement("audio");
-          remoteAudio.id = "remoteAudio";
-          remoteAudio.autoplay = true;
-          document.body.appendChild(remoteAudio);
+        const remoteAudio = document.getElementById("remoteAudio");
+        if (remoteAudio) {
+          remoteAudio.srcObject = event.streams[0];
+          remoteAudio.play().catch(e => console.error("Audio playback error:", e));
         }
-        remoteAudio.srcObject = event.streams[0];
-        remoteAudio.play().catch(e => console.error("Audio playback error:", e));
       };
 
       await pc.setRemoteDescription(new RTCSessionDescription({ type: "offer", sdp: offerSdp }));
@@ -382,10 +378,12 @@ function GlobalCallManager() {
 
     window.addEventListener("initiateCall", handleOutboundCallEvent);
     return () => window.removeEventListener("initiateCall", handleOutboundCallEvent);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <>
+      <audio id="remoteAudio" autoPlay style={{ display: "none" }} />
       {/* Active Call Floating Overlay Panel (Glassmorphism layout) */}
       {activeCall && (
         <div style={{
