@@ -1,5 +1,8 @@
 import crypto from "crypto";
 import Worker from "../models/Worker.js";
+import Message from "../models/Message.js";
+import Booking from "../models/Booking.js";
+import User from "../models/User.js";
 
 // Levenshtein distance algorithm for robust character-level spelling correction
 const levenshtein = (a, b) => {
@@ -528,5 +531,161 @@ Do not include any markdown formatting, no \`\`\`json wrappers. Respond with ONL
   } catch (error) {
     console.error("Backend AI proxy breakdown:", error.message);
     res.status(500).json({ error: "Internal AI Relay Failure" });
+  }
+};
+
+// ── ROBUST PARTICIPANT IDENTITY RESOLVER ──
+// Resolves whether req.user is the customer or worker for a booking,
+// handling the Worker vs User collection ID mismatch gracefully.
+const resolveBookingParticipant = async (reqUser, booking) => {
+  if (!reqUser) return { isWorker: false, isCustomer: false };
+
+  const userId = reqUser._id.toString();
+  const userEmail = (reqUser.email || "").toLowerCase();
+
+  // 1. Check if this user is the WORKER for this booking
+  let isWorker = false;
+  let worker = null;
+  try {
+    worker = await Worker.findById(booking.worker_id);
+    if (worker) {
+      const workerEmail = (worker.email || "").toLowerCase();
+      // Match by email (most reliable since Worker._id ≠ User._id)
+      if (userEmail && workerEmail && userEmail === workerEmail) {
+        isWorker = true;
+      }
+      // Also match by direct ID (fallback for edge cases)
+      if (worker._id.toString() === userId) {
+        isWorker = true;
+      }
+    }
+  } catch (e) {
+    console.warn("Worker lookup failed:", e.message);
+  }
+
+  // 2. Check if this user is the CUSTOMER for this booking
+  let isCustomer = false;
+  // Direct ID match (customer_id is stored as a string in Booking schema)
+  if (userId === booking.customer_id?.toString()) {
+    isCustomer = true;
+  }
+  // Email-based fallback: look up the customer's User record and compare emails
+  if (!isCustomer && userEmail) {
+    try {
+      const customerUser = await User.findById(booking.customer_id);
+      if (customerUser && (customerUser.email || "").toLowerCase() === userEmail) {
+        isCustomer = true;
+      }
+    } catch (e) {
+      // customer_id may not be a valid ObjectId, that's OK
+    }
+  }
+
+  return { isWorker, isCustomer, worker };
+};
+
+// Peer-to-Peer Booking Chat Handlers
+export const getBookingMessages = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    const { isWorker, isCustomer } = await resolveBookingParticipant(req.user, booking);
+
+    console.log("💬 [Chat GET Auth]", {
+      bookingId,
+      userId: req.user?._id?.toString(),
+      userEmail: req.user?.email,
+      booking_customer_id: booking.customer_id,
+      booking_worker_id: booking.worker_id,
+      isWorker,
+      isCustomer
+    });
+
+    if (!isWorker && !isCustomer) {
+      return res.status(403).json({ error: "Access denied. You are not a participant in this booking." });
+    }
+
+    const messages = await Message.find({ booking_id: bookingId }).sort({ createdAt: 1 }).lean();
+    res.status(200).json(messages);
+  } catch (err) {
+    console.error("Error fetching booking messages:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const sendBookingMessage = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { text } = req.body;
+
+    if (!text || text.trim() === "") {
+      return res.status(400).json({ error: "Message text cannot be empty" });
+    }
+
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    // Chat is restricted to executing bookings (Accepted, On the Way, Started)
+    const activeStatuses = ["Accepted", "On the Way", "Started"];
+    if (!activeStatuses.includes(booking.status)) {
+      return res.status(400).json({ error: `Chat is only available during active job execution. Current status: ${booking.status}` });
+    }
+
+    const { isWorker, isCustomer, worker } = await resolveBookingParticipant(req.user, booking);
+
+    console.log("💬 [Chat POST Auth]", {
+      bookingId,
+      userId: req.user?._id?.toString(),
+      userEmail: req.user?.email,
+      isWorker,
+      isCustomer
+    });
+
+    if (!isWorker && !isCustomer) {
+      return res.status(403).json({ error: "Access denied. You are not a participant in this booking." });
+    }
+
+    // Resolve sender and receiver IDs consistently
+    // sender_id and receiver_id always use User collection IDs for consistency
+    let sender_id, receiver_id;
+    if (isCustomer) {
+      // Customer sends → sender is customer's User._id, receiver is worker's User._id
+      sender_id = req.user._id.toString();
+      if (worker) {
+        const workerUser = await User.findOne({ email: worker.email });
+        receiver_id = workerUser ? workerUser._id.toString() : booking.worker_id.toString();
+      } else {
+        receiver_id = booking.worker_id.toString();
+      }
+    } else {
+      // Worker sends → sender is worker's User._id, receiver is customer's User._id
+      sender_id = req.user._id.toString();
+      receiver_id = booking.customer_id.toString();
+    }
+
+    const message = await Message.create({
+      booking_id: bookingId,
+      sender_id,
+      receiver_id,
+      text: text.trim()
+    });
+
+    console.log("💬 [Chat Message Created]", {
+      messageId: message._id,
+      sender_id,
+      receiver_id,
+      text: text.trim().substring(0, 50)
+    });
+
+    res.status(201).json(message);
+  } catch (err) {
+    console.error("Error sending booking message:", err);
+    res.status(500).json({ error: err.message });
   }
 };

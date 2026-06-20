@@ -23,6 +23,7 @@ import Profile from "./pages/Profile";
 import PlansOffers from "./pages/PlansOffers";
 import AiChatBot from "./components/AiChatBot";
 import GoogleAuthMock from "./pages/GoogleAuthMock";
+import GlobalCallManager from "./components/GlobalCallManager";
 
 // 🔐 SECURITY SHIELD: Prevent direct address bar entry by guests!
 function PrivateRoute({ children }) {
@@ -121,6 +122,7 @@ function App() {
       </Routes>
 
       <AiChatBot />
+      <GlobalCallManager />
 
     </BrowserRouter>
 

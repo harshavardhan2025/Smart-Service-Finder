@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import RouteMap from "../components/RouteMap";
@@ -36,6 +36,98 @@ function WorkerDashboard() {
   const [activeRejectBooking, setActiveRejectBooking] = useState(null);
   const [rejectReason, setRejectReason] = useState("Schedule Conflict");
   const [submittingReject, setSubmittingReject] = useState(false);
+
+  const [activeChatBooking, setActiveChatBooking] = useState(null);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [chatTheme, setChatTheme] = useState('light'); // 'light' | 'dark'
+
+  const [globalCallActive, setGlobalCallActive] = useState(() => {
+    return sessionStorage.getItem("activeCallState") === "ringing" || sessionStorage.getItem("activeCallState") === "connected";
+  });
+
+  useEffect(() => {
+    const handleStateChange = (e) => {
+      const { activeCall } = e.detail;
+      setGlobalCallActive(activeCall === 'ringing' || activeCall === 'connected');
+    };
+    window.addEventListener("callStateChanged", handleStateChange);
+    return () => window.removeEventListener("callStateChanged", handleStateChange);
+  }, []);
+
+  const handleStartCall = () => {
+    if (!activeChatBooking) return;
+    window.dispatchEvent(new CustomEvent("initiateCall", {
+      detail: {
+        bookingId: activeChatBooking._id || activeChatBooking.id,
+        targetName: activeChatBooking.customer_name || "Customer"
+      }
+    }));
+  };
+
+  useEffect(() => {
+    if (!activeChatBooking) return;
+    const bid = activeChatBooking._id || activeChatBooking.id;
+    if (!bid) return;
+
+    const fetchMessages = async () => {
+      try {
+        const token = sessionStorage.getItem("authToken");
+        if (!token) { console.warn("Chat: No auth token found"); return; }
+        const res = await fetch(`/api/chat/booking/${bid}`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) setChatMessages(data);
+        } else {
+          const errBody = await res.json().catch(() => ({}));
+          console.warn("Chat fetch error:", res.status, errBody.error || "");
+        }
+      } catch (err) {
+        console.error("Error fetching chat messages:", err);
+      }
+    };
+
+    fetchMessages();
+    const interval = setInterval(fetchMessages, 3000);
+    return () => clearInterval(interval);
+  }, [activeChatBooking]);
+
+  const handleSendMessage = async (e) => {
+    if (e) e.preventDefault();
+    if (!newMessage.trim() || !activeChatBooking) return;
+    const bid = activeChatBooking._id || activeChatBooking.id;
+    if (!bid) return;
+    const textToSend = newMessage;
+    setNewMessage("");
+
+    try {
+      const token = sessionStorage.getItem("authToken");
+      if (!token) { alert("Please log in to send messages."); return; }
+      const res = await fetch(`/api/chat/booking/${bid}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ text: textToSend })
+      });
+      if (res.ok) {
+        const msg = await res.json();
+        setChatMessages(prev => [...prev, msg]);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        console.error("Send message failed:", res.status, errData);
+        alert(errData.error || "Failed to send message. Please try again.");
+        setNewMessage(textToSend);
+      }
+    } catch (err) {
+      console.error("Error sending message:", err);
+      alert("Network error. Please check your connection.");
+      setNewMessage(textToSend);
+    }
+  };
   const [bookings, setBookings] = useState([]);
   const [workerReviews, setWorkerReviews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -711,6 +803,41 @@ Reported At: ${new Date().toLocaleString()}`,
                               <span style={{ fontSize: 13, backgroundColor: "#fee2e2", color: "#b91c1c", padding: "8px 14px", borderRadius: 8, fontWeight: 700 }}>
                                 ✗ Cancelled
                               </span>
+                            )}
+
+                            {["Accepted", "On the Way", "Started"].includes(n.bookingStatus) && (
+                              <button onClick={() => {
+                                const matchedBooking = bookings.find(b => b._id === n.bookingId);
+                                if (matchedBooking) {
+                                  setActiveChatBooking(matchedBooking);
+                                  setChatMessages([]);
+                                } else {
+                                  setActiveChatBooking({
+                                    _id: n.bookingId,
+                                    workerName: profile.name,
+                                    worker_name: profile.name,
+                                    customer_name: n.title.split(":").slice(1).join(":").trim() || "Customer"
+                                  });
+                                  setChatMessages([]);
+                                }
+                              }}
+                              style={{ 
+                                padding: "10px 20px", 
+                                backgroundColor: "#e0f2fe", 
+                                color: "#0284c7", 
+                                border: "1px solid #bae6fd", 
+                                borderRadius: 8, 
+                                fontWeight: 700, 
+                                cursor: "pointer", 
+                                display: "inline-flex", 
+                                gap: 6, 
+                                alignItems: "center" 
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#bae6fd"}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#e0f2fe"}
+                              >
+                                💬 Chat with Customer
+                              </button>
                             )}
 
                             <button onClick={() => setOpenMapId(openMapId === n.id ? null : n.id)}
@@ -1461,6 +1588,254 @@ Reported At: ${new Date().toLocaleString()}`,
         </div>
       )}
 
+      {/* 💬 CHAT WINDOW MODAL */}
+      {activeChatBooking && (
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(15, 23, 42, 0.75)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+          fontFamily: "'Outfit', sans-serif",
+          backdropFilter: "blur(8px)",
+        }}>
+          <div
+            style={{
+              maxWidth: "500px",
+              width: "90%",
+              height: "600px",
+              maxHeight: "80vh",
+              backgroundColor: chatTheme === 'light' ? "white" : "#111827",
+              borderRadius: "20px",
+              display: "flex",
+              flexDirection: "column",
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+              border: chatTheme === 'light' ? "1px solid rgba(0,0,0,0.05)" : "1px solid #1f2937",
+              overflow: "hidden",
+              transition: "all 0.3s"
+            }}
+          >
+            {/* Modal Header */}
+            <div style={{
+              padding: "16px 20px",
+              background: chatTheme === 'light' 
+                ? "linear-gradient(135deg, #6366f1 0%, #4338ca 100%)" 
+                : "linear-gradient(135deg, #1e1b4b 0%, #030712 100%)",
+              color: "white",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              borderBottom: chatTheme === 'light' ? "none" : "1px solid #1f2937"
+            }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 800 }}>
+                  💬 Chatting with {activeChatBooking.customer_name || "Customer"}
+                </h3>
+                <span style={{ fontSize: "11px", opacity: 0.8 }}>
+                  Booking ID: #{activeChatBooking._id ? activeChatBooking._id.substring(activeChatBooking._id.length - 6).toUpperCase() : ""}
+                </span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <button
+                  onClick={() => setChatTheme(prev => prev === 'light' ? 'dark' : 'light')}
+                  style={{
+                    background: "rgba(255,255,255,0.1)",
+                    border: "none",
+                    color: "white",
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}
+                  title="Switch Chat Theme"
+                >
+                  {chatTheme === 'light' ? "🌙" : "☀️"}
+                </button>
+                {!globalCallActive && (
+                  <button
+                    onClick={handleStartCall}
+                    style={{
+                      backgroundColor: "#16a34a",
+                      color: "white",
+                      border: "none",
+                      padding: "6px 12px",
+                      borderRadius: "8px",
+                      fontWeight: "bold",
+                      fontSize: "12px",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      boxShadow: "0 2px 8px rgba(22,163,74,0.3)"
+                    }}
+                  >
+                    📞 App Call
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setActiveChatBooking(null);
+                  }}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "white",
+                    fontSize: "24px",
+                    cursor: "pointer",
+                    lineHeight: 1
+                  }}
+                >
+                  &times;
+                </button>
+              </div>
+            </div>
+
+            {/* Messages Body */}
+            <div style={{
+              flex: 1,
+              padding: "20px",
+              backgroundColor: chatTheme === 'light' ? "#eef2f6" : "#0b0f19",
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px"
+            }}>
+              {chatMessages.length === 0 ? (
+                <div style={{
+                  margin: "auto",
+                  textAlign: "center",
+                  color: chatTheme === 'light' ? "#6b7280" : "#4b5563"
+                }}>
+                  <p style={{ fontSize: "40px", margin: "0 0 10px 0" }}>💬</p>
+                  <p style={{ fontSize: "13px", margin: 0 }}>No messages yet. Say hello to get started!</p>
+                </div>
+              ) : (
+                chatMessages.map((msg) => {
+                  const isMe = msg.sender_id === sessionStorage.getItem("userId");
+                  const isSystemCall = msg.text.startsWith("📞");
+
+                  if (isSystemCall) {
+                    return (
+                      <div
+                        key={msg._id || msg.id}
+                        style={{
+                          alignSelf: "center",
+                          backgroundColor: chatTheme === 'light' ? "#e0e7ff" : "#1e1b4b",
+                          color: chatTheme === 'light' ? "#3730a3" : "#c7d2fe",
+                          padding: "6px 16px",
+                          borderRadius: "20px",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+                          textAlign: "center",
+                          margin: "6px 0",
+                          maxWidth: "85%",
+                          lineHeight: 1.4,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "6px"
+                        }}
+                      >
+                        <span>{msg.text}</span>
+                        <span style={{ fontSize: "9px", opacity: 0.7 }}>
+                          ({new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={msg._id || msg.id}
+                      style={{
+                        alignSelf: isMe ? "flex-end" : "flex-start",
+                        maxWidth: "75%",
+                        backgroundColor: isMe 
+                          ? (chatTheme === 'light' ? "#6366f1" : "#4f46e5") 
+                          : (chatTheme === 'light' ? "white" : "#1f2937"),
+                        color: isMe 
+                          ? "white" 
+                          : (chatTheme === 'light' ? "#1f2937" : "#f9fafb"),
+                        padding: "10px 14px",
+                        borderRadius: isMe ? "16px 16px 0 16px" : "16px 16px 16px 0",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                        border: isMe ? "none" : (chatTheme === 'light' ? "1px solid #e5e7eb" : "1px solid #374151")
+                      }}
+                    >
+                      <p style={{ margin: 0, fontSize: "14px", wordBreak: "break-word", lineHeight: 1.4 }}>
+                        {msg.text}
+                      </p>
+                      <span style={{
+                        fontSize: "9px",
+                        opacity: 0.7,
+                        display: "block",
+                        textAlign: "right",
+                        marginTop: "4px",
+                        color: isMe ? "rgba(255,255,255,0.8)" : (chatTheme === 'light' ? "#6b7280" : "#9ca3af")
+                      }}>
+                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Modal Footer / Input Form */}
+            <form
+              onSubmit={handleSendMessage}
+              style={{
+                padding: "14px 20px",
+                borderTop: chatTheme === 'light' ? "1px solid #cbd5e1" : "1px solid #1f2937",
+                backgroundColor: chatTheme === 'light' ? "white" : "#111827",
+                display: "flex",
+                gap: "10px"
+              }}
+            >
+              <input
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Type your message here..."
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  borderRadius: "10px",
+                  border: chatTheme === 'light' ? "1px solid #cbd5e1" : "1px solid #374151",
+                  backgroundColor: chatTheme === 'light' ? "white" : "#0b0f19",
+                  color: chatTheme === 'light' ? "#1f2937" : "#f9fafb",
+                  fontSize: "14px",
+                  outline: "none"
+                }}
+              />
+              <button
+                type="submit"
+                style={{
+                  backgroundColor: chatTheme === 'light' ? "#6366f1" : "#4f46e5",
+                  color: "white",
+                  border: "none",
+                  padding: "0 18px",
+                  borderRadius: "10px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  boxShadow: "none",
+                  transform: "none"
+                }}
+              >
+                Send
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
