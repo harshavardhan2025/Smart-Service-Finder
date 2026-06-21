@@ -104,6 +104,7 @@ function GlobalCallManager() {
 
         // If call ended/declined/missed
         if (["ended", "declined", "missed"].includes(session.status)) {
+          stopTones();
           handleEndCallCleanup();
           return;
         }
@@ -296,7 +297,7 @@ function GlobalCallManager() {
       };
 
       pc.oniceconnectionstatechange = () => {
-        if (pc.iceConnectionState === "failed" || pc.iceConnectionState === "disconnected" || pc.iceConnectionState === "closed") {
+        if (pc.iceConnectionState === "failed" || pc.iceConnectionState === "closed") {
           handleEndCallCleanup();
         }
       };
@@ -403,7 +404,7 @@ function GlobalCallManager() {
       };
 
       pc.oniceconnectionstatechange = () => {
-        if (pc.iceConnectionState === "failed" || pc.iceConnectionState === "disconnected" || pc.iceConnectionState === "closed") {
+        if (pc.iceConnectionState === "failed" || pc.iceConnectionState === "closed") {
           handleEndCallCleanup();
         }
       };

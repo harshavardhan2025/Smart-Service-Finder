@@ -83,13 +83,17 @@ export const checkIncomingCall = async (req, res) => {
     // Find ringing calls where this user is the callee
     let call = await CallSession.findOne({
       callee_id: userId,
-      status: "ringing"
+      status: "ringing",
+      $or: [{ ended_at: null }, { ended_at: { $exists: false } }]
     }).sort({ createdAt: -1 }).lean();
 
     // Also check by email match (in case IDs differ between collections)
     if (!call) {
       // Find all ringing calls and check if any callee matches by booking lookup
-      const ringingCalls = await CallSession.find({ status: "ringing" }).sort({ createdAt: -1 }).lean();
+      const ringingCalls = await CallSession.find({
+        status: "ringing",
+        $or: [{ ended_at: null }, { ended_at: { $exists: false } }]
+      }).sort({ createdAt: -1 }).lean();
       for (const c of ringingCalls) {
         const booking = await Booking.findById(c.booking_id);
         if (!booking) continue;
@@ -215,9 +219,11 @@ export const endCall = async (req, res) => {
     const session = await CallSession.findById(sessionId);
     if (!session) return res.status(404).json({ error: "Call session not found" });
 
+    console.log(`📞 [Before End] Session: ${session._id} | Status: ${session.status}`);
     session.status = "ended";
     session.ended_at = new Date();
     await session.save();
+    console.log(`📞 [After End] Session: ${session._id} | Status: ${session.status}`);
 
     console.log(`📞 [Call Ended] Session: ${sessionId}`);
 
@@ -253,9 +259,11 @@ export const declineCall = async (req, res) => {
     const session = await CallSession.findById(sessionId);
     if (!session) return res.status(404).json({ error: "Call session not found" });
 
+    console.log(`📞 [Before Decline] Session: ${session._id} | Status: ${session.status}`);
     session.status = "declined";
     session.ended_at = new Date();
     await session.save();
+    console.log(`📞 [After Decline] Session: ${session._id} | Status: ${session.status}`);
 
     console.log(`📞 [Call Declined] Session: ${sessionId}`);
 
