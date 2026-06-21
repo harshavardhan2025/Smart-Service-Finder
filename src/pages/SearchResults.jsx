@@ -75,10 +75,28 @@ function SearchResults() {
 
         // Filter by search query (normal search)
         const qLower = query.toLowerCase().trim();
+        const getNormalizedService = (q) => {
+          if (q.includes("plumb")) return "plumbing";
+          if (q.includes("electr")) return "electrical";
+          if (q.includes("carpent")) return "carpentry";
+          if (q.includes("paint")) return "painting";
+          if (q.includes("clean")) return "cleaning";
+          if (q.includes("doc") || q.includes("med")) return "doctor";
+          if (q.includes("ac ") || q === "ac" || q.includes("air cond")) return "ac repair";
+          if (q.includes("pack") || q.includes("mov")) return "packers";
+          if (q.includes("mechanic")) return "mechanic";
+          return q;
+        };
+        const normQ = getNormalizedService(qLower);
+
         const normalFiltered = allLocalWorkers.filter(w => {
-          const serviceMatch = w.service && w.service.toLowerCase().includes(qLower);
-          const nameMatch = w.name && w.name.toLowerCase().includes(qLower);
-          const cityMatch = w.city && w.city.toLowerCase().includes(qLower);
+          const wService = w.service ? w.service.toLowerCase() : "";
+          const wName = w.name ? w.name.toLowerCase() : "";
+          const wCity = w.city ? w.city.toLowerCase() : "";
+
+          const serviceMatch = wService.includes(qLower) || wService.includes(normQ) || normQ.includes(wService);
+          const nameMatch = wName.includes(qLower);
+          const cityMatch = wCity.includes(qLower);
           return serviceMatch || nameMatch || cityMatch;
         });
 

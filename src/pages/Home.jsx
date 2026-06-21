@@ -413,6 +413,22 @@ function Home() {
     return parts.slice(0, 2).join(",").trim();
   };
 
+  const getNormalizedServiceQuery = (q) => {
+    if (!q) return "";
+    const lower = q.toLowerCase().trim();
+    if (lower.includes("plumb")) return "plumbing";
+    if (lower.includes("electr")) return "electrical";
+    if (lower.includes("carpent")) return "carpentry";
+    if (lower.includes("paint")) return "painting";
+    if (lower.includes("clean")) return "cleaning";
+    if (lower.includes("doc") || lower.includes("med")) return "doctor";
+    if (lower.includes("ac ") || lower === "ac" || lower.includes("air cond")) return "ac repair";
+    if (lower.includes("pack") || lower.includes("mov")) return "packers";
+    if (lower.includes("mechanic")) return "mechanic";
+    return lower;
+  };
+  const normServiceQ = getNormalizedServiceQuery(serviceQuery);
+
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Navbar />
@@ -646,10 +662,12 @@ function Home() {
               <SkeletonLoader type="card" count={4} />
             </div>
           ) : (serviceQuery
-              ? onlineWorkers.filter((w) =>
-                  w.service &&
-                  w.service.toLowerCase().includes(serviceQuery.toLowerCase())
-                )
+              ? onlineWorkers.filter((w) => {
+                  if (!w.service) return false;
+                  const ws = w.service.toLowerCase();
+                  const q = serviceQuery.toLowerCase().trim();
+                  return ws.includes(q) || ws.includes(normServiceQ) || normServiceQ.includes(ws);
+                })
               : onlineWorkers
             ).length === 0 ? (
             <div className="premium-card" style={{ padding: "30px", textAlign: "center", color: "var(--text-secondary)" }}>
@@ -660,10 +678,12 @@ function Home() {
           ) : (
             <div className="horizontal-scroll-container" style={{ display: "flex", overflowX: "auto", gap: "16px", paddingBottom: "10px" }}>
               {(serviceQuery
-                ? onlineWorkers.filter((w) =>
-                    w.service &&
-                    w.service.toLowerCase().includes(serviceQuery.toLowerCase())
-                  )
+                ? onlineWorkers.filter((w) => {
+                    if (!w.service) return false;
+                    const ws = w.service.toLowerCase();
+                    const q = serviceQuery.toLowerCase().trim();
+                    return ws.includes(q) || ws.includes(normServiceQ) || normServiceQ.includes(ws);
+                  })
                 : onlineWorkers
               ).map((worker) => (
                 <div

@@ -376,7 +376,11 @@ export const getNearbyWorkers = async (req, res) => {
           distanceKm = haversineKm(userLat, userLng, lat, lon);
         }
 
-        const cityMatch = targetCity && w.city && w.city.toLowerCase().trim() === targetCity.toLowerCase().trim();
+        const cityMatch = targetCity && w.city && (
+          w.city.toLowerCase().trim() === targetCity.toLowerCase().trim() ||
+          w.city.toLowerCase().includes(targetCity.toLowerCase().trim()) ||
+          targetCity.toLowerCase().includes(w.city.toLowerCase().trim())
+        );
 
         if (distanceKm === null && !cityMatch) {
           return null;
