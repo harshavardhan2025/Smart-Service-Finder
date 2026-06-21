@@ -187,7 +187,7 @@ function GlobalCallManager() {
     }
   };
 
-  const startRingbackTone = () => {
+  const startRingbackTone = async () => {
     stopTones();
     try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -195,9 +195,13 @@ function GlobalCallManager() {
       const ctx = new AudioContext();
       audioCtxRef.current = ctx;
 
+      if (ctx.state === 'suspended') {
+        await ctx.resume().catch(() => {});
+      }
+
       const playTone = () => {
         if (ctx.state === 'suspended') {
-          ctx.resume();
+          ctx.resume().catch(() => {});
         }
         const osc1 = ctx.createOscillator();
         const osc2 = ctx.createOscillator();
@@ -209,8 +213,8 @@ function GlobalCallManager() {
         osc2.frequency.setValueAtTime(480, ctx.currentTime);
 
         gainNode.gain.setValueAtTime(0.0, ctx.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 0.1);
-        gainNode.gain.setValueAtTime(0.08, ctx.currentTime + 1.9);
+        gainNode.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.1);
+        gainNode.gain.setValueAtTime(0.25, ctx.currentTime + 1.9);
         gainNode.gain.linearRampToValueAtTime(0.0, ctx.currentTime + 2.0);
 
         osc1.connect(gainNode);
@@ -223,7 +227,7 @@ function GlobalCallManager() {
         osc1.stop(ctx.currentTime + 2.0);
         osc2.stop(ctx.currentTime + 2.0);
 
-        ringtoneOscillatorsRef.current.push(osc1, osc2, gainNode);
+        ringtoneOscillatorsRef.current.push(osc1, osc2);
       };
 
       playTone();
@@ -237,7 +241,7 @@ function GlobalCallManager() {
     }
   };
 
-  const startRingtone = () => {
+  const startRingtone = async () => {
     stopTones();
     try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -245,9 +249,13 @@ function GlobalCallManager() {
       const ctx = new AudioContext();
       audioCtxRef.current = ctx;
 
+      if (ctx.state === 'suspended') {
+        await ctx.resume().catch(() => {});
+      }
+
       const playRing = () => {
         if (ctx.state === 'suspended') {
-          ctx.resume();
+          ctx.resume().catch(() => {});
         }
         const timings = [0, 0.3, 0.8, 1.1];
         timings.forEach(startTime => {
@@ -257,12 +265,12 @@ function GlobalCallManager() {
 
           osc1.type = "sine";
           osc2.type = "sine";
-          osc1.frequency.setValueAtTime(853, ctx.currentTime + startTime);
-          osc2.frequency.setValueAtTime(960, ctx.currentTime + startTime);
+          osc1.frequency.setValueAtTime(440, ctx.currentTime + startTime);
+          osc2.frequency.setValueAtTime(554, ctx.currentTime + startTime);
 
           gainNode.gain.setValueAtTime(0.0, ctx.currentTime + startTime);
-          gainNode.gain.linearRampToValueAtTime(0.08, ctx.currentTime + startTime + 0.05);
-          gainNode.gain.setValueAtTime(0.08, ctx.currentTime + startTime + 0.15);
+          gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + startTime + 0.05);
+          gainNode.gain.setValueAtTime(0.3, ctx.currentTime + startTime + 0.15);
           gainNode.gain.linearRampToValueAtTime(0.0, ctx.currentTime + startTime + 0.2);
 
           osc1.connect(gainNode);
@@ -275,7 +283,7 @@ function GlobalCallManager() {
           osc1.stop(ctx.currentTime + startTime + 0.2);
           osc2.stop(ctx.currentTime + startTime + 0.2);
 
-          ringtoneOscillatorsRef.current.push(osc1, osc2, gainNode);
+          ringtoneOscillatorsRef.current.push(osc1, osc2);
         });
       };
 
@@ -301,6 +309,20 @@ function GlobalCallManager() {
     return () => stopTones();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeCall, incomingCall]);
+
+  useEffect(() => {
+    const handleUnlock = () => {
+      if (audioCtxRef.current && audioCtxRef.current.state === "suspended") {
+        audioCtxRef.current.resume().catch(e => console.error("Error resuming AudioContext:", e));
+      }
+    };
+    window.addEventListener("click", handleUnlock);
+    window.addEventListener("keydown", handleUnlock);
+    return () => {
+      window.removeEventListener("click", handleUnlock);
+      window.removeEventListener("keydown", handleUnlock);
+    };
+  }, []);
 
   const toggleSpeaker = () => {
     setIsSpeaker(true);
