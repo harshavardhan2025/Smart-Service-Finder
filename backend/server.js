@@ -94,10 +94,13 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`);
-  // Start background timer to check for booking timeouts every 30 seconds
-  setInterval(checkBookingTimeouts, 30000);
-});
+// Only start listening when running as a standalone server (not on Vercel serverless)
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server running on ${PORT}`);
+    // Start background timer to check for booking timeouts every 30 seconds
+    setInterval(checkBookingTimeouts, 30000);
+  });
+}
 
 export default app;
