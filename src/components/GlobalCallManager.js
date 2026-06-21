@@ -67,6 +67,7 @@ function GlobalCallManager() {
               bookingId: data.bookingId
             });
             setTargetName(data.callerName);
+            setCallSessionId(data.sessionId);
           }
         }
       } catch (err) {
@@ -132,10 +133,12 @@ function GlobalCallManager() {
 
     const interval = setInterval(pollSession, 2000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callSessionId]);
 
   // Clean up Peer Connections & Streams
   const handleEndCallCleanup = () => {
+    stopTones();
     if (peerConnectionRef.current) {
       try { peerConnectionRef.current.close(); } catch (e) {}
       peerConnectionRef.current = null;
@@ -610,7 +613,7 @@ function GlobalCallManager() {
 
           {/* End Call Button */}
           <button
-            onClick={handleHangUp}
+            onClick={(e) => { e.stopPropagation(); handleHangUp(); }}
             style={{
               backgroundColor: "#ef4444",
               color: "white",
@@ -677,7 +680,7 @@ function GlobalCallManager() {
           </div>
           <div style={{ display: "flex", gap: "10px" }}>
             <button
-              onClick={handleAnswerCall}
+              onClick={(e) => { e.stopPropagation(); handleAnswerCall(); }}
               style={{
                 backgroundColor: "#16a34a",
                 color: "white",
@@ -697,7 +700,7 @@ function GlobalCallManager() {
               📞
             </button>
             <button
-              onClick={handleDeclineCall}
+              onClick={(e) => { e.stopPropagation(); handleDeclineCall(); }}
               style={{
                 backgroundColor: "#ef4444",
                 color: "white",
