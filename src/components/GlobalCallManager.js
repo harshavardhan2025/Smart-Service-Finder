@@ -206,8 +206,29 @@ function GlobalCallManager() {
       pc.ontrack = (event) => {
         const remoteAudio = document.getElementById("remoteAudio");
         if (remoteAudio) {
-          remoteAudio.srcObject = event.streams[0];
+          const remoteStream = event.streams[0] || new MediaStream([event.track]);
+          remoteAudio.srcObject = remoteStream;
           remoteAudio.play().catch(e => console.error("Audio playback error:", e));
+        }
+      };
+
+      let tempSessionId = null;
+      const iceQueue = [];
+
+      pc.onicecandidate = (event) => {
+        if (event.candidate) {
+          if (tempSessionId) {
+            fetch(`/api/call/ice/${tempSessionId}`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+              },
+              body: JSON.stringify({ candidate: event.candidate, role: 'caller' })
+            }).catch(err => console.error("Error sending ice candidate:", err));
+          } else {
+            iceQueue.push(event.candidate);
+          }
         }
       };
 
@@ -234,21 +255,21 @@ function GlobalCallManager() {
       }
 
       const sId = data.sessionId;
+      tempSessionId = sId;
       setCallSessionId(sId);
       setActiveCall('ringing');
 
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          fetch(`/api/call/ice/${sId}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify({ candidate: event.candidate, role: 'caller' })
-          });
-        }
-      };
+      // Flush queued candidates
+      for (const candidate of iceQueue) {
+        fetch(`/api/call/ice/${sId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ candidate, role: 'caller' })
+        }).catch(err => console.error("Error sending queued ice candidate:", err));
+      }
 
     } catch (err) {
       console.error("Call initiation error:", err);
@@ -285,8 +306,22 @@ function GlobalCallManager() {
       pc.ontrack = (event) => {
         const remoteAudio = document.getElementById("remoteAudio");
         if (remoteAudio) {
-          remoteAudio.srcObject = event.streams[0];
+          const remoteStream = event.streams[0] || new MediaStream([event.track]);
+          remoteAudio.srcObject = remoteStream;
           remoteAudio.play().catch(e => console.error("Audio playback error:", e));
+        }
+      };
+
+      pc.onicecandidate = (event) => {
+        if (event.candidate) {
+          fetch(`/api/call/ice/${sessionId}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ candidate: event.candidate, role: 'callee' })
+          }).catch(err => console.error("Error sending ice candidate:", err));
         }
       };
 
@@ -305,18 +340,6 @@ function GlobalCallManager() {
 
       if (res.ok) {
         setActiveCall('connected');
-        pc.onicecandidate = (event) => {
-          if (event.candidate) {
-            fetch(`/api/call/ice/${sessionId}`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-              },
-              body: JSON.stringify({ candidate: event.candidate, role: 'callee' })
-            });
-          }
-        };
       } else {
         const data = await res.json();
         alert(data.error || "Failed to answer call");
