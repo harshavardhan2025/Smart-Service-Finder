@@ -16,6 +16,7 @@ function GlobalCallManager() {
   const ringtoneAudioRef = useRef(null);
   const callerTuneAudioRef = useRef(null);
   const isAnsweringRef = useRef(false);
+  const recentlyEndedCallsRef = useRef(new Set());
 
   // Update sessionStorage and dispatch state changes
   useEffect(() => {
@@ -60,6 +61,9 @@ function GlobalCallManager() {
         if (res.ok) {
           const data = await res.json();
           if (data.hasIncoming) {
+            if (recentlyEndedCallsRef.current.has(data.sessionId)) {
+              return;
+            }
             setIncomingCall({
               sessionId: data.sessionId,
               offerSdp: data.offerSdp,
@@ -91,6 +95,10 @@ function GlobalCallManager() {
         const res = await fetch(`/api/call/session/${callSessionId}`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
+        if (res.status === 404) {
+          handleEndCallCleanup();
+          return;
+        }
         if (!res.ok) return;
         const session = await res.json();
 
@@ -139,6 +147,13 @@ function GlobalCallManager() {
   // Clean up Peer Connections & Streams
   const handleEndCallCleanup = () => {
     stopTones();
+    if (callSessionId) {
+      recentlyEndedCallsRef.current.add(callSessionId);
+      const sId = callSessionId;
+      setTimeout(() => {
+        recentlyEndedCallsRef.current.delete(sId);
+      }, 15000);
+    }
     if (peerConnectionRef.current) {
       try { peerConnectionRef.current.close(); } catch (e) {}
       peerConnectionRef.current = null;
