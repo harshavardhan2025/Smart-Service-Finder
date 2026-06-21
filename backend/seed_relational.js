@@ -18,7 +18,7 @@ dotenv.config();
 
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/serviceApp";
 
-const CITIES = ["Kakinada", "Rajahmundry", "New Delhi", "Hyderabad"];
+const CITIES = ["Kakinada", "Rajahmundry", "New Delhi", "Hyderabad", "Kadapa", "Kallara", "Chittauri", "Chittoor", "Kurnool"];
 const SERVICES = [
   "AC Repair", "Plumbing", "Carpentry", "Electrical", 
   "House Cleaning", "Doctors & Medical", "Interior Painting", 
