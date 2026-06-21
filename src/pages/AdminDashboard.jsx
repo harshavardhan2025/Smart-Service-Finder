@@ -2664,9 +2664,137 @@ function AdminDashboard() {
                           <div style={{ fontSize: "48px" }}>🚨</div>
                           <div style={{ flex: 1 }}>
                             <h4 style={{ margin: "0 0 12px", fontSize: "20px", fontWeight: 850, color: "#b91c1c" }}>{alertItem.title}</h4>
-                            <div style={{ margin: "0 0 20px", color: "var(--text-main)", whiteSpace: "pre-wrap", fontSize: "14px", fontWeight: 600, fontFamily: "'JetBrains Mono', Courier, monospace", backgroundColor: "var(--bg-card)", padding: "20px", borderRadius: "12px", border: "1.5px solid #e2e8f0", lineHeight: 1.6 }}>
-                              {alertItem.message}
-                            </div>
+                            
+                            {(() => {
+                              const parseSosMessage = (msgText) => {
+                                if (!msgText) return null;
+                                const lines = msgText.split("\n");
+                                const getValue = (key) => {
+                                  const line = lines.find(l => l.trim().startsWith(key));
+                                  if (line) {
+                                    return line.substring(line.indexOf(key) + key.length).trim();
+                                  }
+                                  return null;
+                                };
+
+                                const distressInitiator = getValue("Distress Initiator:");
+                                const realTimeLocation = getValue("Real-time Location:") || getValue("Real-time Location: ");
+                                const bookingAddress = getValue("Booking Address:") || getValue("Booking Address: ");
+                                const assignedWorker = getValue("Assigned Worker:") || getValue("Assigned Worker: ");
+                                const workerContact = getValue("Worker Contact:") || getValue("Worker Contact: ");
+                                const customer = getValue("Customer:") || getValue("Customer: ");
+                                const customerContact = getValue("Customer Contact:") || getValue("Customer Contact: ");
+                                const linkedBooking = getValue("Linked Booking:") || getValue("Linked Booking: ");
+                                const reportedAt = getValue("Reported At:") || getValue("Reported At: ");
+
+                                if (!distressInitiator) {
+                                  // Fallback checks for legacy worker format or custom alerts
+                                  const nameMatch = msgText.match(/Worker Name:\s*(.*)/i);
+                                  const profMatch = msgText.match(/Profession:\s*(.*)/i);
+                                  const phoneMatch = msgText.match(/Phone:\s*(.*)/i);
+                                  const emailMatch = msgText.match(/Email:\s*(.*)/i);
+                                  const locMatch = msgText.match(/Real-time Location:\s*(.*)/i);
+                                  
+                                  if (nameMatch) {
+                                    return {
+                                      distressInitiator: `${nameMatch[1].trim()} (WORKER)`,
+                                      realTimeLocation: locMatch ? locMatch[1].trim() : "N/A",
+                                      bookingAddress: "N/A",
+                                      assignedWorker: `${nameMatch[1].trim()} (${profMatch ? profMatch[1].trim() : "N/A"})`,
+                                      workerContact: `Phone: ${phoneMatch ? phoneMatch[1].trim() : "N/A"} | Email: ${emailMatch ? emailMatch[1].trim() : "N/A"}`,
+                                      customer: "N/A",
+                                      customerContact: "N/A",
+                                      linkedBooking: "N/A",
+                                      reportedAt: new Date().toLocaleString()
+                                    };
+                                  }
+                                  return null;
+                                }
+
+                                return {
+                                  distressInitiator,
+                                  realTimeLocation,
+                                  bookingAddress,
+                                  assignedWorker,
+                                  workerContact,
+                                  customer,
+                                  customerContact,
+                                  linkedBooking,
+                                  reportedAt
+                                };
+                              };
+
+                              const parsed = parseSosMessage(alertItem.message);
+
+                              if (parsed) {
+                                return (
+                                  <div style={{
+                                    display: "grid",
+                                    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                                    gap: "16px",
+                                    marginBottom: "20px",
+                                    fontFamily: "'Outfit', 'Inter', sans-serif"
+                                  }}>
+                                    {/* Initiator Card */}
+                                    <div style={{ backgroundColor: "white", padding: "16px", borderRadius: "12px", border: "1.5px solid #fca5a5", boxShadow: "0 2px 4px rgba(239,68,68,0.05)" }}>
+                                      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                                        <span style={{ fontSize: "20px" }}>👤</span>
+                                        <span style={{ fontSize: "11px", fontWeight: 800, color: "#ef4444", textTransform: "uppercase", letterSpacing: "0.5px" }}>Distress Initiator</span>
+                                      </div>
+                                      <div style={{ fontSize: "15px", fontWeight: 700, color: "#1e293b" }}>{parsed.distressInitiator}</div>
+                                      <div style={{ fontSize: "11px", color: "#64748b", marginTop: "6px" }}>Time: {parsed.reportedAt}</div>
+                                    </div>
+
+                                    {/* Location/Address Card */}
+                                    <div style={{ backgroundColor: "white", padding: "16px", borderRadius: "12px", border: "1.5px solid #fca5a5", boxShadow: "0 2px 4px rgba(239,68,68,0.05)" }}>
+                                      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                                        <span style={{ fontSize: "20px" }}>📍</span>
+                                        <span style={{ fontSize: "11px", fontWeight: 800, color: "#ef4444", textTransform: "uppercase", letterSpacing: "0.5px" }}>Incident Location / Address</span>
+                                      </div>
+                                      <div style={{ fontSize: "13px", fontWeight: 700, color: "#334155" }}>
+                                        Address: <strong style={{ color: "#ef4444" }}>{parsed.bookingAddress}</strong>
+                                      </div>
+                                      <div style={{ fontSize: "11px", color: "#64748b", marginTop: "6px" }}>GPS Coordinates: {parsed.realTimeLocation}</div>
+                                    </div>
+
+                                    {/* Worker Card */}
+                                    <div style={{ backgroundColor: "white", padding: "16px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+                                      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                                        <span style={{ fontSize: "20px" }}>👷</span>
+                                        <span style={{ fontSize: "11px", fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" }}>Assigned Professional</span>
+                                      </div>
+                                      <div style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b" }}>{parsed.assignedWorker}</div>
+                                      <div style={{ fontSize: "12px", color: "#475569", marginTop: "6px", wordBreak: "break-word" }}>{parsed.workerContact}</div>
+                                    </div>
+
+                                    {/* Customer Card */}
+                                    <div style={{ backgroundColor: "white", padding: "16px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+                                      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                                        <span style={{ fontSize: "20px" }}>🧑</span>
+                                        <span style={{ fontSize: "11px", fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" }}>Customer Details</span>
+                                      </div>
+                                      <div style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b" }}>{parsed.customer}</div>
+                                      <div style={{ fontSize: "12px", color: "#475569", marginTop: "6px", wordBreak: "break-word" }}>{parsed.customerContact}</div>
+                                    </div>
+
+                                    {/* Linked Booking Card */}
+                                    <div style={{ backgroundColor: "white", padding: "16px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+                                      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                                        <span style={{ fontSize: "20px" }}>📅</span>
+                                        <span style={{ fontSize: "11px", fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" }}>Linked Booking</span>
+                                      </div>
+                                      <div style={{ fontSize: "13px", fontWeight: 700, color: "#1e293b" }}>{parsed.linkedBooking}</div>
+                                    </div>
+                                  </div>
+                                );
+                              }
+
+                              return (
+                                <div style={{ margin: "0 0 20px", color: "var(--text-main)", whiteSpace: "pre-wrap", fontSize: "14px", fontWeight: 600, fontFamily: "'JetBrains Mono', Courier, monospace", backgroundColor: "var(--bg-card)", padding: "20px", borderRadius: "12px", border: "1.5px solid #e2e8f0", lineHeight: 1.6 }}>
+                                  {alertItem.message}
+                                </div>
+                              );
+                            })()}
 
                             {(() => {
                               // Custom DivIcon for the pulsating SOS marker

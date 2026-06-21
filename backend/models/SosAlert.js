@@ -9,7 +9,14 @@ const sosAlertSchema = new mongoose.Schema({
   lng: { type: Number },
   location_name: { type: String }, // Reverse-geocoded or input location
   worker_name: { type: String },
+  worker_phone: { type: String },
+  worker_email: { type: String },
+  worker_profession: { type: String },
   worker_location: { type: String },
+  customer_name: { type: String },
+  customer_phone: { type: String },
+  customer_email: { type: String },
+  booking_address: { type: String },
   status: { type: String, enum: ["Triggered", "Resolved"], default: "Triggered" },
   resolvedAt: { type: Date }
 }, { timestamps: true });

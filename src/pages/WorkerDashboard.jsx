@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import RouteMap from "../components/RouteMap";
@@ -344,27 +344,20 @@ function WorkerDashboard() {
     }
     setSosLoading(true);
     let locationStr = "Location coordinates unavailable";
-
     const sendAlert = async (locStr, latVal = null, lngVal = null) => {
       try {
+        const activeBooking = bookings.find(b => ["Accepted", "On the Way", "Started"].includes(b.status));
         const body = {
-          role: "admin",
-          title: `🚨 CRITICAL SOS: ${profile.name} (${profile.profession})`,
-          message: `⚠️ EMERGENCY SOS ACTIVATED! 
-Worker Name: ${profile.name}
-Profession: ${profile.profession}
-Phone: ${profile.phone}
-Email: ${profile.email}
-Incident Type: ${sosCategory}
-Real-time Location: ${locStr}
-Reported At: ${new Date().toLocaleString()}`,
-          type: "emergency",
-          user_id: profile.mongoId || "unknown",
+          user_id: sessionStorage.getItem("userId") || profile.mongoId || "unknown",
+          name: profile.name,
+          role: "worker",
+          booking_id: activeBooking ? (activeBooking._id || activeBooking.id) : undefined,
           lat: latVal,
-          lng: lngVal
+          lng: lngVal,
+          location_name: locStr
         };
 
-        const res = await fetch("/api/notifications", {
+        const res = await fetch("/api/security/sos", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
