@@ -315,9 +315,21 @@ function GlobalCallManager() {
         }
       };
 
+      let disconnectTimeout = null;
       pc.oniceconnectionstatechange = () => {
         if (pc.iceConnectionState === "failed" || pc.iceConnectionState === "closed") {
           handleEndCallCleanup();
+        } else if (pc.iceConnectionState === "disconnected") {
+          disconnectTimeout = setTimeout(() => {
+            if (pc && pc.iceConnectionState === "disconnected") {
+              handleEndCallCleanup();
+            }
+          }, 10000);
+        } else if (pc.iceConnectionState === "connected" || pc.iceConnectionState === "completed") {
+          if (disconnectTimeout) {
+            clearTimeout(disconnectTimeout);
+            disconnectTimeout = null;
+          }
         }
       };
 
@@ -422,9 +434,21 @@ function GlobalCallManager() {
         }
       };
 
+      let disconnectTimeout = null;
       pc.oniceconnectionstatechange = () => {
         if (pc.iceConnectionState === "failed" || pc.iceConnectionState === "closed") {
           handleEndCallCleanup();
+        } else if (pc.iceConnectionState === "disconnected") {
+          disconnectTimeout = setTimeout(() => {
+            if (pc && pc.iceConnectionState === "disconnected") {
+              handleEndCallCleanup();
+            }
+          }, 10000);
+        } else if (pc.iceConnectionState === "connected" || pc.iceConnectionState === "completed") {
+          if (disconnectTimeout) {
+            clearTimeout(disconnectTimeout);
+            disconnectTimeout = null;
+          }
         }
       };
 

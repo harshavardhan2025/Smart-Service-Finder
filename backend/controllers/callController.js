@@ -96,14 +96,19 @@ export const checkIncomingCall = async (req, res) => {
         $or: [{ ended_at: null }, { ended_at: { $exists: false } }]
       }).sort({ createdAt: -1 }).lean();
       for (const c of ringingCalls) {
-        if (!c.booking_id || !mongoose.Types.ObjectId.isValid(c.booking_id)) {
-          continue;
+        if (!c.booking_id) continue;
+        
+        let booking;
+        try {
+          booking = await Booking.findById(c.booking_id);
+        } catch (e) {
+          continue; // Invalid ID format, skip
         }
-        const booking = await Booking.findById(c.booking_id);
         if (!booking) continue;
         
-        const isWorkerIdValid = booking.worker_id && mongoose.Types.ObjectId.isValid(booking.worker_id);
-        const worker = isWorkerIdValid ? await Worker.findById(booking.worker_id) : null;
+        const worker = booking.worker_id
+          ? await Worker.findById(booking.worker_id)
+          : null;
         const isCalleeWorker = worker && userEmail === (worker.email || "").toLowerCase();
         const isCalleeCustomer = userId === booking.customer_id?.toString();
         
@@ -224,6 +229,10 @@ export const endCall = async (req, res) => {
     const session = await CallSession.findById(sessionId);
     if (!session) return res.status(404).json({ error: "Call session not found" });
 
+    if (session.status === "ended" || session.status === "declined" || session.status === "missed") {
+      return res.status(200).json({ status: session.status, message: "Call already ended" });
+    }
+
     console.log(`📞 [Before End] Session: ${session._id} | Status: ${session.status}`);
     session.status = "ended";
     session.ended_at = new Date();
@@ -263,6 +272,10 @@ export const declineCall = async (req, res) => {
     const { sessionId } = req.params;
     const session = await CallSession.findById(sessionId);
     if (!session) return res.status(404).json({ error: "Call session not found" });
+
+    if (session.status === "ended" || session.status === "declined" || session.status === "missed") {
+      return res.status(200).json({ status: session.status, message: "Call already ended or declined" });
+    }
 
     console.log(`📞 [Before Decline] Session: ${session._id} | Status: ${session.status}`);
     session.status = "declined";

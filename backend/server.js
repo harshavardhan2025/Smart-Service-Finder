@@ -1,4 +1,9 @@
 import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 import cors from "cors";
 import dotenv from "dotenv";
 import compression from "compression";
@@ -62,9 +67,20 @@ app.use("/api/ai", aiRoutes);
 app.use("/api/security", securityRoutes);
 app.use("/api/call", callRoutes);
 
-app.get("/", (req, res) => {
-  res.send("Backend Running");
-});
+// ── PRODUCTION: Serve React frontend build ──
+if (process.env.NODE_ENV === "production") {
+  // Serve static files from the React build folder
+  app.use(express.static(path.join(__dirname, "../build")));
+
+  // Catch-all: any route not matched by /api/* serves React's index.html
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "../build", "index.html"));
+  });
+} else {
+  app.get("/", (req, res) => {
+    res.send("Backend Running — Development Mode");
+  });
+}
 
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {
@@ -73,7 +89,7 @@ app.use((err, req, res, next) => {
     return res.status(400).json({ error: `Invalid identifier format: ${err.value}` });
   }
   console.error("💥 Unhandled Server Error:", err);
-  res.status(500).json({ error: "An unhandled server error occurred." });
+  res.status(500).json({ error: "An internal server error occurred." });
 });
 
 const PORT = process.env.PORT || 5000;

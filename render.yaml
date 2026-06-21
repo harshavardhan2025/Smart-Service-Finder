@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: smart-service-finder
+    runtime: node
+    buildCommand: cd backend && npm install && npm run build
+    startCommand: cd backend && NODE_ENV=production node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: AI_API_KEY
+        sync: false
+      - key: REDIS_URL
+        sync: false
