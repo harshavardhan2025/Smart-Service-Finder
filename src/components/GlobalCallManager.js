@@ -15,6 +15,7 @@ function GlobalCallManager() {
   const remoteAudioRef = useRef(null);
   const ringtoneAudioRef = useRef(null);
   const callerTuneAudioRef = useRef(null);
+  const isAnsweringRef = useRef(false);
 
   // Update sessionStorage and dispatch state changes
   useEffect(() => {
@@ -145,6 +146,12 @@ function GlobalCallManager() {
       } catch (e) {}
       localStreamRef.current = null;
     }
+    if (remoteAudioRef.current) {
+      try {
+        remoteAudioRef.current.pause();
+        remoteAudioRef.current.srcObject = null;
+      } catch (e) {}
+    }
     setActiveCall(null);
     setCallSessionId(null);
     setIncomingCall(null);
@@ -270,6 +277,12 @@ function GlobalCallManager() {
         }
       };
 
+      pc.oniceconnectionstatechange = () => {
+        if (pc.iceConnectionState === "failed" || pc.iceConnectionState === "disconnected" || pc.iceConnectionState === "closed") {
+          handleEndCallCleanup();
+        }
+      };
+
       let tempSessionId = null;
       const iceQueue = [];
 
@@ -337,7 +350,8 @@ function GlobalCallManager() {
 
   // Answer inbound call
   const handleAnswerCall = async () => {
-    if (!incomingCall) return;
+    if (isAnsweringRef.current || !incomingCall) return;
+    isAnsweringRef.current = true;
     const { sessionId, offerSdp } = incomingCall;
     const token = sessionStorage.getItem("authToken");
 
@@ -346,6 +360,7 @@ function GlobalCallManager() {
       try {
         stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       } catch (permErr) {
+        isAnsweringRef.current = false;
         alert("Microphone permission is required to answer calls. Please allow microphone access.");
         handleDeclineCall();
         return;
@@ -366,6 +381,12 @@ function GlobalCallManager() {
           const remoteStream = event.streams[0] || new MediaStream([event.track]);
           remoteAudioRef.current.srcObject = remoteStream;
           remoteAudioRef.current.play().catch(e => console.error("Audio playback error:", e));
+        }
+      };
+
+      pc.oniceconnectionstatechange = () => {
+        if (pc.iceConnectionState === "failed" || pc.iceConnectionState === "disconnected" || pc.iceConnectionState === "closed") {
+          handleEndCallCleanup();
         }
       };
 
@@ -395,6 +416,8 @@ function GlobalCallManager() {
         body: JSON.stringify({ answerSdp: answer.sdp })
       });
 
+      isAnsweringRef.current = false;
+
       if (res.ok) {
         setActiveCall('connected');
       } else {
@@ -404,6 +427,7 @@ function GlobalCallManager() {
       }
 
     } catch (err) {
+      isAnsweringRef.current = false;
       console.error("Error answering call:", err);
       alert("Error answering call: " + err.message);
       handleDeclineCall();
