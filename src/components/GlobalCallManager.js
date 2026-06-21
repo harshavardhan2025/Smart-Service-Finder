@@ -12,6 +12,10 @@ function GlobalCallManager() {
   const localStreamRef = useRef(null);
   const peerConnectionRef = useRef(null);
   const addedCandidatesRef = useRef(new Set());
+  const remoteAudioRef = useRef(null);
+  const ringtoneOscillatorsRef = useRef([]);
+  const audioCtxRef = useRef(null);
+  const ringIntervalRef = useRef(null);
 
   // Update sessionStorage and dispatch state changes
   useEffect(() => {
@@ -161,16 +165,151 @@ function GlobalCallManager() {
     }
   };
 
+  const stopTones = () => {
+    if (ringIntervalRef.current) {
+      clearInterval(ringIntervalRef.current);
+      ringIntervalRef.current = null;
+    }
+    if (ringtoneOscillatorsRef.current) {
+      ringtoneOscillatorsRef.current.forEach(node => {
+        try { node.stop(); } catch (e) {}
+        try { node.disconnect(); } catch (e) {}
+      });
+      ringtoneOscillatorsRef.current = [];
+    }
+    if (audioCtxRef.current) {
+      try {
+        if (audioCtxRef.current.state !== "closed") {
+          audioCtxRef.current.close();
+        }
+      } catch (e) {}
+      audioCtxRef.current = null;
+    }
+  };
+
+  const startRingbackTone = () => {
+    stopTones();
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+      audioCtxRef.current = ctx;
+
+      const playTone = () => {
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+
+        osc1.type = "sine";
+        osc2.type = "sine";
+        osc1.frequency.setValueAtTime(440, ctx.currentTime);
+        osc2.frequency.setValueAtTime(480, ctx.currentTime);
+
+        gainNode.gain.setValueAtTime(0.0, ctx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 0.1);
+        gainNode.gain.setValueAtTime(0.08, ctx.currentTime + 1.9);
+        gainNode.gain.linearRampToValueAtTime(0.0, ctx.currentTime + 2.0);
+
+        osc1.connect(gainNode);
+        osc2.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        osc1.start();
+        osc2.start();
+
+        osc1.stop(ctx.currentTime + 2.0);
+        osc2.stop(ctx.currentTime + 2.0);
+
+        ringtoneOscillatorsRef.current.push(osc1, osc2, gainNode);
+      };
+
+      playTone();
+      ringIntervalRef.current = setInterval(() => {
+        if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
+          playTone();
+        }
+      }, 6000);
+    } catch (e) {
+      console.error("Failed to start ringback tone:", e);
+    }
+  };
+
+  const startRingtone = () => {
+    stopTones();
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+      audioCtxRef.current = ctx;
+
+      const playRing = () => {
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+        const timings = [0, 0.3, 0.8, 1.1];
+        timings.forEach(startTime => {
+          const osc1 = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          const gainNode = ctx.createGain();
+
+          osc1.type = "sine";
+          osc2.type = "sine";
+          osc1.frequency.setValueAtTime(853, ctx.currentTime + startTime);
+          osc2.frequency.setValueAtTime(960, ctx.currentTime + startTime);
+
+          gainNode.gain.setValueAtTime(0.0, ctx.currentTime + startTime);
+          gainNode.gain.linearRampToValueAtTime(0.08, ctx.currentTime + startTime + 0.05);
+          gainNode.gain.setValueAtTime(0.08, ctx.currentTime + startTime + 0.15);
+          gainNode.gain.linearRampToValueAtTime(0.0, ctx.currentTime + startTime + 0.2);
+
+          osc1.connect(gainNode);
+          osc2.connect(gainNode);
+          gainNode.connect(ctx.destination);
+
+          osc1.start(ctx.currentTime + startTime);
+          osc2.start(ctx.currentTime + startTime);
+
+          osc1.stop(ctx.currentTime + startTime + 0.2);
+          osc2.stop(ctx.currentTime + startTime + 0.2);
+
+          ringtoneOscillatorsRef.current.push(osc1, osc2, gainNode);
+        });
+      };
+
+      playRing();
+      ringIntervalRef.current = setInterval(() => {
+        if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
+          playRing();
+        }
+      }, 3000);
+    } catch (e) {
+      console.error("Failed to start ringtone:", e);
+    }
+  };
+
+  useEffect(() => {
+    if (activeCall === 'ringing') {
+      startRingbackTone();
+    } else if (incomingCall && !activeCall) {
+      startRingtone();
+    } else {
+      stopTones();
+    }
+    return () => stopTones();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeCall, incomingCall]);
+
   const toggleSpeaker = () => {
     setIsSpeaker(true);
-    const remoteAudio = document.getElementById("remoteAudio");
-    if (remoteAudio) remoteAudio.volume = 1.0;
+    if (remoteAudioRef.current) remoteAudioRef.current.volume = 1.0;
   };
 
   const toggleReceiver = () => {
     setIsSpeaker(false);
-    const remoteAudio = document.getElementById("remoteAudio");
-    if (remoteAudio) remoteAudio.volume = 0.2;
+    if (remoteAudioRef.current) remoteAudioRef.current.volume = 0.2;
   };
 
   // Start outbound call
@@ -204,11 +343,10 @@ function GlobalCallManager() {
       stream.getTracks().forEach(track => pc.addTrack(track, stream));
 
       pc.ontrack = (event) => {
-        const remoteAudio = document.getElementById("remoteAudio");
-        if (remoteAudio) {
+        if (remoteAudioRef.current) {
           const remoteStream = event.streams[0] || new MediaStream([event.track]);
-          remoteAudio.srcObject = remoteStream;
-          remoteAudio.play().catch(e => console.error("Audio playback error:", e));
+          remoteAudioRef.current.srcObject = remoteStream;
+          remoteAudioRef.current.play().catch(e => console.error("Audio playback error:", e));
         }
       };
 
@@ -304,11 +442,10 @@ function GlobalCallManager() {
       stream.getTracks().forEach(track => pc.addTrack(track, stream));
 
       pc.ontrack = (event) => {
-        const remoteAudio = document.getElementById("remoteAudio");
-        if (remoteAudio) {
+        if (remoteAudioRef.current) {
           const remoteStream = event.streams[0] || new MediaStream([event.track]);
-          remoteAudio.srcObject = remoteStream;
-          remoteAudio.play().catch(e => console.error("Audio playback error:", e));
+          remoteAudioRef.current.srcObject = remoteStream;
+          remoteAudioRef.current.play().catch(e => console.error("Audio playback error:", e));
         }
       };
 
@@ -406,7 +543,7 @@ function GlobalCallManager() {
 
   return (
     <>
-      <audio id="remoteAudio" autoPlay style={{ display: "none" }} />
+      <audio ref={remoteAudioRef} autoPlay style={{ position: "absolute", width: 0, height: 0, opacity: 0 }} />
       {/* Active Call Floating Overlay Panel (Glassmorphism layout) */}
       {activeCall && (
         <div style={{
