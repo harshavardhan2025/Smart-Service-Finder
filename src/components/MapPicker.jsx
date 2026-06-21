@@ -97,6 +97,22 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
   );
 
   const [isSearching, setIsSearching] = useState(false);
+  const [workers, setWorkers] = useState([]);
+
+  useEffect(() => {
+    const fetchWorkers = async () => {
+      try {
+        const res = await fetch("/api/workers?adminView=true");
+        if (res.ok) {
+          const data = await res.json();
+          setWorkers(data);
+        }
+      } catch (err) {
+        console.error("Error fetching workers for map:", err);
+      }
+    };
+    fetchWorkers();
+  }, []);
 
   const applyLocation = (lat, lon, label, city) => {
     setPosition([lat, lon]);
@@ -364,6 +380,34 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
           >
             <Popup>{detectedLabel || search || "Selected Location"}</Popup>
           </Marker>
+
+          {workers.map((worker) => {
+            if (!worker.lat || !worker.lon) return null;
+            const workerIcon = new L.DivIcon({
+              html: `<div style="font-size: 30px; filter: drop-shadow(0px 3px 4px rgba(0,0,0,0.3)); cursor: pointer;">👷</div>`,
+              className: "custom-worker-pin",
+              iconSize: [30, 42],
+              iconAnchor: [15, 36],
+              popupAnchor: [0, -32],
+            });
+            return (
+              <Marker
+                key={worker._id || worker.id}
+                position={[worker.lat, worker.lon]}
+                icon={workerIcon}
+              >
+                <Popup>
+                  <div style={{ fontFamily: "'Outfit', sans-serif" }}>
+                    <strong style={{ fontSize: "14px" }}>{worker.name}</strong>
+                    <div style={{ color: "#4f46e5", fontWeight: 700, fontSize: "12px", marginTop: "2px" }}>{worker.service}</div>
+                    <div style={{ fontSize: "11px", color: "#64748b", marginTop: "4px" }}>
+                      ⭐ {worker.rating} • ₹{worker.price} • {worker.city}
+                    </div>
+                  </div>
+                </Popup>
+              </Marker>
+            );
+          })}
         </MapContainer>
       </div>
     </div>

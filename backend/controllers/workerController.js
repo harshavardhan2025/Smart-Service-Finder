@@ -127,6 +127,7 @@ const analyzeLocationWithAi = async (cityName) => {
 };
 
 const seedMockWorkersForCityOrCoords = async (city, lat, lng) => {
+  return []; // Dynamic mock worker seeding disabled to guarantee only actual database workers are used.
   try {
     const cityName = city || "Mumbai";
     let centerLat = lat;
