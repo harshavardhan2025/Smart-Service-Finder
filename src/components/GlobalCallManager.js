@@ -58,6 +58,15 @@ function GlobalCallManager() {
         const res = await fetch("/api/call/incoming", {
           headers: { "Authorization": `Bearer ${token}` }
         });
+        if (res.status === 401) {
+          console.warn("⚠️ GlobalCallManager: Auth token is invalid or expired. Clearing token to stop polling.");
+          sessionStorage.removeItem("authToken");
+          sessionStorage.removeItem("userId");
+          sessionStorage.removeItem("userName");
+          sessionStorage.removeItem("userEmail");
+          sessionStorage.removeItem("userRole");
+          return;
+        }
         if (res.ok) {
           const data = await res.json();
           if (data.hasIncoming) {
@@ -95,6 +104,16 @@ function GlobalCallManager() {
         const res = await fetch(`/api/call/session/${callSessionId}`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
+        if (res.status === 401) {
+          console.warn("⚠️ GlobalCallManager: Auth token is invalid or expired. Clearing token to stop session polling.");
+          sessionStorage.removeItem("authToken");
+          sessionStorage.removeItem("userId");
+          sessionStorage.removeItem("userName");
+          sessionStorage.removeItem("userEmail");
+          sessionStorage.removeItem("userRole");
+          handleEndCallCleanup();
+          return;
+        }
         if (res.status === 404) {
           handleEndCallCleanup();
           return;
