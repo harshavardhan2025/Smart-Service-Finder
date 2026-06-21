@@ -68,6 +68,10 @@ app.get("/", (req, res) => {
 
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {
+  if (err.name === "CastError") {
+    console.warn("⚠️ Mongoose CastError caught globally:", err.message);
+    return res.status(400).json({ error: `Invalid identifier format: ${err.value}` });
+  }
   console.error("💥 Unhandled Server Error:", err);
   res.status(500).json({ error: "An unhandled server error occurred." });
 });

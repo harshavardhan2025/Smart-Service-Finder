@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import mongoose from "mongoose";
 import Worker from "../models/Worker.js";
 import Message from "../models/Message.js";
 import Booking from "../models/Booking.js";
@@ -588,6 +589,9 @@ const resolveBookingParticipant = async (reqUser, booking) => {
 export const getBookingMessages = async (req, res) => {
   try {
     const { bookingId } = req.params;
+    if (!bookingId || !mongoose.Types.ObjectId.isValid(bookingId)) {
+      return res.status(400).json({ error: "Invalid booking ID format" });
+    }
     const booking = await Booking.findById(bookingId);
     if (!booking) {
       return res.status(404).json({ error: "Booking not found" });
@@ -624,6 +628,10 @@ export const sendBookingMessage = async (req, res) => {
 
     if (!text || text.trim() === "") {
       return res.status(400).json({ error: "Message text cannot be empty" });
+    }
+
+    if (!bookingId || !mongoose.Types.ObjectId.isValid(bookingId)) {
+      return res.status(400).json({ error: "Invalid booking ID format" });
     }
 
     const booking = await Booking.findById(bookingId);

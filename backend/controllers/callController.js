@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import CallSession from "../models/CallSession.js";
 import Booking from "../models/Booking.js";
 import Worker from "../models/Worker.js";
@@ -95,10 +96,14 @@ export const checkIncomingCall = async (req, res) => {
         $or: [{ ended_at: null }, { ended_at: { $exists: false } }]
       }).sort({ createdAt: -1 }).lean();
       for (const c of ringingCalls) {
+        if (!c.booking_id || !mongoose.Types.ObjectId.isValid(c.booking_id)) {
+          continue;
+        }
         const booking = await Booking.findById(c.booking_id);
         if (!booking) continue;
         
-        const worker = await Worker.findById(booking.worker_id);
+        const isWorkerIdValid = booking.worker_id && mongoose.Types.ObjectId.isValid(booking.worker_id);
+        const worker = isWorkerIdValid ? await Worker.findById(booking.worker_id) : null;
         const isCalleeWorker = worker && userEmail === (worker.email || "").toLowerCase();
         const isCalleeCustomer = userId === booking.customer_id?.toString();
         
