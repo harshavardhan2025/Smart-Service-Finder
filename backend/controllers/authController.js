@@ -67,6 +67,16 @@ export const registerUser = async (req, res) => {
   try {
     const { email, password, name, role, profession, city, phone } = req.body;
 
+    // ✅ Validate role – only 'user', 'worker', or 'admin' allowed
+    const allowedRoles = ['user', 'worker', 'admin'];
+    if (!allowedRoles.includes(role)) {
+      return res.status(400).json({ error: 'Invalid role specified. Allowed roles: user, worker, admin.' });
+    }
+    // Prevent admin creation via public signup unless explicitly allowed (e.g., via env flag)
+    if (role === 'admin' && process.env.ALLOW_ADMIN_SIGNUP !== 'true') {
+      return res.status(403).json({ error: 'Admin account creation is not permitted via public signup.' });
+    }
+
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ error: "User already exists" });
@@ -177,10 +187,10 @@ export const googleAuth = async (req, res) => {
   console.log("📡 [googleAuth] Request received. Body:", req.body);
   try {
     const { accessToken, role, profession, city, phone, name: customName } = req.body;
-
-    if (!accessToken) {
-      console.warn("⚠️ [googleAuth] Access token is missing");
-      return res.status(400).json({ error: "Access token is required" });
+    
+    // ✅ Validate role – only 'user' or 'worker' allowed for Google signup
+    if (role && !['user', 'worker'].includes(role)) {
+      return res.status(400).json({ error: 'Invalid role for Google signup. Allowed roles: user, worker.' });
     }
 
     // 1. Verify access token with Google UserInfo endpoint with automated retry
@@ -335,7 +345,12 @@ export const googleAuth = async (req, res) => {
 export const googleMockAuth = async (req, res) => {
   try {
     const { email, name, role, profession, city, phone } = req.body;
-
+    
+    // ✅ Validate role – only 'user' or 'worker' allowed for mock Google signup
+    if (role && !['user', 'worker'].includes(role)) {
+      return res.status(400).json({ error: 'Invalid role for mock Google signup. Allowed roles: user, worker.' });
+    }
+    
     if (!email || !name) {
       return res.status(400).json({ error: "Email and name are required for mock Google auth." });
     }

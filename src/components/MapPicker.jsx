@@ -99,6 +99,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
   const [isSearching, setIsSearching] = useState(false);
   const [workers, setWorkers] = useState([]);
 
+
   useEffect(() => {
     const fetchWorkers = async () => {
       try {
@@ -123,6 +124,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
     localStorage.setItem("userCoordsLat", lat.toString());
     localStorage.setItem("userCoordsLng", lon.toString());
     localStorage.setItem("manualLocationSet", "true");
+    localStorage.setItem("userLocationTimestamp", Date.now().toString());
     if (onLocationChange) onLocationChange(label);
     if (onCoordsChange) onCoordsChange({ lat, lng: lon });
   };
@@ -151,10 +153,24 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
     const savedCity = localStorage.getItem("userCity") || "Kadapa";
 
     if (!localStorage.getItem("userLocation")) {
-      localStorage.setItem("userLocation", savedLocation);
-      localStorage.setItem("userCity", savedCity);
-      localStorage.setItem("userCoordsLat", savedLat.toString());
-      localStorage.setItem("userCoordsLng", savedLng.toString());
+      // If saved location is stale (older than 1 hour), ignore it
+      const savedTimestamp = parseInt(localStorage.getItem("userLocationTimestamp"), 10) || 0;
+      const now = Date.now();
+      const oneHour = 3600000;
+      const isStale = now - savedTimestamp > oneHour;
+      if (isStale) {
+        localStorage.removeItem("userLocation");
+        localStorage.removeItem("userCity");
+        localStorage.removeItem("userCoordsLat");
+        localStorage.removeItem("userCoordsLng");
+        localStorage.removeItem("manualLocationSet");
+        localStorage.removeItem("userLocationTimestamp");
+      } else {
+        localStorage.setItem("userLocation", savedLocation);
+        localStorage.setItem("userCity", savedCity);
+        localStorage.setItem("userCoordsLat", savedLat.toString());
+        localStorage.setItem("userCoordsLng", savedLng.toString());
+      }
     }
 
     setPosition([savedLat, savedLng]);
@@ -184,7 +200,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
             console.warn("Automatic geolocation auto-detect failed on mount, trying IP location:", err);
             await detectIpFallback();
           },
-          { enableHighAccuracy: false, timeout: 5000 }
+          { enableHighAccuracy: true, timeout: 8000 }
         );
       } else {
         detectIpFallback();
@@ -314,7 +330,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
                   alert("Failed to auto-detect location. Please search manually.");
                 }
               },
-              { enableHighAccuracy: false, timeout: 5000 }
+              { enableHighAccuracy: true, timeout: 8000 }
             );
           }}
           disabled={isSearching}
@@ -322,6 +338,16 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
         >
           Auto Detect 📍
         </button>
+        <button
+          onClick={() => {
+            localStorage.removeItem("manualLocationSet");
+            window.location.reload();
+          }}
+          style={{ backgroundColor: "#ef4444", color: "white" }}
+        >
+          Reset Location 🔄
+        </button>
+
       </div>
 
       {/* Detected label badge */}
@@ -347,6 +373,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
       )}
 
       {/* Map */}
+
       <div
         style={{
           borderRadius: "12px",
@@ -410,8 +437,9 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
           })}
         </MapContainer>
       </div>
-    </div>
-  );
+
+  </div>
+);
 }
 
 export default MapPicker;

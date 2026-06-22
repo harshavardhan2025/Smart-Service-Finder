@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 
 function GlobalCallManager() {
   const [activeCall, setActiveCall] = useState(null); // 'ringing' | 'connected' | null
   const [callDuration, setCallDuration] = useState(0);
   const [callSessionId, setCallSessionId] = useState(null);
-  const [incomingCall, setIncomingCall] = useState(null); // { sessionId, offerSdp, callerName, bookingId }
+  const [incomingCall, setIncomingCall] = useState(null);
   const [targetName, setTargetName] = useState("");
   const [isMuted, setIsMuted] = useState(false);
   const [isSpeaker, setIsSpeaker] = useState(true);
 
+  // ── Refs ──────────────────────────────────────────────────────────────────
   const localStreamRef = useRef(null);
   const peerConnectionRef = useRef(null);
   const addedCandidatesRef = useRef(new Set());
@@ -18,7 +19,14 @@ function GlobalCallManager() {
   const isAnsweringRef = useRef(false);
   const recentlyEndedCallsRef = useRef(new Set());
 
-  // Update sessionStorage and dispatch state changes
+  // FIX 1: Mirror callSessionId in a ref so event-handler closures always
+  //        see the current value (avoids stale-state closure bug).
+  const callSessionIdRef = useRef(null);
+  useEffect(() => {
+    callSessionIdRef.current = callSessionId;
+  }, [callSessionId]);
+
+  // ── Broadcast active-call state to rest of the app ────────────────────────
   useEffect(() => {
     sessionStorage.setItem("activeCallState", activeCall || "");
     window.dispatchEvent(new CustomEvent("callStateChanged", {
@@ -26,13 +34,11 @@ function GlobalCallManager() {
     }));
   }, [activeCall]);
 
-  // Call duration counter
+  // ── Call duration timer ───────────────────────────────────────────────────
   useEffect(() => {
     let interval;
-    if (activeCall === 'connected') {
-      interval = setInterval(() => {
-        setCallDuration(prev => prev + 1);
-      }, 1000);
+    if (activeCall === "connected") {
+      interval = setInterval(() => setCallDuration(prev => prev + 1), 1000);
     } else {
       setCallDuration(0);
     }
@@ -40,155 +46,93 @@ function GlobalCallManager() {
   }, [activeCall]);
 
   const formatDuration = (sec) => {
-    const mins = Math.floor(sec / 60);
-    const secs = sec % 60;
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
-  // Poll for incoming calls
-  useEffect(() => {
-    const checkIncoming = async () => {
-      const token = sessionStorage.getItem("authToken");
-      if (!token) return;
-
-      // Don't poll if we're already in a call
-      if (activeCall || incomingCall) return;
-
-      try {
-        const res = await fetch("/api/call/incoming", {
-          headers: { "Authorization": `Bearer ${token}` }
-        });
-        if (res.status === 401) {
-          console.warn("⚠️ GlobalCallManager: Auth token is invalid or expired. Clearing token to stop polling.");
-          sessionStorage.removeItem("authToken");
-          sessionStorage.removeItem("userId");
-          sessionStorage.removeItem("userName");
-          sessionStorage.removeItem("userEmail");
-          sessionStorage.removeItem("userRole");
-          return;
-        }
-        if (res.ok) {
-          const data = await res.json();
-          if (data.hasIncoming) {
-            if (recentlyEndedCallsRef.current.has(data.sessionId)) {
-              return;
-            }
-            setIncomingCall({
-              sessionId: data.sessionId,
-              offerSdp: data.offerSdp,
-              callerName: data.callerName,
-              bookingId: data.bookingId
-            });
-            setTargetName(data.callerName);
-            setCallSessionId(data.sessionId);
-          }
-        }
-      } catch (err) {
-        console.error("Error polling incoming calls:", err);
+  // ── Audio helpers ─────────────────────────────────────────────────────────
+  const stopTones = useCallback(() => {
+    [callerTuneAudioRef, ringtoneAudioRef].forEach(ref => {
+      if (ref.current) {
+        try { 
+          ref.current.dataset.playing = "false";
+          ref.current.pause(); 
+          ref.current.currentTime = 0; 
+        } catch (_) {}
       }
-    };
+    });
+  }, []);
 
-    checkIncoming();
-    const interval = setInterval(checkIncoming, 3000);
-    return () => clearInterval(interval);
+  const startRingbackTone = useCallback(() => {
+    stopTones();
+    if (callerTuneAudioRef.current) {
+      callerTuneAudioRef.current.dataset.playing = "true";
+      callerTuneAudioRef.current.play().catch(e => console.warn("caller tune:", e));
+    }
+  }, [stopTones]);
+
+  const startRingtone = useCallback(() => {
+    stopTones();
+    if (ringtoneAudioRef.current) {
+      ringtoneAudioRef.current.dataset.playing = "true";
+      ringtoneAudioRef.current.play().catch(e => console.warn("ringtone:", e));
+    }
+  }, [stopTones]);
+
+  // Tone effect
+  useEffect(() => {
+    if (activeCall === "ringing") startRingbackTone();
+    else if (incomingCall && !activeCall) startRingtone();
+    else stopTones();
+    return () => stopTones();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeCall, incomingCall]);
 
-  // Active call status/signaling polling
+  // Unlock audio on first user gesture (browser autoplay policy)
   useEffect(() => {
-    if (!callSessionId) return;
-    const token = sessionStorage.getItem("authToken");
-    if (!token) return;
-
-    const pollSession = async () => {
-      try {
-        const res = await fetch(`/api/call/session/${callSessionId}`, {
-          headers: { "Authorization": `Bearer ${token}` }
-        });
-        if (res.status === 401) {
-          console.warn("⚠️ GlobalCallManager: Auth token is invalid or expired. Clearing token to stop session polling.");
-          sessionStorage.removeItem("authToken");
-          sessionStorage.removeItem("userId");
-          sessionStorage.removeItem("userName");
-          sessionStorage.removeItem("userEmail");
-          sessionStorage.removeItem("userRole");
-          handleEndCallCleanup();
-          return;
-        }
-        if (res.status === 404) {
-          handleEndCallCleanup();
-          return;
-        }
-        if (!res.ok) return;
-        const session = await res.json();
-
-        // If call ended/declined/missed
-        if (["ended", "declined", "missed"].includes(session.status)) {
-          stopTones();
-          handleEndCallCleanup();
-          return;
-        }
-
-        const pc = peerConnectionRef.current;
-        if (!pc) return;
-
-        // If callee answered and caller gets the answer SDP
-        if (session.status === "connected" && session.answer_sdp && pc.signalingState === "have-local-offer") {
-          await pc.setRemoteDescription(new RTCSessionDescription({ type: "answer", sdp: session.answer_sdp }));
-          setActiveCall("connected");
-        }
-
-        // Apply new ICE candidates
-        const isCaller = session.caller_id === sessionStorage.getItem("userId");
-        const remoteIceCandidates = isCaller ? session.callee_ice : session.caller_ice;
-
-        if (pc.remoteDescription && remoteIceCandidates && remoteIceCandidates.length > 0) {
-          for (const candStr of remoteIceCandidates) {
-            if (!addedCandidatesRef.current.has(candStr)) {
-              try {
-                const candidate = JSON.parse(candStr);
-                await pc.addIceCandidate(new RTCIceCandidate(candidate));
-                addedCandidatesRef.current.add(candStr);
-              } catch (e) {
-                console.error("Error adding remote ICE candidate:", e);
-              }
+    const handleUnlock = () => {
+      [ringtoneAudioRef.current, callerTuneAudioRef.current].forEach(a => {
+        if (a && !a.dataset.unlocked) {
+          a.muted = true;
+          a.play().then(() => {
+            if (a.dataset.playing !== "true") {
+              a.pause();
+              a.currentTime = 0;
             }
-          }
+            a.muted = false;
+            a.dataset.unlocked = "true";
+          }).catch(() => {});
         }
-      } catch (err) {
-        console.error("Error polling call session state:", err);
-      }
+      });
     };
+    window.addEventListener("click", handleUnlock);
+    window.addEventListener("keydown", handleUnlock);
+    return () => {
+      window.removeEventListener("click", handleUnlock);
+      window.removeEventListener("keydown", handleUnlock);
+    };
+  }, []);
 
-    const interval = setInterval(pollSession, 2000);
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [callSessionId]);
-
-  // Clean up Peer Connections & Streams
-  const handleEndCallCleanup = () => {
+  // ── Cleanup helper ────────────────────────────────────────────────────────
+  // FIX 1 (continued): read session ID from ref — never stale inside closures.
+  const handleEndCallCleanup = useCallback(() => {
     stopTones();
-    if (callSessionId) {
-      recentlyEndedCallsRef.current.add(callSessionId);
-      const sId = callSessionId;
-      setTimeout(() => {
-        recentlyEndedCallsRef.current.delete(sId);
-      }, 15000);
+    const sId = callSessionIdRef.current;
+    if (sId) {
+      recentlyEndedCallsRef.current.add(sId);
+      setTimeout(() => recentlyEndedCallsRef.current.delete(sId), 15000);
     }
     if (peerConnectionRef.current) {
-      try { peerConnectionRef.current.close(); } catch (e) {}
+      try { peerConnectionRef.current.close(); } catch (_) {}
       peerConnectionRef.current = null;
     }
     if (localStreamRef.current) {
-      try {
-        localStreamRef.current.getTracks().forEach(track => track.stop());
-      } catch (e) {}
+      try { localStreamRef.current.getTracks().forEach(t => t.stop()); } catch (_) {}
       localStreamRef.current = null;
     }
     if (remoteAudioRef.current) {
-      try {
-        remoteAudioRef.current.pause();
-        remoteAudioRef.current.srcObject = null;
-      } catch (e) {}
+      try { remoteAudioRef.current.pause(); remoteAudioRef.current.srcObject = null; } catch (_) {}
     }
     setActiveCall(null);
     setCallSessionId(null);
@@ -197,75 +141,125 @@ function GlobalCallManager() {
     setCallDuration(0);
     setIsMuted(false);
     setIsSpeaker(true);
-  };
+  }, [stopTones]);
 
+  // ── Poll for incoming calls ───────────────────────────────────────────────
+  useEffect(() => {
+    const checkIncoming = async () => {
+      const token = sessionStorage.getItem("authToken");
+      if (!token) return;
+      if (activeCall || incomingCall) return;
+      try {
+        const res = await fetch("/api/call/incoming", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.status === 401) {
+          ["authToken","userId","userName","userEmail","userRole"]
+            .forEach(k => sessionStorage.removeItem(k));
+          return;
+        }
+        if (res.ok) {
+          const data = await res.json();
+          if (data.hasIncoming && !recentlyEndedCallsRef.current.has(data.sessionId)) {
+            setIncomingCall(prev => {
+              if (prev && prev.sessionId === data.sessionId) return prev;
+              return {
+                sessionId: data.sessionId,
+                offerSdp: data.offerSdp,
+                callerName: data.callerName,
+                bookingId: data.bookingId
+              };
+            });
+            setTargetName(data.callerName);
+            setCallSessionId(data.sessionId);
+          }
+        }
+      } catch (err) {
+        console.error("Incoming call poll error:", err);
+      }
+    };
+
+    checkIncoming();
+    const id = setInterval(checkIncoming, 3000);
+    return () => clearInterval(id);
+  }, [activeCall, incomingCall]);
+
+  // ── Poll active session (signalling + ICE) ────────────────────────────────
+  useEffect(() => {
+    if (!callSessionId) return;
+    const token = sessionStorage.getItem("authToken");
+    if (!token) return;
+
+    const pollSession = async () => {
+      try {
+        const res = await fetch(`/api/call/session/${callSessionId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.status === 401) {
+          ["authToken","userId","userName","userEmail","userRole"]
+            .forEach(k => sessionStorage.removeItem(k));
+          handleEndCallCleanup();
+          return;
+        }
+        if (res.status === 404) { handleEndCallCleanup(); return; }
+        if (!res.ok) return;
+        const session = await res.json();
+
+        if (["ended","declined","missed"].includes(session.status)) {
+          handleEndCallCleanup();
+          return;
+        }
+
+        const pc = peerConnectionRef.current;
+        if (!pc) return;
+
+        // Caller side: apply answer SDP when callee responds
+        if (
+          session.status === "connected" &&
+          session.answer_sdp &&
+          pc.signalingState === "have-local-offer"
+        ) {
+          try {
+            await pc.setRemoteDescription(
+              new RTCSessionDescription({ type: "answer", sdp: session.answer_sdp })
+            );
+          } catch (e) {
+            console.error("setRemoteDescription (answer) failed:", e);
+          }
+          setActiveCall("connected");
+        }
+
+        // Apply remote ICE candidates we haven't seen yet
+        const isCaller = session.caller_id === sessionStorage.getItem("userId");
+        const remoteCandidates = isCaller ? session.callee_ice : session.caller_ice;
+
+        if (pc.remoteDescription && remoteCandidates?.length) {
+          for (const candStr of remoteCandidates) {
+            if (!addedCandidatesRef.current.has(candStr)) {
+              try {
+                await pc.addIceCandidate(new RTCIceCandidate(JSON.parse(candStr)));
+                addedCandidatesRef.current.add(candStr);
+              } catch (e) {
+                console.error("addIceCandidate failed:", e);
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Session poll error:", err);
+      }
+    };
+
+    const id = setInterval(pollSession, 2000);
+    return () => clearInterval(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [callSessionId]);
+
+  // ── Mic mute toggle ───────────────────────────────────────────────────────
   const toggleMute = () => {
-    if (localStreamRef.current) {
-      const audioTrack = localStreamRef.current.getAudioTracks()[0];
-      if (audioTrack) {
-        audioTrack.enabled = !audioTrack.enabled;
-        setIsMuted(!audioTrack.enabled);
-      }
-    }
+    const track = localStreamRef.current?.getAudioTracks()[0];
+    if (track) { track.enabled = !track.enabled; setIsMuted(!track.enabled); }
   };
-
-  const stopTones = () => {
-    if (callerTuneAudioRef.current) {
-      try {
-        callerTuneAudioRef.current.pause();
-        callerTuneAudioRef.current.currentTime = 0;
-      } catch (e) {}
-    }
-    if (ringtoneAudioRef.current) {
-      try {
-        ringtoneAudioRef.current.pause();
-        ringtoneAudioRef.current.currentTime = 0;
-      } catch (e) {}
-    }
-  };
-
-  const startRingbackTone = () => {
-    stopTones();
-    if (callerTuneAudioRef.current) {
-      callerTuneAudioRef.current.play().catch(e => console.error("Error playing caller tune:", e));
-    }
-  };
-
-  const startRingtone = () => {
-    stopTones();
-    if (ringtoneAudioRef.current) {
-      ringtoneAudioRef.current.play().catch(e => console.error("Error playing ringtone:", e));
-    }
-  };
-
-  useEffect(() => {
-    if (activeCall === 'ringing') {
-      startRingbackTone();
-    } else if (incomingCall && !activeCall) {
-      startRingtone();
-    } else {
-      stopTones();
-    }
-    return () => stopTones();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeCall, incomingCall]);
-
-  useEffect(() => {
-    const handleUnlock = () => {
-      if (incomingCall && !activeCall && ringtoneAudioRef.current && ringtoneAudioRef.current.paused) {
-        ringtoneAudioRef.current.play().catch(() => {});
-      }
-      if (activeCall === 'ringing' && callerTuneAudioRef.current && callerTuneAudioRef.current.paused) {
-        callerTuneAudioRef.current.play().catch(() => {});
-      }
-    };
-    window.addEventListener("click", handleUnlock);
-    window.addEventListener("keydown", handleUnlock);
-    return () => {
-      window.removeEventListener("click", handleUnlock);
-      window.removeEventListener("keydown", handleUnlock);
-    };
-  }, [activeCall, incomingCall]);
 
   const toggleSpeaker = () => {
     setIsSpeaker(true);
@@ -277,507 +271,409 @@ function GlobalCallManager() {
     if (remoteAudioRef.current) remoteAudioRef.current.volume = 0.2;
   };
 
-  // Start outbound call
+  // ── RTCPeerConnection factory (shared by caller + callee) ─────────────────
+  const createPC = (token, sessionId, role) => {
+    const pc = new RTCPeerConnection({
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" }
+      ]
+    });
+
+    pc.ontrack = (event) => {
+      if (remoteAudioRef.current) {
+        const stream = event.streams[0] || new MediaStream([event.track]);
+        remoteAudioRef.current.srcObject = stream;
+        remoteAudioRef.current.play().catch(e => console.error("Remote audio play:", e));
+      }
+    };
+
+    let disconnectTimer = null;
+    pc.oniceconnectionstatechange = () => {
+      const s = pc.iceConnectionState;
+      if (s === "failed" || s === "closed") {
+        handleEndCallCleanup();
+      } else if (s === "disconnected") {
+        disconnectTimer = setTimeout(() => {
+          if (pc.iceConnectionState === "disconnected") handleEndCallCleanup();
+        }, 10000);
+      } else if (s === "connected" || s === "completed") {
+        if (disconnectTimer) { clearTimeout(disconnectTimer); disconnectTimer = null; }
+      }
+    };
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        // FIX 1: use ref so we always have the current sessionId
+        const sId = sessionId || callSessionIdRef.current;
+        if (!sId) return;
+        fetch(`/api/call/ice/${sId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ candidate: event.candidate, role })
+        }).catch(e => console.error("ICE send error:", e));
+      }
+    };
+
+    return pc;
+  };
+
+  // ── Start outbound call ───────────────────────────────────────────────────
   const handleStartCall = async (bookingId, recipientName) => {
-    if (activeCall) {
-      alert("You are already in an active call.");
+    if (activeCall) { alert("You are already in an active call."); return; }
+    const token = sessionStorage.getItem("authToken");
+    if (!token) { alert("Not logged in"); return; }
+
+    setTargetName(recipientName);
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (_) {
+      alert("Microphone permission is required to make calls.");
       return;
     }
-    try {
-      const token = sessionStorage.getItem("authToken");
-      if (!token) return alert("Not logged in");
+    localStreamRef.current = stream;
 
-      setTargetName(recipientName);
+    // Temporary session ID holder before server responds
+    let resolvedSessionId = null;
+    const iceQueue = [];
 
-      // Request microphone permissions
-      let stream;
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      } catch (permErr) {
-        alert("Microphone permission is required to make calls. Please allow microphone access in your browser settings.");
-        return;
+    const pc = new RTCPeerConnection({
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" }
+      ]
+    });
+    peerConnectionRef.current = pc;
+    stream.getTracks().forEach(t => pc.addTrack(t, stream));
+
+    pc.ontrack = (event) => {
+      if (remoteAudioRef.current) {
+        const s = event.streams[0] || new MediaStream([event.track]);
+        remoteAudioRef.current.srcObject = s;
+        remoteAudioRef.current.play().catch(e => console.error("Remote audio:", e));
       }
+    };
 
-      localStreamRef.current = stream;
+    let disconnectTimer = null;
+    pc.oniceconnectionstatechange = () => {
+      const s = pc.iceConnectionState;
+      if (s === "failed" || s === "closed") handleEndCallCleanup();
+      else if (s === "disconnected") {
+        disconnectTimer = setTimeout(() => {
+          if (pc.iceConnectionState === "disconnected") handleEndCallCleanup();
+        }, 10000);
+      } else if (s === "connected" || s === "completed") {
+        if (disconnectTimer) { clearTimeout(disconnectTimer); disconnectTimer = null; }
+      }
+    };
 
-      const pc = new RTCPeerConnection({
-        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-      });
-      peerConnectionRef.current = pc;
+    pc.onicecandidate = (event) => {
+      if (!event.candidate) return;
+      const sId = resolvedSessionId || callSessionIdRef.current;
+      if (sId) {
+        fetch(`/api/call/ice/${sId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ candidate: event.candidate, role: "caller" })
+        }).catch(e => console.error("ICE send:", e));
+      } else {
+        iceQueue.push(event.candidate);
+      }
+    };
 
-      stream.getTracks().forEach(track => pc.addTrack(track, stream));
-
-      pc.ontrack = (event) => {
-        if (remoteAudioRef.current) {
-          const remoteStream = event.streams[0] || new MediaStream([event.track]);
-          remoteAudioRef.current.srcObject = remoteStream;
-          remoteAudioRef.current.play().catch(e => console.error("Audio playback error:", e));
-        }
-      };
-
-      let disconnectTimeout = null;
-      pc.oniceconnectionstatechange = () => {
-        if (pc.iceConnectionState === "failed" || pc.iceConnectionState === "closed") {
-          handleEndCallCleanup();
-        } else if (pc.iceConnectionState === "disconnected") {
-          disconnectTimeout = setTimeout(() => {
-            if (pc && pc.iceConnectionState === "disconnected") {
-              handleEndCallCleanup();
-            }
-          }, 10000);
-        } else if (pc.iceConnectionState === "connected" || pc.iceConnectionState === "completed") {
-          if (disconnectTimeout) {
-            clearTimeout(disconnectTimeout);
-            disconnectTimeout = null;
-          }
-        }
-      };
-
-      let tempSessionId = null;
-      const iceQueue = [];
-
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          if (tempSessionId) {
-            fetch(`/api/call/ice/${tempSessionId}`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-              },
-              body: JSON.stringify({ candidate: event.candidate, role: 'caller' })
-            }).catch(err => console.error("Error sending ice candidate:", err));
-          } else {
-            iceQueue.push(event.candidate);
-          }
-        }
-      };
-
+    try {
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
       const res = await fetch("/api/call/initiate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          bookingId: bookingId,
-          offerSdp: offer.sdp
-        })
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ bookingId, offerSdp: offer.sdp })
       });
-
       const data = await res.json();
       if (!res.ok) {
         alert(data.error || "Failed to start call");
+        // FIX 4: fully clean up on error
         stream.getTracks().forEach(t => t.stop());
+        localStreamRef.current = null;
+        try { pc.close(); } catch (_) {}
+        peerConnectionRef.current = null;
         return;
       }
 
-      const sId = data.sessionId;
-      tempSessionId = sId;
-      setCallSessionId(sId);
-      setActiveCall('ringing');
+      resolvedSessionId = data.sessionId;
+      setCallSessionId(data.sessionId);
+      setActiveCall("ringing");
 
-      // Flush queued candidates
+      // Flush queued ICE candidates
       for (const candidate of iceQueue) {
-        fetch(`/api/call/ice/${sId}`, {
+        fetch(`/api/call/ice/${data.sessionId}`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify({ candidate, role: 'caller' })
-        }).catch(err => console.error("Error sending queued ice candidate:", err));
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ candidate, role: "caller" })
+        }).catch(e => console.error("ICE flush:", e));
       }
-
     } catch (err) {
       console.error("Call initiation error:", err);
-      alert("Error starting app call: " + err.message);
+      alert("Error starting call: " + err.message);
+      // FIX 4: clean up on exception too
+      stream.getTracks().forEach(t => t.stop());
+      localStreamRef.current = null;
+      try { pc.close(); } catch (_) {}
+      peerConnectionRef.current = null;
     }
   };
 
-  // Answer inbound call
+  // ── Answer inbound call ───────────────────────────────────────────────────
   const handleAnswerCall = async () => {
     if (isAnsweringRef.current || !incomingCall) return;
     isAnsweringRef.current = true;
     const { sessionId, offerSdp } = incomingCall;
     const token = sessionStorage.getItem("authToken");
 
+    let stream;
     try {
-      let stream;
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      } catch (permErr) {
-        isAnsweringRef.current = false;
-        alert("Microphone permission is required to answer calls. Please allow microphone access.");
-        handleDeclineCall();
-        return;
-      }
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (_) {
+      isAnsweringRef.current = false;
+      alert("Microphone permission is required to answer calls.");
+      handleDeclineCall();
+      return;
+    }
 
-      localStreamRef.current = stream;
-      setCallSessionId(sessionId);
+    localStreamRef.current = stream;
+    setCallSessionId(sessionId);
 
-      const pc = new RTCPeerConnection({
-        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-      });
-      peerConnectionRef.current = pc;
+    const pc = createPC(token, sessionId, "callee");
+    peerConnectionRef.current = pc;
+    stream.getTracks().forEach(t => pc.addTrack(t, stream));
 
-      stream.getTracks().forEach(track => pc.addTrack(track, stream));
-
-      pc.ontrack = (event) => {
-        if (remoteAudioRef.current) {
-          const remoteStream = event.streams[0] || new MediaStream([event.track]);
-          remoteAudioRef.current.srcObject = remoteStream;
-          remoteAudioRef.current.play().catch(e => console.error("Audio playback error:", e));
-        }
-      };
-
-      let disconnectTimeout = null;
-      pc.oniceconnectionstatechange = () => {
-        if (pc.iceConnectionState === "failed" || pc.iceConnectionState === "closed") {
-          handleEndCallCleanup();
-        } else if (pc.iceConnectionState === "disconnected") {
-          disconnectTimeout = setTimeout(() => {
-            if (pc && pc.iceConnectionState === "disconnected") {
-              handleEndCallCleanup();
-            }
-          }, 10000);
-        } else if (pc.iceConnectionState === "connected" || pc.iceConnectionState === "completed") {
-          if (disconnectTimeout) {
-            clearTimeout(disconnectTimeout);
-            disconnectTimeout = null;
-          }
-        }
-      };
-
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          fetch(`/api/call/ice/${sessionId}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify({ candidate: event.candidate, role: 'callee' })
-          }).catch(err => console.error("Error sending ice candidate:", err));
-        }
-      };
-
+    try {
       await pc.setRemoteDescription(new RTCSessionDescription({ type: "offer", sdp: offerSdp }));
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
 
       const res = await fetch(`/api/call/answer/${sessionId}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ answerSdp: answer.sdp })
       });
 
       isAnsweringRef.current = false;
 
       if (res.ok) {
-        setActiveCall('connected');
+        // FIX 2: clear incomingCall state after answering
+        // FIX 6: stop tones explicitly
+        stopTones();
+        setIncomingCall(null);
+        setActiveCall("connected");
       } else {
         const data = await res.json();
         alert(data.error || "Failed to answer call");
         handleEndCallCleanup();
       }
-
     } catch (err) {
       isAnsweringRef.current = false;
-      console.error("Error answering call:", err);
+      console.error("Answer error:", err);
       alert("Error answering call: " + err.message);
       handleDeclineCall();
     }
   };
 
-  // Decline inbound call
+  // ── Decline inbound call ──────────────────────────────────────────────────
   const handleDeclineCall = async () => {
     if (!incomingCall) return;
     const { sessionId } = incomingCall;
     const token = sessionStorage.getItem("authToken");
-
     handleEndCallCleanup();
-
     if (sessionId && token) {
       try {
         await fetch(`/api/call/decline/${sessionId}`, {
           method: "POST",
-          headers: { "Authorization": `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` }
         });
       } catch (err) {
-        console.error("Error declining call:", err);
+        console.error("Decline error:", err);
       }
     }
   };
 
-  // Hang up call
+  // ── Hang up ───────────────────────────────────────────────────────────────
   const handleHangUp = async () => {
-    const sId = callSessionId;
+    // FIX 1 (continued): read from ref, not from potentially stale state
+    const sId = callSessionIdRef.current;
     const token = sessionStorage.getItem("authToken");
-
     handleEndCallCleanup();
-
     if (sId && token) {
       try {
         await fetch(`/api/call/end/${sId}`, {
           method: "POST",
-          headers: { "Authorization": `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` }
         });
       } catch (err) {
-        console.error("Error ending call:", err);
+        console.error("End call error:", err);
       }
     }
   };
 
-  // Listen to the outbound trigger event
+  // ── Listen for outbound call events from other components ─────────────────
   useEffect(() => {
-    const handleOutboundCallEvent = (e) => {
-      const { bookingId, targetName } = e.detail;
-      handleStartCall(bookingId, targetName);
+    const handler = (e) => {
+      const { bookingId, targetName: tName } = e.detail;
+      handleStartCall(bookingId, tName);
     };
-
-    window.addEventListener("initiateCall", handleOutboundCallEvent);
-    return () => window.removeEventListener("initiateCall", handleOutboundCallEvent);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    window.addEventListener("initiateCall", handler);
+    return () => window.removeEventListener("initiateCall", handler);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <>
+      {/* FIX 3: define the missing slideDown keyframe animation */}
+      <style>{`
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        @keyframes pulsRing {
+          0%   { box-shadow: 0 0 0 0 rgba(52,211,153,0.6); }
+          70%  { box-shadow: 0 0 0 14px rgba(52,211,153,0); }
+          100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+        }
+      `}</style>
+
+      {/* Hidden audio elements */}
       <audio ref={remoteAudioRef} autoPlay style={{ position: "absolute", width: 0, height: 0, opacity: 0 }} />
       <audio ref={ringtoneAudioRef} src="/ringtone.wav" loop style={{ position: "absolute", width: 0, height: 0, opacity: 0 }} />
       <audio ref={callerTuneAudioRef} src="/caller_tune.wav" loop style={{ position: "absolute", width: 0, height: 0, opacity: 0 }} />
-      {/* Active Call Floating Overlay Panel (Glassmorphism layout) */}
+
+      {/* ── Active Call Panel ─────────────────────────────────────────────── */}
       {activeCall && (
         <div style={{
-          position: "fixed",
-          bottom: "30px",
-          right: "30px",
-          width: "320px",
-          backgroundColor: "rgba(15, 23, 42, 0.85)",
-          backdropFilter: "blur(16px)",
-          borderRadius: "24px",
-          padding: "24px",
+          position: "fixed", bottom: 30, right: 30, width: 320,
+          backgroundColor: "rgba(15,23,42,0.88)", backdropFilter: "blur(16px)",
+          borderRadius: 24, padding: 24,
           boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
           border: "1px solid rgba(255,255,255,0.1)",
-          zIndex: 99999,
-          color: "white",
+          zIndex: 99999, color: "white",
           fontFamily: "'Outfit', sans-serif",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center"
+          display: "flex", flexDirection: "column", alignItems: "center"
         }}>
-          {/* Pulse ring decoration for ringing state */}
+          {/* Avatar with pulse ring when ringing */}
           <div style={{
-            width: "80px",
-            height: "80px",
-            borderRadius: "50%",
+            width: 80, height: 80, borderRadius: "50%",
             backgroundColor: "rgba(255,255,255,0.08)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: "36px",
-            marginBottom: "16px",
-            boxShadow: activeCall === 'ringing' ? "0 0 20px rgba(52, 211, 153, 0.4)" : "0 0 20px rgba(99, 102, 241, 0.4)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 36, marginBottom: 16,
+            animation: activeCall === "ringing" ? "pulsRing 1.4s ease-out infinite" : "none",
             border: "1px solid rgba(255,255,255,0.15)"
           }}>
             👤
           </div>
-          <h3 style={{ margin: "0 0 6px 0", fontSize: "16px", fontWeight: 700, textAlign: "center" }}>
+
+          <h3 style={{ margin: "0 0 6px 0", fontSize: 16, fontWeight: 700, textAlign: "center" }}>
             {targetName || "User"}
           </h3>
           <p style={{
-            margin: "0 0 20px 0",
-            fontSize: "13px",
-            color: activeCall === 'ringing' ? "#34d399" : "#818cf8",
-            fontWeight: 600
+            margin: "0 0 20px 0", fontSize: 13, fontWeight: 600,
+            color: activeCall === "ringing" ? "#34d399" : "#818cf8"
           }}>
-            {activeCall === 'ringing' ? "🔔 Calling via Workzy..." : `🎙️ In Call: ${formatDuration(callDuration)}`}
+            {activeCall === "ringing"
+              ? "🔔 Ringing via Workzy..."
+              : `🎙️ In Call: ${formatDuration(callDuration)}`}
           </p>
 
-          {activeCall === 'connected' && (
-            <div style={{ display: "flex", gap: "16px", marginBottom: "20px" }}>
-              {/* Mute Mic Button */}
-              <button
-                onClick={toggleMute}
-                style={{
-                  backgroundColor: isMuted ? "#ef4444" : "rgba(255,255,255,0.1)",
-                  color: "white",
-                  border: "none",
-                  width: "40px",
-                  height: "40px",
-                  borderRadius: "50%",
-                  fontSize: "16px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  transition: "all 0.2s"
-                }}
-                title={isMuted ? "Unmute Mic" : "Mute Mic"}
-              >
+          {activeCall === "connected" && (
+            <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
+              <button onClick={toggleMute} title={isMuted ? "Unmute" : "Mute"} style={{
+                backgroundColor: isMuted ? "#ef4444" : "rgba(255,255,255,0.1)",
+                color: "white", border: "none", width: 40, height: 40,
+                borderRadius: "50%", fontSize: 16, display: "flex",
+                alignItems: "center", justifyContent: "center", cursor: "pointer"
+              }}>
                 {isMuted ? "🔇" : "🎙️"}
               </button>
-
-              {/* Speaker Button */}
-              <button
-                onClick={toggleSpeaker}
-                style={{
-                  backgroundColor: isSpeaker ? "#6366f1" : "rgba(255,255,255,0.1)",
-                  color: "white",
-                  border: "none",
-                  width: "40px",
-                  height: "40px",
-                  borderRadius: "50%",
-                  fontSize: "16px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  transition: "all 0.2s"
-                }}
-                title="Speaker Mode"
-              >
-                🔊
-              </button>
-
-              {/* Receiver Button */}
-              <button
-                onClick={toggleReceiver}
-                style={{
-                  backgroundColor: !isSpeaker ? "#6366f1" : "rgba(255,255,255,0.1)",
-                  color: "white",
-                  border: "none",
-                  width: "40px",
-                  height: "40px",
-                  borderRadius: "50%",
-                  fontSize: "16px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  transition: "all 0.2s"
-                }}
-                title="Receiver Mode"
-              >
-                📞
-              </button>
+              <button onClick={toggleSpeaker} title="Speaker" style={{
+                backgroundColor: isSpeaker ? "#6366f1" : "rgba(255,255,255,0.1)",
+                color: "white", border: "none", width: 40, height: 40,
+                borderRadius: "50%", fontSize: 16, display: "flex",
+                alignItems: "center", justifyContent: "center", cursor: "pointer"
+              }}>🔊</button>
+              <button onClick={toggleReceiver} title="Earpiece" style={{
+                backgroundColor: !isSpeaker ? "#6366f1" : "rgba(255,255,255,0.1)",
+                color: "white", border: "none", width: 40, height: 40,
+                borderRadius: "50%", fontSize: 16, display: "flex",
+                alignItems: "center", justifyContent: "center", cursor: "pointer"
+              }}>📞</button>
             </div>
           )}
 
-          {/* End Call Button */}
-          <button
-            onClick={(e) => { e.stopPropagation(); handleHangUp(); }}
-            style={{
-              backgroundColor: "#ef4444",
-              color: "white",
-              border: "none",
-              width: "50px",
-              height: "50px",
-              borderRadius: "50%",
-              fontSize: "20px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-              boxShadow: "0 6px 15px rgba(239,68,68,0.4)"
-            }}
-          >
+          <button onClick={(e) => { e.stopPropagation(); handleHangUp(); }} style={{
+            backgroundColor: "#ef4444", color: "white", border: "none",
+            width: 50, height: 50, borderRadius: "50%", fontSize: 20,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer", boxShadow: "0 6px 15px rgba(239,68,68,0.4)"
+          }}>
             🛑
           </button>
         </div>
       )}
 
-      {/* Incoming Call Toast Banner (WhatsApp Style) */}
+      {/* ── Incoming Call Toast ───────────────────────────────────────────── */}
       {incomingCall && !activeCall && (
         <div style={{
-          position: "fixed",
-          top: "20px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: "90%",
-          maxWidth: "420px",
-          backgroundColor: "#1e293b",
-          borderRadius: "16px",
-          padding: "16px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3)",
-          zIndex: 100000,
-          fontFamily: "'Outfit', sans-serif",
-          border: "1px solid rgba(255,255,255,0.1)",
+          position: "fixed", top: 20, left: "50%",
+          transform: "translateX(-50%)", width: "90%", maxWidth: 420,
+          backgroundColor: "#1e293b", borderRadius: 16, padding: 16,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.35)",
+          zIndex: 100000, fontFamily: "'Outfit', sans-serif",
+          border: "1px solid rgba(255,255,255,0.12)",
           backdropFilter: "blur(12px)",
+          // FIX 3: animation now works because keyframe is defined above
           animation: "slideDown 0.3s ease-out"
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{
-              width: "48px",
-              height: "48px",
-              borderRadius: "50%",
+              width: 48, height: 48, borderRadius: "50%",
               backgroundColor: "rgba(255,255,255,0.1)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "24px"
-            }}>
-              👤
-            </div>
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24
+            }}>👤</div>
             <div>
-              <h4 style={{ color: "white", margin: 0, fontSize: "15px", fontWeight: 700 }}>
+              <h4 style={{ color: "white", margin: 0, fontSize: 15, fontWeight: 700 }}>
                 {incomingCall.callerName}
               </h4>
-              <p style={{ color: "#34d399", margin: "2px 0 0 0", fontSize: "12px", fontWeight: 500 }}>
-                📞 Incoming App Call...
+              <p style={{ color: "#34d399", margin: "2px 0 0 0", fontSize: 12, fontWeight: 500 }}>
+                📞 Incoming App Call…
               </p>
             </div>
           </div>
-          <div style={{ display: "flex", gap: "10px" }}>
+          <div style={{ display: "flex", gap: 10 }}>
             <button
               onClick={(e) => { e.stopPropagation(); handleAnswerCall(); }}
-              style={{
-                backgroundColor: "#16a34a",
-                color: "white",
-                border: "none",
-                width: "40px",
-                height: "40px",
-                borderRadius: "50%",
-                fontSize: "18px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                boxShadow: "0 4px 10px rgba(22,163,74,0.3)"
-              }}
               title="Answer"
-            >
-              📞
-            </button>
+              style={{
+                backgroundColor: "#16a34a", color: "white", border: "none",
+                width: 40, height: 40, borderRadius: "50%", fontSize: 18,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", boxShadow: "0 4px 10px rgba(22,163,74,0.3)"
+              }}
+            >📞</button>
             <button
               onClick={(e) => { e.stopPropagation(); handleDeclineCall(); }}
-              style={{
-                backgroundColor: "#ef4444",
-                color: "white",
-                border: "none",
-                width: "40px",
-                height: "40px",
-                borderRadius: "50%",
-                fontSize: "18px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                boxShadow: "0 4px 10px rgba(239,68,68,0.3)"
-              }}
               title="Decline"
-            >
-              🛑
-            </button>
+              style={{
+                backgroundColor: "#ef4444", color: "white", border: "none",
+                width: 40, height: 40, borderRadius: "50%", fontSize: 18,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", boxShadow: "0 4px 10px rgba(239,68,68,0.3)"
+              }}
+            >🛑</button>
           </div>
         </div>
       )}
