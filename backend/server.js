@@ -85,7 +85,8 @@ if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../build")));
 
   // Catch-all: any route not matched by /api/* serves React's index.html
-  app.get("*", (req, res) => {
+  // Note: Express 5 requires named wildcard params — "/{*path}" not bare "*"
+  app.get("/{*path}", (req, res) => {
     res.sendFile(path.resolve(__dirname, "../build", "index.html"));
   });
 } else {
