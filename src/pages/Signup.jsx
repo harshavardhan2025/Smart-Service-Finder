@@ -5,6 +5,16 @@ import authBg from "../assets/auth-bg.jpg";
 import authMobileBg from "../assets/auth-mobile-bg.png";
 import { use3dTilt } from "../utils/use3dTilt";
 
+// Safe JSON parser – prevents "Unexpected token" errors when backend
+// returns HTML instead of JSON (e.g. proxy error when backend is down).
+const safeJson = async (response) => {
+  const contentType = response.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) return response.json();
+  const text = await response.text();
+  console.error("Non-JSON response:", text.slice(0, 200));
+  return { error: "Server is unreachable – please ensure the backend is running on port 5000." };
+};
+
 const PROFESSIONS = [
   { group: "Main Services", options: ["Carpentry", "Plumbing", "Electrical", "Beauty, Salon & Spa", "Doctors"] },
   { group: "Cleaning", options: ["Floor cleaning", "Utensils Cleaning", "House Cleaning"] },
@@ -188,7 +198,7 @@ function Signup() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ accessToken, ...extraBody })
       });
-      const data = await response.json();
+      const data = await safeJson(response);
 
       // ── Account already exists (409 from backend) ──
       if (response.status === 409) {
@@ -288,7 +298,7 @@ function Signup() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password, phone, role, profession: role === "worker" ? profession : null, city: role === "worker" ? city : "Mumbai" })
       });
-      const data = await response.json();
+      const data = await safeJson(response);
       setIsLoading(false);
 
       // ── Account already exists ──

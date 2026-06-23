@@ -6,6 +6,19 @@ import authMobileBg from "../assets/auth-mobile-bg.png";
 import { use3dTilt } from "../utils/use3dTilt";
 import { fetchAllWorkersCached } from "../utils/workerService";
 
+// Safe JSON parser – prevents "Unexpected token 'A'" errors when backend
+// is unreachable and the proxy/server returns an HTML error page instead of JSON.
+const safeJson = async (response) => {
+  const contentType = response.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    return response.json();
+  }
+  // Non-JSON body (HTML error page from proxy or server) – return a safe error object
+  const text = await response.text();
+  console.error("Non-JSON response received:", text.slice(0, 200));
+  return { error: "Server is unreachable – please try again shortly." };
+};
+
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,7 +39,7 @@ function Login() {
         body: JSON.stringify({ accessToken })
       });
       console.log(`📡 Backend responded with status: ${response.status}`);
-      const data = await response.json();
+      const data = await safeJson(response);
       console.log("📡 Backend responded with data:", data);
       if (!response.ok) {
         console.error("❌ Backend token verification failed:", data.error);
@@ -39,7 +52,7 @@ function Login() {
     } catch (err) {
       console.error("💥 Fetch error verifying Google token:", err);
       setIsLoading(false);
-      setLoginStatus({ type: "error", message: `Google Sign-In failed: ${err.message}` });
+      setLoginStatus({ type: "error", message: "Network error! The backend server is unreachable. Please ensure it is running." });
     }
   };
 
@@ -171,7 +184,7 @@ function Login() {
         body: JSON.stringify({ email, password })
       });
 
-      const data = await response.json();
+      const data = await safeJson(response);
 
       if (!response.ok) {
         setIsLoading(false);
@@ -182,7 +195,7 @@ function Login() {
       handleLoginSuccess(data);
     } catch (err) {
       setIsLoading(false);
-      setLoginStatus({ type: "error", message: "Network error! Please check your connection." });
+      setLoginStatus({ type: "error", message: "Network error! The backend server is unreachable. Please ensure it is running on port 5000." });
     }
   };
 
