@@ -4,7 +4,7 @@
   "outputDirectory": "build",
   "installCommand": "npm install && cd backend && npm install",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api" }
+    { "source": "/api/(.*)", "destination": "/api/index" }
   ],
   "functions": {
     "api/index.js": {

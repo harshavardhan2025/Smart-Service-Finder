@@ -1,6 +1,22 @@
 // Vercel Serverless Function Entry Point
-// This file is the bridge between Vercel's serverless runtime and our Express backend.
+// Uses dynamic import() to load the ES Module backend (server.js uses "type":"module"
+// from backend/package.json) within a CommonJS wrapper so Vercel handles it correctly.
 
-import app from "../backend/server.js";
+let appPromise = null;
 
-export default app;
+const getApp = () => {
+  if (!appPromise) {
+    appPromise = import("../backend/server.js").then((mod) => mod.default);
+  }
+  return appPromise;
+};
+
+module.exports = async (req, res) => {
+  try {
+    const app = await getApp();
+    return app(req, res);
+  } catch (err) {
+    console.error("Serverless function failed to initialize:", err);
+    res.status(500).json({ error: "Server initialization failed: " + err.message });
+  }
+};
