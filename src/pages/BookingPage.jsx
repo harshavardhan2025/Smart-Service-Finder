@@ -278,7 +278,7 @@ function BookingPage() {
       });
       setShowSuccessOverlay(true);
     } catch(err) {
-       setFailureMessage(`Cloud Sync Dispatch Error: ${err.message || 'Connection lost'}`);
+       setFailureMessage(err.message || "Booking failed. Please try again.");
        setShowFailureOverlay(true);
     }
   };
