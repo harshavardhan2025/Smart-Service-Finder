@@ -12,8 +12,15 @@ import connectDB from "./config/db.js";
 
 dotenv.config();
 
-// Connect Database
-connectDB();
+// Connect Database — wrapped in try/catch so a MongoDB error never
+// calls process.exit() and kills the Vercel serverless function.
+(async () => {
+  try {
+    await connectDB();
+  } catch (err) {
+    console.error("⚠️  DB startup connection failed (will retry per request):", err.message);
+  }
+})();
 
 import authRoutes from "./routes/authRoutes.js";
 import workerRoutes from "./routes/workerRoutes.js";
@@ -50,6 +57,11 @@ app.use(compression());
 app.use(limiter);
 app.use(cors());
 app.use(express.json());
+
+// ── Health check endpoint (no auth, no DB needed) ──
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString(), env: process.env.NODE_ENV || "development" });
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/workers", workerRoutes);
@@ -98,9 +110,11 @@ const PORT = process.env.PORT || 5000;
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`Server running on ${PORT}`);
-    // Start background timer to check for booking timeouts every 30 seconds
+    // Booking timeout checker — only run in long-lived server processes (not Vercel)
     setInterval(checkBookingTimeouts, 30000);
   });
+} else {
+  console.log("Running on Vercel serverless — skipping app.listen() and setInterval");
 }
 
 export default app;
