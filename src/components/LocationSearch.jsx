@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FaMicrophone } from "react-icons/fa";
+import { FaMicrophone, FaSearch } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const SERVICE_SUGGESTIONS = [
@@ -129,10 +129,10 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
   };
 
   return (
-    <div className="service-search-container" style={{ padding: "20px" }}>
+    <div className="service-search-container" style={{ padding: "20px 24px", margin: "14px 20px", background: "linear-gradient(135deg, rgba(49, 82, 91, 0.04) 0%, rgba(49, 82, 91, 0.01) 100%)", border: "1.5px solid rgba(49, 82, 91, 0.1)", borderRadius: "16px" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
-        <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary, #6b7280)", fontWeight: 600 }}>
-          🔍 Search Services or Workers
+        <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary, #6b7280)", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
+          <FaSearch size={14} style={{ color: "var(--primary)" }} /> Search Services or Workers
         </p>
         {detectedLocation && (
           <div 

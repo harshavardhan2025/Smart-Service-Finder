@@ -8,6 +8,7 @@ import CheapWorkers from "../components/CheapWorkers";
 import NearbyWorkers from "../components/NearbyWorkers";
 import { filterWorkersClientSide } from "../utils/workerService";
 import SkeletonLoader from "../components/SkeletonLoader";
+import { FaMapMarkerAlt, FaRobot, FaLocationArrow, FaMap, FaBolt, FaCircle, FaUser, FaStethoscope } from "react-icons/fa";
 
 const truncateLocation = (loc) => {
   if (!loc) return "";
@@ -436,23 +437,79 @@ function Home() {
       {/* Hero Welcome Banner */}
       <div
         style={{
-          background: "linear-gradient(135deg, #394f8a 0%, #4a5fc1 100%)",
-          borderBottom: "4px solid #18233c",
+          background: "linear-gradient(135deg, #dfb453 0%, #f1a829 100%)",
+          borderBottom: "4px solid #a67c1e",
           color: "white",
           padding: "50px 20px",
           textAlign: "center",
-          boxShadow: "0 10px 30px rgba(57, 79, 138, 0.15)"
+          boxShadow: "0 10px 30px rgba(223, 180, 83, 0.25)",
+          position: "relative",
+          overflow: "hidden"
         }}
       >
-        <h1 style={{ margin: "0 0 10px 0", fontSize: "32px", fontWeight: 800, color: "white" }}>
-          Find Reliable Service Experts Near You 📍
+        {/* Subtle clouds */}
+        <svg 
+          viewBox="0 0 24 24" 
+          style={{ 
+            position: "absolute", 
+            left: "8%", 
+            bottom: "15%", 
+            width: "70px", 
+            height: "70px", 
+            opacity: 0.15, 
+            fill: "white",
+            pointerEvents: "none",
+            animation: "drift 25s linear infinite"
+          }}
+        >
+          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+        </svg>
+        <svg 
+          viewBox="0 0 24 24" 
+          style={{ 
+            position: "absolute", 
+            right: "10%", 
+            top: "10%", 
+            width: "90px", 
+            height: "90px", 
+            opacity: 0.12, 
+            fill: "white",
+            pointerEvents: "none",
+            animation: "driftReverse 30s linear infinite"
+          }}
+        >
+          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+        </svg>
+
+        <style>{`
+          @keyframes drift {
+            0% { transform: translateX(0px) translateY(0px); }
+            50% { transform: translateX(15px) translateY(-5px); }
+            100% { transform: translateX(0px) translateY(0px); }
+          }
+          @keyframes driftReverse {
+            0% { transform: translateX(0px) translateY(0px); }
+            50% { transform: translateX(-20px) translateY(5px); }
+            100% { transform: translateX(0px) translateY(0px); }
+          }
+          .horizontal-scroll-container {
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+          }
+          .horizontal-scroll-container::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
+
+        <h1 style={{ margin: "0 0 10px 0", fontSize: "32px", fontWeight: 800, color: "#1e3a8a", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+          Find Reliable Service Experts Near You <FaMapMarkerAlt size={28} style={{ color: "#ef4444" }} />
         </h1>
-        <p style={{ margin: 0, fontSize: "16px", color: "rgba(255, 255, 255, 0.9)", fontWeight: "500" }}>
+        <p style={{ margin: 0, fontSize: "16px", color: "rgba(30, 58, 138, 0.85)", fontWeight: "600" }}>
           Auto-matching, verified professional workers, and instant secure bookings.
         </p>
       </div>
 
-      <div style={{ flex: 1, maxWidth: "1200px", width: "100%", margin: "0 auto", padding: "10px" }}>
+      <div style={{ flex: 1, width: "100%", margin: "0 auto", padding: "0px", boxSizing: "border-box" }}>
 
         <LocationSearch
           value={locationText}
@@ -477,30 +534,31 @@ function Home() {
               }, 100);
             }}
             style={{
-              margin: "0 20px 10px 20px",
-              padding: "14px 16px",
-              backgroundColor: "var(--primary-light)",
-              borderLeft: "4px solid var(--primary)",
-              borderRadius: "6px",
+              margin: "0 20px 14px 20px",
+              padding: "20px 24px",
+              backgroundColor: "rgba(165, 185, 92, 1)",
+              borderLeft: "5px solid #6b17e1ff",
+              borderRadius: "12px",
               fontSize: "14px",
-              color: "var(--primary-dark)",
+              color: "#ffffff",
               display: "flex",
               flexDirection: "column",
-              gap: "6px",
+              gap: "8px",
               cursor: "pointer",
               transition: "transform 0.15s ease",
-              minHeight: "155px"
+              minHeight: "auto",
+              boxShadow: "0 4px 14px rgba(222, 222, 215, 0.8)"
             }}
             onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.01)"}
             onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ fontSize: "18px" }}>🤖</span>
+              <FaRobot size={18} style={{ color: "#ffffff" }} />
               <span>
                 <strong>AI-Powered Nearby Search Active</strong>
               </span>
             </div>
-            <div style={{ fontSize: "13px", color: "var(--text-secondary)", lineHeight: "1.4" }}>
+            <div style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.9)", lineHeight: "1.5" }}>
               Based on your fetched location <strong>{getShortLocation(searchedLocation)}</strong>, our AI has automatically searched the database to find the Top Rated Professionals, Budget-Friendly Workers, and Instant Bookings in your area and surrounding locations!
             </div>
             
@@ -510,7 +568,7 @@ function Home() {
               </div>
             ) : aiSuggestedWorkers.length > 0 ? (
               <div style={{ marginTop: "12px" }}>
-                <strong style={{ fontSize: "13px", color: "var(--primary-dark)" }}>AI Recommended Experts for You:</strong>
+                <strong style={{ fontSize: "13px", color: "#ffffff" }}>AI Recommended Experts for You:</strong>
                 <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "8px" }}>
                   {aiSuggestedWorkers.map((worker, idx) => (
                     <Link 
@@ -519,7 +577,7 @@ function Home() {
                       onClick={() => localStorage.setItem("selected_worker", JSON.stringify(worker))}
                       style={{ textDecoration: "none" }}
                     >
-                      <div style={{ backgroundColor: "white", padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--primary-light)", display: "flex", flexDirection: "column", gap: "4px", minWidth: "140px", cursor: "pointer", transition: "transform 0.2s" }}
+                      <div style={{ backgroundColor: "white", padding: "8px 12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.2)", display: "flex", flexDirection: "column", gap: "4px", minWidth: "140px", cursor: "pointer", transition: "transform 0.2s" }}
                         onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.03)"}
                         onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
                       >
@@ -532,7 +590,7 @@ function Home() {
                 </div>
               </div>
             ) : (
-               <div style={{ marginTop: "8px", fontSize: "12px", color: "var(--text-secondary)" }}>
+               <div style={{ marginTop: "8px", fontSize: "12px", color: "rgba(255, 255, 255, 0.8)" }}>
                 No specific experts matched locally. Explore all options below!
               </div>
             )}
@@ -543,17 +601,20 @@ function Home() {
         <div 
           className="premium-card homepage-location-bar" 
           style={{ 
-            margin: "10px 20px 14px 20px", 
-            padding: "16px",
-            backgroundColor: "var(--bg-card)",
+            margin: "14px 0px", 
+            padding: "20px 24px",
+            background: "linear-gradient(135deg, rgba(2, 132, 199, 0.05) 0%, rgba(2, 132, 199, 0.01) 100%)",
+            borderTop: "1.5px solid rgba(2, 132, 199, 0.12)",
+            borderBottom: "1.5px solid rgba(2, 132, 199, 0.12)",
+            borderRadius: "0px",
             display: "flex",
             flexDirection: "column",
             gap: "10px"
           }}
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-secondary)" }}>
-              📍 Set Service Location
+            <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "4px" }}>
+              <FaMapMarkerAlt size={12} /> Set Service Location
             </span>
             {searchedLocation && (
               <span style={{ fontSize: "11px", color: "#16a34a", fontWeight: "bold" }}>
@@ -601,23 +662,27 @@ function Home() {
                   borderRadius: "8px",
                   backgroundColor: "#0284c7",
                   color: "white",
-                  whiteSpace: "nowrap"
+                  whiteSpace: "nowrap",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px"
                 }}
               >
-                📍 Auto Detect
+                <FaLocationArrow size={12} /> Auto Detect
               </button>
             </div>
           </div>
         </div>
 
         {/* Map collapse toggle option - visible on all screen sizes */}
-        <div className="map-toggle-container" style={{ padding: "0 20px 14px 20px" }}>
+        <div className="map-toggle-container" style={{ padding: "0 0px 14px 0px" }}>
           <button
             onClick={() => setShowMap(!showMap)}
             style={{
               width: "100%",
               padding: "12px",
-              borderRadius: "10px",
+              borderRadius: "0px",
               fontWeight: "bold",
               fontSize: "14px",
               cursor: "pointer",
@@ -627,11 +692,14 @@ function Home() {
               gap: "8px",
               backgroundColor: showMap ? "#f1f5f9" : "var(--primary-light)",
               color: showMap ? "var(--text-primary)" : "var(--primary-dark)",
-              border: "1.5px solid var(--border-color)",
+              borderTop: "1.5px solid var(--border-color)",
+              borderBottom: "1.5px solid var(--border-color)",
+              borderLeft: "none",
+              borderRight: "none",
               boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
             }}
           >
-            {showMap ? "🗺️ Hide Interactive Map ▲" : "🗺️ Show Interactive Map ▼"}
+            <FaMap size={14} /> {showMap ? "Hide Interactive Map ▲" : "Show Interactive Map ▼"}
           </button>
         </div>
 
@@ -643,10 +711,10 @@ function Home() {
         </div>
 
         {/* 🚨 Instant Booking Services (Active Online Workers) */}
-        <div className="fade-in home-section" style={{ padding: "12px 20px 8px 20px", marginBottom: "4px" }}>
+        <div className="fade-in home-section" style={{ padding: "20px 24px", margin: "14px 0px", background: "linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(239, 68, 68, 0.01) 100%)", borderRadius: "0px", borderTop: "1.5px solid rgba(239, 68, 68, 0.12)", borderBottom: "1.5px solid rgba(239, 68, 68, 0.12)", borderLeft: "none", borderRight: "none" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
-            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-primary)", margin: 0 }}>
-              ⚡ Instant Booking Services
+            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-primary)", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
+              <FaBolt style={{ color: "#eab308" }} /> Instant Booking Services
             </h2>
             <span style={{ backgroundColor: "#fee2e2", color: "#dc2626", padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
               <span className="pulse-dot" style={{ width: "6px", height: "6px", backgroundColor: "#dc2626", borderRadius: "50%", display: "inline-block" }} />
@@ -700,10 +768,12 @@ function Home() {
                     position: "relative"
                   }}
                 >
-                  <span style={{ position: "absolute", top: "15px", right: "15px", backgroundColor: "var(--primary-light)", color: "var(--primary-dark)", padding: "4px 8px", borderRadius: "12px", fontSize: "10px", fontWeight: 700 }}>
-                    🟢 ONLINE
+                   <span style={{ position: "absolute", top: "15px", right: "15px", backgroundColor: "var(--primary-light)", color: "var(--primary-dark)", padding: "4px 8px", borderRadius: "12px", fontSize: "10px", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <FaCircle size={8} style={{ color: "#22c55e" }} /> ONLINE
                   </span>
-                  <div style={{ fontSize: "32px", marginBottom: "12px", textShadow: "0 4px 8px rgba(0,0,0,0.1)" }}>{worker.service.includes("Doctors") ? "🩺" : "👷"}</div>
+                  <div style={{ marginBottom: "12px" }}>
+                    {worker.service.includes("Doctors") ? <FaStethoscope size={32} style={{ color: "var(--primary)" }} /> : <FaUser size={32} style={{ color: "var(--primary)" }} />}
+                  </div>
                   <h3 style={{ margin: "0 0 4px 0", fontSize: "18px", fontWeight: "bold", color: "var(--text-primary)" }}>{worker.name}</h3>
                   <p style={{ margin: "0 0 8px 0", fontSize: "13px", color: "var(--text-secondary)", fontWeight: 500 }}>{worker.service}</p>
                   

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import authBg from "../assets/auth-bg.jpg";
 import authMobileBg from "../assets/auth-mobile-bg.png";
 import { use3dTilt } from "../utils/use3dTilt";
@@ -22,6 +23,7 @@ const safeJson = async (response) => {
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loginStatus, setLoginStatus] = useState(null); // { type: 'success'|'error', message: '' }
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -311,19 +313,40 @@ function Login() {
 
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <label style={{ fontSize: isMobile ? "13px" : "14px", fontWeight: 600, color: "var(--text-main)" }}>Password</label>
-              <input
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => { setPassword(e.target.value); setLoginStatus(null); }}
-                style={{ 
-                  width: "100%", 
-                  boxSizing: "border-box",
-                  padding: isMobile ? "10px" : "12px",
-                  borderColor: loginStatus?.type === "error" ? "#fecaca" : undefined,
-                  transition: "border-color 0.2s"
-                }}
-              />
+              <div style={{ position: "relative" }}>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => { setPassword(e.target.value); setLoginStatus(null); }}
+                  style={{ 
+                    width: "100%", 
+                    boxSizing: "border-box",
+                    padding: isMobile ? "10px" : "12px",
+                    paddingRight: "40px",
+                    borderColor: loginStatus?.type === "error" ? "#fecaca" : undefined,
+                    transition: "border-color 0.2s"
+                  }}
+                />
+                <span
+                  role="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: "absolute",
+                    right: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    color: "var(--text-muted)",
+                    padding: "4px",
+                    userSelect: "none"
+                  }}
+                >
+                  {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                </span>
+              </div>
             </div>
 
             <button

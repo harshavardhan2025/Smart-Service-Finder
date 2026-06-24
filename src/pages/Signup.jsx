@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import authBg from "../assets/auth-bg.jpg";
 import authMobileBg from "../assets/auth-mobile-bg.png";
 import { use3dTilt } from "../utils/use3dTilt";
@@ -179,6 +180,7 @@ function Signup() {
   const [email, setEmail]       = useState("");
   const [phone, setPhone]       = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [role, setRole]         = useState("user");
   const [profession, setProfession] = useState("Carpentry");
   const [city, setCity]         = useState("");
@@ -674,7 +676,33 @@ function Signup() {
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                   <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Password</label>
-                  <input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: "100%", boxSizing: "border-box" }} />
+                  <div style={{ position: "relative" }}>
+                    <input 
+                      type={showPassword ? "text" : "password"} 
+                      placeholder="••••••••" 
+                      value={password} 
+                      onChange={(e) => setPassword(e.target.value)} 
+                      style={{ width: "100%", boxSizing: "border-box", paddingRight: "40px" }} 
+                    />
+                    <span
+                      role="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      style={{
+                        position: "absolute",
+                        right: "12px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        color: "var(--text-muted)",
+                        padding: "4px",
+                        userSelect: "none"
+                      }}
+                    >
+                      {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                    </span>
+                  </div>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                   <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Register As</label>

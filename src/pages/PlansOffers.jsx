@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { FaTag, FaStethoscope, FaCar, FaLock, FaStar, FaUser, FaCheckCircle, FaCreditCard, FaPercent } from "react-icons/fa";
 
 const BASE_URL = "";
 
@@ -240,137 +241,155 @@ function PlansOffers() {
         
         {/* Page Header */}
         <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <h1 style={{ color: "var(--text-main)", fontWeight: 800, fontSize: "36px", margin: "0 0 10px 0", letterSpacing: "-0.5px" }}>
-            🏷️ Plans & Seasonal Offers
+          <h1 style={{ color: "#1e3a8a", fontWeight: 800, fontSize: "36px", margin: "0 0 10px 0", letterSpacing: "-0.5px", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
+            <FaTag style={{ color: "#dfb453" }} /> Plans & Seasonal Offers
           </h1>
-          <p style={{ color: "var(--text-muted)", fontSize: "16px", maxWidth: "600px", margin: "0 auto" }}>
+          <p style={{ color: "rgba(49, 82, 91, 0.85)", fontSize: "16px", maxWidth: "600px", margin: "0 auto", fontWeight: 500 }}>
             Save big on your home utilities with customized annual service packages and active promotional discount coupons.
           </p>
         </div>
 
         {/* Pricing Segment */}
-        <h2 style={{ fontSize: "24px", fontWeight: 800, color: "var(--text-main)", marginBottom: 32, textAlign: "center" }}>
+        <h2 style={{ fontSize: "24px", fontWeight: 800, color: "#2563eb", marginBottom: 32, textAlign: "center" }}>
           Choose Your Service Plan
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 30, marginBottom: 56 }}>
           {loading && plans.length === 0
             ? [1, 2, 3].map(i => <SkeletonPlanCard key={i} />)
-            : plans.map((plan, i) => (
-            <div 
-              key={i}
-              className="premium-card"
-              style={{
-                backgroundColor: "var(--bg-card)",
-                borderRadius: 16,
-                padding: 32,
-                border: plan.popular ? "2px solid #eab308" : "1px solid var(--border)",
-                position: "relative",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                transition: "all 0.2s ease-in-out"
-              }}
-            >
-              {plan.popular && (
-                <span style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", backgroundColor: "#eab308", color: "#1e293b", padding: "4px 14px", borderRadius: 20, fontSize: 11, fontWeight: 800, boxShadow: "0 4px 12px rgba(234, 179, 8, 0.3)" }}>
-                  MOST POPULAR ⭐
-                </span>
-              )}
-              <div>
-                <h3 style={{ margin: "0 0 12px 0", fontSize: 20, fontWeight: 700, color: plan.popular ? "#eab308" : "var(--text-main)" }}>{plan.title}</h3>
-                <div style={{ display: "flex", alignItems: "baseline", marginBottom: 24 }}>
-                  <span style={{ fontSize: 36, fontWeight: 800, color: "var(--text-main)" }}>{plan.price}</span>
-                  <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>/{plan.period}</span>
-                </div>
-                <ul style={{ paddingLeft: 20, margin: "0 0 32px 0", color: "var(--text-main)", fontSize: 14, lineHeight: "1.8" }}>
-                  {plan.features.map((f, idx) => <li key={idx} style={{ marginBottom: 8 }}>{f}</li>)}
-                </ul>
-                {plan.workerId && (
-                  <div style={{ marginBottom: 20, padding: "10px 14px", backgroundColor: "var(--border)", borderRadius: "8px", border: "1px solid var(--border)", display: "flex", alignItems: "center", gap: "12px" }}>
-                    <span style={{ fontSize: "20px" }}>👷</span>
-                    <div>
-                      <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Primary Assigned Expert</p>
-                      <p style={{ margin: 0, fontSize: "13px", fontWeight: "bold", color: "#34d399" }}>
-                        {workers.find(w => String(w._id || w.id) === String(plan.workerId))?.name || "Expert Professional"}
-                      </p>
+            : plans.map((plan, i) => {
+              // Custom premium color tones for plans
+              const bgTone = plan.popular 
+                ? "linear-gradient(135deg, rgba(234, 179, 8, 0.07) 0%, rgba(234, 179, 8, 0.02) 100%)" 
+                : i % 2 === 0 
+                  ? "linear-gradient(135deg, rgba(49, 82, 91, 0.07) 0%, rgba(49, 82, 91, 0.02) 100%)" 
+                  : "linear-gradient(135deg, rgba(14, 165, 233, 0.07) 0%, rgba(14, 165, 233, 0.02) 100%)";
+              const borderCol = plan.popular 
+                ? "2px solid rgba(234, 179, 8, 0.5)" 
+                : i % 2 === 0 
+                  ? "1.5px solid rgba(49, 82, 91, 0.25)" 
+                  : "1.5px solid rgba(14, 165, 233, 0.25)";
+              return (
+                <div 
+                  key={i}
+                  className="premium-card"
+                  style={{
+                    background: bgTone,
+                    borderRadius: 16,
+                    padding: 32,
+                    border: borderCol,
+                    position: "relative",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    transition: "all 0.2s ease-in-out"
+                  }}
+                >
+                  {plan.popular && (
+                    <span style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", backgroundColor: "#eab308", color: "#1e293b", padding: "4px 14px", borderRadius: 20, fontSize: 11, fontWeight: 800, boxShadow: "0 4px 12px rgba(234, 179, 8, 0.3)", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                      MOST POPULAR <FaStar size={10} />
+                    </span>
+                  )}
+                  <div>
+                    <h3 style={{ margin: "0 0 12px 0", fontSize: 20, fontWeight: 700, color: plan.popular ? "#eab308" : "var(--text-main)" }}>{plan.title}</h3>
+                    <div style={{ display: "flex", alignItems: "baseline", marginBottom: 24 }}>
+                      <span style={{ fontSize: 36, fontWeight: 800, color: "var(--text-main)" }}>{plan.price}</span>
+                      <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>/{plan.period}</span>
                     </div>
+                    <ul style={{ paddingLeft: 20, margin: "0 0 32px 0", color: "var(--text-main)", fontSize: 14, lineHeight: "1.8" }}>
+                      {plan.features.map((f, idx) => <li key={idx} style={{ marginBottom: 8 }}>{f}</li>)}
+                    </ul>
+                    {plan.workerId && (
+                      <div style={{ marginBottom: 20, padding: "10px 14px", backgroundColor: "var(--border)", borderRadius: "8px", border: "1px solid var(--border)", display: "flex", alignItems: "center", gap: "12px" }}>
+                        <FaUser size={18} style={{ color: "var(--primary)" }} />
+                        <div>
+                          <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Primary Assigned Expert</p>
+                          <p style={{ margin: 0, fontSize: "13px", fontWeight: "bold", color: "#34d399" }}>
+                            {workers.find(w => String(w._id || w.id) === String(plan.workerId))?.name || "Expert Professional"}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              {userPlans.includes(plan.title) ? (
-                <button 
-                  disabled
-                  style={{
-                    width: "100%", padding: "14px", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700,
-                    backgroundColor: "var(--border)", color: "var(--text-muted)", cursor: "not-allowed"
-                  }}
-                >
-                  Subscribed ✅
-                </button>
-              ) : isLoggedIn && sessionStorage.getItem("userRole") === "user" ? (
-                <button 
-                  onClick={() => {
-                    setPayingPlan(plan);
-                    setAppliedCoupon("");
-                    setCouponSuccess("");
-                    setCouponError("");
-                    setDiscountAmount(0);
-                  }}
-                  style={{
-                    width: "100%", padding: "14px", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer",
-                    backgroundColor: plan.color || "var(--primary)", color: "white", transition: "all 0.2s", boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.filter = "brightness(1.1)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.filter = "none"; }}
-                >
-                  {plan.btnText}
-                </button>
-              ) : (
-                <button 
-                  onClick={() => {
-                    if (isLoggedIn) {
-                      alert("🔑 Customer Account Required!\n\nLogging you out now. Please log in with a customer account to subscribe to premium plans.");
-                      sessionStorage.clear();
-                      localStorage.removeItem("userLocation");
-                      localStorage.removeItem("userCity");
-                      localStorage.removeItem("userCoordsLat");
-                      localStorage.removeItem("userCoordsLng");
-                    }
-                    navigate("/login");
-                  }}
-                  className="btn-secondary"
-                  style={{
-                    width: "100%", padding: "14px", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer"
-                  }}
-                >
-                  🔒 Login to Subscribe
-                </button>
-              )}
-            </div>
-          ))}
+                  {userPlans.includes(plan.title) ? (
+                    <button 
+                      disabled
+                      style={{
+                        width: "100%", padding: "14px", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700,
+                        backgroundColor: "var(--border)", color: "var(--text-muted)", cursor: "not-allowed", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px"
+                      }}
+                    >
+                      Subscribed <FaCheckCircle size={14} />
+                    </button>
+                  ) : isLoggedIn && sessionStorage.getItem("userRole") === "user" ? (
+                    <button 
+                      onClick={() => {
+                        setPayingPlan(plan);
+                        setAppliedCoupon("");
+                        setCouponSuccess("");
+                        setCouponError("");
+                        setDiscountAmount(0);
+                      }}
+                      style={{
+                        width: "100%", padding: "14px", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer",
+                        backgroundColor: plan.color || "var(--primary)", color: "white", transition: "all 0.2s", boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.filter = "brightness(1.1)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.filter = "none"; }}
+                    >
+                      {plan.btnText}
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={() => {
+                        if (isLoggedIn) {
+                          alert("🔑 Customer Account Required!\n\nLogging you out now. Please log in with a customer account to subscribe to premium plans.");
+                          sessionStorage.clear();
+                          localStorage.removeItem("userLocation");
+                          localStorage.removeItem("userCity");
+                          localStorage.removeItem("userCoordsLat");
+                          localStorage.removeItem("userCoordsLng");
+                        }
+                        navigate("/login");
+                      }}
+                      className="btn-secondary"
+                      style={{
+                        width: "100%", padding: "14px", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: "6px"
+                      }}
+                    >
+                      <FaLock size={12} /> Login to Subscribe
+                    </button>
+                  )}
+                </div>
+              );
+            })}
         </div>
 
         {/* Offers Segment */}
-        <h2 style={{ fontSize: "24px", fontWeight: 800, color: "var(--text-main)", marginBottom: 32, textAlign: "center" }}>
-          Active Promo Coupons
+        <h2 style={{ fontSize: "24px", fontWeight: 800, color: "var(--text-main)", marginBottom: 32, textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+          <FaPercent style={{ color: "#34d399" }} /> Active Promo Coupons
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 24 }}>
           {loading && offers.length === 0
             ? [1, 2, 3, 4].map(i => <SkeletonOfferCard key={i} />)
-            : offers.map((offer, i) => (
-            <div 
-              key={i}
-              className="premium-card coupon-card"
-              style={{
-                backgroundColor: "var(--bg-card)",
-                borderRadius: 14,
-                padding: 24,
-                border: "1px dashed var(--border)",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center"
-              }}
-            >
+            : offers.map((offer, i) => {
+              // Tone-on-tone green background for promo codes
+              const couponBg = "linear-gradient(135deg, rgba(52, 211, 153, 0.08) 0%, rgba(52, 211, 153, 0.02) 100%)";
+              const couponBorder = "1.5px dashed rgba(52, 211, 153, 0.4)";
+              return (
+                <div 
+                  key={i}
+                  className="premium-card coupon-card"
+                  style={{
+                    background: couponBg,
+                    borderRadius: 14,
+                    padding: 24,
+                    border: couponBorder,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center"
+                  }}
+                >
               <div style={{ flex: 1, paddingRight: "10px" }}>
                 <span style={{ backgroundColor: "rgba(52, 211, 153, 0.15)", color: "#34d399", border: "1px solid rgba(52, 211, 153, 0.2)", padding: "4px 10px", borderRadius: 8, fontSize: 12, fontWeight: 700 }}>
                   {offer.discount}
@@ -397,14 +416,16 @@ function PlansOffers() {
                   className="btn-secondary"
                   style={{
                     padding: "10px 16px", cursor: "pointer",
-                    fontWeight: 700, fontSize: 12, minWidth: 110
+                    fontWeight: 700, fontSize: 12, minWidth: 110,
+                    display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px"
                   }}
                 >
-                  🔒 Login to Copy
+                  <FaLock size={10} /> Login to Copy
                 </button>
               )}
             </div>
-          ))}
+          );
+        })}
         </div>
 
         {/* 💳 PREMIUM PAYMENT GATEWAY MODAL */}
@@ -437,7 +458,7 @@ function PlansOffers() {
               </button>
 
               <div style={{ textAlign: "center", marginBottom: "24px" }}>
-                <span style={{ fontSize: "36px" }}>💳</span>
+                <FaCreditCard size={36} style={{ color: "var(--primary)", marginBottom: "10px" }} />
                 <h3 style={{ margin: "10px 0 6px 0", fontSize: "20px", fontWeight: 800 }}>Confirm Subscription</h3>
                 <p style={{ margin: 0, fontSize: "14px", color: "var(--text-muted)" }}>{payingPlan.title}</p>
               </div>

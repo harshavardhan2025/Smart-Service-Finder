@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import "../App.css";
 import Sidebar from "./Sidebar";
+import { FaTools, FaTag, FaBell, FaSun, FaMoon, FaUser, FaCrown } from "react-icons/fa";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -94,8 +95,9 @@ function Navbar() {
             transition: "padding-left 0.25s ease-in-out" 
           }}
         >
-          <h2 style={{ margin: 0, fontWeight: 800, fontSize: "22px", letterSpacing: "-0.5px" }}>
-            🛠️ Work<span style={{ color: "#c1851dff" }}>zy</span>
+          <h2 style={{ margin: 0, fontWeight: 800, fontSize: "22px", letterSpacing: "-0.5px", display: "flex", alignItems: "center", gap: "8px", whiteSpace: "nowrap" }}>
+            <FaTools style={{ color: "var(--primary)" }} />
+            <span>Work<span style={{ color: "#c1851dff" }}>zy</span></span>
           </h2>
         </Link>
 
@@ -120,7 +122,7 @@ function Navbar() {
               onMouseEnter={(e) => e.currentTarget.style.color = "var(--primary)"}
               onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-secondary)"}
             >
-              🏷️ Plans & Offers
+              <FaTag size={13} style={{ color: "#f1a829" }} /> Plans & Offers
             </Link>
           )}
 
@@ -145,7 +147,7 @@ function Navbar() {
                 }}
                 title="Notifications"
               >
-                🔔
+                <FaBell size={18} />
                 {notifications.filter(n => !n.is_read).length > 0 && (
                   <span
                     style={{
@@ -266,13 +268,15 @@ function Navbar() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: "var(--border-color)",
+              backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)",
               color: "var(--text-primary)",
-              transition: "all 0.2s"
+              transition: "all 0.2s",
+              borderBottom: "none",
+              boxShadow: "none"
             }}
             title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
           >
-            {isDark ? "☀️" : "🌙"}
+            {isDark ? <FaSun size={18} style={{ color: "#f59e0b" }} /> : <FaMoon size={18} style={{ color: "#4f46e5" }} />}
           </button>
 
           {isLoggedIn ? (
@@ -281,57 +285,66 @@ function Navbar() {
                  {/* Worker Dashboard Quick Link */}
                  {sessionStorage.getItem("userRole") === "worker" && (
                    <Link to="/worker-dashboard" state={{ resetTab: "status" }} style={{ textDecoration: "none" }}>
-                     <button
-                       style={{
-                         backgroundColor: "var(--primary)",
-                         color: "white",
-                         border: "none",
-                         padding: "10px 18px",
-                         cursor: "pointer",
-                         borderRadius: "8px",
-                         fontWeight: 600
-                       }}
-                     >
-                       🛠️ Worker Panel
-                     </button>
+                      <button
+                        style={{
+                          backgroundColor: "var(--primary)",
+                          color: "white",
+                          border: "none",
+                          padding: "10px 18px",
+                          cursor: "pointer",
+                          borderRadius: "8px",
+                          fontWeight: 600,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px"
+                        }}
+                      >
+                        <FaTools size={14} /> Worker Panel
+                      </button>
                    </Link>
                  )}
 
                  {/* User Dashboard Quick Link */}
                  {sessionStorage.getItem("userRole") === "user" && (
                    <Link to="/user-dashboard" style={{ textDecoration: "none" }}>
-                     <button
-                       style={{
-                         backgroundColor: "var(--primary)",
-                         color: "white",
-                         border: "none",
-                         padding: "10px 18px",
-                         cursor: "pointer",
-                         borderRadius: "8px",
-                         fontWeight: 600
-                       }}
-                     >
-                       👤 My Dashboard
-                     </button>
+                      <button
+                        style={{
+                          backgroundColor: "var(--primary)",
+                          color: "white",
+                          border: "none",
+                          padding: "10px 18px",
+                          cursor: "pointer",
+                          borderRadius: "8px",
+                          fontWeight: 600,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px"
+                        }}
+                      >
+                        <FaUser size={14} /> My Dashboard
+                      </button>
                    </Link>
                  )}
 
                  {/* Admin Dashboard Quick Link */}
                  {sessionStorage.getItem("userRole") === "admin" && (
                    <Link to="/admin-dashboard" state={{ resetTab: "overview" }} style={{ textDecoration: "none" }}>
-                     <button
-                       style={{
-                         backgroundColor: "var(--primary)",
-                         color: "white",
-                         border: "none",
-                         padding: "10px 18px",
-                         cursor: "pointer",
-                         borderRadius: "8px",
-                         fontWeight: 600
-                       }}
-                     >
-                       👑 Admin Panel
-                     </button>
+                      <button
+                        style={{
+                          backgroundColor: "var(--primary)",
+                          color: "white",
+                          border: "none",
+                          padding: "10px 18px",
+                          cursor: "pointer",
+                          borderRadius: "8px",
+                          fontWeight: 600,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px"
+                        }}
+                      >
+                        <FaCrown size={14} /> Admin Panel
+                      </button>
                    </Link>
                  )}
                 <button
@@ -353,25 +366,45 @@ function Navbar() {
           ) : (
             !isMobile && (
               <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                <Link to="/login">
+                <Link to="/login" style={{ textDecoration: "none" }}>
                   <button
                     style={{
                       backgroundColor: "transparent",
-                      color: "var(--text-primary)",
-                      border: "1px solid var(--border-color)",
-                      boxShadow: "none"
+                      color: "var(--primary)",
+                      border: "1.5px solid var(--primary)",
+                      borderBottom: "1.5px solid var(--primary)",
+                      borderRadius: "20px",
+                      padding: "8px 20px",
+                      fontSize: "14px",
+                      fontWeight: 700,
+                      boxShadow: "none",
+                      cursor: "pointer",
+                      transition: "all 0.2s"
                     }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(49, 82, 91, 0.05)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
                   >
                     Login
                   </button>
                 </Link>
-
-                <Link to="/signup">
+ 
+                <Link to="/signup" style={{ textDecoration: "none" }}>
                   <button
                     style={{
                       backgroundColor: "var(--primary)",
-                      color: "white"
+                      color: "white",
+                      border: "none",
+                      borderBottom: "none",
+                      borderRadius: "20px",
+                      padding: "8px 20px",
+                      fontSize: "14px",
+                      fontWeight: 700,
+                      boxShadow: "0 4px 10px rgba(49, 82, 91, 0.2)",
+                      cursor: "pointer",
+                      transition: "all 0.2s"
                     }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 14px rgba(49, 82, 91, 0.3)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 10px rgba(49, 82, 91, 0.2)"; }}
                   >
                     Signup
                   </button>

@@ -58,7 +58,7 @@ function CheapWorkers({ searchedLocation, userCoords }) {
     .slice(0, 4);
 
   return (
-    <div className="fade-in" style={{ padding: "10px 20px 14px 20px", margin: "0" }}>
+    <div className="fade-in" style={{ padding: "20px 24px", margin: "14px 0px", background: "linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.01) 100%)", borderRadius: "0px", borderTop: "1.5px solid rgba(16, 185, 129, 0.12)", borderBottom: "1.5px solid rgba(16, 185, 129, 0.12)", borderLeft: "none", borderRight: "none" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
         <h2 style={{ margin: "0 0 4px 0", color: "var(--text-primary)", fontWeight: 800 }}>
           💰 Recommended Value

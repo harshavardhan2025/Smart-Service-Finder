@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import { FaUser, FaCheckCircle, FaBuilding, FaMapMarkerAlt, FaStar, FaBolt, FaRupeeSign, FaShieldAlt, FaMagic, FaClock, FaLock } from "react-icons/fa";
 
 function WorkerProfile() {
   const navigate = useNavigate();
@@ -90,10 +91,11 @@ function WorkerProfile() {
                   justifyContent: "center",
                   fontSize: "32px",
                   fontWeight: 800,
-                  boxShadow: "0 4px 14px rgba(0,0,0,0.06)"
+                  boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
+                  color: "white"
                 }}
               >
-                👤
+                <FaUser size={32} />
               </div>
               <div>
                 <span
@@ -106,11 +108,13 @@ function WorkerProfile() {
                     fontWeight: 700,
                     textTransform: "uppercase",
                     letterSpacing: "0.05em",
-                    display: "inline-block",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
                     marginBottom: "8px"
                   }}
                 >
-                  Verified Professional ✅
+                  Verified Professional <FaCheckCircle size={12} />
                 </span>
                 <h2 style={{ margin: 0, fontSize: "24px", fontWeight: 800 }}>
                   {worker.name}
@@ -128,19 +132,27 @@ function WorkerProfile() {
               </div>
               <div>
                 <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Location / City</label>
-                <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "var(--text-primary)" }}>🏙️ {worker.city}</p>
+                <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <FaBuilding size={14} style={{ color: "var(--primary)" }} /> {worker.city}
+                </p>
               </div>
               <div>
                 <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Proximity Distance</label>
-                <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "var(--text-primary)" }}>📍 {worker.distance || "1.0 KM"} Away</p>
+                <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <FaMapMarkerAlt size={14} style={{ color: "#ef4444" }} /> {worker.distance || "1.0 KM"} Away
+                </p>
               </div>
               <div>
                 <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Overall Rating</label>
-                <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "#eab308" }}>⭐ {worker.rating} / 5.0</p>
+                <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "#eab308", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <FaStar size={14} style={{ color: "#eab308" }} /> {worker.rating} / 5.0
+                </p>
               </div>
               <div>
                 <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Response Time</label>
-                <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "var(--primary)" }}>⚡ &lt; 15 Mins (Fast)</p>
+                <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "var(--primary)", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <FaBolt size={14} style={{ color: "#eab308" }} /> &lt; 15 Mins (Fast)
+                </p>
               </div>
             </div>
 
@@ -163,7 +175,9 @@ function WorkerProfile() {
                   ₹{calculatedPrice} <span style={{ fontSize: "13px", fontWeight: 500 }}>/ visit</span>
                 </p>
               </div>
-              <div style={{ fontSize: "32px" }}>💰</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "40px", height: "40px", borderRadius: "50%", backgroundColor: "var(--primary-dark)", color: "white" }}>
+                <FaRupeeSign size={20} />
+              </div>
             </div>
 
             <div style={{ marginBottom: "28px" }} />
@@ -171,15 +185,15 @@ function WorkerProfile() {
             {/* Badges / Guarantees */}
             <div style={{ borderTop: "1.5px solid var(--border-color)", paddingTop: "24px", marginBottom: "32px" }}>
               <h4 style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-primary)", margin: "0 0 12px 0" }}>Hub Guarantees</h4>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "var(--text-secondary)" }}>
-                  <span>🛡️</span> Background verified & certified professional
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "var(--text-secondary)" }}>
+                  <FaShieldAlt size={14} style={{ color: "#16a34a" }} /> Background verified & certified professional
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "var(--text-secondary)" }}>
-                  <span>✨</span> Equipped with modern, sanitized equipment
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "var(--text-secondary)" }}>
+                  <FaMagic size={14} style={{ color: "#3b82f6" }} /> Equipped with modern, sanitized equipment
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "var(--text-secondary)" }}>
-                  <span>⏱️</span> On-time service arrival guarantee
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "var(--text-secondary)" }}>
+                  <FaClock size={14} style={{ color: "#f59e0b" }} /> On-time service arrival guarantee
                 </div>
               </div>
             </div>
@@ -214,12 +228,14 @@ function WorkerProfile() {
                   fontWeight: 700,
                   fontSize: "16px",
                   cursor: "pointer",
-                  display: "block",
-                  textAlign: "center",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
                   boxSizing: "border-box"
                 }}
               >
-                🔒 Login to Book & Schedule
+                <FaLock size={14} /> Login to Book & Schedule
               </button>
             )}
           </div>

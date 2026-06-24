@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FaBars, FaHome, FaBook, FaGift, FaUser, FaTimes, FaPercent } from "react-icons/fa";
+import { FaBars, FaHome, FaBook, FaGift, FaUser, FaTimes, FaPercent, FaTools } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 function Sidebar() {
@@ -139,8 +139,9 @@ function Sidebar() {
       >
         {/* Logo / Title */}
         <div style={{ marginBottom: "30px", paddingTop: "24px", borderBottom: "1px solid rgba(255,255,255,0.08)", paddingBottom: "20px" }}>
-          <h2 style={{ margin: 0, fontSize: "22px", fontWeight: 800, letterSpacing: "0.5px", display: "flex", alignItems: "center", gap: "10px" }}>
-            🛠️ Work<span style={{ color: "#c1851dff" }}>zy</span>
+          <h2 style={{ margin: 0, fontSize: "22px", fontWeight: 800, letterSpacing: "0.5px", display: "flex", alignItems: "center", gap: "10px", whiteSpace: "nowrap" }}>
+            <FaTools style={{ color: "var(--primary)" }} />
+            <span>Work<span style={{ color: "#c1851dff" }}>zy</span></span>
           </h2>
           <p style={{ margin: "6px 0 0 0", fontSize: "12px", color: "#94a3b8" }}>
             {sidebarSubtitle}

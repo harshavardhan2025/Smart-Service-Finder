@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { filterWorkersClientSide } from "../utils/workerService";
+import { FaTools, FaHandPointRight, FaSearch, FaBuilding, FaMapMarkerAlt, FaStar, FaMap } from "react-icons/fa";
 
 const SERVICES = [
   { id: "carpentry", name: "Carpentry", icon: "🪚" },
@@ -232,13 +233,50 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
     : [];
 
   return (
-    <div className="fade-in" style={{ padding: "10px 20px 14px 20px", fontFamily: "'Outfit', sans-serif" }}>
-      <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 6px 0" }}>
-        🛠️ Explore & Book Services
+    <div className="fade-in nearby-workers-container" style={{ padding: "20px 24px", margin: "14px 0px", background: "linear-gradient(135deg, rgba(49, 82, 91, 0.05) 0%, rgba(49, 82, 91, 0.01) 100%)", borderRadius: "0px", borderTop: "1.5px solid rgba(49, 82, 91, 0.12)", borderBottom: "1.5px solid rgba(49, 82, 91, 0.12)", borderLeft: "none", borderRight: "none", fontFamily: "'Outfit', sans-serif" }}>
+      <h2 className="nearby-title" style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 6px 0", display: "flex", alignItems: "center", gap: "8px" }}>
+        <FaTools size={20} style={{ color: "var(--primary)" }} /> Explore & Book Services
       </h2>
-      <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: "0 0 10px 0" }}>
+      <p className="nearby-subtitle" style={{ color: "var(--text-secondary)", fontSize: "14px", margin: "0 0 10px 0" }}>
         Select a category below to view verified available professionals near you.
       </p>
+
+      {/* Styles for mobile horizontal scrolling slider and full width support */}
+      <style>{`
+        @media (max-width: 768px) {
+          .nearby-workers-container {
+            padding: 16px 12px !important;
+            margin: 10px 0 !important;
+            border-radius: 0px !important;
+          }
+          .nearby-title, .nearby-subtitle {
+            padding-left: 0px !important;
+            padding-right: 0px !important;
+          }
+          .services-grid-container {
+            display: flex !important;
+            overflow-x: auto !important;
+            scroll-snap-type: x mandatory;
+            gap: 12px !important;
+            margin-left: 0px !important;
+            margin-right: 0px !important;
+            padding: 4px 0px 12px 0px !important;
+            margin-bottom: 16px !important;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none; /* Hide scrollbar for Firefox */
+          }
+          .services-grid-container::-webkit-scrollbar {
+            display: none; /* Hide scrollbar for Chrome/Safari */
+          }
+          .services-grid-container .category-card {
+            min-width: 110px !important;
+            max-width: 110px !important;
+            scroll-snap-align: start;
+            flex: 0 0 auto !important;
+            padding: 14px 6px !important;
+          }
+        }
+      `}</style>
 
       {/* Services Grid (Main Categories) */}
       <div
@@ -255,7 +293,7 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
           return (
             <div
               key={service.id}
-              className="premium-card"
+              className="premium-card category-card"
               onClick={() => handleServiceClick(service)}
               style={{
                 backgroundColor: isSelected ? "var(--primary-light)" : "var(--bg-card)",
@@ -457,7 +495,7 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
       >
         {!activeServiceText ? (
           <div className="premium-card" style={{ textAlign: "center", backgroundColor: "var(--bg-primary)" }}>
-            <p style={{ fontSize: "36px", margin: "0 0 12px 0" }}>👉</p>
+            <FaHandPointRight size={36} style={{ color: "var(--primary)", marginBottom: "12px" }} />
             <h4 style={{ fontSize: "18px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 4px 0" }}>
               Ready to find a Professional?
             </h4>
@@ -480,7 +518,7 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
 
             {filteredWorkers.length === 0 ? (
               <div className="premium-card" style={{ textAlign: "center", backgroundColor: "rgba(245, 158, 11, 0.1)", borderColor: "rgba(245, 158, 11, 0.3)" }}>
-                <p style={{ fontSize: "28px", margin: "0 0 8px 0" }}>🔍</p>
+                <FaSearch size={28} style={{ color: "#d97706", marginBottom: "8px" }} />
                 <p style={{ fontWeight: "800", color: "#b45309", margin: "0 0 4px 0", fontSize: "16px" }}>
                   No {activeServiceText} experts found near you
                 </p>
@@ -524,8 +562,8 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
                       >
                         {worker.service}
                       </span>
-                      <p style={{ margin: "14px 0 4px 0", fontSize: "14px", color: "var(--primary)", fontWeight: "bold" }}>
-                        🏙️ {truncateLocation(worker.city)}
+                      <p style={{ margin: "14px 0 4px 0", fontSize: "14px", color: "var(--primary)", fontWeight: "bold", display: "flex", alignItems: "center", gap: "4px" }}>
+                        <FaBuilding size={12} /> {truncateLocation(worker.city)}
                       </p>
                       {worker.distanceKm !== undefined ? (
                         <p style={{ margin: "4px 0", fontSize: "13px", display: "flex", alignItems: "center", gap: "6px" }}>
@@ -538,18 +576,21 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
                               padding: "2px 10px",
                               fontSize: "12px",
                               fontWeight: 700,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "4px"
                             }}
                           >
-                            🗺️ {worker.distanceKm < 0.5 ? "below 0.5 km" : `${worker.distanceKm} km away`}
+                            <FaMap size={10} /> {worker.distanceKm < 0.5 ? "below 0.5 km" : `${worker.distanceKm} km away`}
                           </span>
                         </p>
                       ) : (
-                        <p style={{ margin: "4px 0 4px 0", fontSize: "14px", color: "var(--text-secondary)", fontWeight: 600 }}>
-                          📍 {worker.distance} Away
+                        <p style={{ margin: "4px 0 4px 0", fontSize: "14px", color: "var(--text-secondary)", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px" }}>
+                          <FaMapMarkerAlt size={12} /> {worker.distance} Away
                         </p>
                       )}
-                      <p style={{ margin: "4px 0 4px 0", fontSize: "14px", color: "#eab308", fontWeight: "bold" }}>
-                        ⭐ {worker.rating}
+                      <p style={{ margin: "4px 0 4px 0", fontSize: "14px", color: "#eab308", fontWeight: "bold", display: "flex", alignItems: "center", gap: "4px" }}>
+                        <FaStar size={12} style={{ color: "#eab308" }} /> {worker.rating}
                       </p>
                       <span className="price-badge">₹{worker.price || (worker.service.includes("Carpentry") ? 399 : worker.service.includes("Plumbing") ? 299 : worker.service.includes("Doctors") ? 599 : 349)}</span>
                     </div>
