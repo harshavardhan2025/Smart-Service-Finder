@@ -729,7 +729,7 @@ function Signup() {
                     </div>
                   </>
                 )}
-                <button type="submit" className="btn-primary" style={{ padding: "12px", fontSize: "15px", marginTop: "6px", width: "100%" }}>
+                <button type="submit" className="btn-primary" style={{ padding: "12px", fontSize: "15px", marginTop: "6px", width: "100%", background: "linear-gradient(135deg, #dfb453 0%, #f1a829 100%)", borderBottom: "4px solid #a67c1e", color: "white", boxShadow: "0 10px 30px rgba(223, 180, 83, 0.25)" }}>
                   Sign Up
                 </button>
               </form>

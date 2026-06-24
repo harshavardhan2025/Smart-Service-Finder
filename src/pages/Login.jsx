@@ -360,7 +360,11 @@ function Login() {
                 width: "100%",
                 opacity: isLoading ? 0.7 : 1,
                 cursor: isLoading ? "not-allowed" : "pointer",
-                position: "relative"
+                position: "relative",
+                background: "linear-gradient(135deg, #dfb453 0%, #f1a829 100%)",
+                borderBottom: "4px solid #a67c1e",
+                color: "white",
+                boxShadow: "0 10px 30px rgba(223, 180, 83, 0.25)"
               }}
             >
               {isLoading ? (
