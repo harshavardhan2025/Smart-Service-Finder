@@ -61,6 +61,7 @@ function Login() {
   // Prefetch workers & location data while user is on login page
   // so home page loads workers instantly after login
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     // Check for Google OAuth2 redirect token in URL hash
     const hash = window.location.hash;
     if (hash) {

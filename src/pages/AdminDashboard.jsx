@@ -133,15 +133,14 @@ function AdminDashboard() {
 
   const [adminPlans, setAdminPlans] = useState([]);
   const [adminOffers, setAdminOffers] = useState([]);
-
   // Form states for creating/editing a Plan
-  const [editingPlan, setEditingPlan] = useState(null); // null if creating
-  const [planForm, setPlanForm] = useState({ title: "", price: "", features: "", color: "#4f46e5", btnText: "Subscribe Now", workerId: "" });
+  const [editingPlan, setEditingPlan] = useState(null);
+  const [planForm, setPlanForm] = useState({ title: "", price: "", period: "year", features: "", color: "#4f46e5", btnText: "Subscribe Now", workerId: "", terms: "", startDate: "", endDate: "", cancellationPolicy: "", city: "" });
+  const [expandedWorkerRow, setExpandedWorkerRow] = useState(null);
 
   // Form states for creating/editing an Offer
-  const [editingOffer, setEditingOffer] = useState(null); // null if creating
-  const [offerForm, setOfferForm] = useState({ code: "", discount: "", desc: "", expiry: "" });
-
+  const [editingOffer, setEditingOffer] = useState(null);
+  const [offerForm, setOfferForm] = useState({ code: "", discount: "", desc: "", expiry: "", terms: "", startDate: "", endDate: "", city: "", validServices: "", minPrice: "" });
   // Send money form states
   const [sendMoneyWorkerId, setSendMoneyWorkerId] = useState("");
   const [sendMoneyWorkerAmount, setSendMoneyWorkerAmount] = useState("");
@@ -202,7 +201,8 @@ function AdminDashboard() {
                    phone: u.phone || "N/A",
                    status: u.status || "Active",
                    walletBalance: u.walletBalance !== undefined ? u.walletBalance : 1000,
-                   bookings: customerBookings.length
+                   bookings: customerBookings.length,
+                   subscriptions: u.subscriptions || []
                };
            }));
        }
@@ -1784,10 +1784,9 @@ function AdminDashboard() {
                   <thead>
                     <tr style={{ borderBottom: "2px solid #e2e8f0", color: "var(--text-muted)" }}>
                       <th style={{ padding: "12px" }}>Name</th>
-                      <th style={{ padding: "12px" }}>Email</th>
-                      <th style={{ padding: "12px" }}>Phone</th>
-                      <th style={{ padding: "12px" }}>Total Bookings</th>
-                      <th style={{ padding: "12px" }}>Payments Spent</th>
+                      <th style={{ padding: "12px" }}>Contact Info</th>
+                      <th style={{ padding: "12px" }}>Subscription</th>
+                      <th style={{ padding: "12px" }}>Activity</th>
                       <th style={{ padding: "12px" }}>Wallet Balance (₹)</th>
                       <th style={{ padding: "12px", textAlign: "right" }}>Actions</th>
                     </tr>
@@ -1795,13 +1794,41 @@ function AdminDashboard() {
                   <tbody>
                     {filteredCustomers.map((c) => (
                       <tr key={c.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                        <td style={{ padding: "12px", fontWeight: 700, color: "var(--text-main)" }}>{c.name}</td>
-                        <td style={{ padding: "12px" }}>{c.email}</td>
-                        <td style={{ padding: "12px" }}>{c.phone}</td>
-                        <td style={{ padding: "12px", fontWeight: "bold" }}>{c.bookings} bookings</td>
-                        <td style={{ padding: "12px", fontWeight: 800, color: "var(--primary-dark)" }}>{getCustomerSpent(c.name)}</td>
-                        <td style={{ padding: "12px", fontWeight: "800", color: "#16a34a" }}>₹{c.walletBalance || 0}</td>
-                        <td style={{ padding: "12px", textAlign: "right" }}>
+                        <td style={{ padding: "12px", fontWeight: 700, color: "var(--text-main)", verticalAlign: "top" }}>{c.name}</td>
+                        <td style={{ padding: "12px", verticalAlign: "top" }}>
+                          <div style={{ fontSize: "12px", color: "var(--text-main)" }}>✉️ {c.email}</div>
+                          <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>📞 {c.phone}</div>
+                        </td>
+                        <td style={{ padding: "12px", verticalAlign: "top" }}>
+                          {c.subscriptions && c.subscriptions.length > 0 ? (
+                            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                              {c.subscriptions.map((sub, index) => (
+                                <div key={index} style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                                  <span style={{ 
+                                    backgroundColor: sub.status === "Active" ? "#f0fdf4" : "#fef2f2", 
+                                    color: sub.status === "Active" ? "#166534" : "#991b1b", 
+                                    padding: "4px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: "bold", 
+                                    border: sub.status === "Active" ? "1px solid #bbf7d0" : "1px solid #fecaca", 
+                                    width: "fit-content" 
+                                  }}>
+                                    {sub.planTitle} ({sub.status})
+                                  </span>
+                                  <span style={{ fontSize: "10px", color: "#64748b" }}>
+                                    Valid till: {new Date(sub.expiryDate).toLocaleDateString()}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <span style={{ backgroundColor: "#f1f5f9", color: "#64748b", padding: "4px 8px", borderRadius: "6px", fontSize: "11px", border: "1px solid #e2e8f0" }}>No Active Plan</span>
+                          )}
+                        </td>
+                        <td style={{ padding: "12px", verticalAlign: "top" }}>
+                          <div style={{ fontSize: "12px", fontWeight: "bold" }}>{c.bookings} bookings</div>
+                          <div style={{ fontSize: "11px", color: "var(--primary-dark)", marginTop: "4px", fontWeight: 800 }}>Spent: {getCustomerSpent(c.name)}</div>
+                        </td>
+                        <td style={{ padding: "12px", fontWeight: "800", color: "#16a34a", verticalAlign: "top" }}>₹{c.walletBalance || 0}</td>
+                        <td style={{ padding: "12px", textAlign: "right", verticalAlign: "top" }}>
                           {/* 💸 SEND MONEY ACTION */}
                           <button
                             onClick={() => {
@@ -2041,20 +2068,24 @@ function AdminDashboard() {
                       style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1" }}
                     />
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                      <input 
-                        type="text" 
-                        placeholder="Price (e.g. ₹2,999)" 
-                        value={planForm.price} 
-                        onChange={(e) => setPlanForm({ ...planForm, price: e.target.value })}
-                        style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1" }}
-                      />
+                      <div style={{ display: "flex", alignItems: "center", border: "1px solid #cbd5e1", borderRadius: "8px", overflow: "hidden", background: "#fff" }}>
+                        <span style={{ padding: "10px 14px", backgroundColor: "#f8fafc", color: "var(--text-secondary)", fontWeight: "bold", borderRight: "1px solid #cbd5e1" }}>₹</span>
+                        <input 
+                          type="text" 
+                          placeholder="Price (e.g. 2999)" 
+                          value={planForm.price} 
+                          onChange={(e) => setPlanForm({ ...planForm, price: e.target.value.replace(/[^0-9]/g, '') })}
+                          style={{ padding: "10px 14px", border: "none", outline: "none", flex: 1, width: "100%" }}
+                        />
+                      </div>
                       <select 
-                        value={planForm.period} 
+                        value={planForm.period || "year"} 
                         onChange={(e) => setPlanForm({ ...planForm, period: e.target.value })}
                         style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1" }}
                       >
                         <option value="year">per year</option>
                         <option value="month">per month</option>
+                        <option value="quarter">per quarter</option>
                       </select>
                     </div>
                     <textarea 
@@ -2063,6 +2094,29 @@ function AdminDashboard() {
                       onChange={(e) => setPlanForm({ ...planForm, features: e.target.value })}
                       style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1", minHeight: "80px", fontFamily: "inherit" }}
                     />
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "8px", marginTop: "2px" }}>
+                      <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase" }}>Quick Select Features / Services (Click to add/remove):</label>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", maxHeight: "120px", overflowY: "auto", padding: "10px", border: "1px solid #cbd5e1", borderRadius: "8px", backgroundColor: "#f8fafc" }}>
+                        {services.reduce((acc, s) => { acc.push(s.name); if (s.subServices) { s.subServices.forEach(sub => acc.push(sub.name)); } return acc; }, []).map((serviceName) => {
+                          const currentList = (typeof planForm.features === "string" ? planForm.features : "").split(",").map(s => s.trim()).filter(Boolean);
+                          const isSelected = currentList.includes(serviceName);
+                          return (
+                            <button
+                              key={serviceName} type="button"
+                              onClick={() => {
+                                let newList;
+                                if (isSelected) newList = currentList.filter(s => s !== serviceName);
+                                else newList = [...currentList, serviceName];
+                                setPlanForm({ ...planForm, features: newList.join(", ") });
+                              }}
+                              style={{ padding: "4px 10px", borderRadius: "12px", border: `1px solid ${isSelected ? "#3b82f6" : "#cbd5e1"}`, backgroundColor: isSelected ? "#eff6ff" : "white", color: isSelected ? "#2563eb" : "#475569", fontSize: "11px", fontWeight: "600", cursor: "pointer", transition: "all 0.2s" }}
+                            >
+                              {serviceName}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                       <input 
                         type="text" 
@@ -2079,16 +2133,109 @@ function AdminDashboard() {
                         style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1" }}
                       />
                     </div>
-                    <select
-                      value={planForm.workerId}
-                      onChange={(e) => setPlanForm({ ...planForm, workerId: e.target.value })}
-                      style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1", backgroundColor: "var(--bg-card)" }}
-                    >
-                      <option value="">Assign Worker Based on Plan (Optional)</option>
-                      {workers.map(w => (
-                        <option key={w._id} value={w._id}>{w.name} (ID: {w._id.substr(-6).toUpperCase()} - {w.service})</option>
-                      ))}
-                    </select>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                      <div style={{ display: "flex", flexDirection: "column" }}>
+                        <label style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "bold", marginBottom: "2px" }}>Active Start Date</label>
+                        <input 
+                          type="date" 
+                          min={new Date().toISOString().split("T")[0]}
+                          value={planForm.startDate || ""} 
+                          onChange={(e) => setPlanForm({ ...planForm, startDate: e.target.value })}
+                          style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1" }}
+                        />
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column" }}>
+                        <label style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "bold", marginBottom: "2px" }}>Active End Date</label>
+                        <input 
+                          type="date" 
+                          min={planForm.startDate || new Date().toISOString().split("T")[0]}
+                          value={planForm.endDate || ""} 
+                          onChange={(e) => setPlanForm({ ...planForm, endDate: e.target.value })}
+                          style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1" }}
+                        />
+                      </div>
+                    </div>
+
+                    <textarea 
+                      placeholder="Terms & Conditions (e.g. Only valid for standard service requests)" 
+                      value={planForm.terms || ""} 
+                      onChange={(e) => setPlanForm({ ...planForm, terms: e.target.value })}
+                      style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1", minHeight: "60px", fontFamily: "inherit" }}
+                    />
+                    <input 
+                      type="text" 
+                      placeholder="Target City / Location (e.g. Rajahmundry, Kakinada, or leave blank for All)" 
+                      value={planForm.city || ""} 
+                      onChange={(e) => setPlanForm({ ...planForm, city: e.target.value })}
+                      style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1" }}
+                    />
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                      <select
+                        value=""
+                        onChange={(e) => {
+                          const selectedId = e.target.value;
+                          if (!selectedId) return;
+                          const currentIds = (planForm.workerId || "").split(",").map(id => id.trim()).filter(Boolean);
+                          if (!currentIds.includes(selectedId)) {
+                            setPlanForm({ ...planForm, workerId: [...currentIds, selectedId].join(",") });
+                          }
+                        }}
+                        style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1", backgroundColor: "var(--bg-card)" }}
+                      >
+                        <option value="">Add Worker to Plan (Optional)</option>
+                        {workers.filter(w => {
+                          let valid = true;
+                          if (planForm.city && planForm.city.trim() !== "" && planForm.city.toLowerCase() !== "all") {
+                            const validCities = planForm.city.toLowerCase().split(",").map(c => c.trim());
+                            const wCity = (w.city || "").toLowerCase();
+                            const wLoc = (w.location || "").toLowerCase();
+                            if (!validCities.some(c => wCity.includes(c) || wLoc.includes(c))) valid = false;
+                          }
+                          const allServicesLower = services.reduce((acc, s) => { acc.push(s.name.toLowerCase()); if(s.subServices) s.subServices.forEach(sub => acc.push(sub.name.toLowerCase())); return acc; }, []);
+                          const featuresStr = (typeof planForm.features === "string" ? planForm.features : "").toLowerCase();
+                          const mentionedServices = allServicesLower.filter(s => featuresStr.includes(s));
+                          if (mentionedServices.length > 0) {
+                            const wServ = (w.service || "").toLowerCase();
+                            if (!mentionedServices.some(s => s === wServ || wServ.includes(s))) valid = false;
+                          }
+                          return valid;
+                        }).map(w => (
+                          <option key={w._id} value={w._id}>
+                            {w.name} | 📍 {w.location || w.city || "N/A"} | ⭐ {w.rating?.toFixed(1) || "N/A"} | {w.service}
+                          </option>
+                        ))}
+                      </select>
+                      
+                      {planForm.workerId && planForm.workerId.trim() !== "" && (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "2px" }}>
+                          {planForm.workerId.split(",").map(id => id.trim()).filter(Boolean).map(id => {
+                            const worker = workers.find(w => String(w._id || w.id) === id);
+                            return (
+                              <div key={id} style={{ display: "flex", alignItems: "center", backgroundColor: "#f0fdf4", color: "#166534", padding: "6px 12px", borderRadius: "12px", fontSize: "11px", fontWeight: "600", border: "1px solid #bbf7d0", gap: "10px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
+                                <div style={{ display: "flex", flexDirection: "column" }}>
+                                  <span style={{ fontSize: "12px", fontWeight: "bold" }}>{worker ? worker.name : `ID: ${id.substr(-6).toUpperCase()}`}</span>
+                                  {worker && <span style={{ color: "#15803d", fontSize: "10px", marginTop: "2px", fontWeight: "normal" }}>📍 {worker.location || worker.city || "N/A"} | ⭐ {worker.rating?.toFixed(1) || "N/A"}</span>}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const currentIds = planForm.workerId.split(",").map(i => i.trim()).filter(Boolean);
+                                    const newIds = currentIds.filter(i => i !== id);
+                                    setPlanForm({ ...planForm, workerId: newIds.join(",") });
+                                  }}
+                                  style={{ background: "rgba(22, 101, 52, 0.1)", border: "none", color: "#166534", cursor: "pointer", fontSize: "14px", fontWeight: "bold", padding: 0, width: "24px", height: "24px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "background-color 0.2s" }}
+                                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(22, 101, 52, 0.2)"}
+                                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "rgba(22, 101, 52, 0.1)"}
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                     <div style={{ display: "flex", gap: "10px" }}>
                       <button 
                         onClick={async () => {
@@ -2099,20 +2246,26 @@ function AdminDashboard() {
                           try {
                              if (editingPlan) {
                                 const pid = editingPlan._id || editingPlan.id;
-                                await fetch(`/api/plans/${pid}`, {
-                                   method: "PATCH",
-                                   headers: { "Content-Type": "application/json" },
-                                   body: JSON.stringify(payload)
-                                });
-                                setEditingPlan(null);
+                                 await fetch(`/api/plans/${pid}`, {
+                                    method: "PATCH",
+                                    headers: { 
+                                      "Content-Type": "application/json",
+                                      "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`
+                                    },
+                                    body: JSON.stringify(payload)
+                                 });
+                                 setEditingPlan(null);
                              } else {
                                 await fetch("/api/plans", {
                                    method: "POST",
-                                   headers: { "Content-Type": "application/json" },
+                                   headers: { 
+                                     "Content-Type": "application/json",
+                                     "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`
+                                   },
                                    body: JSON.stringify(payload)
                                 });
                              }
-                             setPlanForm({ title: "", price: "", features: "", color: "#4f46e5", btnText: "Subscribe Now", workerId: "" });
+                             setPlanForm({ title: "", price: "", period: "year", features: "", color: "#4f46e5", btnText: "Subscribe Now", workerId: "", terms: "", startDate: "", endDate: "", cancellationPolicy: "", city: "" });
                              syncAdminStore();
                           } catch(err) { alert("🛑 Database Sync Error: Failed to modify Plan ledger."); }
                         }}
@@ -2124,7 +2277,7 @@ function AdminDashboard() {
                         <button 
                           onClick={() => {
                             setEditingPlan(null);
-                            setPlanForm({ title: "", price: "", features: "", color: "#4f46e5", btnText: "Subscribe Now", workerId: "" });
+                            setPlanForm({ title: "", price: "", period: "year", features: "", color: "#4f46e5", btnText: "Subscribe Now", workerId: "", terms: "", startDate: "", endDate: "", cancellationPolicy: "", city: "" });
                           }}
                           style={{ backgroundColor: "#e2e8f0", color: "#475569", border: "none", padding: "12px 20px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}
                         >
@@ -2144,18 +2297,58 @@ function AdminDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {adminPlans.map(p => (
+                      {adminPlans.filter(p => !p.endDate || p.endDate >= new Date().toISOString().split("T")[0]).map(p => (
                         <tr key={p._id || p.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
                           <td style={{ padding: "8px", fontWeight: "bold" }}>{p.title}</td>
-                          <td style={{ padding: "8px" }}>{p.price}/{p.period || "year"}</td>
-                          <td style={{ padding: "8px", fontWeight: "600", color: "#475569" }}>
-                            {p.workerId ? `${workers.find(w => String(w._id || w.id) === String(p.workerId))?.name || "Unknown"} (ID: ${p.workerId})` : "None"}
+                          <td style={{ padding: "8px" }}>₹{(p.price || "").replace("₹", "")}/{p.period || "year"}</td>
+                          <td style={{ padding: "8px", fontWeight: "600", color: "#475569", verticalAlign: "top" }}>
+                            {p.workerId && p.workerId.trim() !== "" ? (
+                              <div style={{ display: "flex", flexDirection: "column", gap: "6px", alignItems: "flex-start" }}>
+                                <button 
+                                  onClick={() => setExpandedWorkerRow(expandedWorkerRow === (p._id || p.id) ? null : (p._id || p.id))}
+                                  style={{ color: "#166534", backgroundColor: "#f0fdf4", padding: "6px 10px", borderRadius: "8px", fontSize: "11px", border: "1px solid #bbf7d0", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px", fontWeight: "bold" }}
+                                >
+                                  ✅ Yes ({p.workerId.split(",").filter(Boolean).length} Workers) {expandedWorkerRow === (p._id || p.id) ? "▲" : "▼"}
+                                </button>
+                                {expandedWorkerRow === (p._id || p.id) && (
+                                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "4px" }}>
+                                    {p.workerId.split(",").map(id => id.trim()).filter(Boolean).map(id => {
+                                      const w = workers.find(worker => String(worker._id || worker.id) === id);
+                                      if (!w) return <span key={id} style={{ fontSize: "11px", backgroundColor: "#f1f5f9", padding: "4px 8px", borderRadius: "6px", color: "#94a3b8" }}>Unknown: {id.substring(id.length - 4)}</span>;
+                                      return (
+                                        <div key={id} style={{ display: "flex", flexDirection: "column", backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0", padding: "4px 8px", borderRadius: "8px", fontSize: "11px", minWidth: "100px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
+                                          <span style={{ color: "#166534", fontWeight: "bold" }}>{w.name}</span>
+                                          <span style={{ color: "#15803d", fontSize: "10px", marginTop: "2px" }}>📍 {w.location || w.city || "N/A"} | ⭐ {w.rating?.toFixed(1) || "N/A"}</span>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <span style={{ color: "#64748b", backgroundColor: "#f8fafc", padding: "6px 10px", borderRadius: "8px", fontSize: "11px", border: "1px solid #e2e8f0", display: "inline-block" }}>
+                                ❌ No
+                              </span>
+                            )}
                           </td>
                           <td style={{ padding: "8px", textAlign: "right" }}>
                             <button 
                               onClick={() => {
                                 setEditingPlan(p);
-                                setPlanForm({ title: p.title, price: p.price, features: p.features.join(", "), color: p.color || "#4f46e5", btnText: p.btnText || "Subscribe Now", workerId: p.workerId || "" });
+                                setPlanForm({ 
+                                  title: p.title, 
+                                  price: p.price, 
+                                  period: p.period || "year",
+                                  features: p.features.join(", "), 
+                                  color: p.color || "#4f46e5", 
+                                  btnText: p.btnText || "Subscribe Now", 
+                                  workerId: p.workerId || "",
+                                  terms: p.terms || "",
+                                  startDate: p.startDate || "",
+                                  endDate: p.endDate || "",
+                                  cancellationPolicy: p.cancellationPolicy || "",
+                                  city: p.city || ""
+                                });
                               }}
                               style={{ backgroundColor: "var(--primary)", color: "white", border: "none", padding: "4px 8px", borderRadius: "4px", fontSize: "11px", marginRight: "6px", cursor: "pointer" }}
                             >
@@ -2218,6 +2411,159 @@ function AdminDashboard() {
                       onChange={(e) => setOfferForm({ ...offerForm, desc: e.target.value })}
                       style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1" }}
                     />
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                      <div style={{ display: "flex", flexDirection: "column" }}>
+                        <label style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "bold", marginBottom: "2px" }}>Active Start Date</label>
+                        <input 
+                          type="date" 
+                          min={new Date().toISOString().split("T")[0]}
+                          value={offerForm.startDate || ""} 
+                          onChange={(e) => setOfferForm({ ...offerForm, startDate: e.target.value })}
+                          style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1" }}
+                        />
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column" }}>
+                        <label style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "bold", marginBottom: "2px" }}>Active End Date</label>
+                        <input 
+                          type="date" 
+                          min={offerForm.startDate || new Date().toISOString().split("T")[0]}
+                          value={offerForm.endDate || ""} 
+                          onChange={(e) => setOfferForm({ ...offerForm, endDate: e.target.value })}
+                          style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1" }}
+                        />
+                      </div>
+                    </div>
+
+                    <textarea 
+                      placeholder="Terms & Conditions (e.g. Valid once per user account)" 
+                      value={offerForm.terms || ""} 
+                      onChange={(e) => setOfferForm({ ...offerForm, terms: e.target.value })}
+                      style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1", minHeight: "60px", fontFamily: "inherit" }}
+                    />
+                    <input 
+                      type="text" 
+                      placeholder="Target City / Location (e.g. Rajahmundry, Kakinada, or leave blank for All)" 
+                      value={offerForm.city || ""} 
+                      onChange={(e) => setOfferForm({ ...offerForm, city: e.target.value })}
+                      style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1" }}
+                    />
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                      <input 
+                        type="text" 
+                        placeholder="Valid Services (comma-separated, e.g. AC Repair, Plumbing, or blank for All)" 
+                        value={offerForm.validServices || ""} 
+                        onChange={(e) => setOfferForm({ ...offerForm, validServices: e.target.value })}
+                        style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1" }}
+                      />
+                      <input 
+                        type="number" 
+                        placeholder="Min Purchase / Booking Price (e.g. 500, or blank/0)" 
+                        value={offerForm.minPrice || ""} 
+                        onChange={(e) => setOfferForm({ ...offerForm, minPrice: e.target.value })}
+                        style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1" }}
+                      />
+                    </div>
+                    <input 
+                      type="text" 
+                      placeholder="Valid Plan Periods (comma-separated, e.g. year, month, quarter, half-year or blank for all)" 
+                      value={offerForm.validPeriods || ""} 
+                      onChange={(e) => setOfferForm({ ...offerForm, validPeriods: e.target.value })}
+                      style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1", marginTop: "10px" }}
+                    />
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "12px", marginTop: "2px" }}>
+                      <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase" }}>Quick Select Periods:</label>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                        {["year", "quarter", "month", "half-year"].map((pName) => {
+                          const currentList = (offerForm.validPeriods || "").split(",").map(s => s.trim()).filter(Boolean);
+                          const isSelected = currentList.includes(pName);
+                          return (
+                            <button
+                              key={pName} type="button"
+                              onClick={() => {
+                                let newList;
+                                if (isSelected) newList = currentList.filter(s => s !== pName);
+                                else newList = [...currentList, pName];
+                                setOfferForm({ ...offerForm, validPeriods: newList.join(", ") });
+                              }}
+                              style={{ padding: "4px 10px", borderRadius: "12px", border: `1px solid ${isSelected ? "#8b5cf6" : "#cbd5e1"}`, backgroundColor: isSelected ? "#ede9fe" : "white", color: isSelected ? "#7c3aed" : "#475569", fontSize: "11px", fontWeight: "600", cursor: "pointer", transition: "all 0.2s" }}
+                            >
+                              {pName}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                      <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase" }}>Quick Select Services (Click to add/remove):</label>
+                      <div style={{ 
+                        display: "flex", 
+                        flexWrap: "wrap", 
+                        gap: "6px", 
+                        maxHeight: "120px", 
+                        overflowY: "auto", 
+                        padding: "10px", 
+                        border: "1px solid #cbd5e1", 
+                        borderRadius: "8px", 
+                        backgroundColor: "#f8fafc" 
+                      }}>
+                        {services.reduce((acc, s) => {
+                          acc.push(s.name);
+                          if (s.subServices) {
+                            s.subServices.forEach(sub => acc.push(sub.name));
+                          }
+                          return acc;
+                        }, []).map((serviceName) => {
+                          const currentList = (offerForm.validServices || "")
+                            .split(",")
+                            .map(x => x.trim().toLowerCase())
+                            .filter(Boolean);
+                          const isSelected = currentList.includes(serviceName.toLowerCase());
+
+                          const handleToggleService = () => {
+                            let newList;
+                            if (isSelected) {
+                              newList = currentList.filter(x => x !== serviceName.toLowerCase());
+                            } else {
+                              newList = [...currentList, serviceName.toLowerCase()];
+                            }
+                            
+                            const allAvailableNames = services.reduce((acc, s) => {
+                              acc.push(s.name);
+                              if (s.subServices) {
+                                s.subServices.forEach(sub => acc.push(sub.name));
+                              }
+                              return acc;
+                            }, []);
+
+                            const formattedList = allAvailableNames.filter(name => newList.includes(name.toLowerCase()));
+                            setOfferForm({ ...offerForm, validServices: formattedList.join(", ") });
+                          };
+
+                          return (
+                            <button
+                              key={serviceName}
+                              type="button"
+                              onClick={handleToggleService}
+                              style={{
+                                padding: "4px 8px",
+                                borderRadius: "16px",
+                                fontSize: "11px",
+                                fontWeight: "600",
+                                cursor: "pointer",
+                                border: isSelected ? "1px solid #10b981" : "1px solid #cbd5e1",
+                                backgroundColor: isSelected ? "rgba(16, 185, 129, 0.15)" : "white",
+                                color: isSelected ? "#10b981" : "#475569",
+                                transition: "all 0.15s"
+                              }}
+                            >
+                              {serviceName} {isSelected ? "✓" : "+"}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                     <div style={{ display: "flex", gap: "10px" }}>
                       <button 
                         onClick={async () => {
@@ -2228,18 +2574,24 @@ function AdminDashboard() {
                                 const oid = editingOffer._id || editingOffer.id;
                                 await fetch(`/api/offers/${oid}`, {
                                    method: "PATCH",
-                                   headers: { "Content-Type": "application/json" },
+                                   headers: { 
+                                     "Content-Type": "application/json",
+                                     "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`
+                                   },
                                    body: JSON.stringify(offerForm)
                                 });
                                 setEditingOffer(null);
                              } else {
                                 await fetch("/api/offers", {
                                    method: "POST",
-                                   headers: { "Content-Type": "application/json" },
+                                   headers: { 
+                                     "Content-Type": "application/json",
+                                     "Authorization": `Bearer ${sessionStorage.getItem("authToken")}`
+                                   },
                                    body: JSON.stringify(offerForm)
                                 });
                              }
-                             setOfferForm({ code: "", discount: "", desc: "", expiry: "" });
+                             setOfferForm({ code: "", discount: "", desc: "", expiry: "", terms: "", startDate: "", endDate: "", city: "", validServices: "", minPrice: "" });
                              syncAdminStore();
                           } catch(e) { alert("🛑 Database Offer Sync Error."); }
                         }}
@@ -2251,7 +2603,7 @@ function AdminDashboard() {
                         <button 
                           onClick={() => {
                             setEditingOffer(null);
-                            setOfferForm({ code: "", discount: "", desc: "", expiry: "" });
+                            setOfferForm({ code: "", discount: "", desc: "", expiry: "", terms: "", startDate: "", endDate: "", city: "", validServices: "", minPrice: "" });
                           }}
                           style={{ backgroundColor: "#e2e8f0", color: "#475569", border: "none", padding: "12px 20px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}
                         >
@@ -2270,7 +2622,7 @@ function AdminDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {adminOffers.map(o => (
+                      {adminOffers.filter(o => !o.endDate || o.endDate >= new Date().toISOString().split("T")[0]).map(o => (
                         <tr key={o._id || o.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
                           <td style={{ padding: "8px", fontWeight: "bold" }}>{o.code}</td>
                           <td style={{ padding: "8px" }}>{o.discount}</td>
@@ -2278,7 +2630,19 @@ function AdminDashboard() {
                             <button 
                               onClick={() => {
                                 setEditingOffer(o);
-                                setOfferForm({ code: o.code, discount: o.discount, desc: o.desc, expiry: o.expiry });
+                                setOfferForm({ 
+                                  code: o.code, 
+                                  discount: o.discount, 
+                                  desc: o.desc, 
+                                  expiry: o.expiry,
+                                  terms: o.terms || "",
+                                  startDate: o.startDate || "",
+                                  endDate: o.endDate || "",
+                                  city: o.city || "",
+                                  validServices: o.validServices || "",
+                                  minPrice: o.minPrice || "",
+                                  validPeriods: o.validPeriods || ""
+                                });
                               }}
                               style={{ backgroundColor: "var(--primary)", color: "white", border: "none", padding: "4px 8px", borderRadius: "4px", fontSize: "11px", marginRight: "6px", cursor: "pointer" }}
                             >

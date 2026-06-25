@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import { FaTag, FaStethoscope, FaCar, FaLock, FaStar, FaUser, FaCheckCircle, FaCreditCard, FaPercent } from "react-icons/fa";
+import { FaTag, FaLock, FaStar, FaUser, FaCheckCircle, FaCreditCard } from "react-icons/fa";
 
 const BASE_URL = "";
+
+const today = new Date().toISOString().split("T")[0];
 
 function PlansOffers() {
   const navigate = useNavigate();
@@ -40,8 +42,11 @@ function PlansOffers() {
   const [discountAmount, setDiscountAmount] = useState(0);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [walletBal, setWalletBal] = useState(5000); // Default or load from actual user profile API if available
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [selectedTermsItem, setSelectedTermsItem] = useState(null);
 
   const isLoggedIn = !!sessionStorage.getItem("userId");
+  const userCity = localStorage.getItem("userCity") || sessionStorage.getItem("userCity") || "";
 
   useEffect(() => {
     const loadCloudData = async () => {
@@ -66,37 +71,29 @@ function PlansOffers() {
            localStorage.setItem("cache_version", CACHE_VERSION);
          }
          if (wResp.ok) setWorkers(await wResp.json());
-
+         
          if (isLoggedIn) {
-           const currentUserName = sessionStorage.getItem("userName") || "Verified Subscriber";
-           const tResp = await fetch(`${BASE_URL}/api/transactions?customer=${encodeURIComponent(currentUserName)}`);
-           if (tResp.ok) {
-             const txns = await tResp.json();
-             const subbed = [];
-             
-             txns.forEach(t => {
-               if (t.service && t.service.startsWith("Plan Subscription:")) {
-                 const planTitle = t.service.replace("Plan Subscription:", "").trim();
-                 
-                 // Check validity period from transaction creation date
-                 if (t.createdAt) {
-                   const txDate = new Date(t.createdAt);
-                   let daysValid = 30; // default monthly
-                   if (planTitle.toLowerCase().includes("annual") || planTitle.toLowerCase().includes("year")) {
-                     daysValid = 365; // annual plan
-                   }
-                   
-                   const expiryDate = new Date(txDate.getTime() + daysValid * 24 * 60 * 60 * 1000);
-                   if (expiryDate > new Date()) {
-                     subbed.push(planTitle);
-                   }
-                 } else {
-                   // Fallback for legacy transactions lacking timestamp
-                   subbed.push(planTitle);
-                 }
+           try {
+             const userResp = await fetch(`${BASE_URL}/api/users/me`, {
+               headers: {
+                 "Authorization": `Bearer ${sessionStorage.getItem("authToken") || sessionStorage.getItem("token")}`
                }
              });
-             setUserPlans([...new Set(subbed)]);
+             
+             if (userResp.ok) {
+               const userData = await userResp.json();
+               if (userData.walletBalance !== undefined) {
+                 setWalletBal(userData.walletBalance);
+               }
+               if (userData.subscriptions && Array.isArray(userData.subscriptions)) {
+                 const activeSubs = userData.subscriptions
+                    .filter(sub => sub.status === "Active" && new Date(sub.expiryDate) > new Date())
+                    .map(sub => sub.planTitle);
+                 setUserPlans(activeSubs);
+               }
+             }
+           } catch(err) {
+             console.error("Failed to fetch user profile:", err);
            }
          }
       } catch(err) { console.error("Data Load Failure: ", err); }
@@ -129,8 +126,52 @@ function PlansOffers() {
       return;
     }
 
-    // Parse discount amount
+    // 1. Target Location Check
+    if (offer.city && offer.city.trim() !== "" && offer.city.toLowerCase() !== "all") {
+      const validCities = offer.city.toLowerCase().split(",").map(c => c.trim());
+      const uCity = userCity ? userCity.toLowerCase().trim() : "";
+      const isMatch = validCities.some(c => uCity.includes(c) || c.includes(uCity));
+      if (!uCity || !isMatch) {
+        setCouponError(`This coupon is only valid for users in: ${offer.city}.`);
+        return;
+      }
+    }
+
+    // Parse base price
     const priceInt = parseInt(payingPlan.price.replace(/[^\d]/g, ""), 10) || 0;
+
+    // 2. Minimum Purchase / Plan Price Check
+    if (offer.minPrice && priceInt < offer.minPrice) {
+      setCouponError(`This coupon requires a minimum purchase rate of ₹${offer.minPrice}.`);
+      return;
+    }
+
+    // 3. Service Category Compatibility Check
+    if (offer.validServices && offer.validServices.trim() !== "") {
+      const validServicesList = offer.validServices.split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+      if (validServicesList.length > 0) {
+        const planTitleLower = payingPlan.title.toLowerCase();
+        const planFeaturesLower = payingPlan.features.map(f => f.toLowerCase()).join(" ");
+        const isMatch = validServicesList.some(service => planTitleLower.includes(service) || planFeaturesLower.includes(service));
+        if (!isMatch) {
+          setCouponError(`This coupon is only valid for services: ${offer.validServices}.`);
+          return;
+        }
+      }
+    }
+
+    // 4. Valid Plan Period Check
+    if (offer.validPeriods && offer.validPeriods.trim() !== "") {
+      const validPeriodsList = offer.validPeriods.split(",").map(p => p.trim().toLowerCase()).filter(Boolean);
+      if (validPeriodsList.length > 0 && payingPlan.period) {
+        if (!validPeriodsList.includes(payingPlan.period.toLowerCase())) {
+          setCouponError(`This coupon is only valid for ${offer.validPeriods} plans.`);
+          return;
+        }
+      }
+    }
+
+    // Parse discount amount
     let discount = 0;
     if (offer.discount.includes("₹")) {
       discount = parseInt(offer.discount.replace(/[^\d]/g, ""), 10) || 0;
@@ -147,6 +188,10 @@ function PlansOffers() {
 
   const handlePayment = async (e) => {
     e.preventDefault();
+    if (payingPlan.terms && !agreedToTerms) {
+      alert("Please check the box to agree to the Terms & Conditions before subscribing.");
+      return;
+    }
     if (paymentMethod === "UPI" && !upiId) {
       alert("Please enter a valid UPI ID!");
       return;
@@ -172,6 +217,7 @@ function PlansOffers() {
             setWalletBal(prev => prev - finalPaidAmount);
          }
 
+         // Support multiple subscriptions (no longer cancelling existing plans)
          // Execute Hard Physical Cloud Record instantly seamlessly flawlessly!
          await fetch(`${BASE_URL}/api/transactions`, {
             method: "POST",
@@ -185,12 +231,32 @@ function PlansOffers() {
                status: "Paid"
             })
          });
+
+         // Record Subscription Validity in Database
+         if (sessionStorage.getItem("userId")) {
+             await fetch(`${BASE_URL}/api/users/subscribe`, {
+                 method: "POST",
+                 headers: {
+                     "Content-Type": "application/json",
+                     Authorization: `Bearer ${sessionStorage.getItem("authToken") || sessionStorage.getItem("token")}`
+                 },
+                 body: JSON.stringify({
+                     planTitle: payingPlan.title,
+                     period: payingPlan.period || "year",
+                     paymentMethod: paymentMethod,
+                     amount: finalPaidAmount
+                 })
+             });
+         }
       } catch(err) { console.error("Plan sub write error"); }
 
       setPaymentProcessing(false);
 
       alert(`🎉 Payment of ₹${finalPaidAmount} Successful!\n\nYou have subscribed to "${payingPlan.title}" successfully. All premium benefits are now active on your account.`);
-      setUserPlans(prev => [...prev, payingPlan.title]);
+      setUserPlans(prev => {
+        if (!prev.includes(payingPlan.title)) return [...prev, payingPlan.title];
+        return prev;
+      }); // Append new plan instead of replacing
       setPayingPlan(null);
       // Reset forms
       setUpiId("");
@@ -200,8 +266,11 @@ function PlansOffers() {
       setAppliedCoupon("");
       setCouponSuccess("");
       setDiscountAmount(0);
+      setAgreedToTerms(false);
     }, 1500);
   };
+
+
 
   // Skeleton card for loading state
   const SkeletonPlanCard = () => (
@@ -234,6 +303,7 @@ function PlansOffers() {
     </div>
   );
 
+
   return (
     <div style={{ minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
       <Navbar />
@@ -253,21 +323,34 @@ function PlansOffers() {
         <h2 style={{ fontSize: "24px", fontWeight: 800, color: "#2563eb", marginBottom: 32, textAlign: "center" }}>
           Choose Your Service Plan
         </h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 30, marginBottom: 56 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 30, marginBottom: 56, alignItems: "stretch" }}>
           {loading && plans.length === 0
             ? [1, 2, 3].map(i => <SkeletonPlanCard key={i} />)
-            : plans.map((plan, i) => {
+            : plans
+                .filter(plan => {
+                  if (plan.endDate && plan.endDate < today) return false;
+                  if (!plan.city || plan.city.trim() === "" || plan.city.toLowerCase() === "all") return true;
+                  if (!userCity) return false;
+                  const targetCities = plan.city.toLowerCase().split(",").map(c => c.trim());
+                  const uCity = userCity.toLowerCase().trim();
+                  return targetCities.some(c => uCity.includes(c) || c.includes(uCity));
+                })
+                .map((plan, i) => {
               // Custom premium color tones for plans
               const bgTone = plan.popular 
-                ? "linear-gradient(135deg, rgba(234, 179, 8, 0.07) 0%, rgba(234, 179, 8, 0.02) 100%)" 
+                ? "linear-gradient(135deg, rgba(234, 179, 8, 0.1) 0%, rgba(234, 179, 8, 0.03) 100%)" 
                 : i % 2 === 0 
                   ? "linear-gradient(135deg, rgba(49, 82, 91, 0.07) 0%, rgba(49, 82, 91, 0.02) 100%)" 
                   : "linear-gradient(135deg, rgba(14, 165, 233, 0.07) 0%, rgba(14, 165, 233, 0.02) 100%)";
               const borderCol = plan.popular 
-                ? "2px solid rgba(234, 179, 8, 0.5)" 
+                ? "2.5px solid #eab308" 
                 : i % 2 === 0 
                   ? "1.5px solid rgba(49, 82, 91, 0.25)" 
                   : "1.5px solid rgba(14, 165, 233, 0.25)";
+              const planShadow = plan.popular
+                ? "0 20px 40px -10px rgba(234, 179, 8, 0.2), var(--shadow-3d)"
+                : "var(--shadow-3d)";
+
               return (
                 <div 
                   key={i}
@@ -281,22 +364,50 @@ function PlansOffers() {
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "space-between",
-                    transition: "all 0.2s ease-in-out"
+                    transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                    transform: plan.popular ? "scale(1.03)" : "none",
+                    boxShadow: planShadow,
+                    zIndex: plan.popular ? 2 : 1
                   }}
                 >
                   {plan.popular && (
-                    <span style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", backgroundColor: "#eab308", color: "#1e293b", padding: "4px 14px", borderRadius: 20, fontSize: 11, fontWeight: 800, boxShadow: "0 4px 12px rgba(234, 179, 8, 0.3)", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <span style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", backgroundColor: "#eab308", color: "#1e293b", padding: "6px 16px", borderRadius: 20, fontSize: 11, fontWeight: 800, boxShadow: "0 4px 12px rgba(234, 179, 8, 0.4)", display: "inline-flex", alignItems: "center", gap: "4px" }}>
                       MOST POPULAR <FaStar size={10} />
                     </span>
                   )}
                   <div>
                     <h3 style={{ margin: "0 0 12px 0", fontSize: 20, fontWeight: 700, color: plan.popular ? "#eab308" : "var(--text-main)" }}>{plan.title}</h3>
-                    <div style={{ display: "flex", alignItems: "baseline", marginBottom: 24 }}>
-                      <span style={{ fontSize: 36, fontWeight: 800, color: "var(--text-main)" }}>{plan.price}</span>
-                      <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>/{plan.period}</span>
+                    
+                    {/* Fixed Pricing Contradiction */}
+                    <div style={{ display: "flex", flexDirection: "column", marginBottom: 24 }}>
+                      <div style={{ display: "flex", alignItems: "baseline" }}>
+                        <span style={{ fontSize: 36, fontWeight: 800, color: "var(--text-main)" }}>₹{(plan.price || "").replace("₹", "")}</span>
+                        <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>/{plan.period}</span>
+                      </div>
+                      {(plan.title.toLowerCase().includes("annual") || plan.title.toLowerCase().includes("yearly")) && (
+                        <span style={{ fontSize: "12px", color: "#10b981", fontWeight: 600, marginTop: "2px" }}>
+                          Billed Annually (Commitment Plan)
+                        </span>
+                      )}
                     </div>
+
                     <ul style={{ paddingLeft: 20, margin: "0 0 32px 0", color: "var(--text-main)", fontSize: 14, lineHeight: "1.8" }}>
                       {plan.features.map((f, idx) => <li key={idx} style={{ marginBottom: 8 }}>{f}</li>)}
+                      {plan.startDate && plan.endDate && (
+                        <li style={{ marginBottom: 8, listStyleType: "none", marginLeft: "-20px", fontSize: "12px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "6px" }}>
+                          📅 Validity: {plan.startDate} to {plan.endDate}
+                        </li>
+                      )}
+                      {plan.terms && (
+                        <li style={{ marginBottom: 8, listStyleType: "none", marginLeft: "-20px", fontSize: "12px", borderTop: "1px dashed var(--border-color)", paddingTop: "8px", marginTop: "12px" }}>
+                          <span 
+                            onClick={() => setSelectedTermsItem({ ...plan, type: 'plan' })}
+                            style={{ color: "var(--primary)", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px", textDecoration: "underline" }}
+                          >
+                            📌 Terms & Conditions
+                          </span>
+                        </li>
+                      )}
                     </ul>
                     {plan.workerId && (
                       <div style={{ marginBottom: 20, padding: "10px 14px", backgroundColor: "var(--border)", borderRadius: "8px", border: "1px solid var(--border)", display: "flex", alignItems: "center", gap: "12px" }}>
@@ -311,15 +422,17 @@ function PlansOffers() {
                     )}
                   </div>
                   {userPlans.includes(plan.title) ? (
-                    <button 
-                      disabled
-                      style={{
-                        width: "100%", padding: "14px", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700,
-                        backgroundColor: "var(--border)", color: "var(--text-muted)", cursor: "not-allowed", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px"
-                      }}
-                    >
-                      Subscribed <FaCheckCircle size={14} />
-                    </button>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                      <div 
+                        style={{
+                          width: "100%", padding: "12px", borderRadius: 10, fontSize: 14, fontWeight: 700,
+                          backgroundColor: "rgba(52, 211, 153, 0.15)", color: "#34d399", border: "1px solid rgba(52, 211, 153, 0.3)",
+                          display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px"
+                        }}
+                      >
+                        Active Subscription <FaCheckCircle size={14} />
+                      </div>
+                    </div>
                   ) : isLoggedIn && sessionStorage.getItem("userRole") === "user" ? (
                     <button 
                       onClick={() => {
@@ -328,13 +441,32 @@ function PlansOffers() {
                         setCouponSuccess("");
                         setCouponError("");
                         setDiscountAmount(0);
+                        setAgreedToTerms(false);
                       }}
                       style={{
-                        width: "100%", padding: "14px", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer",
-                        backgroundColor: plan.color || "var(--primary)", color: "white", transition: "all 0.2s", boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
+                        width: "100%", 
+                        padding: "14px", 
+                        border: "none", 
+                        borderRadius: 10, 
+                        fontSize: 14, 
+                        fontWeight: 800, 
+                        cursor: "pointer",
+                        backgroundColor: plan.color || "var(--primary)", 
+                        color: "white", 
+                        transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)", 
+                        boxShadow: `0 4px 14px ${plan.color ? plan.color + "30" : "rgba(49, 82, 91, 0.2)"}`,
+                        position: "relative"
                       }}
-                      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.filter = "brightness(1.1)"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.filter = "none"; }}
+                      onMouseEnter={(e) => { 
+                        e.currentTarget.style.transform = "translateY(-3px)"; 
+                        e.currentTarget.style.boxShadow = `0 8px 20px ${plan.color ? plan.color + "50" : "rgba(49, 82, 91, 0.3)"}`;
+                        e.currentTarget.style.filter = "brightness(1.15)";
+                      }}
+                      onMouseLeave={(e) => { 
+                        e.currentTarget.style.transform = "translateY(0)"; 
+                        e.currentTarget.style.boxShadow = `0 4px 14px ${plan.color ? plan.color + "30" : "rgba(49, 82, 91, 0.2)"}`;
+                        e.currentTarget.style.filter = "none";
+                      }}
                     >
                       {plan.btnText}
                     </button>
@@ -353,11 +485,27 @@ function PlansOffers() {
                       }}
                       className="btn-secondary"
                       style={{
-                        width: "100%", padding: "14px", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer",
-                        display: "flex", alignItems: "center", justifyContent: "center", gap: "6px"
+                        width: "100%", 
+                        padding: "14px", 
+                        borderRadius: 10, 
+                        fontSize: 14, 
+                        fontWeight: 800, 
+                        cursor: "pointer",
+                        display: "flex", 
+                        alignItems: "center", 
+                        justifyContent: "center", 
+                        gap: "6px",
+                        border: "1px solid var(--border)",
+                        transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "translateY(-3px)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
                       }}
                     >
-                      <FaLock size={12} /> Login to Subscribe
+                      <FaLock size={12} /> Unlock Plan & Subscribe
                     </button>
                   )}
                 </div>
@@ -365,14 +513,49 @@ function PlansOffers() {
             })}
         </div>
 
-        {/* Offers Segment */}
-        <h2 style={{ fontSize: "24px", fontWeight: 800, color: "var(--text-main)", marginBottom: 32, textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-          <FaPercent style={{ color: "#34d399" }} /> Active Promo Coupons
+        {/* 🛡️ Trust Signals Section */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+          gap: 24,
+          margin: "40px auto 64px auto",
+          maxWidth: 700,
+          padding: "28px",
+          background: "rgba(255, 255, 255, 0.4)",
+          borderRadius: "20px",
+          border: "1.5px solid var(--border-color)",
+          backdropFilter: "blur(12px)",
+          textAlign: "center"
+        }}>
+          <div>
+            <div style={{ color: "#eab308", fontSize: "20px", marginBottom: "8px" }}>⭐ ⭐ ⭐ ⭐ ⭐</div>
+            <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "var(--text-main)" }}>4.9/5 Average Rating</h4>
+            <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.5 }}>From over 10,000+ satisfied homeowners</p>
+          </div>
+          <div style={{ borderLeft: "1px solid var(--border-color)" }}>
+            <div style={{ fontSize: "24px", marginBottom: "6px" }}>🛡️</div>
+            <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "var(--text-main)" }}>100% Satisfaction Guarantee</h4>
+            <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.5 }}>Not satisfied? We will re-service for free</p>
+          </div>
+        </div>
+
+        {/* Promotional Offers Section */}
+        <h2 style={{ fontSize: "24px", fontWeight: 800, color: "#2563eb", marginBottom: 32, textAlign: "center" }}>
+          Active Offers
         </h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
           {loading && offers.length === 0
             ? [1, 2, 3, 4].map(i => <SkeletonOfferCard key={i} />)
-            : offers.map((offer, i) => {
+            : offers
+                .filter(offer => {
+                  if (offer.endDate && offer.endDate < today) return false;
+                  if (!offer.city || offer.city.trim() === "" || offer.city.toLowerCase() === "all") return true;
+                  if (!userCity) return false;
+                  const targetCities = offer.city.toLowerCase().split(",").map(c => c.trim());
+                  const uCity = userCity.toLowerCase().trim();
+                  return targetCities.some(c => uCity.includes(c) || c.includes(uCity));
+                })
+                .map((offer, i) => {
               // Tone-on-tone green background for promo codes
               const couponBg = "linear-gradient(135deg, rgba(52, 211, 153, 0.08) 0%, rgba(52, 211, 153, 0.02) 100%)";
               const couponBorder = "1.5px dashed rgba(52, 211, 153, 0.4)";
@@ -396,6 +579,21 @@ function PlansOffers() {
                 </span>
                 <h4 style={{ margin: "12px 0 4px 0", color: "var(--text-main)", fontSize: 16, fontWeight: 600 }}>{offer.desc}</h4>
                 <p style={{ margin: 0, fontSize: 12, color: "var(--text-muted)" }}>{offer.expiry}</p>
+                {offer.startDate && offer.endDate && (
+                  <p style={{ margin: "6px 0 0 0", fontSize: 12, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "6px" }}>
+                    📅 Validity: {offer.startDate} to {offer.endDate}
+                  </p>
+                )}
+                {offer.terms && (
+                  <p style={{ margin: "10px 0 0 0", fontSize: 12, borderTop: "1px dashed rgba(52, 211, 153, 0.2)", paddingTop: "6px" }}>
+                    <span 
+                      onClick={() => setSelectedTermsItem({ ...offer, type: 'offer' })}
+                      style={{ color: "#34d399", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px", textDecoration: "underline" }}
+                    >
+                      📌 Terms & Conditions
+                    </span>
+                  </p>
+                )}
               </div>
               {isLoggedIn ? (
                 <button 
@@ -438,67 +636,77 @@ function PlansOffers() {
             }}
           >
             <div 
-              className="premium-card"
               style={{
                 backgroundColor: "var(--bg-card)", border: "1px solid var(--border)", 
-                borderRadius: "16px", padding: "30px", width: "100%", maxWidth: "460px", 
-                boxShadow: "var(--shadow-3d)", color: "var(--text-main)", position: "relative"
+                borderRadius: "24px", padding: "32px", width: "100%", maxWidth: "440px", 
+                boxShadow: "0 20px 40px -10px rgba(0,0,0,0.15)", color: "var(--text-main)", position: "relative"
               }}
             >
               <button 
-                onClick={() => setPayingPlan(null)}
+                onClick={() => { setPayingPlan(null); setAgreedToTerms(false); }}
                 style={{
-                  position: "absolute", top: "16px", right: "16px", backgroundColor: "transparent", 
-                  border: "none", color: "var(--text-muted)", fontSize: "20px", cursor: "pointer", transition: "color 0.2s"
+                  position: "absolute", top: "20px", right: "20px", backgroundColor: "rgba(0,0,0,0.05)", 
+                  border: "none", color: "var(--text-muted)", width: "32px", height: "32px", borderRadius: "50%",
+                  display: "flex", justifyContent: "center", alignItems: "center", fontSize: "16px", cursor: "pointer", transition: "all 0.2s"
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.color = "var(--text-main)"}
-                onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-muted)"}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.1)"; e.currentTarget.style.color = "var(--text-main)" }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.05)"; e.currentTarget.style.color = "var(--text-muted)" }}
               >
                 ✕
               </button>
 
-              <div style={{ textAlign: "center", marginBottom: "24px" }}>
-                <FaCreditCard size={36} style={{ color: "var(--primary)", marginBottom: "10px" }} />
-                <h3 style={{ margin: "10px 0 6px 0", fontSize: "20px", fontWeight: 800 }}>Confirm Subscription</h3>
-                <p style={{ margin: 0, fontSize: "14px", color: "var(--text-muted)" }}>{payingPlan.title}</p>
+              <div style={{ textAlign: "center", marginBottom: "28px" }}>
+                <div style={{ display: "inline-flex", padding: "14px", backgroundColor: "rgba(37, 99, 235, 0.08)", borderRadius: "50%", marginBottom: "16px", border: "1px solid rgba(37, 99, 235, 0.15)" }}>
+                  <FaCreditCard size={28} style={{ color: "var(--primary)" }} />
+                </div>
+                <h3 style={{ margin: "0 0 6px 0", fontSize: "22px", fontWeight: 800, color: "var(--text-main)", letterSpacing: "-0.5px" }}>Confirm Subscription</h3>
+                <p style={{ margin: 0, fontSize: "15px", color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
+                  <span style={{ fontSize: "18px" }}>📦</span> {payingPlan.title}
+                </p>
               </div>
 
-              <form onSubmit={handlePayment} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <form onSubmit={handlePayment} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
                 {/* Promo Code Fields */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-muted)" }}>Apply Promo Code</label>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Apply Promo Code</label>
                   <div style={{ display: "flex", gap: "8px" }}>
                     <input 
                       type="text" 
                       placeholder="e.g. DOCFREE, FESTIVE25" 
                       value={appliedCoupon} 
-                      onChange={(e) => setAppliedCoupon(e.target.value)}
-                      style={{ flex: 1, padding: "10px 14px", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)" }}
+                      onChange={(e) => setAppliedCoupon(e.target.value.toUpperCase())}
+                      style={{ flex: 1, padding: "12px 16px", borderRadius: "10px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-main)", color: "var(--text-main)", fontSize: "14px", fontWeight: 600, transition: "border-color 0.2s", outline: "none" }}
+                      onFocus={(e) => e.target.style.borderColor = "var(--primary)"}
+                      onBlur={(e) => e.target.style.borderColor = "var(--border)"}
                     />
                     <button 
                       type="button" 
                       onClick={applyPromoCode}
-                      style={{ padding: "10px 16px", backgroundColor: "var(--primary)", color: "white", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}
+                      style={{ padding: "0 20px", backgroundColor: "var(--primary)", color: "white", border: "none", borderRadius: "10px", fontWeight: "bold", cursor: "pointer", transition: "transform 0.1s, box-shadow 0.2s", boxShadow: "0 4px 10px rgba(37, 99, 235, 0.2)" }}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-1px)"}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
                     >
                       Apply
                     </button>
                   </div>
-                  {couponError && <span style={{ fontSize: "12px", color: "#f87171", fontWeight: "bold" }}>{couponError}</span>}
-                  {couponSuccess && <span style={{ fontSize: "12px", color: "#34d399", fontWeight: "bold" }}>{couponSuccess}</span>}
+                  {couponError && <span style={{ fontSize: "12px", color: "#ef4444", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px" }}>❌ {couponError}</span>}
+                  {couponSuccess && <span style={{ fontSize: "12px", color: "#10b981", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px" }}>✅ {couponSuccess}</span>}
                 </div>
 
                 {/* Payment Selector */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-muted)" }}>Payment Method</label>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Payment Method</label>
                   <select 
                     value={paymentMethod} 
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    style={{ padding: "10px 14px", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)" }}
+                    style={{ padding: "12px 16px", borderRadius: "10px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-main)", color: "var(--text-main)", fontSize: "14px", fontWeight: 600, cursor: "pointer", outline: "none", appearance: "none" }}
+                    onFocus={(e) => e.target.style.borderColor = "var(--primary)"}
+                    onBlur={(e) => e.target.style.borderColor = "var(--border)"}
                   >
-                    <option value="UPI">UPI App / ID</option>
-                    <option value="Wallet">Wallet (Balance: ₹{walletBal.toLocaleString()})</option>
-                    <option value="Card">Credit / Debit Card</option>
-                    <option value="Net Banking">Net Banking</option>
+                    <option value="UPI">📱 UPI App / ID</option>
+                    <option value="Wallet">💳 Wallet (Balance: ₹{walletBal.toLocaleString()})</option>
+                    <option value="Card">🏦 Credit / Debit Card</option>
+                    <option value="Net Banking">🌐 Net Banking</option>
                   </select>
                 </div>
 
@@ -510,12 +718,14 @@ function PlansOffers() {
                     value={upiId} 
                     onChange={(e) => setUpiId(e.target.value)}
                     required
-                    style={{ padding: "10px 14px", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)" }}
+                    style={{ padding: "12px 16px", borderRadius: "10px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-main)", color: "var(--text-main)", fontSize: "14px", outline: "none" }}
+                    onFocus={(e) => e.target.style.borderColor = "var(--primary)"}
+                    onBlur={(e) => e.target.style.borderColor = "var(--border)"}
                   />
                 )}
 
                 {paymentMethod === "Card" && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px", padding: "16px", backgroundColor: "var(--bg-main)", borderRadius: "12px", border: "1px solid var(--border)" }}>
                     <input 
                       type="text" 
                       placeholder="Card Number (e.g. 4111 2222 3333 4444)" 
@@ -523,9 +733,11 @@ function PlansOffers() {
                       onChange={(e) => setCardNumber(e.target.value)}
                       maxLength="19"
                       required
-                      style={{ padding: "10px 14px", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)" }}
+                      style={{ padding: "12px", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)", outline: "none" }}
+                      onFocus={(e) => e.target.style.borderColor = "var(--primary)"}
+                      onBlur={(e) => e.target.style.borderColor = "var(--border)"}
                     />
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                       <input 
                         type="text" 
                         placeholder="MM/YY" 
@@ -533,7 +745,9 @@ function PlansOffers() {
                         onChange={(e) => setCardExpiry(e.target.value)}
                         maxLength="5"
                         required
-                        style={{ padding: "10px 14px", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)" }}
+                        style={{ padding: "12px", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)", outline: "none" }}
+                        onFocus={(e) => e.target.style.borderColor = "var(--primary)"}
+                        onBlur={(e) => e.target.style.borderColor = "var(--border)"}
                       />
                       <input 
                         type="password" 
@@ -542,7 +756,9 @@ function PlansOffers() {
                         onChange={(e) => setCardCvv(e.target.value)}
                         maxLength="3"
                         required
-                        style={{ padding: "10px 14px", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)" }}
+                        style={{ padding: "12px", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)", outline: "none" }}
+                        onFocus={(e) => e.target.style.borderColor = "var(--primary)"}
+                        onBlur={(e) => e.target.style.borderColor = "var(--border)"}
                       />
                     </div>
                   </div>
@@ -552,7 +768,9 @@ function PlansOffers() {
                   <select 
                     value={netBank} 
                     onChange={(e) => setNetBank(e.target.value)}
-                    style={{ padding: "10px 14px", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)" }}
+                    style={{ padding: "12px 16px", borderRadius: "10px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-main)", color: "var(--text-main)", outline: "none" }}
+                    onFocus={(e) => e.target.style.borderColor = "var(--primary)"}
+                    onBlur={(e) => e.target.style.borderColor = "var(--border)"}
                   >
                     <option value="SBI">State Bank of India (SBI)</option>
                     <option value="HDFC">HDFC Bank</option>
@@ -562,37 +780,192 @@ function PlansOffers() {
                 )}
 
                 {/* Pricing Summary */}
-                <div style={{ backgroundColor: "var(--border)", borderRadius: "8px", padding: "14px", fontSize: "14px", border: "1px solid var(--border)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)" }}>
+                <div style={{ backgroundColor: "var(--bg-main)", borderRadius: "12px", padding: "16px", fontSize: "14px", border: "1px dashed var(--border)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)", fontWeight: "500" }}>
                     <span>Base Price</span>
                     <span>{payingPlan.price}</span>
                   </div>
                   {discountAmount > 0 && (
-                    <div style={{ display: "flex", justifyContent: "space-between", color: "#34d399", marginTop: "6px", fontWeight: "bold" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "#10b981", marginTop: "8px", fontWeight: "700" }}>
                       <span>Discount Coupon</span>
                       <span>- ₹{discountAmount}</span>
                     </div>
                   )}
-                  <div style={{ height: "1px", backgroundColor: "var(--border)", margin: "10px 0" }}></div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "16px", fontWeight: "bold", color: "var(--text-main)" }}>
+                  <div style={{ height: "1px", backgroundColor: "var(--border)", margin: "14px 0" }}></div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "18px", fontWeight: "800", color: "var(--text-main)" }}>
                     <span>Total Amount</span>
                     <span>₹{Math.max(0, (parseInt(payingPlan.price.replace(/[^\d]/g, ""), 10) || 0) - discountAmount)}</span>
                   </div>
                 </div>
 
+                {/* Terms and Conditions Acceptance Checkbox */}
+                {payingPlan.terms && (
+                  <button 
+                    type="button"
+                    onClick={() => setSelectedTermsItem(payingPlan)}
+                    style={{ 
+                      display: "flex", alignItems: "center", justifyContent: "space-between",
+                      backgroundColor: "rgba(245, 158, 11, 0.05)", padding: "12px 16px", borderRadius: "10px", 
+                      border: "1px dashed rgba(245, 158, 11, 0.4)", cursor: "pointer", width: "100%",
+                      transition: "all 0.2s"
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(245, 158, 11, 0.1)"}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "rgba(245, 158, 11, 0.05)"}
+                  >
+                    <strong style={{ display: "flex", alignItems: "center", gap: "8px", color: "#d97706", fontSize: "13px" }}>
+                      📌 View Terms & Conditions
+                    </strong>
+                    <span style={{ color: "#d97706", fontSize: "12px" }}>Click to read ›</span>
+                  </button>
+                )}
+                
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "4px" }}>
+                  <input 
+                    type="checkbox" 
+                    id="agreeTerms" 
+                    checked={agreedToTerms} 
+                    onChange={(e) => setAgreedToTerms(e.target.checked)}
+                    style={{ width: "18px", height: "18px", cursor: "pointer", flexShrink: 0, margin: 0, accentColor: "var(--primary)" }}
+                  />
+                  <label htmlFor="agreeTerms" style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)", cursor: "pointer", userSelect: "none", lineHeight: "1.2" }}>
+                    I read and agree to the plan terms.
+                  </label>
+                </div>
+
                 <button 
                   type="submit" 
-                  disabled={paymentProcessing}
+                  disabled={paymentProcessing || (payingPlan.terms && !agreedToTerms)}
                   style={{
-                    width: "100%", padding: "14px", border: "none", borderRadius: "10px", 
-                    fontSize: "14px", fontWeight: 700, cursor: paymentProcessing ? "not-allowed" : "pointer",
-                    backgroundColor: payingPlan.color, color: "white", transition: "all 0.2s", 
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)", opacity: paymentProcessing ? 0.7 : 1
+                    width: "100%", padding: "16px", border: "none", borderRadius: "12px", marginTop: "4px",
+                    fontSize: "16px", fontWeight: 800, cursor: (paymentProcessing || (payingPlan.terms && !agreedToTerms)) ? "not-allowed" : "pointer",
+                    backgroundColor: (payingPlan.terms && !agreedToTerms) ? "#cbd5e1" : (payingPlan.color || "var(--primary)"), color: "white", 
+                    transition: "all 0.2s", boxShadow: (payingPlan.terms && !agreedToTerms) ? "none" : "0 8px 20px -6px rgba(37,99,235,0.4)", opacity: paymentProcessing ? 0.7 : 1
                   }}
+                  onMouseEnter={(e) => { if(!paymentProcessing && !(payingPlan.terms && !agreedToTerms)) e.currentTarget.style.transform = "translateY(-2px)" }}
+                  onMouseLeave={(e) => { if(!paymentProcessing && !(payingPlan.terms && !agreedToTerms)) e.currentTarget.style.transform = "translateY(0)" }}
                 >
                   {paymentProcessing ? "Verifying Payment Details... ⚡" : `Confirm & Pay ₹${Math.max(0, (parseInt(payingPlan.price.replace(/[^\d]/g, ""), 10) || 0) - discountAmount)} Now`}
                 </button>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* 📌 TERMS & CONDITIONS DETAILS MODAL */}
+        {selectedTermsItem && (
+          <div 
+            style={{
+              position: "fixed", top: 0, left: 0, width: "100%", height: "100%", 
+              backgroundColor: "rgba(15, 23, 42, 0.8)", backdropFilter: "blur(8px)", 
+              zIndex: 1200, display: "flex", justifyContent: "center", alignItems: "center", padding: "20px"
+            }}
+          >
+            <div 
+              className="premium-card"
+              style={{
+                backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border)", 
+                borderRadius: "16px", padding: "30px", width: "100%", maxWidth: "460px", 
+                boxShadow: "var(--shadow-3d)", color: "var(--text-main)", position: "relative"
+              }}
+            >
+              <button 
+                onClick={() => setSelectedTermsItem(null)}
+                style={{
+                  position: "absolute", top: "16px", right: "16px", backgroundColor: "transparent", 
+                  border: "none", color: "var(--text-muted)", fontSize: "20px", cursor: "pointer", transition: "color 0.2s"
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = "var(--text-main)"}
+                onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-muted)"}
+              >
+                ✕
+              </button>
+
+              <div style={{ textAlign: "center", marginBottom: "24px" }}>
+                <span style={{ fontSize: "36px", display: "block", marginBottom: "10px" }}>📌</span>
+                <h3 style={{ margin: "10px 0 6px 0", fontSize: "20px", fontWeight: 800 }}>
+                  {selectedTermsItem.type === 'plan' ? "Plan Details & Terms" : "Offer Details & Terms"}
+                </h3>
+                <h4 style={{ margin: 0, fontSize: "16px", color: selectedTermsItem.type === 'plan' ? "#2563eb" : "#10b981", fontWeight: 700 }}>
+                  {selectedTermsItem.title || selectedTermsItem.code}
+                </h4>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px", fontSize: "14px" }}>
+                {/* Price / Discount Info */}
+                <div style={{ backgroundColor: "var(--border)", borderRadius: "8px", padding: "12px", border: "1px solid var(--border)", display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ fontWeight: 600 }}>Rate / Benefit:</span>
+                  <strong style={{ color: "var(--text-main)" }}>{selectedTermsItem.price || selectedTermsItem.discount}</strong>
+                </div>
+
+                {/* Offer Constraints Details */}
+                {selectedTermsItem.type === 'offer' && (
+                  <>
+                    {selectedTermsItem.minPrice > 0 && (
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span>💰</span>
+                        <div>
+                          <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)", fontWeight: "bold" }}>MINIMUM PURCHASE REQUIRED</p>
+                          <p style={{ margin: 0, color: "var(--text-main)", fontWeight: 500 }}>₹{selectedTermsItem.minPrice}</p>
+                        </div>
+                      </div>
+                    )}
+                    {selectedTermsItem.validServices && selectedTermsItem.validServices.trim() !== "" && (
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span>🛠️</span>
+                        <div>
+                          <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)", fontWeight: "bold" }}>VALID SERVICES</p>
+                          <p style={{ margin: 0, color: "var(--text-main)", fontWeight: 500 }}>{selectedTermsItem.validServices}</p>
+                        </div>
+                      </div>
+                    )}
+                    {selectedTermsItem.city && selectedTermsItem.city.trim() !== "" && selectedTermsItem.city.toLowerCase() !== "all" && (
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span>📍</span>
+                        <div>
+                          <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)", fontWeight: "bold" }}>TARGET LOCATION</p>
+                          <p style={{ margin: 0, color: "var(--text-main)", fontWeight: 500 }}>{selectedTermsItem.city}</p>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Validity Dates */}
+                {selectedTermsItem.startDate && selectedTermsItem.endDate && (
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span>📅</span>
+                    <div>
+                      <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)", fontWeight: "bold" }}>VALIDITY PERIOD</p>
+                      <p style={{ margin: 0, color: "var(--text-main)", fontWeight: 500 }}>{selectedTermsItem.startDate} to {selectedTermsItem.endDate}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Detailed Terms */}
+                <div style={{ borderTop: "1px dashed var(--border)", paddingTop: "14px", marginTop: "4px" }}>
+                  <p style={{ margin: "0 0 6px 0", fontSize: "11px", color: "var(--text-muted)", fontWeight: "bold" }}>DETAILED TERMS & CONDITIONS</p>
+                  <div style={{ 
+                    maxHeight: "150px", overflowY: "auto", fontSize: "13px", 
+                    lineHeight: "1.6", color: "var(--text-main)", fontStyle: "italic", 
+                    backgroundColor: "rgba(0,0,0,0.02)", padding: "12px", borderRadius: "8px", 
+                    border: "1px solid var(--border)"
+                  }}>
+                    {selectedTermsItem.terms || "No special terms and conditions apply to this subscription plan or offer code."}
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => setSelectedTermsItem(null)}
+                  style={{
+                    width: "100%", padding: "12px", border: "none", borderRadius: "10px", 
+                    fontSize: "14px", fontWeight: 700, cursor: "pointer",
+                    backgroundColor: selectedTermsItem.type === 'plan' ? "#2563eb" : "#10b981", color: "white", 
+                    transition: "all 0.2s", marginTop: "8px"
+                  }}
+                >
+                  Close Info
+                </button>
+              </div>
             </div>
           </div>
         )}

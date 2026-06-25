@@ -9,7 +9,12 @@ const planSchema = new mongoose.Schema({
   color: { type: String },
   btnText: { type: String },
   workerId: { type: String },
-  expiryDate: { type: Date }
+  expiryDate: { type: Date },
+  terms: { type: String },
+  startDate: { type: String },
+  endDate: { type: String },
+  cancellationPolicy: { type: String },
+  city: { type: String, default: "" }
 }, { timestamps: true });
 
 const Plan = mongoose.model("Plan", planSchema);

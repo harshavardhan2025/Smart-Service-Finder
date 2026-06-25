@@ -5,7 +5,15 @@ const offerSchema = new mongoose.Schema({
   discount: { type: String, required: true },
   desc: { type: String },
   expiry: { type: String },
-  expiryDate: { type: Date }
+  expiryDate: { type: Date },
+  terms: { type: String },
+  startDate: { type: String },
+  endDate: { type: String },
+  cancellationPolicy: { type: String },
+  city: { type: String, default: "" },
+  validServices: { type: String, default: "" },
+  minPrice: { type: Number, default: 0 },
+  validPeriods: { type: String, default: "" }
 }, { timestamps: true });
 
 const Offer = mongoose.model("Offer", offerSchema);

@@ -38,6 +38,7 @@ import aiRoutes from "./routes/aiRoutes.js";
 import securityRoutes from "./routes/securityRoutes.js";
 import callRoutes from "./routes/callRoutes.js";
 import { checkBookingTimeouts } from "./controllers/bookingController.js";
+import { checkSubscriptionExpiries } from "./controllers/userController.js";
 
 const app = express();
 
@@ -57,6 +58,24 @@ app.use(compression());
 app.use(limiter);
 app.use(cors());
 app.use(express.json());
+
+// ── SERVERLESS LAZY CRON ──
+// Runs globally on Vercel and Locally by piggybacking on web traffic
+let lastCronRun = 0;
+app.use(async (req, res, next) => {
+  next(); // Instantly pass request forward without blocking
+  
+  const now = Date.now();
+  if (now - lastCronRun > 60000) { // Throttle: Only run once per minute maximum
+    lastCronRun = now;
+    try {
+      await checkBookingTimeouts();
+      await checkSubscriptionExpiries();
+    } catch(err) {
+      console.error("⚠️ Lazy Cron Error:", err.message);
+    }
+  }
+});
 
 // ── Health check endpoint (no auth, no DB needed) ──
 app.get("/api/health", (req, res) => {
@@ -111,8 +130,6 @@ const PORT = process.env.PORT || 5000;
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`Server running on ${PORT}`);
-    // Booking timeout checker — only run in long-lived server processes (not Vercel)
-    setInterval(checkBookingTimeouts, 30000);
   });
 } else {
   console.log("Running on Vercel serverless — skipping app.listen() and setInterval");

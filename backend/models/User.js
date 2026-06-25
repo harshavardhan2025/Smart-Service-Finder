@@ -9,7 +9,13 @@ const userSchema = new mongoose.Schema({
   phone: { type: String },
   city: { type: String },
   walletBalance: { type: Number, default: 1000 },
-  status: { type: String, default: "Active" }
+  status: { type: String, default: "Active" },
+  subscriptions: [{
+    planTitle: String,
+    startDate: Date,
+    expiryDate: Date,
+    status: { type: String, enum: ["Active", "Expired"] }
+  }]
 }, { timestamps: true });
 
 // Pre-save middleware to hash passwords

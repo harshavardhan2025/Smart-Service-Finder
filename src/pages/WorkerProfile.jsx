@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { FaUser, FaCheckCircle, FaBuilding, FaMapMarkerAlt, FaStar, FaBolt, FaRupeeSign, FaShieldAlt, FaMagic, FaClock, FaLock } from "react-icons/fa";
+import { FaStar, FaMapMarkerAlt, FaCheckCircle, FaBriefcase, FaEnvelope, FaPhone, FaTools, FaCalendarCheck, FaBolt, FaClock, FaLock, FaShieldAlt, FaMagic } from "react-icons/fa";
 
 function WorkerProfile() {
   const navigate = useNavigate();
@@ -36,6 +36,37 @@ function WorkerProfile() {
     navigate("/booking");
   };
 
+  // Get clean initials for the avatar (filtering common titles like Dr., Mr., etc.)
+  const getInitials = (name) => {
+    if (!name) return "?";
+    const parts = name.split(" ");
+    const cleanParts = parts.filter(p => !/^(dr|mr|ms|mrs)\.?$/i.test(p));
+    if (cleanParts.length === 0) return name.charAt(0).toUpperCase();
+    if (cleanParts.length === 1) return cleanParts[0].charAt(0).toUpperCase();
+    return (cleanParts[0].charAt(0) + cleanParts[1].charAt(0)).toUpperCase();
+  };
+
+  // Color-coded background based on worker name string hash for premium feeling
+  const getAvatarColor = (name) => {
+    const colors = [
+      "#0d9488", // Teal
+      "#0284c7", // Sky
+      "#4f46e5", // Indigo
+      "#7c3aed", // Violet
+      "#c026d3", // Fuchsia
+      "#db2777", // Pink
+      "#e11d48", // Rose
+      "#2563eb", // Blue
+    ];
+    if (!name) return colors[0];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
+  };
+
   return (
     <div
       className="fade-in dashboard-container"
@@ -67,6 +98,7 @@ function WorkerProfile() {
           className="premium-card"
           style={{
             padding: 0,
+            position: "relative"
           }}
         >
           {/* Header Banner */}
@@ -74,49 +106,57 @@ function WorkerProfile() {
             style={{
               background: "var(--primary-grad)",
               padding: "40px 32px",
-              color: "white"
+              color: "white",
+              position: "relative"
             }}
           >
+            {/* Verified Professional Badge */}
+            <span
+              style={{
+                position: "absolute",
+                top: "24px",
+                right: "24px",
+                backgroundColor: "#22c55e",
+                backdropFilter: "blur(4px)",
+                color: "white",
+                padding: "6px 12px",
+                borderRadius: "20px",
+                fontSize: "11px",
+                fontWeight: 700,
+                letterSpacing: "0.05em",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                border: "1px solid rgba(255, 255, 255, 0.15)"
+              }}
+            >
+              Verified Professional <FaCheckCircle size={12} />
+            </span>
+
             <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
-              {/* Profile Avatar Badge */}
+              {/* Profile Avatar Badge with Color-Coded Initials */}
               <div
                 style={{
                   width: "72px",
                   height: "72px",
                   borderRadius: "50%",
-                  backgroundColor: "rgba(255,255,255,0.2)",
-                  backdropFilter: "blur(4px)",
+                  backgroundColor: getAvatarColor(worker.name),
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: "32px",
+                  fontSize: "24px",
                   fontWeight: 800,
-                  boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
-                  color: "white"
+                  boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+                  color: "white",
+                  border: "2px solid white",
+                  flexShrink: 0
                 }}
               >
-                <FaUser size={32} />
+                {getInitials(worker.name)}
               </div>
               <div>
-                <span
-                  style={{
-                    backgroundColor: "rgba(255,255,255,0.2)",
-                    color: "white",
-                    padding: "3px 10px",
-                    borderRadius: "20px",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    marginBottom: "8px"
-                  }}
-                >
-                  Verified Professional <FaCheckCircle size={12} />
-                </span>
-                <h2 style={{ margin: 0, fontSize: "24px", fontWeight: 800 }}>
+                <h2 style={{ margin: 0, fontSize: "24px", fontWeight: 800, color: "white" }}>
                   {worker.name}
                 </h2>
               </div>
@@ -125,31 +165,27 @@ function WorkerProfile() {
 
           {/* Profile details */}
           <div style={{ padding: "32px" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "28px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px 20px", marginBottom: "28px" }}>
               <div>
-                <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Specialization</label>
-                <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "var(--text-primary)" }}>{worker.service}</p>
-              </div>
-              <div>
-                <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Location / City</label>
+                <label style={{ fontSize: "12px", fontWeight: 500, color: "#64748b" }}>Specialization</label>
                 <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "6px" }}>
-                  <FaBuilding size={14} style={{ color: "var(--primary)" }} /> {worker.city}
+                  {worker.service}
                 </p>
               </div>
               <div>
-                <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Proximity Distance</label>
+                <label style={{ fontSize: "12px", fontWeight: 500, color: "#64748b" }}>Location & Proximity</label>
                 <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "6px" }}>
-                  <FaMapMarkerAlt size={14} style={{ color: "#ef4444" }} /> {worker.distance || "1.0 KM"} Away
+                  <FaMapMarkerAlt size={14} style={{ color: "#ef4444" }} /> {worker.distance || "1.0 KM"} Away ({worker.city})
                 </p>
               </div>
               <div>
-                <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Overall Rating</label>
+                <label style={{ fontSize: "12px", fontWeight: 500, color: "#64748b" }}>Overall Rating</label>
                 <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "#eab308", display: "flex", alignItems: "center", gap: "6px" }}>
                   <FaStar size={14} style={{ color: "#eab308" }} /> {worker.rating} / 5.0
                 </p>
               </div>
               <div>
-                <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Response Time</label>
+                <label style={{ fontSize: "12px", fontWeight: 500, color: "#64748b" }}>Response Time</label>
                 <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "var(--primary)", display: "flex", alignItems: "center", gap: "6px" }}>
                   <FaBolt size={14} style={{ color: "#eab308" }} /> &lt; 15 Mins (Fast)
                 </p>
@@ -162,22 +198,21 @@ function WorkerProfile() {
                 backgroundColor: "var(--primary-light)",
                 border: "1.5px solid var(--primary)",
                 borderRadius: "16px",
-                padding: "20px",
+                padding: "16px 20px",
                 marginBottom: "28px",
                 display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center"
+                justifyContent: "center",
+                alignItems: "center",
+                gap: "10px"
               }}
             >
-              <div>
-                <span style={{ fontSize: "12px", color: "var(--primary-dark)", fontWeight: 700, textTransform: "uppercase" }}>Standard Service Rate</span>
-                <p style={{ margin: "4px 0 0 0", fontSize: "22px", fontWeight: 800, color: "var(--primary-dark)" }}>
-                  ₹{calculatedPrice} <span style={{ fontSize: "13px", fontWeight: 500 }}>/ visit</span>
-                </p>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "40px", height: "40px", borderRadius: "50%", backgroundColor: "var(--primary-dark)", color: "white" }}>
-                <FaRupeeSign size={20} />
-              </div>
+              <span style={{ fontSize: "14px", color: "var(--primary-dark)", fontWeight: 600 }}>
+                Standard Service Rate:
+              </span>
+              <span style={{ fontSize: "24px", fontWeight: 800, color: "var(--primary-dark)", display: "flex", alignItems: "center" }}>
+                ₹{calculatedPrice}
+                <span style={{ fontSize: "14px", fontWeight: 500, marginLeft: "4px", color: "var(--text-secondary)" }}>/ visit</span>
+              </span>
             </div>
 
             <div style={{ marginBottom: "28px" }} />
@@ -213,6 +248,7 @@ function WorkerProfile() {
                   fontSize: "16px",
                   cursor: "pointer",
                   transition: "all 0.2s",
+                  boxShadow: "0 4px 14px rgba(49, 82, 91, 0.25)"
                 }}
               >
                 Proceed to Booking & Scheduling →

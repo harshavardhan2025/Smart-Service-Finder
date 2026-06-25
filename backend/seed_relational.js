@@ -223,7 +223,11 @@ const seedDatabase = async () => {
       features: ["Unlimited doctor home consultations", "24/7 helpdesk"],
       color: "#0284c7",
       btnText: "Subscribe",
-      expiryDate: new Date("2030-01-01")
+      expiryDate: new Date("2030-01-01"),
+      terms: "Valid for immediate family members up to 4 members. Cancellations must be made within 15 days of purchase.",
+      startDate: "2026-01-01",
+      endDate: "2026-12-31",
+      cancellationPolicy: "15-day free cancellation policy."
     });
     const p2 = await Plan.create({
       title: "🚗 Unlimited Annual Car Wash Plan",
@@ -231,11 +235,35 @@ const seedDatabase = async () => {
       features: ["2 Detailed washes per month", "Complimentary wax"],
       color: "#16a34a",
       btnText: "Subscribe 🚀",
-      expiryDate: new Date("2030-01-01")
+      expiryDate: new Date("2030-01-01"),
+      terms: "Valid on registered vehicles only. Standard commercial vehicles excluded.",
+      startDate: "2026-01-01",
+      endDate: "2026-12-31",
+      cancellationPolicy: "Cancel tier switch at next billing period."
     });
 
-    await Offer.create({ code: "DOCFREE", discount: "Flat ₹150 Off", desc: "Valid on all Doctor consults.", expiry: "Ends Dec 31", expiryDate: new Date("2026-12-31") });
-    await Offer.create({ code: "FESTIVE25", discount: "25% Discount", desc: "Enjoy savings on all services.", expiry: "Ends Dec 31", expiryDate: new Date("2026-12-31") });
+    await Offer.create({ 
+      code: "DOCFREE", 
+      discount: "Flat ₹150 Off", 
+      desc: "Valid on all Doctor consults.", 
+      expiry: "Ends Dec 31", 
+      expiryDate: new Date("2026-12-31"),
+      terms: "Single usage per user account. Cannot be combined with other offers.",
+      startDate: "2026-01-01",
+      endDate: "2026-12-31",
+      cancellationPolicy: "Non-refundable after code claim."
+    });
+    await Offer.create({ 
+      code: "FESTIVE25", 
+      discount: "25% Discount", 
+      desc: "Enjoy savings on all services.", 
+      expiry: "Ends Dec 31", 
+      expiryDate: new Date("2026-12-31"),
+      terms: "Applicable on bookings above ₹500. Maximum discount cap is ₹250.",
+      startDate: "2026-01-01",
+      endDate: "2026-12-31",
+      cancellationPolicy: "Standard service cancellation policies apply."
+    });
 
     console.log("Weaving Relational History (Bookings, Transactions, Reviews)...");
     

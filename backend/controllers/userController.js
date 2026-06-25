@@ -74,3 +74,121 @@ export const sendMoneyToCustomer = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const getUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-password");
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const subscribeToPlan = async (req, res) => {
+  try {
+    const fs = await import('fs');
+    fs.appendFileSync('debug.log', `[SUBSCRIBE] HIT! req.body: ${JSON.stringify(req.body)}\n`);
+    const { planTitle, period, paymentMethod, amount } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      fs.appendFileSync('debug.log', `[SUBSCRIBE] User not found for id ${req.user._id}\n`);
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (paymentMethod === "Wallet") {
+      if ((user.walletBalance || 0) < amount) {
+        fs.appendFileSync('debug.log', `[SUBSCRIBE] Insufficient wallet: ${user.walletBalance} < ${amount}\n`);
+
+        return res.status(400).json({ error: "Insufficient wallet balance" });
+      }
+      user.walletBalance -= amount;
+    }
+
+    let expiry = new Date();
+    if (period === "year") {
+      expiry.setFullYear(expiry.getFullYear() + 1);
+    } else {
+      expiry.setMonth(expiry.getMonth() + 1);
+    }
+
+    if (!user.subscriptions) {
+      user.subscriptions = [];
+    }
+    
+    user.subscriptions.push({
+      planTitle: planTitle,
+      startDate: new Date(),
+      expiryDate: expiry,
+      status: "Active"
+    });
+    
+    await user.save();
+    
+    // Notify user of successful subscription
+    try {
+      await Notification.create({
+        role: "user",
+        user_id: user._id.toString(),
+        title: "✨ Subscription Active!",
+        message: `You have successfully subscribed to the "${planTitle}" plan. Enjoy your premium benefits!`,
+        type: "success",
+        is_read: false
+      });
+    } catch(err) {
+      console.error("Failed to send subscription notification:", err);
+    }
+    
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// ⏰ AUTOMATIC SUBSCRIPTION EXPIRY BACKGROUND ROUTINE
+export const checkSubscriptionExpiries = async () => {
+  try {
+    const now = new Date();
+    
+    // Find users who have at least one active subscription that has expired
+    const usersWithExpiredPlans = await User.find({
+      "subscriptions": {
+        $elemMatch: {
+          status: "Active",
+          expiryDate: { $lt: now }
+        }
+      }
+    });
+
+    if (usersWithExpiredPlans.length === 0) return;
+
+    for (const user of usersWithExpiredPlans) {
+      let updated = false;
+      for (const sub of user.subscriptions) {
+        if (sub.status === "Active" && sub.expiryDate < now) {
+          console.log(`⏰ [SUBSCRIPTION EXPIRED] User ${user.email} plan '${sub.planTitle}' expired.`);
+          sub.status = "Expired";
+          updated = true;
+          
+          // Notify user
+          try {
+            await Notification.create({
+              role: "user",
+              user_id: user._id.toString(),
+              title: "⚠️ Subscription Expired",
+              message: `Your subscription to "${sub.planTitle}" has expired. Please renew to keep enjoying premium benefits!`,
+              type: "warning",
+              is_read: false
+            });
+          } catch(err) { console.error("Error notifying user of expiry", err); }
+        }
+      }
+      
+      if (updated) {
+        await user.save();
+      }
+    }
+  } catch (error) {
+    console.error("Error in checkSubscriptionExpiries:", error.message);
+  }
+};

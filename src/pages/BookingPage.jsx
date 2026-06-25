@@ -123,9 +123,9 @@ function BookingPage() {
   const basePrice = selectedWorker.price || (selectedWorker.service.includes("Carpentry") ? 399 : selectedWorker.service.includes("Plumbing") ? 299 : selectedWorker.service.includes("Doctors") ? 599 : 349);
   const calculatedPrice = customPrice !== null ? customPrice : (basePrice + distanceFee + (isEmergency ? 150 : 0));
 
-  // 🛡️ CRITICAL SCHEDULING LOCK: Cap booking capabilities strictly to 6 Days Max!
+  // 🛡️ CRITICAL SCHEDULING LOCK: Cap booking capabilities strictly to 30 Days Max!
   const maxBookingDate = new Date();
-  maxBookingDate.setDate(maxBookingDate.getDate() + 6);
+  maxBookingDate.setDate(maxBookingDate.getDate() + 30);
 
   const timeSlots = [
     { label: "9 AM", hour: 9 },

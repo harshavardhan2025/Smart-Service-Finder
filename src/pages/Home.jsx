@@ -8,7 +8,7 @@ import CheapWorkers from "../components/CheapWorkers";
 import NearbyWorkers from "../components/NearbyWorkers";
 import { filterWorkersClientSide } from "../utils/workerService";
 import SkeletonLoader from "../components/SkeletonLoader";
-import { FaMapMarkerAlt, FaRobot, FaLocationArrow, FaMap, FaBolt, FaCircle, FaUser, FaStethoscope } from "react-icons/fa";
+import { FaMapMarkerAlt, FaRobot, FaLocationArrow, FaMap, FaBolt, FaCircle, FaUser, FaStethoscope, FaPercent, FaStar } from "react-icons/fa";
 
 const truncateLocation = (loc) => {
   if (!loc) return "";
@@ -24,6 +24,8 @@ function Home() {
   const role = sessionStorage.getItem("userRole") || "user";
 
   const [locationText, setLocationText] = useState("");
+  const [plans, setPlans] = useState([]);
+  const [offers, setOffers] = useState([]);
   const [searchedLocation, setSearchedLocation] = useState(
     () => localStorage.getItem("userLocation") || "Kadapa, Andhra Pradesh, India"
   );
@@ -39,7 +41,27 @@ function Home() {
   const [onlineWorkers, setOnlineWorkers] = useState([]);
   const [isOnlineLoading, setIsOnlineLoading] = useState(true);
   const [aiSuggestedWorkers, setAiSuggestedWorkers] = useState([]);
-  const [isAiLoading, setIsAiLoading] = useState(true);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+
+  // Compute available plans and offers for the user's selected location
+  const uCity = (localStorage.getItem("userCity") || "").toLowerCase().trim();
+  const today = new Date().toISOString().split("T")[0];
+  const availableOffersCount = offers.filter(offer => {
+    if (offer.endDate && offer.endDate < today) return false;
+    if (!offer.city || offer.city.trim() === "" || offer.city.toLowerCase() === "all") return true;
+    if (!uCity) return false;
+    const targetCities = offer.city.toLowerCase().split(",").map(c => c.trim());
+    return targetCities.some(c => uCity.includes(c) || c.includes(uCity));
+  }).length;
+
+  const availablePlansCount = plans.filter(plan => {
+    if (plan.endDate && plan.endDate < today) return false;
+    if (!plan.city || plan.city.trim() === "" || plan.city.toLowerCase() === "all") return true;
+    if (!uCity) return false;
+    const targetCities = plan.city.toLowerCase().split(",").map(c => c.trim());
+    return targetCities.some(c => uCity.includes(c) || c.includes(uCity));
+  }).length;
+
   const [aiSuggestedAreas, setAiSuggestedAreas] = useState([]);
   const [showMap, setShowMap] = useState(false);
   const [locationSearchInput, setLocationSearchInput] = useState(
@@ -102,7 +124,7 @@ function Home() {
         localStorage.setItem("userCoordsLat", latitude.toString());
         localStorage.setItem("userCoordsLng", longitude.toString());
         localStorage.setItem("manualLocationSet", "true");
-        
+
         try {
           const url = `https://photon.komoot.io/reverse?lon=${longitude}&lat=${latitude}`;
           const res = await fetch(url);
@@ -114,7 +136,7 @@ function Home() {
               const city = p.city || p.town || p.village || p.county || p.name || "";
               const label = [p.name, p.housenumber, p.street, p.city || p.town || p.village, p.state, p.country]
                 .filter(Boolean).join(", ");
-              
+
               setSearchedLocation(label);
               localStorage.setItem("userLocation", label);
               localStorage.setItem("userCity", city || "Mumbai");
@@ -162,7 +184,7 @@ function Home() {
           const city = p.city || p.town || p.village || p.county || p.name || locationSearchInput;
           const label = [p.name, p.city || p.town || p.village, p.state, p.country]
             .filter(Boolean).join(", ");
-          
+
           setUserCoords({ lat, lng: lon });
           setSearchedLocation(label);
           localStorage.setItem("userLocation", label);
@@ -219,14 +241,14 @@ function Home() {
       const savedLoc = localStorage.getItem("userLocation");
       const registeredCity = sessionStorage.getItem("userCity") || localStorage.getItem("userCity");
       const isManualLocation = localStorage.getItem("manualLocationSet") === "true";
-      
+
       // Always use the registered city as the source of truth if not manually set
-      const needsGeocode = !isManualLocation && (!savedLat || !savedLng || !savedLoc || 
+      const needsGeocode = !isManualLocation && (!savedLat || !savedLng || !savedLoc ||
         (registeredCity && !savedLoc.toLowerCase().includes(registeredCity.toLowerCase())));
-      
+
       if (needsGeocode) {
         const targetCity = registeredCity || "Mumbai";
-        
+
         const geocodeProfileCity = async () => {
           try {
             const url = `/api/workers/geocode?q=${encodeURIComponent(targetCity)}`;
@@ -237,12 +259,12 @@ function Home() {
                 const lat = parseFloat(data.lat);
                 const lon = parseFloat(data.lon);
                 const finalLabel = data.label || targetCity;
-                
+
                 localStorage.setItem("userLocation", finalLabel);
                 localStorage.setItem("userCity", targetCity);
                 localStorage.setItem("userCoordsLat", lat.toString());
                 localStorage.setItem("userCoordsLng", lon.toString());
-                
+
                 setSearchedLocation(finalLabel);
                 setUserCoords({ lat, lng: lon });
               } else {
@@ -256,7 +278,7 @@ function Home() {
             setSearchedLocation(targetCity);
           }
         };
-        
+
         geocodeProfileCity();
       } else {
         // Coords already match the registered city or manual location is set — use them instantly!
@@ -285,17 +307,17 @@ function Home() {
       localStorage.removeItem("userCity");
       return;
     }
-    
+
     localStorage.setItem("userLocation", searchedLocation);
 
     // 🔍 ADAPTIVE LOCALIZER: Ensure userCity is properly resolved for downstream payment and scheduling components!
     let resolvedCity = localStorage.getItem("userCity");
-    
+
     if (!resolvedCity && searchedLocation) {
       // Check if searchedLocation is raw coordinates
       const coordParts = searchedLocation.split(",").map(p => parseFloat(p.trim()));
       const isCoords = coordParts.length === 2 && !isNaN(coordParts[0]) && !isNaN(coordParts[1]);
-      
+
       if (!isCoords) {
         const parts = searchedLocation.split(",");
         resolvedCity = parts[0].trim();
@@ -303,10 +325,10 @@ function Home() {
         resolvedCity = "Mumbai";
       }
     }
-    
+
     localStorage.setItem("userCity", resolvedCity || "Mumbai");
 
-    
+
     const fetchAILocationsAndSuggestWorkers = async () => {
       setIsAiLoading(true);
 
@@ -342,11 +364,11 @@ function Home() {
         // If API fails, just stick to the base location
       } finally {
         setIsAiLoading(false);
-        
+
         // Note: Physical dynamic cloud sync is active below! 
       }
     };
-    
+
     fetchAILocationsAndSuggestWorkers();
   }, [searchedLocation]);
 
@@ -373,12 +395,12 @@ function Home() {
             extractedKey = parts[0].trim().toLowerCase();
           }
         }
-        
+
         // Instant client-side filtering under 0.1ms!
         const matchingWorkers = await filterWorkersClientSide(userCoords, extractedKey);
-        
+
         setOnlineWorkers(matchingWorkers);
-        
+
         // Prioritize matching workers residing or operating in AI suggested neighborhoods
         if (aiSuggestedAreas.length > 0) {
           const suggested = matchingWorkers.filter(worker => {
@@ -386,7 +408,7 @@ function Home() {
             const wCity = (worker.city || "").toLowerCase();
             return aiSuggestedAreas.some(area => wLoc.includes(area) || wCity.includes(area) || area.includes(wLoc) || area.includes(wCity));
           });
-          
+
           if (suggested.length > 0) {
             setAiSuggestedWorkers(suggested.slice(0, 5));
           } else {
@@ -395,7 +417,7 @@ function Home() {
         } else {
           setAiSuggestedWorkers(matchingWorkers.slice(0, 5));
         }
-      } catch(e) {
+      } catch (e) {
         console.error("Home cloud workers fail", e);
       } finally {
         setIsOnlineLoading(false);
@@ -405,6 +427,22 @@ function Home() {
     const interval = setInterval(syncOnline, 10000); // Keep synced periodically in case database changes
     return () => clearInterval(interval);
   }, [searchedLocation, userCoords, aiSuggestedAreas]);
+
+  useEffect(() => {
+    const fetchPlansAndOffers = async () => {
+      try {
+        const [pResp, oResp] = await Promise.all([
+          fetch("/api/plans"),
+          fetch("/api/offers")
+        ]);
+        if (pResp.ok) setPlans(await pResp.json());
+        if (oResp.ok) setOffers(await oResp.json());
+      } catch (err) {
+        console.error("Failed to load plans/offers for Home page", err);
+      }
+    };
+    fetchPlansAndOffers();
+  }, []);
 
   // Extract a short readable city/area name from the full address string
   const getShortLocation = (fullAddress) => {
@@ -448,37 +486,37 @@ function Home() {
         }}
       >
         {/* Subtle clouds */}
-        <svg 
-          viewBox="0 0 24 24" 
-          style={{ 
-            position: "absolute", 
-            left: "8%", 
-            bottom: "15%", 
-            width: "70px", 
-            height: "70px", 
-            opacity: 0.15, 
+        <svg
+          viewBox="0 0 24 24"
+          style={{
+            position: "absolute",
+            left: "8%",
+            bottom: "15%",
+            width: "70px",
+            height: "70px",
+            opacity: 0.15,
             fill: "white",
             pointerEvents: "none",
             animation: "drift 25s linear infinite"
           }}
         >
-          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
         </svg>
-        <svg 
-          viewBox="0 0 24 24" 
-          style={{ 
-            position: "absolute", 
-            right: "10%", 
-            top: "10%", 
-            width: "90px", 
-            height: "90px", 
-            opacity: 0.12, 
+        <svg
+          viewBox="0 0 24 24"
+          style={{
+            position: "absolute",
+            right: "10%",
+            top: "10%",
+            width: "90px",
+            height: "90px",
+            opacity: 0.12,
             fill: "white",
             pointerEvents: "none",
             animation: "driftReverse 30s linear infinite"
           }}
         >
-          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
         </svg>
 
         <style>{`
@@ -561,7 +599,7 @@ function Home() {
             <div style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.9)", lineHeight: "1.5" }}>
               Based on your fetched location <strong>{getShortLocation(searchedLocation)}</strong>, our AI has automatically searched the database to find the Top Rated Professionals, Budget-Friendly Workers, and Instant Bookings in your area and surrounding locations!
             </div>
-            
+
             {isAiLoading ? (
               <div style={{ marginTop: "12px" }}>
                 <SkeletonLoader type="list" count={1} />
@@ -571,9 +609,9 @@ function Home() {
                 <strong style={{ fontSize: "13px", color: "#ffffff" }}>AI Recommended Experts for You:</strong>
                 <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "8px" }}>
                   {aiSuggestedWorkers.map((worker, idx) => (
-                    <Link 
-                      key={idx} 
-                      to="/worker" 
+                    <Link
+                      key={idx}
+                      to="/worker"
                       onClick={() => localStorage.setItem("selected_worker", JSON.stringify(worker))}
                       style={{ textDecoration: "none" }}
                     >
@@ -590,18 +628,40 @@ function Home() {
                 </div>
               </div>
             ) : (
-               <div style={{ marginTop: "8px", fontSize: "12px", color: "rgba(255, 255, 255, 0.8)" }}>
+              <div style={{ marginTop: "8px", fontSize: "12px", color: "rgba(255, 255, 255, 0.8)" }}>
                 No specific experts matched locally. Explore all options below!
+              </div>
+            )}
+
+            {!isAiLoading && (availableOffersCount > 0 || availablePlansCount > 0) && (
+              <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid rgba(255, 255, 255, 0.2)" }}>
+                <strong style={{ fontSize: "13px", color: "#ffffff", display: "flex", alignItems: "center", gap: "6px" }}>
+                  🎁 Special Location Bonuses Detected!
+                </strong>
+                <div style={{ fontSize: "12px", color: "rgba(255, 255, 255, 0.9)", marginTop: "4px" }}>
+                  The AI Geolocation Interceptor verified your location and unlocked {availablePlansCount > 0 && <strong>{availablePlansCount} Service Plan{availablePlansCount !== 1 ? 's' : ''}</strong>}
+                  {availablePlansCount > 0 && availableOffersCount > 0 && " and "}
+                  {availableOffersCount > 0 && <strong>{availableOffersCount} Active Promo Offer{availableOffersCount !== 1 ? 's' : ''}</strong>} for you!
+                </div>
+                <Link 
+                  to="/plans-offers" 
+                  onClick={(e) => e.stopPropagation()}
+                  style={{ display: "inline-block", marginTop: "10px", padding: "8px 14px", backgroundColor: "#ffffff", color: "#6b17e1ff", borderRadius: "8px", fontSize: "12px", fontWeight: "bold", textDecoration: "none", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", transition: "transform 0.1s" }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
+                >
+                  View Plans & Offers →
+                </Link>
               </div>
             )}
           </div>
         )}
 
         {/* Premium Location Search & Auto-Detect Bar */}
-        <div 
-          className="premium-card homepage-location-bar" 
-          style={{ 
-            margin: "14px 0px", 
+        <div
+          className="premium-card homepage-location-bar"
+          style={{
+            margin: "14px 0px",
             padding: "20px 24px",
             background: "linear-gradient(135deg, rgba(2, 132, 199, 0.05) 0%, rgba(2, 132, 199, 0.01) 100%)",
             borderTop: "1.5px solid rgba(2, 132, 199, 0.12)",
@@ -622,7 +682,7 @@ function Home() {
               </span>
             )}
           </div>
-          
+
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
             <input
               type="text"
@@ -630,8 +690,8 @@ function Home() {
               value={locationSearchInput}
               onChange={(e) => setLocationSearchInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") handleSearchLocationSubmit(); }}
-              style={{ 
-                flex: 1, 
+              style={{
+                flex: 1,
                 minWidth: "200px",
                 padding: "10px 12px",
                 fontSize: "13.5px",
@@ -642,7 +702,7 @@ function Home() {
               <button
                 onClick={handleSearchLocationSubmit}
                 className="btn-primary"
-                style={{ 
+                style={{
                   flex: 1,
                   padding: "10px",
                   fontSize: "13px",
@@ -655,7 +715,7 @@ function Home() {
               <button
                 onClick={handleAutoDetectLocation}
                 className="btn-secondary"
-                style={{ 
+                style={{
                   flex: 1,
                   padding: "10px",
                   fontSize: "13px",
@@ -730,14 +790,14 @@ function Home() {
               <SkeletonLoader type="card" count={4} />
             </div>
           ) : (serviceQuery
-              ? onlineWorkers.filter((w) => {
-                  if (!w.service) return false;
-                  const ws = w.service.toLowerCase();
-                  const q = serviceQuery.toLowerCase().trim();
-                  return ws.includes(q) || ws.includes(normServiceQ) || normServiceQ.includes(ws);
-                })
-              : onlineWorkers
-            ).length === 0 ? (
+            ? onlineWorkers.filter((w) => {
+              if (!w.service) return false;
+              const ws = w.service.toLowerCase();
+              const q = serviceQuery.toLowerCase().trim();
+              return ws.includes(q) || ws.includes(normServiceQ) || normServiceQ.includes(ws);
+            })
+            : onlineWorkers
+          ).length === 0 ? (
             <div className="premium-card" style={{ padding: "30px", textAlign: "center", color: "var(--text-secondary)" }}>
               <span style={{ fontSize: "28px", display: "block", marginBottom: "8px", filter: "grayscale(1)" }}>💤</span>
               <p style={{ margin: 0, fontSize: "14px", fontWeight: "bold" }}>No emergency professionals are online right now.</p>
@@ -747,11 +807,11 @@ function Home() {
             <div className="horizontal-scroll-container" style={{ display: "flex", overflowX: "auto", gap: "16px", paddingBottom: "10px" }}>
               {(serviceQuery
                 ? onlineWorkers.filter((w) => {
-                    if (!w.service) return false;
-                    const ws = w.service.toLowerCase();
-                    const q = serviceQuery.toLowerCase().trim();
-                    return ws.includes(q) || ws.includes(normServiceQ) || normServiceQ.includes(ws);
-                  })
+                  if (!w.service) return false;
+                  const ws = w.service.toLowerCase();
+                  const q = serviceQuery.toLowerCase().trim();
+                  return ws.includes(q) || ws.includes(normServiceQ) || normServiceQ.includes(ws);
+                })
                 : onlineWorkers
               ).map((worker) => (
                 <div
@@ -768,7 +828,7 @@ function Home() {
                     position: "relative"
                   }}
                 >
-                   <span style={{ position: "absolute", top: "15px", right: "15px", backgroundColor: "var(--primary-light)", color: "var(--primary-dark)", padding: "4px 8px", borderRadius: "12px", fontSize: "10px", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                  <span style={{ position: "absolute", top: "15px", right: "15px", backgroundColor: "var(--primary-light)", color: "var(--primary-dark)", padding: "4px 8px", borderRadius: "12px", fontSize: "10px", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "4px" }}>
                     <FaCircle size={8} style={{ color: "#22c55e" }} /> ONLINE
                   </span>
                   <div style={{ marginBottom: "12px" }}>
@@ -776,7 +836,7 @@ function Home() {
                   </div>
                   <h3 style={{ margin: "0 0 4px 0", fontSize: "18px", fontWeight: "bold", color: "var(--text-primary)" }}>{worker.name}</h3>
                   <p style={{ margin: "0 0 8px 0", fontSize: "13px", color: "var(--text-secondary)", fontWeight: 500 }}>{worker.service}</p>
-                  
+
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "16px", borderTop: "1px solid var(--border-color)", paddingTop: "12px" }}>
                     <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>📍 {truncateLocation(worker.city)}</span>
                     <span className="price-badge">₹{worker.price || 399}</span>
@@ -795,6 +855,74 @@ function Home() {
         </div>
         <div className="home-section" style={{ marginBottom: "0" }}>
           <NearbyWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
+        </div>
+
+        {/* 🏷️ Service Plans & Seasonal Offers Preview */}
+        {plans.length > 0 && (
+          <div className="home-section" style={{ padding: "30px 24px", borderTop: "1.5px solid var(--border-color)", borderBottom: "1.5px solid var(--border-color)" }}>
+            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-primary)", marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <FaPercent style={{ color: "#34d399" }} /> Service Plans & Seasonal Offers
+            </h2>
+            <p style={{ margin: "0 0 20px 0", fontSize: "14px", color: "var(--text-secondary)" }}>
+              Save big on recurring home maintenance with our service plans, or copy a promo code below.
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px", marginBottom: "20px" }}>
+              {plans.filter(p => !p.endDate || p.endDate >= today).slice(0, 3).map((plan, idx) => (
+                <div key={idx} className="premium-card" style={{ padding: "24px", border: plan.popular ? "2px solid #eab308" : "1px solid var(--border-color)", display: "flex", flexDirection: "column", justifyContent: "space-between", transform: plan.popular ? "scale(1.02)" : "none", boxShadow: plan.popular ? "0 10px 25px rgba(234, 179, 8, 0.15)" : "var(--shadow-3d)" }}>
+                  <div>
+                    {plan.popular && (
+                      <span style={{ backgroundColor: "#eab308", color: "#1e293b", padding: "3px 10px", borderRadius: 12, fontSize: 10, fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "2px", marginBottom: "10px" }}>
+                        POPULAR <FaStar size={8} />
+                      </span>
+                    )}
+                    <h4 style={{ margin: "0 0 6px 0", fontSize: "16px", color: plan.popular ? "#eab308" : "var(--text-main)", fontWeight: 700 }}>{plan.title}</h4>
+                    <p style={{ margin: "0 0 12px 0", fontSize: "22px", fontWeight: 800, color: "var(--text-primary)" }}>
+                      ₹{(plan.price || "").replace("₹", "")}
+                      <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 500 }}>/{plan.period}</span>
+                    </p>
+                    <ul style={{ paddingLeft: "16px", margin: "0 0 16px 0", fontSize: "12.5px", color: "var(--text-muted)", lineHeight: 1.6 }}>
+                      {plan.features.slice(0, 3).map((f, i) => <li key={i}>{f}</li>)}
+                    </ul>
+                  </div>
+                  <Link to="/plans-offers" style={{ textDecoration: "none" }}>
+                    <button className="btn-secondary" style={{ width: "100%", padding: "10px", fontSize: "13px", borderRadius: "8px", cursor: "pointer" }}>
+                      View Plan Details →
+                    </button>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 🛡️ Trust Signals Section */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+          gap: 24,
+          margin: "40px 20px 20px 20px",
+          padding: "28px",
+          background: "var(--bg-card)",
+          borderRadius: "20px",
+          border: "1.5px solid var(--border-color)",
+          backdropFilter: "blur(12px)",
+          textAlign: "center"
+        }}>
+          <div>
+            <div style={{ color: "#eab308", fontSize: "20px", marginBottom: "8px" }}>⭐ ⭐ ⭐ ⭐ ⭐</div>
+            <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "var(--text-main)" }}>4.9/5 Average Rating</h4>
+            <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.5 }}>From over 10,00+ satisfied homeowners</p>
+          </div>
+          <div style={{ borderLeft: "1px solid var(--border-color)", borderRight: "1px solid var(--border-color)" }}>
+            <div style={{ fontSize: "24px", marginBottom: "6px" }}>🛡️</div>
+            <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "var(--text-main)" }}>100% Satisfaction Guarantee</h4>
+            <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.5 }}>Not satisfied? We will re-service for free</p>
+          </div>
+          <div>
+            <div style={{ fontSize: "24px", marginBottom: "6px" }}>⏱️</div>
+            <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "var(--text-main)" }}>Flexible Cancellation</h4>
+            <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.5 }}>Cancel or switch tiers anytime with no fees</p>
+          </div>
         </div>
       </div>
 

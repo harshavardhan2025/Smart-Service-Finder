@@ -60,6 +60,7 @@ function ChangeMapView({ center }) {
   const map = useMap();
   const [lat, lng] = center;
   useEffect(() => {
+    let timer;
     if (map) {
       const currentCenter = map.getCenter();
       const latDiff = Math.abs(currentCenter.lat - lat);
@@ -72,10 +73,19 @@ function ChangeMapView({ center }) {
         map.setView([lat, lng], currentZoom || 13);
       }
 
-      setTimeout(() => {
-        map.invalidateSize();
+      timer = setTimeout(() => {
+        if (map && map._container) {
+          try {
+            map.invalidateSize();
+          } catch (e) {
+            console.warn("map.invalidateSize failed safely: ", e);
+          }
+        }
       }, 100);
     }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [lat, lng, map]);
   return null;
 }
