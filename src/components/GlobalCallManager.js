@@ -549,7 +549,7 @@ function GlobalCallManager() {
 
       {/* Hidden audio elements */}
       <audio ref={remoteAudioRef} autoPlay style={{ position: "absolute", width: 0, height: 0, opacity: 0 }} />
-      <audio ref={ringtoneAudioRef} src="/ringtone.wav" loop style={{ position: "absolute", width: 0, height: 0, opacity: 0 }} />
+      <audio ref={ringtoneAudioRef} src="/new_ringtone.mp3" loop style={{ position: "absolute", width: 0, height: 0, opacity: 0 }} />
       <audio ref={callerTuneAudioRef} src="/caller_tune.wav" loop style={{ position: "absolute", width: 0, height: 0, opacity: 0 }} />
 
       {/* ── Active Call Panel ─────────────────────────────────────────────── */}
