@@ -97,7 +97,7 @@ function Navbar() {
         >
           <h2 style={{ margin: 0, fontWeight: 800, fontSize: "22px", letterSpacing: "-0.5px", display: "flex", alignItems: "center", gap: "8px", whiteSpace: "nowrap" }}>
             <FaTools style={{ color: "var(--primary)" }} />
-            <span>Work<span style={{ color: "#c1851dff" }}>zy</span></span>
+            <span><span style={{ color: "var(--primary)" }}>Work</span><span style={{ color: "#c1851dff" }}>zy</span></span>
           </h2>
         </Link>
 

@@ -478,7 +478,7 @@ function Home() {
           background: "linear-gradient(135deg, #dfb453 0%, #f1a829 100%)",
           borderBottom: "4px solid #a67c1e",
           color: "white",
-          padding: "50px 20px",
+          padding: "12px 20px",
           textAlign: "center",
           boxShadow: "0 10px 30px rgba(223, 180, 83, 0.25)",
           position: "relative",
@@ -539,10 +539,10 @@ function Home() {
           }
         `}</style>
 
-        <h1 style={{ margin: "0 0 10px 0", fontSize: "32px", fontWeight: 800, color: "#1e3a8a", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-          Find Reliable Service Experts Near You <FaMapMarkerAlt size={28} style={{ color: "#ef4444" }} />
+        <h1 style={{ margin: "0 0 6px 0", fontSize: "24px", fontWeight: 800, color: "#1e3a8a", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+          Find Reliable Service Experts Near You <FaMapMarkerAlt size={24} style={{ color: "#ef4444" }} />
         </h1>
-        <p style={{ margin: 0, fontSize: "16px", color: "rgba(30, 58, 138, 0.85)", fontWeight: "600" }}>
+        <p style={{ margin: 0, fontSize: "14px", color: "rgba(30, 58, 138, 0.85)", fontWeight: "600" }}>
           Auto-matching, verified professional workers, and instant secure bookings.
         </p>
       </div>
