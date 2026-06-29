@@ -55,7 +55,7 @@ function CheapWorkers({ searchedLocation, userCoords }) {
   // Sort by price and take top 4
   const cheapWorkers = [...cloudWorkers]
     .sort((a, b) => (a.price || 0) - (b.price || 0))
-    .slice(0, 4);
+    .slice(0, 20);
 
   return (
     <div className="fade-in" style={{ padding: "20px 24px", margin: "14px 0px", background: "linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.01) 100%)", borderRadius: "0px", borderTop: "1.5px solid rgba(16, 185, 129, 0.12)", borderBottom: "1.5px solid rgba(16, 185, 129, 0.12)", borderLeft: "none", borderRight: "none" }}>
