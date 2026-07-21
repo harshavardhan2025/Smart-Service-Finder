@@ -108,6 +108,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
 
   const [isSearching, setIsSearching] = useState(false);
   const [workers, setWorkers] = useState([]);
+  const [locationError, setLocationError] = useState(null);
 
 
   useEffect(() => {
@@ -335,17 +336,17 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
               async (err) => {
                 console.warn("Manual geolocation auto-detect failed, trying IP location:", err);
                 if (err.code === 1) {
-                  alert("Location permission denied. Please allow location access in your device/browser settings.");
+                  setLocationError("Location permission denied. Please allow location access in your device/browser settings.");
                 } else if (err.code === 2) {
-                  alert("Location is turned off or unavailable. Please turn on your device's GPS/Location services.");
+                  setLocationError("Location is turned off or unavailable. Please turn on your device's GPS/Location services.");
                 } else if (err.code === 3) {
-                  alert("Location request timed out. Please check your signal or try again.");
+                  setLocationError("Location request timed out. Please check your signal or try again.");
                 }
 
                 const success = await detectIpFallback();
                 setIsSearching(false);
                 if (!success && err.code !== 1 && err.code !== 2 && err.code !== 3) {
-                  alert("Failed to auto-detect location. Please search manually.");
+                  setLocationError("Failed to auto-detect location. Please search manually.");
                 }
               },
               { enableHighAccuracy: true, timeout: 8000 }
@@ -455,6 +456,34 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
           })}
         </MapContainer>
       </div>
+
+      {locationError && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.5)", zIndex: 99999,
+          display: "flex", justifyContent: "center", alignItems: "center", padding: "20px"
+        }}>
+          <div style={{
+            backgroundColor: "white", padding: "24px", borderRadius: "12px",
+            boxShadow: "0 10px 25px rgba(0,0,0,0.2)", maxWidth: "400px", width: "100%",
+            textAlign: "center"
+          }}>
+            <div style={{ fontSize: "36px", marginBottom: "16px" }}>📍</div>
+            <h3 style={{ margin: "0 0 12px 0", color: "#1e293b", fontFamily: "'Outfit', sans-serif" }}>Location Access Needed</h3>
+            <p style={{ margin: "0 0 24px 0", color: "#64748b", lineHeight: "1.5" }}>{locationError}</p>
+            <button
+              onClick={() => setLocationError(null)}
+              style={{
+                backgroundColor: "#4f46e5", color: "white", border: "none",
+                padding: "12px 24px", borderRadius: "8px", fontWeight: "600",
+                cursor: "pointer", width: "100%", fontSize: "16px"
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
   </div>
 );
