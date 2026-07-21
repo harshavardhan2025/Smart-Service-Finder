@@ -64,6 +64,7 @@ function Home() {
 
   const [aiSuggestedAreas, setAiSuggestedAreas] = useState([]);
   const [showMap, setShowMap] = useState(false);
+  const [locationError, setLocationError] = useState(null);
   const [locationSearchInput, setLocationSearchInput] = useState(
     localStorage.getItem("userLocation") || "Kadapa, Andhra Pradesh, India"
   );
@@ -113,8 +114,12 @@ function Home() {
   };
 
   const handleAutoDetectLocation = async () => {
+    setLocationError(null);
     if (!navigator.geolocation) {
-      await detectIpLocation();
+      const success = await detectIpLocation();
+      if (!success) {
+        setLocationError("Failed to auto-detect location. Please search manually.");
+      }
       return;
     }
     navigator.geolocation.getCurrentPosition(
@@ -160,10 +165,15 @@ function Home() {
         }
       },
       async (err) => {
-        console.warn("Home browser geolocation failed, trying IP location:", err);
-        const success = await detectIpLocation();
-        if (!success) {
-          alert("Failed to auto-detect location. Please search manually.");
+        console.warn("Home browser geolocation failed:", err);
+        if (err.code === 1) {
+          setLocationError("Location permission denied. Please allow location access in your browser/device settings.");
+        } else if (err.code === 2) {
+          setLocationError("Location is turned off or unavailable. Please turn on your device's GPS/Location services.");
+        } else if (err.code === 3) {
+          setLocationError("Location request timed out. Please check your signal or try again.");
+        } else {
+          setLocationError("Failed to auto-detect location. Please search manually.");
         }
       },
       { enableHighAccuracy: false, timeout: 5000 }
@@ -941,6 +951,47 @@ function Home() {
       >
         © 2026 Workzy Inc. All rights reserved. Made with ❤️ by PS-152 Team.
       </footer>
+
+      {/* Location Error Modal */}
+      {locationError && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.5)", zIndex: 99999,
+          display: "flex", justifyContent: "center", alignItems: "center", padding: "20px"
+        }}>
+          <div style={{
+            backgroundColor: "white", padding: "24px", borderRadius: "12px",
+            boxShadow: "0 10px 25px rgba(0,0,0,0.2)", maxWidth: "400px", width: "100%",
+            textAlign: "center"
+          }}>
+            <div style={{ fontSize: "36px", marginBottom: "16px" }}>📍</div>
+            <h3 style={{ margin: "0 0 12px 0", color: "#1e293b", fontFamily: "'Outfit', sans-serif" }}>Location Access Needed</h3>
+            <p style={{ margin: "0 0 24px 0", color: "#64748b", lineHeight: "1.5" }}>{locationError}</p>
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button
+                onClick={() => setLocationError(null)}
+                style={{
+                  backgroundColor: "#e2e8f0", color: "#475569", border: "none",
+                  padding: "12px 16px", borderRadius: "8px", fontWeight: "600",
+                  cursor: "pointer", flex: 1, fontSize: "16px"
+                }}
+              >
+                Close
+              </button>
+              <button
+                onClick={handleAutoDetectLocation}
+                style={{
+                  backgroundColor: "#4f46e5", color: "white", border: "none",
+                  padding: "12px 16px", borderRadius: "8px", fontWeight: "600",
+                  cursor: "pointer", flex: 1, fontSize: "16px"
+                }}
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
