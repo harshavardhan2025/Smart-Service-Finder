@@ -334,9 +334,17 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
               },
               async (err) => {
                 console.warn("Manual geolocation auto-detect failed, trying IP location:", err);
+                if (err.code === 1) {
+                  alert("Location permission denied. Please allow location access in your device/browser settings.");
+                } else if (err.code === 2) {
+                  alert("Location is turned off or unavailable. Please turn on your device's GPS/Location services.");
+                } else if (err.code === 3) {
+                  alert("Location request timed out. Please check your signal or try again.");
+                }
+
                 const success = await detectIpFallback();
                 setIsSearching(false);
-                if (!success) {
+                if (!success && err.code !== 1 && err.code !== 2 && err.code !== 3) {
                   alert("Failed to auto-detect location. Please search manually.");
                 }
               },
