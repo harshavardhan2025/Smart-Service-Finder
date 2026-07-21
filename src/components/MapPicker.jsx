@@ -139,6 +139,49 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
     return false;
   };
 
+  const autoDetectLocation = async () => {
+    setIsSearching(true);
+    setLocationError(null);
+    if (!navigator.geolocation) {
+      const success = await detectIpFallback();
+      setIsSearching(false);
+      if (!success) {
+        setLocationError("Failed to auto-detect location. Please search manually.");
+      }
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const result = await photonReverse(latitude, longitude);
+          if (result) {
+            applyLocation(latitude, longitude, result.label, result.city);
+          } else {
+            applyLocation(latitude, longitude, `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`, "");
+          }
+        } catch (err) {
+          applyLocation(latitude, longitude, `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`, "");
+        }
+        setIsSearching(false);
+      },
+      async (err) => {
+        console.warn("Manual geolocation auto-detect failed:", err);
+        if (err.code === 1) {
+          setLocationError("Location permission denied. Please allow location access in your browser/device settings.");
+        } else if (err.code === 2) {
+          setLocationError("Location is turned off or unavailable. Please turn on your device's GPS/Location services.");
+        } else if (err.code === 3) {
+          setLocationError("Location request timed out. Please check your signal or try again.");
+        } else {
+          setLocationError("Failed to auto-detect location. Please search manually.");
+        }
+        setIsSearching(false);
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  };
+
   // On mount, sync persisted coords → parent and auto-detect geolocation automatically
   useEffect(() => {
     const savedLat = parseFloat(localStorage.getItem("userCoordsLat")) || 14.471306;
@@ -291,50 +334,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
         </button>
         <button
           id="location-autodetect-btn"
-          onClick={async () => {
-            setIsSearching(true);
-            if (!navigator.geolocation) {
-              const success = await detectIpFallback();
-              setIsSearching(false);
-              if (!success) {
-                alert("Failed to auto-detect location. Please search manually.");
-              }
-              return;
-            }
-            navigator.geolocation.getCurrentPosition(
-              async (pos) => {
-                const { latitude, longitude } = pos.coords;
-                try {
-                  const result = await photonReverse(latitude, longitude);
-                  if (result) {
-                    applyLocation(latitude, longitude, result.label, result.city);
-                  } else {
-                    applyLocation(latitude, longitude, `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`, "");
-                  }
-                } catch (err) {
-                  applyLocation(latitude, longitude, `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`, "");
-                }
-                setIsSearching(false);
-              },
-              async (err) => {
-                console.warn("Manual geolocation auto-detect failed, trying IP location:", err);
-                if (err.code === 1) {
-                  setLocationError("Location permission denied. Please allow location access in your device/browser settings.");
-                } else if (err.code === 2) {
-                  setLocationError("Location is turned off or unavailable. Please turn on your device's GPS/Location services.");
-                } else if (err.code === 3) {
-                  setLocationError("Location request timed out. Please check your signal or try again.");
-                }
-
-                const success = await detectIpFallback();
-                setIsSearching(false);
-                if (!success && err.code !== 1 && err.code !== 2 && err.code !== 3) {
-                  setLocationError("Failed to auto-detect location. Please search manually.");
-                }
-              },
-              { enableHighAccuracy: true, timeout: 8000 }
-            );
-          }}
+          onClick={autoDetectLocation}
           disabled={isSearching}
           style={{ backgroundColor: "#0284c7", color: "white", opacity: isSearching ? 0.7 : 1 }}
         >
@@ -426,16 +426,28 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
             <div style={{ fontSize: "36px", marginBottom: "16px" }}>📍</div>
             <h3 style={{ margin: "0 0 12px 0", color: "#1e293b", fontFamily: "'Outfit', sans-serif" }}>Location Access Needed</h3>
             <p style={{ margin: "0 0 24px 0", color: "#64748b", lineHeight: "1.5" }}>{locationError}</p>
-            <button
-              onClick={() => setLocationError(null)}
-              style={{
-                backgroundColor: "#4f46e5", color: "white", border: "none",
-                padding: "12px 24px", borderRadius: "8px", fontWeight: "600",
-                cursor: "pointer", width: "100%", fontSize: "16px"
-              }}
-            >
-              Close
-            </button>
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button
+                onClick={() => setLocationError(null)}
+                style={{
+                  backgroundColor: "#e2e8f0", color: "#475569", border: "none",
+                  padding: "12px 16px", borderRadius: "8px", fontWeight: "600",
+                  cursor: "pointer", flex: 1, fontSize: "16px"
+                }}
+              >
+                Close
+              </button>
+              <button
+                onClick={autoDetectLocation}
+                style={{
+                  backgroundColor: "#4f46e5", color: "white", border: "none",
+                  padding: "12px 16px", borderRadius: "8px", fontWeight: "600",
+                  cursor: "pointer", flex: 1, fontSize: "16px"
+                }}
+              >
+                Try Again
+              </button>
+            </div>
           </div>
         </div>
       )}
