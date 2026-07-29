@@ -370,17 +370,17 @@ function AiChatBot() {
       if (isDragging) {
         let newX = e.clientX - dragStart.current.x;
         let newY = e.clientY - dragStart.current.y;
-        
+
         newX = Math.max(0, Math.min(newX, window.innerWidth - dimensions.width));
         newY = Math.max(0, Math.min(newY, window.innerHeight - dimensions.height));
-        
+
         const newCoords = { ...dimensions, x: newX, y: newY };
         setDimensions(newCoords);
         localStorage.setItem("chat_dimensions", JSON.stringify(newCoords));
       } else if (isResizing) {
         const deltaX = resizeStart.current.x - e.clientX;
         const deltaY = e.clientY - resizeStart.current.y;
-        
+
         let newWidth = resizeStart.current.w + deltaX;
         let newHeight = resizeStart.current.h + deltaY;
         let newX = resizeStart.current.startX - deltaX;
@@ -462,17 +462,17 @@ function AiChatBot() {
   }, [messages, isTyping]);
 
   useEffect(() => {
-     const primeAIPercepts = async () => {
-        try {
-           const [oResp, pResp] = await Promise.all([
-              fetch("/api/offers"),
-              fetch("/api/plans")
-           ]);
-           if (oResp.ok) setActiveOffers(await oResp.json());
-           if (pResp.ok) setActivePlans(await pResp.json());
-        } catch(e) { console.error("AI catalog loading error"); }
-     };
-     primeAIPercepts();
+    const primeAIPercepts = async () => {
+      try {
+        const [oResp, pResp] = await Promise.all([
+          fetch("/api/offers"),
+          fetch("/api/plans")
+        ]);
+        if (oResp.ok) setActiveOffers(await oResp.json());
+        if (pResp.ok) setActivePlans(await pResp.json());
+      } catch (e) { console.error("AI catalog loading error"); }
+    };
+    primeAIPercepts();
   }, []);
 
   const SUGGESTED_PROMPTS = [
@@ -481,7 +481,8 @@ function AiChatBot() {
     { text: "🧹 House Cleaning", query: "Need deep house cleaning" },
     { text: "💰 Pricing & Cost", query: "How much does it cost?" },
     { text: "💄 Bridal Makeup", query: "Bridal Makeup" },
-    { text: "🛡️ Safety & Trust", query: "Are workers verified?" }
+    { text: "🛡️ Safety & Trust", query: "Are workers verified? really" },
+    { text: "!✋ support or help", query: "customer support" }
   ];
 
   const levenshtein = (a, b) => {
@@ -539,7 +540,7 @@ function AiChatBot() {
       { name: "Mehandi", keywords: ["mehandi", "henna", "bride", "wedding", "bridal mehandi", "arabic", "mehndi artist", "henna design", "marwari mehandi", "designer mehandi", "baby shower mehandi", "karwa chauth", "eid mehandi", "party mehandi", "engagement mehandi", "henna cone", "organic henna", "guest mehandi", "arabic fusion", "indian mehandi", "zardosi mehandi", "floral mehandi", "portraits mehandi", "mehandi functions", "bridal henna", "leg mehandi", "hand design", "henna paste", "mehndi", "mehendi"] },
       { name: "Makeup", keywords: ["makeup", "bridal makeup", "bride", "wedding", "makeup artist", "party makeup", "mac makeup", "hd makeup", "airbrush makeup", "engagement makeup", "reception look", "saree draping", "hair styling", "eyelashes", "makeup kit", "cosmetics", "groom makeup", "fashion makeup", "photoshoot makeup", "natural makeup", "dewy finish", "waterproof makeup", "kryolan", "draping", "eyebrows", "foundation", "lipstick", "eye shadow", "makeover", "beauty artist"] },
       { name: "Beauty, Salon & Spa", keywords: ["salon", "parlor", "beauty", "haircut", "facial", "spa", "nail", "grooming", "shave", "beard", "massage", "waxing", "threading", "pedicure", "manicure", "hair coloring", "bleach", "detan", "hair spa", "body massage", "head massage", "oil massage", "scrub", "eyebrow threading", "body waxing", "cleanup", "bridal glow", "hair straightening", "hair smoothening", "keratin"] },
-      { name: "Doctors", keywords: ["doctor", "doctr", "medical", "consultation", "physician", "clinic", "sick", "health", "ill", "fever", "pain", "injury", "medicine", "cough", "cold", "flu", "hospital", "patient", "pediatrician", "cardiologist", "dermatologist", "orthopedic", "gynecologist", "fever consultation", "prescription", "general practitioner", "medical specialist", "stomach pain", "headache", "checkup"] }
+      { name: "Doctors", keywords: ["doctor", "doctr", "medical", "consultation", "physician", "clinic", "sick", "health", "ill", "fever", "pain", "injury", "medicine", "cough", "cold", "flu", "hospital", "patient", "pediatrician", "cardiologist", "dermatologist", "orthopedic", "gynecologist", "fever consultation", "prescription", "general practitioner", "medical specialist", "stomach pain", "headache", "checkup", "fever", "blood clot", "emergency", "poision", "sick", "body pains"] }
     ];
 
     // Fast-path: Check direct substring occurrence of any keyword
@@ -552,9 +553,9 @@ function AiChatBot() {
     }
 
     const stopWords = new Set([
-      "need", "want", "have", "with", "this", "that", "your", "from", "near", "best", "some", "good", "find", "show", "here", "there", 
-      "what", "where", "when", "about", "book", "free", "how", "to", "do", "you", "a", "an", "the", "is", "are", "was", "were", 
-      "payment", "methods", "support", "service", "booking", "cancel", "reschedule", "refund", "price", "discount", "offers", 
+      "need", "want", "have", "with", "this", "that", "your", "from", "near", "best", "some", "good", "find", "show", "here", "there",
+      "what", "where", "when", "about", "book", "free", "how", "to", "do", "you", "a", "an", "the", "is", "are", "was", "were",
+      "payment", "methods", "support", "service", "booking", "cancel", "reschedule", "refund", "price", "discount", "offers",
       "safety", "verified", "time", "hours", "location", "cities", "help", "complaint"
     ]);
 
@@ -579,11 +580,11 @@ function AiChatBot() {
               bestService = service.name;
             }
           }
-          
+
           const minLen = Math.min(w.length, keyword.length);
           const allowedDistance = minLen <= 3 ? 0 : minLen === 4 ? 1 : 2;
           const dist = levenshtein(w, keyword);
-          
+
           if (dist <= allowedDistance && dist < minDistance) {
             minDistance = dist;
             bestService = service.name;
@@ -597,12 +598,12 @@ function AiChatBot() {
 
   const findBestSupportMatch = (queryText) => {
     const qLower = queryText.toLowerCase();
-    
+
     const supportTopics = [
       { name: "booking", keywords: ["book", "booking", "boking", "reservation", "appoint", "appointment", "schedule"] },
       { name: "payment", keywords: ["payment", "paymnt", "pay", "money", "cash", "upi", "card", "wallet", "transaction", "bill", "invoice"] },
       { name: "refund", keywords: ["refund", "refnd", "cashback", "return money", "reimburse"] },
-      { name: "complaint", keywords: ["complaint", "complain", "support", "issue", "problem", "help", "ticket", "grievance", "contact", "agent"] },
+      { name: "complaint", keywords: ["complaint", "complain", "support", "issue", "problem", "help", "ticket", "grievance", "contact", "agent", "customer care", "support team", "customer service", "helpdesk"] },
       { name: "price", keywords: ["price", "cost", "charge", "rate", "fee", "tariff", "expensive", "how much", "payment rate"] },
       { name: "discount", keywords: ["discount", "discont", "offer", "coupon", "promo", "code", "deal", "voucher"] },
       { name: "cancel", keywords: ["cancel", "cancle", "reschedule", "change time", "postpone", "cancelation"] },
@@ -637,11 +638,11 @@ function AiChatBot() {
               bestTopic = topic.name;
             }
           }
-          
+
           const minLen = Math.min(w.length, keyword.length);
           const allowedDistance = minLen <= 3 ? 0 : minLen === 4 ? 1 : 2;
           const dist = levenshtein(w, keyword);
-          
+
           if (dist <= allowedDistance && dist < minDistance) {
             minDistance = dist;
             bestTopic = topic.name;
@@ -685,14 +686,14 @@ function AiChatBot() {
 
     if (matchedTopic === "discount") {
       const active = activeOffers.map(o => `• Code **${o.code}**: ${o.discount} (${o.desc})`).join("\n");
-      return active.length > 0 
-        ? `🎉 Yes, we have dynamic offers running right now!\n\n${active}\n\nApply code during checkout to claim benefits!` 
+      return active.length > 0
+        ? `🎉 Yes, we have dynamic offers running right now!\n\n${active}\n\nApply code during checkout to claim benefits!`
         : "🎉 We currently don't have any active sitewide promo codes, but our workers frequently list highly discounted budget rates on the home map page!";
     }
 
     if (lowercaseText.includes("plan") || lowercaseText.includes("subscribe")) {
       const activeP = activePlans.map(p => `• **${p.title}** for ${p.price}`).join("\n");
-      return activeP.length > 0 
+      return activeP.length > 0
         ? `💎 Check out our exclusive Annual & Premium Plans:\n\n${activeP}\n\nHead to the 'Plans & Offers' page to unlock full premium features!`
         : "💎 Premium membership programs periodically rotate. Keep checking the Plans tab for seasonal launches!";
     }
@@ -717,7 +718,7 @@ function AiChatBot() {
     if (lowercaseText.includes("how are you")) {
       return "I'm doing absolutely fantastic, thank you for asking! 😊\nI'm ready and excited to help you find the best home services today. How are you doing?";
     }
-    
+
     if (lowercaseText.includes("who are you") || lowercaseText.includes("your name") || lowercaseText.includes("what are you")) {
       return "I am Zy, your personal Workzy AI Assistant! 🤖✨\nI specialize in helping you discover, select, and book the perfect local professionals for any task, from home repairs to event management.";
     }
@@ -783,7 +784,7 @@ function AiChatBot() {
       sendingRef.current = false;
       return;
     }
-    
+
     if (qLower.includes("plan") || qLower.includes("subscribe") || qLower.includes("discount") || qLower.includes("offer")) {
       setIsTyping(false);
       setMessages((prev) => [
@@ -805,7 +806,7 @@ function AiChatBot() {
         let url = `/api/workers?service=${encodeURIComponent(category)}`;
         const storedCity = localStorage.getItem("userCity") || (userLocation !== "Unknown Location" ? userLocation.split(",")[0].trim() : "");
         if (storedCity) {
-           url += `&city=${encodeURIComponent(storedCity)}`;
+          url += `&city=${encodeURIComponent(storedCity)}`;
         }
 
         const resp = await fetch(url);
@@ -903,7 +904,7 @@ function AiChatBot() {
     } catch (err) {
       console.error("ChatBot API Fetch Failed, using local fallback", err);
       setIsTyping(false);
-      
+
       // Fallback local logic
       if (matchedCategory) {
         const workers = await fetchDynamicWorkers(matchedCategory);
@@ -1124,11 +1125,11 @@ function AiChatBot() {
                   }}
                 >
                   {msg.text}
-                  
+
                   {msg.link && (
                     <div style={{ marginTop: "12px" }}>
-                      <Link 
-                        to={msg.link} 
+                      <Link
+                        to={msg.link}
                         onClick={() => setIsOpen(false)}
                         style={{
                           display: "inline-flex",
@@ -1195,11 +1196,11 @@ function AiChatBot() {
                           <span>🛠️ {worker.experience || "Exp."}</span>
                           <span style={{ color: "#31525B", fontWeight: 700 }}>💰 ₹{worker.price || 350}</span>
                         </div>
-                        <Link 
+                        <Link
                           to="/worker"
                           onClick={() => {
-                             localStorage.setItem("selected_worker", JSON.stringify(worker));
-                             setIsOpen(false);
+                            localStorage.setItem("selected_worker", JSON.stringify(worker));
+                            setIsOpen(false);
                           }}
                           style={{ textDecoration: "none" }}
                         >
@@ -1299,7 +1300,7 @@ function AiChatBot() {
             onMouseDown={handleResizeMouseDown}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M14 4L4 14M14 8L8 14M14 12L12 14" stroke="#31525B" strokeWidth="1.5" strokeLinecap="round"/>
+              <path d="M14 4L4 14M14 8L8 14M14 12L12 14" stroke="#31525B" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </div>
         </div>
