@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -25,6 +26,39 @@ import AiChatBot from "./components/AiChatBot";
 import GoogleAuthMock from "./pages/GoogleAuthMock";
 import GlobalCallManager from "./components/GlobalCallManager";
 import CustomAlert from "./components/CustomAlert";
+
+// 🔒 PERSISTENT SESSION RESTORE: Recover auth from localStorage on cold start
+function restoreSession() {
+  if (sessionStorage.getItem("userId")) return; // Already active
+  try {
+    const raw = localStorage.getItem("authSession");
+    if (!raw) return;
+    const session = JSON.parse(raw);
+    if (!session.expiry || Date.now() > session.expiry) {
+      localStorage.removeItem("authSession");
+      return;
+    }
+    sessionStorage.setItem("userRole", session.userRole);
+    sessionStorage.setItem("userName", session.userName);
+    sessionStorage.setItem("userEmail", session.userEmail);
+    sessionStorage.setItem("userId", session.userId);
+    sessionStorage.setItem("authToken", session.authToken);
+    if (session.loggedInWorkerId) {
+      sessionStorage.setItem("loggedInWorkerId", session.loggedInWorkerId);
+    }
+    if (session.userCity) {
+      sessionStorage.setItem("userCity", session.userCity);
+      localStorage.setItem("userCity", session.userCity);
+    }
+    console.log("🔒 Session restored from persistent storage for:", session.userName);
+  } catch (e) {
+    console.error("Session restore failed:", e);
+    localStorage.removeItem("authSession");
+  }
+}
+
+// Run immediately before any component renders
+restoreSession();
 
 // 🔐 SECURITY SHIELD: Prevent direct address bar entry by guests!
 function PrivateRoute({ children }) {

@@ -1,15 +1,339 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 
+// ── Zy AI Chatbot Styles ──
+const zyStyles = `
+  @keyframes zySlideUp {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes zyPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
+  @keyframes zyDotBounce {
+    0%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-6px); }
+  }
+  @keyframes zyFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes zyGlow {
+    0%, 100% { box-shadow: 0 0 20px rgba(49, 82, 91, 0.3); }
+    50% { box-shadow: 0 0 35px rgba(49, 82, 91, 0.5); }
+  }
+  @keyframes zyShimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  @keyframes zyRipple {
+    0% { transform: scale(0.8); opacity: 1; }
+    100% { transform: scale(2.4); opacity: 0; }
+  }
+
+  .zy-fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #31525B 0%, #1F353B 100%);
+    box-shadow: 0 8px 32px rgba(49, 82, 91, 0.45), inset 0 1px 0 rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 10000;
+    transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 2px solid rgba(179, 222, 229, 0.3);
+    overflow: visible;
+  }
+  .zy-fab:hover {
+    transform: scale(1.12) rotate(-3deg);
+    box-shadow: 0 12px 40px rgba(49, 82, 91, 0.6), inset 0 1px 0 rgba(255,255,255,0.15);
+    border-color: rgba(179, 222, 229, 0.6);
+  }
+  .zy-fab::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid rgba(179, 222, 229, 0.3);
+    animation: zyRipple 2.5s ease-out infinite;
+  }
+  .zy-fab-icon {
+    font-size: 26px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    transition: transform 0.3s ease;
+  }
+  .zy-fab:hover .zy-fab-icon {
+    transform: scale(1.1);
+  }
+
+  .zy-window {
+    animation: zySlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  .zy-header {
+    background: linear-gradient(145deg, #1F353B 0%, #31525B 50%, #3d6670 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .zy-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(179, 222, 229, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .zy-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(179, 222, 229, 0.4), transparent);
+  }
+
+  .zy-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+    animation: zyPulse 2s ease-in-out infinite;
+  }
+
+  .zy-msg {
+    animation: zyFadeIn 0.3s ease-out;
+  }
+
+  .zy-msg-ai {
+    background: linear-gradient(135deg, rgba(49, 82, 91, 0.06) 0%, rgba(179, 222, 229, 0.1) 100%);
+    border: 1px solid rgba(49, 82, 91, 0.1);
+    color: var(--text-main, #0f172a);
+    border-radius: 4px 16px 16px 16px;
+    position: relative;
+  }
+  .zy-msg-ai::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #31525B, #B3DEE5, transparent);
+    border-radius: 4px 16px 0 0;
+    opacity: 0.5;
+  }
+
+  .zy-msg-user {
+    background: linear-gradient(145deg, #31525B 0%, #1F353B 100%);
+    color: white;
+    border-radius: 16px 16px 4px 16px;
+    box-shadow: 0 4px 12px rgba(49, 82, 91, 0.25);
+  }
+
+  .zy-typing-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #31525B;
+    display: inline-block;
+    animation: zyDotBounce 1.2s ease-in-out infinite;
+  }
+
+  .zy-chip {
+    background: linear-gradient(135deg, rgba(49, 82, 91, 0.05) 0%, rgba(179, 222, 229, 0.12) 100%);
+    border: 1.5px solid rgba(49, 82, 91, 0.15);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #31525B;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: 0.2px;
+  }
+  .zy-chip:hover {
+    background: linear-gradient(135deg, #31525B 0%, #3d6670 100%);
+    color: white;
+    border-color: #31525B;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(49, 82, 91, 0.2);
+  }
+  .zy-chip:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  .zy-input {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: 1.5px solid rgba(49, 82, 91, 0.15);
+    outline: none;
+    font-size: 14px;
+    font-family: 'Outfit', sans-serif;
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(8px);
+    color: var(--text-main, #0f172a);
+    transition: all 0.25s ease;
+  }
+  .zy-input:focus {
+    border-color: #31525B;
+    box-shadow: 0 0 0 3px rgba(49, 82, 91, 0.1);
+    background: white;
+  }
+  .zy-input:disabled {
+    background: rgba(0,0,0,0.03);
+    color: #94a3b8;
+    cursor: not-allowed;
+  }
+  .zy-input::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+  }
+
+  .zy-send-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: linear-gradient(145deg, #31525B 0%, #1F353B 100%);
+    border: none;
+    border-bottom: 3px solid #0E1719;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(49, 82, 91, 0.3);
+    padding: 0;
+  }
+  .zy-send-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(49, 82, 91, 0.4);
+  }
+  .zy-send-btn:active {
+    transform: translateY(1px);
+    border-bottom-width: 1px;
+  }
+  .zy-send-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  .zy-worker-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%);
+    border: 1.5px solid rgba(49, 82, 91, 0.12);
+    border-radius: 16px;
+    padding: 14px;
+    transition: all 0.25s ease;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+  }
+  .zy-worker-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #31525B, #B3DEE5);
+  }
+  .zy-worker-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(49, 82, 91, 0.15);
+    border-color: rgba(49, 82, 91, 0.25);
+  }
+
+  .zy-book-btn {
+    width: 100%;
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    background: linear-gradient(145deg, #31525B 0%, #1F353B 100%);
+    border: none;
+    border-bottom: 3px solid #0E1719;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 8px rgba(49, 82, 91, 0.2);
+  }
+  .zy-book-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(49, 82, 91, 0.3);
+  }
+  .zy-book-btn:active {
+    transform: translateY(1px);
+    border-bottom-width: 1px;
+  }
+
+  .zy-resize-grip {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 18px;
+    height: 18px;
+    cursor: nesw-resize;
+    z-index: 10001;
+    opacity: 0.4;
+    transition: opacity 0.2s ease;
+  }
+  .zy-resize-grip:hover {
+    opacity: 0.8;
+  }
+
+  .zy-messages::-webkit-scrollbar {
+    width: 5px;
+  }
+  .zy-messages::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .zy-messages::-webkit-scrollbar-thumb {
+    background: rgba(49, 82, 91, 0.15);
+    border-radius: 10px;
+  }
+  .zy-messages::-webkit-scrollbar-thumb:hover {
+    background: rgba(49, 82, 91, 0.3);
+  }
+`;
+
 function AiChatBot() {
   const location = useLocation();
   const role = sessionStorage.getItem("userRole");
   const path = location.pathname;
 
+  // ── Inject styles once ──
+  useEffect(() => {
+    if (!document.getElementById("zy-styles")) {
+      const style = document.createElement("style");
+      style.id = "zy-styles";
+      style.textContent = zyStyles;
+      document.head.appendChild(style);
+    }
+  }, []);
+
   // ── PREMIUM CUSTOM DRAG-AND-RESIZE STATE AND LOGIC ──
   const [dimensions, setDimensions] = useState(() => {
     const saved = localStorage.getItem("chat_dimensions");
-    return saved ? JSON.parse(saved) : { width: 360, height: 500, x: window.innerWidth - 380, y: window.innerHeight - 600 };
+    return saved ? JSON.parse(saved) : { width: 380, height: 540, x: window.innerWidth - 405, y: window.innerHeight - 620 };
   });
 
   const [isDragging, setIsDragging] = useState(false);
@@ -61,15 +385,15 @@ function AiChatBot() {
         let newHeight = resizeStart.current.h + deltaY;
         let newX = resizeStart.current.startX - deltaX;
 
-        if (newWidth < 280) {
-          newWidth = 280;
-          newX = resizeStart.current.startX + resizeStart.current.w - 280;
+        if (newWidth < 300) {
+          newWidth = 300;
+          newX = resizeStart.current.startX + resizeStart.current.w - 300;
         }
         if (newWidth > 600) {
           newWidth = 600;
           newX = resizeStart.current.startX + resizeStart.current.w - 600;
         }
-        if (newHeight < 350) newHeight = 350;
+        if (newHeight < 380) newHeight = 380;
         if (newHeight > 750) newHeight = 750;
 
         if (newX < 0) {
@@ -120,7 +444,7 @@ function AiChatBot() {
   const [messages, setMessages] = useState([
     {
       sender: "ai",
-      text: "Hello! I am your Service App AI Assistant. 🤖\n\nHow can I help you today? Try describing any service or issue (e.g., 'AC is not cooling', 'need wallpaper installed', or 'bike wash') and I will find the right specialized experts for you!"
+      text: "Hey there! I'm Zy, your smart service assistant. 🤖✨\n\nDescribe any issue or service you need — like 'AC not cooling', 'bridal makeup', or 'house cleaning' — and I'll instantly match you with the best local experts!"
     }
   ]);
   const [inputText, setInputText] = useState("");
@@ -152,12 +476,12 @@ function AiChatBot() {
   }, []);
 
   const SUGGESTED_PROMPTS = [
-    { text: "AC not cooling ❄️", query: "AC is not cooling" },
-    { text: "Check Offers 🎁", query: "What are the latest offers?" },
-    { text: "House Cleaning 🧹", query: "Need deep house cleaning" },
-    { text: "Pricing & Cost 💰", query: "How much does it cost?" },
-    { text: "Bridal Makeup 💄", query: "Bridal Makeup" },
-    { text: "Safety & Trust 🛡️", query: "Are workers verified?" }
+    { text: "❄️ AC not cooling", query: "AC is not cooling" },
+    { text: "🎁 Check Offers", query: "What are the latest offers?" },
+    { text: "🧹 House Cleaning", query: "Need deep house cleaning" },
+    { text: "💰 Pricing & Cost", query: "How much does it cost?" },
+    { text: "💄 Bridal Makeup", query: "Bridal Makeup" },
+    { text: "🛡️ Safety & Trust", query: "Are workers verified?" }
   ];
 
   const levenshtein = (a, b) => {
@@ -395,7 +719,7 @@ function AiChatBot() {
     }
     
     if (lowercaseText.includes("who are you") || lowercaseText.includes("your name") || lowercaseText.includes("what are you")) {
-      return "I am your personal Workzy AI Assistant! 🤖✨\nI specialize in helping you discover, select, and book the perfect local professionals for any task, from home repairs to event management.";
+      return "I am Zy, your personal Workzy AI Assistant! 🤖✨\nI specialize in helping you discover, select, and book the perfect local professionals for any task, from home repairs to event management.";
     }
 
     if (lowercaseText.includes("thank you") || lowercaseText.includes("thanks")) {
@@ -443,8 +767,39 @@ function AiChatBot() {
     const matchedCategory = parseProblem(textToSend);
     const userLocation = localStorage.getItem("userLocation") || "Unknown Location";
 
+    // --- Intercept Help/Support/Plans queries to inject direct links ---
+    const qLower = textToSend.toLowerCase();
+    if (qLower.includes("support") || qLower.includes("help") || qLower.includes("complaint") || qLower.includes("issue") || qLower.includes("contact")) {
+      setIsTyping(false);
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "ai",
+          text: "I can help with any questions or complaints you have. For immediate assistance and official ticket generation, please head over to our support portal where our team will get in touch with you within 24 hours.",
+          link: "/support",
+          linkText: "Visit Support Portal"
+        }
+      ]);
+      sendingRef.current = false;
+      return;
+    }
+    
+    if (qLower.includes("plan") || qLower.includes("subscribe") || qLower.includes("discount") || qLower.includes("offer")) {
+      setIsTyping(false);
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "ai",
+          text: "Yes! We have dynamic offers and exclusive subscription plans running right now to save you money on your bookings.",
+          link: "/plans",
+          linkText: "View Plans & Offers"
+        }
+      ]);
+      sendingRef.current = false;
+      return;
+    }
+
     // Function to get real workers dynamically from shared store based on category and location
-    // 🚀 INTEGRATED INTELLIGENT CLOUD DISCOVERY! Fetches authenticated database entities seamlessly.
     const fetchDynamicWorkers = async (category) => {
       try {
         let url = `/api/workers?service=${encodeURIComponent(category)}`;
@@ -467,7 +822,6 @@ function AiChatBot() {
     const offersText = activeOffers.map(o => `${o.code} (${o.discount})`).join("; ");
 
     try {
-      // 🛡️ SECURITY LOCKDOWN: Diverted insecure client-side requests to protected server-side relay!
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
@@ -477,7 +831,7 @@ function AiChatBot() {
           messages: [
             {
               role: "system",
-              content: `You are the Workzy AI Assistant. The user is currently located near: ${userLocation}. 
+              content: `You are Zy, the Workzy AI Assistant. The user is currently located near: ${userLocation}. 
               Your job is to help them with home services (plumbing, carpentry, beauty, cleaning, mechanics, doctors, etc). 
               Available Special Subscription Plans: ${plansText}.
               Available Promo Codes/Offers: ${offersText}.
@@ -512,7 +866,7 @@ function AiChatBot() {
           ...prev,
           {
             sender: "ai",
-            text: aiReply + `\n\nBased on your location, I found these local experts near you for **${backendCategory}**:`,
+            text: aiReply + `\n\n🔍 Found top-rated experts near you for **${backendCategory}**:`,
             workersList: backendWorkers,
             category: backendCategory
           }
@@ -524,7 +878,7 @@ function AiChatBot() {
             ...prev,
             {
               sender: "ai",
-              text: aiReply + `\n\nBased on your location, I found these local experts near you for **${matchedCategory}**:`,
+              text: aiReply + `\n\n🔍 Found top-rated experts near you for **${matchedCategory}**:`,
               workersList: workers,
               category: matchedCategory
             }
@@ -594,43 +948,15 @@ function AiChatBot() {
 
   return (
     <div>
-      {/* Floating Chat Bubble */}
-      <div
-        onClick={() => setIsOpen(!isOpen)}
-        style={{
-          position: "fixed",
-          bottom: "20px",
-          right: "20px",
-          width: "60px",
-          height: "60px",
-          borderRadius: "50%",
-          background: "linear-gradient(135deg, #00dbde 0%, #fc00ff 100%)",
-          boxShadow: "0 8px 24px rgba(0, 219, 222, 0.4)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          cursor: "pointer",
-          zIndex: 1000,
-          transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
-          color: "white",
-          fontSize: "26px"
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "scale(1.15) rotate(5deg)";
-          e.currentTarget.style.boxShadow = "0 12px 30px rgba(252, 0, 255, 0.5)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "scale(1) rotate(0deg)";
-          e.currentTarget.style.boxShadow = "0 8px 24px rgba(0, 219, 222, 0.4)";
-        }}
-      >
-        💬
+      {/* ── Zy Floating Action Button ── */}
+      <div className="zy-fab" onClick={() => setIsOpen(!isOpen)}>
+        <span className="zy-fab-icon">{isOpen ? "✕" : "🤖"}</span>
       </div>
 
-      {/* Chat Window */}
+      {/* ── Zy Chat Window ── */}
       {isOpen && (
         <div
-          className="premium-card"
+          className="zy-window"
           style={{
             position: "fixed",
             left: `${dimensions.x}px`,
@@ -640,113 +966,234 @@ function AiChatBot() {
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
-            zIndex: 1000,
-            padding: 0,
+            zIndex: 10000,
             borderRadius: "20px",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
-            border: "1.5px solid var(--border)",
+            background: "rgba(255, 255, 255, 0.92)",
+            backdropFilter: "blur(20px) saturate(180%)",
+            WebkitBackdropFilter: "blur(20px) saturate(180%)",
+            boxShadow: "0 20px 60px rgba(31, 53, 59, 0.2), 0 0 0 1px rgba(49, 82, 91, 0.08)",
+            border: "1px solid rgba(179, 222, 229, 0.3)",
             userSelect: isDragging || isResizing ? "none" : "auto"
           }}
         >
-          {/* Header */}
+          {/* ── Header ── */}
           <div
+            className="zy-header"
             onMouseDown={handleHeaderMouseDown}
             style={{
-              background: "linear-gradient(135deg, #00dbde 0%, #fc00ff 100%)",
-              color: "white",
-              padding: "15px",
-              fontWeight: "bold",
+              padding: "16px 18px",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
               cursor: "move",
-              userSelect: "none"
+              userSelect: "none",
+              position: "relative"
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span>🤖</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative", zIndex: 1 }}>
+              <div style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "12px",
+                background: "linear-gradient(135deg, rgba(179, 222, 229, 0.3) 0%, rgba(255,255,255,0.1) 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "22px",
+                border: "1px solid rgba(179, 222, 229, 0.2)"
+              }}>
+                🤖
+              </div>
               <div>
-                <div style={{ fontSize: "15px" }}>AI Service Assistant</div>
-                <div style={{ fontSize: "11px", fontWeight: "normal", color: "#e0f2f1" }}>Online | Instantly Matching</div>
+                <div style={{ fontSize: "15px", fontWeight: 700, color: "white", letterSpacing: "0.3px" }}>
+                  Zy
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <div className="zy-status-dot" />
+                  <span style={{ fontSize: "11px", fontWeight: 500, color: "rgba(179, 222, 229, 0.9)", letterSpacing: "0.2px" }}>
+                    AI Service Assistant
+                  </span>
+                </div>
               </div>
             </div>
-            <span
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsOpen(false);
-              }}
-              style={{ cursor: "pointer", fontSize: "20px", padding: "0 5px" }}
-            >
-              ×
-            </span>
+            <div style={{ display: "flex", gap: "8px", position: "relative", zIndex: 1 }}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMessages([{
+                    sender: "ai",
+                    text: "Hey there! I'm Zy, your smart service assistant. 🤖✨\n\nDescribe any issue or service you need — like 'AC not cooling', 'bridal makeup', or 'house cleaning' — and I'll instantly match you with the best local experts!"
+                  }]);
+                }}
+                style={{
+                  background: "rgba(255,255,255,0.1)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  borderRadius: "8px",
+                  color: "white",
+                  width: "30px",
+                  height: "30px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  padding: 0,
+                  boxShadow: "none",
+                  borderBottom: "none",
+                  transition: "background 0.2s"
+                }}
+                title="Clear chat"
+              >
+                🗑️
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsOpen(false);
+                }}
+                style={{
+                  background: "rgba(255,255,255,0.1)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  borderRadius: "8px",
+                  color: "white",
+                  width: "30px",
+                  height: "30px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  fontSize: "16px",
+                  padding: 0,
+                  boxShadow: "none",
+                  borderBottom: "none",
+                  transition: "background 0.2s"
+                }}
+              >
+                ×
+              </button>
+            </div>
           </div>
 
-          {/* Messages Container */}
+          {/* ── Messages ── */}
           <div
+            className="zy-messages"
             style={{
               flex: 1,
-              padding: "15px",
+              padding: "16px",
               overflowY: "auto",
-              backgroundColor: "rgba(0,0,0,0.02)",
               display: "flex",
               flexDirection: "column",
-              gap: "12px"
+              gap: "14px",
+              background: "linear-gradient(180deg, rgba(248,250,252,0.5) 0%, rgba(255,255,255,0.3) 100%)"
             }}
           >
             {messages.map((msg, idx) => (
               <div
                 key={idx}
+                className="zy-msg"
                 style={{
                   alignSelf: msg.sender === "user" ? "flex-end" : "flex-start",
-                  maxWidth: "85%",
+                  maxWidth: "88%",
                   display: "flex",
                   flexDirection: "column"
                 }}
               >
+                {/* Sender label */}
+                <div style={{
+                  fontSize: "10.5px",
+                  fontWeight: 600,
+                  color: msg.sender === "user" ? "#64748b" : "#31525B",
+                  marginBottom: "4px",
+                  paddingLeft: msg.sender === "user" ? "0" : "2px",
+                  paddingRight: msg.sender === "user" ? "2px" : "0",
+                  textAlign: msg.sender === "user" ? "right" : "left",
+                  letterSpacing: "0.5px",
+                  textTransform: "uppercase"
+                }}>
+                  {msg.sender === "user" ? "You" : "Zy"}
+                </div>
+
                 <div
+                  className={msg.sender === "user" ? "zy-msg-user" : "zy-msg-ai"}
                   style={{
-                    backgroundColor: msg.sender === "user" ? "var(--primary)" : "var(--border)",
-                    color: msg.sender === "user" ? "white" : "var(--text-main)",
-                    padding: "10px 14px",
-                    borderRadius: msg.sender === "user" ? "12px 12px 0 12px" : "12px 12px 12px 0",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-                    fontSize: "14px",
+                    padding: "12px 16px",
+                    fontSize: "13.5px",
+                    lineHeight: "1.55",
                     whiteSpace: "pre-line",
-                    border: msg.sender === "user" ? "none" : "1px solid var(--border)"
+                    letterSpacing: "0.1px"
                   }}
                 >
                   {msg.text}
+                  
+                  {msg.link && (
+                    <div style={{ marginTop: "12px" }}>
+                      <Link 
+                        to={msg.link} 
+                        onClick={() => setIsOpen(false)}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          padding: "8px 14px",
+                          background: "#E5F6F8",
+                          color: "#1F353B",
+                          borderRadius: "8px",
+                          textDecoration: "none",
+                          fontWeight: 700,
+                          fontSize: "13px",
+                          border: "1px solid #B3DEE5",
+                          transition: "all 0.2s"
+                        }}
+                      >
+                        {msg.linkText} →
+                      </Link>
+                    </div>
+                  )}
                 </div>
 
                 {/* Worker Match Cards */}
                 {msg.workersList && (
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "10px",
-                      marginTop: "8px"
-                    }}
-                  >
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "10px" }}>
                     {msg.workersList.map((worker, wIdx) => (
-                      <div
-                        key={wIdx}
-                        style={{
-                          backgroundColor: "var(--bg-card)",
-                          border: "1.5px solid var(--border)",
-                          borderRadius: "12px",
-                          padding: "12px",
-                          boxShadow: "var(--shadow-3d)",
-                          backdropFilter: "var(--blur)",
-                        }}
-                      >
-                        <h4 style={{ margin: "0 0 4px 0", fontSize: "14px", color: "var(--text-main)" }}>
-                          {worker.name}
-                        </h4>
-                        <div style={{ display: "flex", gap: "10px", fontSize: "12px", color: "var(--text-muted)", margin: "4px 0" }}>
-                          <span>⭐ {worker.rating}</span>
-                          <span>🛠️ {worker.experience}</span>
-                          <span style={{ color: "var(--success)", fontWeight: "bold" }}>💰 ₹{worker.price || 350}</span>
+                      <div key={wIdx} className="zy-worker-card">
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+                          <div style={{
+                            width: "38px",
+                            height: "38px",
+                            borderRadius: "10px",
+                            background: "linear-gradient(135deg, #31525B 0%, #B3DEE5 100%)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "white",
+                            fontWeight: 700,
+                            fontSize: "15px",
+                            flexShrink: 0
+                          }}>
+                            {worker.name ? worker.name.charAt(0).toUpperCase() : "W"}
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: "#1F353B" }}>
+                              {worker.name}
+                            </h4>
+                            <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>
+                              {worker.service || msg.category}
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{
+                          display: "flex",
+                          gap: "12px",
+                          fontSize: "12px",
+                          color: "#475569",
+                          padding: "8px 10px",
+                          background: "rgba(49, 82, 91, 0.04)",
+                          borderRadius: "8px",
+                          marginBottom: "10px"
+                        }}>
+                          <span>⭐ {worker.rating || "N/A"}</span>
+                          <span>🛠️ {worker.experience || "Exp."}</span>
+                          <span style={{ color: "#31525B", fontWeight: 700 }}>💰 ₹{worker.price || 350}</span>
                         </div>
                         <Link 
                           to="/worker"
@@ -754,18 +1201,10 @@ function AiChatBot() {
                              localStorage.setItem("selected_worker", JSON.stringify(worker));
                              setIsOpen(false);
                           }}
+                          style={{ textDecoration: "none" }}
                         >
-                          <button
-                            className="btn-primary"
-                            style={{
-                              width: "100%",
-                              padding: "8px",
-                              borderRadius: "8px",
-                              fontSize: "12px",
-                              marginTop: "6px"
-                            }}
-                          >
-                            View Profile & Book
+                          <button className="zy-book-btn">
+                            View Profile & Book →
                           </button>
                         </Link>
                       </div>
@@ -775,127 +1214,94 @@ function AiChatBot() {
               </div>
             ))}
 
+            {/* Typing indicator */}
             {isTyping && (
-              <div
-                style={{
-                  alignSelf: "flex-start",
-                  backgroundColor: "var(--border)",
-                  padding: "10px 14px",
-                  borderRadius: "12px 12px 12px 0",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-                  fontSize: "12px",
-                  color: "var(--text-muted)",
-                  border: "1px solid var(--border)"
-                }}
-              >
-                AI is typing... 🤖
+              <div className="zy-msg" style={{ alignSelf: "flex-start", maxWidth: "88%" }}>
+                <div style={{
+                  fontSize: "10.5px",
+                  fontWeight: 600,
+                  color: "#31525B",
+                  marginBottom: "4px",
+                  paddingLeft: "2px",
+                  letterSpacing: "0.5px",
+                  textTransform: "uppercase"
+                }}>
+                  Zy
+                </div>
+                <div className="zy-msg-ai" style={{
+                  padding: "14px 20px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px"
+                }}>
+                  <span className="zy-typing-dot" style={{ animationDelay: "0s" }} />
+                  <span className="zy-typing-dot" style={{ animationDelay: "0.15s" }} />
+                  <span className="zy-typing-dot" style={{ animationDelay: "0.3s" }} />
+                </div>
               </div>
             )}
             <div ref={chatEndRef} />
           </div>
 
-           {/* Suggested Prompts Chips */}
-          <div
-            style={{
-              display: "flex",
-              gap: "8px",
-              padding: "8px 12px",
-              backgroundColor: "rgba(0, 0, 0, 0.01)",
-              borderTop: "1.5px solid var(--border)",
-              overflowX: "auto",
-              whiteSpace: "nowrap"
-            }}
-          >
+          {/* ── Suggested Prompts ── */}
+          <div style={{
+            display: "flex",
+            gap: "6px",
+            padding: "8px 14px",
+            borderTop: "1px solid rgba(49, 82, 91, 0.08)",
+            overflowX: "auto",
+            whiteSpace: "nowrap",
+            background: "rgba(248, 250, 252, 0.5)"
+          }}>
             {SUGGESTED_PROMPTS.map((prompt, pIdx) => (
               <button
                 key={pIdx}
+                className="zy-chip"
                 disabled={isTyping}
                 onClick={() => handleSendMessage(prompt.query)}
-                style={{
-                  backgroundColor: isTyping ? "var(--border)" : "var(--bg-card)",
-                  border: "1.5px solid var(--border)",
-                  borderRadius: "20px",
-                  padding: "5px 12px",
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  color: isTyping ? "var(--text-muted)" : "var(--text-main)",
-                  cursor: isTyping ? "not-allowed" : "pointer",
-                  boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
-                  transition: "all 0.15s ease",
-                  outline: "none"
-                }}
               >
                 {prompt.text}
               </button>
             ))}
           </div>
 
-          {/* Input Box */}
-          <div
-            style={{
-              padding: "10px",
-              borderTop: "1.5px solid var(--border)",
-              display: "flex",
-              gap: "8px",
-              backgroundColor: "transparent"
-            }}
-          >
+          {/* ── Input Area ── */}
+          <div style={{
+            padding: "12px 14px",
+            borderTop: "1px solid rgba(49, 82, 91, 0.08)",
+            display: "flex",
+            gap: "8px",
+            alignItems: "center",
+            background: "rgba(255,255,255,0.6)"
+          }}>
             <input
+              className="zy-input"
               type="text"
-              placeholder={isTyping ? "AI is typing, please wait..." : "Describe your issue..."}
+              placeholder={isTyping ? "Zy is thinking..." : "Ask Zy anything..."}
               disabled={isTyping}
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && !isTyping && handleSendMessage()}
-              style={{
-                flex: 1,
-                padding: "10px",
-                borderRadius: "8px",
-                border: "1.5px solid var(--border)",
-                outline: "none",
-                fontSize: "14px",
-                backgroundColor: isTyping ? "var(--border)" : "var(--bg-card)",
-                color: isTyping ? "var(--text-muted)" : "var(--text-main)",
-                cursor: isTyping ? "not-allowed" : "text"
-              }}
             />
             <button
+              className="zy-send-btn"
               onClick={handleSendMessage}
               disabled={isTyping}
-              style={{
-                padding: "10px 18px",
-                borderRadius: "8px",
-                fontSize: "13px",
-                background: "linear-gradient(135deg, #00dbde 0%, #fc00ff 100%)",
-                border: "none",
-                color: "white",
-                fontWeight: 700,
-                cursor: "pointer",
-                boxShadow: "0 2px 8px rgba(0, 219, 222, 0.25)",
-                transition: "all 0.2s"
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-1px)"}
-              onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
+              title="Send message"
             >
-              Send
+              ➤
             </button>
           </div>
-          {/* Resize grip at bottom-left corner */}
+
+          {/* ── Resize Grip ── */}
           <div
+            className="zy-resize-grip"
             onMouseDown={handleResizeMouseDown}
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              width: "20px",
-              height: "20px",
-              cursor: "nesw-resize",
-              zIndex: 1001,
-              background: "linear-gradient(135deg, transparent 50%, rgba(252, 0, 255, 0.5) 50%)",
-              transform: "rotate(90deg)",
-              borderRadius: "0 0 0 20px"
-            }}
-          />
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M14 4L4 14M14 8L8 14M14 12L12 14" stroke="#31525B" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </div>
         </div>
       )}
     </div>

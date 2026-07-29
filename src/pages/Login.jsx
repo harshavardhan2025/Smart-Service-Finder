@@ -131,6 +131,18 @@ function Login() {
     sessionStorage.setItem("authToken", data.token);
     localStorage.removeItem("manualLocationSet");
 
+    // 🔒 Persist login for 1 week across browser sessions
+    localStorage.setItem("authSession", JSON.stringify({
+      userRole: user.role,
+      userName: user.name,
+      userEmail: user.email,
+      userId: user.id || user._id,
+      authToken: data.token,
+      loggedInWorkerId: user.role === "worker" ? user.id : null,
+      userCity: user.city || null,
+      expiry: Date.now() + 7 * 24 * 60 * 60 * 1000
+    }));
+
     if (user.role === "worker") {
       sessionStorage.setItem("loggedInWorkerId", user.id);
       setLoginStatus({ type: "success", message: `Welcome ${user.name}! Redirecting to dashboard... 🛠️` });

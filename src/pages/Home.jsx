@@ -42,6 +42,9 @@ function Home() {
   const [isOnlineLoading, setIsOnlineLoading] = useState(true);
   const [aiSuggestedWorkers, setAiSuggestedWorkers] = useState([]);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiBannerText, setAiBannerText] = useState("");
+  const [aiBannerExpertsTitle, setAiBannerExpertsTitle] = useState("");
+  const [aiBannerBonusText, setAiBannerBonusText] = useState("");
 
   // Compute available plans and offers for the user's selected location
   const uCity = (localStorage.getItem("userCity") || "").toLowerCase().trim();
@@ -454,6 +457,81 @@ function Home() {
     fetchPlansAndOffers();
   }, []);
 
+  // 🤖 Zy AI: Generate dynamic, personalized banner text
+  useEffect(() => {
+    if (isAiLoading || !searchedLocation) return;
+
+    // Check cache — only regenerate when location changes
+    const cacheKey = `aiBanner_${searchedLocation}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (parsed.ts && Date.now() - parsed.ts < 30 * 60 * 1000) { // Cache for 30 mins
+          setAiBannerText(parsed.bannerText || "");
+          setAiBannerExpertsTitle(parsed.expertsTitle || "");
+          setAiBannerBonusText(parsed.bonusText || "");
+          return;
+        }
+      } catch (e) { /* ignore bad cache */ }
+    }
+
+    const workerNames = aiSuggestedWorkers.slice(0, 3).map(w => w.name).join(", ");
+    const workerServices = [...new Set(aiSuggestedWorkers.map(w => w.service))].join(", ");
+    const shortLoc = getShortLocation(searchedLocation);
+    const userName = sessionStorage.getItem("userName") || "";
+
+    const generateBannerText = async () => {
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: [{
+              role: "user",
+              content: `You are Zy, the Workzy AI assistant. Generate a short, engaging, personalized banner paragraph (2-3 sentences max) for the home page.
+Context:
+- User name: "${userName || "there"}"
+- User location: "${shortLoc}"
+- ${aiSuggestedWorkers.length} experts found nearby (names: ${workerNames || "none"}, services: ${workerServices || "various"})
+- ${availablePlansCount} service plans available
+- ${availableOffersCount} promo offers active
+
+Reply with ONLY a JSON object with these 3 keys:
+1. "bannerText": The main greeting paragraph (personalized, friendly, use 1-2 emojis). Example: "Hey Ravi! 🎯 I found 3 top-rated experts near Kakinada ready to help you today."
+2. "expertsTitle": A short title for the experts section (creative, max 6 words). Example: "🔥 Top Picks Near You"
+3. "bonusText": A short promo line about available plans/offers (max 1 sentence). Example: "🎁 Unlock 3 exclusive plans and 1 promo code for your area!"
+
+No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
+            }]
+          })
+        });
+
+        const data = await response.json();
+        if (data.choices && data.choices.length > 0) {
+          let raw = data.choices[0].message.content;
+          // Clean markdown wrappers if AI adds them
+          raw = raw.replace(/```json\s*/gi, "").replace(/```\s*/gi, "").trim();
+          const parsed = JSON.parse(raw);
+          setAiBannerText(parsed.bannerText || "");
+          setAiBannerExpertsTitle(parsed.expertsTitle || "");
+          setAiBannerBonusText(parsed.bonusText || "");
+
+          // Cache the result
+          localStorage.setItem(cacheKey, JSON.stringify({
+            ...parsed,
+            ts: Date.now()
+          }));
+        }
+      } catch (err) {
+        console.error("AI banner text generation failed:", err);
+        // Fallback — keep empty, the JSX below has default text as fallback
+      }
+    };
+
+    generateBannerText();
+  }, [isAiLoading, searchedLocation, aiSuggestedWorkers, availablePlansCount, availableOffersCount]);
+
   // Extract a short readable city/area name from the full address string
   const getShortLocation = (fullAddress) => {
     if (!fullAddress) return "";
@@ -603,11 +681,11 @@ function Home() {
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <FaRobot size={18} style={{ color: "#ffffff" }} />
               <span>
-                <strong>AI-Powered Nearby Search Active</strong>
+                <strong>🤖 Zy AI — Nearby Search Active</strong>
               </span>
             </div>
             <div style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.9)", lineHeight: "1.5" }}>
-              Based on your fetched location <strong>{getShortLocation(searchedLocation)}</strong>, our AI has automatically searched the database to find the Top Rated Professionals, Budget-Friendly Workers, and Instant Bookings in your area and surrounding locations!
+              {aiBannerText || (<>Based on your location <strong>{getShortLocation(searchedLocation)}</strong>, Zy found the best professionals, budget-friendly workers, and instant bookings in your area!</>)}
             </div>
 
             {isAiLoading ? (
@@ -616,7 +694,7 @@ function Home() {
               </div>
             ) : aiSuggestedWorkers.length > 0 ? (
               <div style={{ marginTop: "12px" }}>
-                <strong style={{ fontSize: "13px", color: "#ffffff" }}>AI Recommended Experts for You:</strong>
+                <strong style={{ fontSize: "13px", color: "#ffffff" }}>{aiBannerExpertsTitle || "🔍 Zy's Top Picks For You:"}</strong>
                 <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "8px" }}>
                   {aiSuggestedWorkers.map((worker, idx) => (
                     <Link
@@ -646,12 +724,12 @@ function Home() {
             {!isAiLoading && (availableOffersCount > 0 || availablePlansCount > 0) && (
               <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid rgba(255, 255, 255, 0.2)" }}>
                 <strong style={{ fontSize: "13px", color: "#ffffff", display: "flex", alignItems: "center", gap: "6px" }}>
-                  🎁 Special Location Bonuses Detected!
+                  🎁 Location Bonuses Unlocked!
                 </strong>
                 <div style={{ fontSize: "12px", color: "rgba(255, 255, 255, 0.9)", marginTop: "4px" }}>
-                  The AI Geolocation Interceptor verified your location and unlocked {availablePlansCount > 0 && <strong>{availablePlansCount} Service Plan{availablePlansCount !== 1 ? 's' : ''}</strong>}
+                  {aiBannerBonusText || (<>Zy unlocked {availablePlansCount > 0 && <strong>{availablePlansCount} Service Plan{availablePlansCount !== 1 ? 's' : ''}</strong>}
                   {availablePlansCount > 0 && availableOffersCount > 0 && " and "}
-                  {availableOffersCount > 0 && <strong>{availableOffersCount} Active Promo Offer{availableOffersCount !== 1 ? 's' : ''}</strong>} for you!
+                  {availableOffersCount > 0 && <strong>{availableOffersCount} Active Promo Offer{availableOffersCount !== 1 ? 's' : ''}</strong>} for your area!</>)}
                 </div>
                 <Link 
                   to="/plans-offers" 

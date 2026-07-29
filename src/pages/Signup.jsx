@@ -235,6 +235,18 @@ function Signup() {
         localStorage.setItem("userCity", data.user.city);
       }
 
+      // 🔒 Persist login for 1 week across browser sessions
+      localStorage.setItem("authSession", JSON.stringify({
+        userRole: data.user.role,
+        userName: data.user.name,
+        userEmail: data.user.email,
+        userId: data.user.id || data.user._id,
+        authToken: data.token,
+        loggedInWorkerId: data.user.role === "worker" ? data.user.id : null,
+        userCity: data.user.city || null,
+        expiry: Date.now() + 7 * 24 * 60 * 60 * 1000
+      }));
+
       setPopupResult({
         type: "success",
         message: extraBody.role === "worker"

@@ -317,7 +317,7 @@ const localAIEngine = (userQuery, userLocation) => {
   } else if (query.includes("how are you")) {
     aiResponse = "I'm doing absolutely fantastic, thank you for asking! 😊 I'm ready and excited to help you find the best home services today. How can I assist you today?";
   } else if (query.includes("who are you") || query.includes("your name") || query.includes("what are you")) {
-    aiResponse = "I am your personal Workzy AI Assistant! 🤖✨ I specialize in helping you discover, select, and book the perfect local professionals for any task, from home repairs to event management.";
+    aiResponse = "I am Zy, your personal Workzy AI Assistant! 🤖✨ I specialize in helping you discover, select, and book the perfect local professionals for any task, from home repairs to event management.";
   } else if (query.includes("thank") || query.includes("thanks")) {
     aiResponse = "You are so very welcome! ❤️ I'm always here to assist. Let me know if you need to find any other local professionals!";
   } else if (query.includes("great") || query.includes("awesome") || query.includes("nice") || query.includes("cool")) {
@@ -425,7 +425,8 @@ export const proxyChat = async (req, res) => {
     // 🛡️ DUAL-ENGINE STRATEGY: Attempt remote LLM first, gracefully fall back to local AI on error/auth failure
     if (apiKey && apiKey.trim().length > 10) {
       try {
-        const systemPrompt = `You are a structured classification and conversational AI for the Workzy home service platform.
+        const systemPrompt = `You are Zy, a structured classification and conversational AI assistant for the Workzy home service platform.
+You suggest workers, specify locations, and explain available plans based on live data.
 Analyze the user's message. The user's current detected location is: "${userLocation}".
 
 We have the following services on our platform:
@@ -435,7 +436,7 @@ You must reply with ONLY a valid JSON object matching the following keys:
 1. "workerSearch": boolean (true if looking to book/find a worker, false for general talk).
 2. "service": string (one of the platform services listed above if workerSearch is true, otherwise null).
 3. "city": string (city name if mentioned, e.g. "Kakinada", "New Delhi", or null).
-4. "aiResponse": string (friendly response, use emojis, mention plans/offers if relevant. Max 2 sentences).
+4. "aiResponse": string (friendly response from Zy, use emojis, suggest workers, mention locations and plans/offers if relevant. Max 2 sentences).
 
 Do not include any markdown formatting, no \`\`\`json wrappers. Respond with ONLY the raw JSON.`;
 
@@ -443,7 +444,10 @@ Do not include any markdown formatting, no \`\`\`json wrappers. Respond with ONL
         const modelName = process.env.AI_MODEL_NAME || "glm-4-flash"; // glm-4-flash is highly stable
 
         console.log(`🛰️ [AI LIVE QUERY] Querying LLM API at ${apiUrl} using model ${modelName}...`);
-        const token = generateZhipuToken(apiKey);
+        let token = apiKey;
+        if (!apiKey.startsWith("nvapi-") && !apiKey.startsWith("sk-")) {
+          token = generateZhipuToken(apiKey);
+        }
 
         const response = await fetch(apiUrl, {
           method: "POST",

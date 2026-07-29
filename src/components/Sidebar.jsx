@@ -64,6 +64,7 @@ function Sidebar() {
     sessionStorage.removeItem("userEmail");
     sessionStorage.removeItem("authToken");
     localStorage.removeItem("manualLocationSet");
+    localStorage.removeItem("authSession");
     alert("Logged out successfully! 👋");
     window.location.href = "/";
   };

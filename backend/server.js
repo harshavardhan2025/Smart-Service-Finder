@@ -10,7 +10,7 @@ import compression from "compression";
 import rateLimit from "express-rate-limit";
 import connectDB from "./config/db.js";
 
-dotenv.config();
+dotenv.config({ override: true });
 
 // Connect Database — wrapped in try/catch so a MongoDB error never
 // calls process.exit() and kills the Vercel serverless function.

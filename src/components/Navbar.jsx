@@ -58,6 +58,7 @@ function Navbar() {
     sessionStorage.removeItem("userEmail");
     sessionStorage.removeItem("authToken");
     localStorage.removeItem("manualLocationSet");
+    localStorage.removeItem("authSession");
     alert("Logged out successfully! 👋");
     navigate("/");
   };
