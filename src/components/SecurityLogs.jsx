@@ -108,7 +108,7 @@ function SecurityLogs({ userId = "admin", limit = 0 }) {
         <div className="custom-scrollbar" style={{ overflowX: "auto", maxHeight: "400px", overflowY: "auto", paddingRight: "8px" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "13px" }}>
             <thead>
-              <tr style={{ borderBottom: "1.5px solid var(--border-color)", color: "var(--text-secondary)" }}>
+              <tr style={{ borderBottom: "1.5px solid var(--border-color)", color: "var(--text-secondary)", position: "sticky", top: 0, backgroundColor: "var(--bg-card)", zIndex: 10 }}>
                 <th style={{ padding: "10px 8px" }}>Event</th>
                 <th style={{ padding: "10px 8px" }}>Operation</th>
                 <th style={{ padding: "10px 8px" }}>Platform Client</th>
