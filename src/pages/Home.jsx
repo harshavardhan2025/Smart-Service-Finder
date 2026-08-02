@@ -728,7 +728,7 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
                   🎁 Location Bonuses Unlocked!
                 </strong>
                 <div style={{ fontSize: "12px", color: "rgba(255, 255, 255, 0.9)", marginTop: "4px" }}>
-                  {aiBannerBonusText || (<>Zy unlocked {availablePlansCount > 0 && <strong>{availablePlansCount} Service Plan{availablePlansCount !== 1 ? 's' : ''}</strong>}
+                  {aiBannerBonusText || (<>Zy analyzed {availablePlansCount > 0 && <strong>{availablePlansCount} Service Plan{availablePlansCount !== 1 ? 's' : ''}</strong>}
                   {availablePlansCount > 0 && availableOffersCount > 0 && " and "}
                   {availableOffersCount > 0 && <strong>{availableOffersCount} Active Promo Offer{availableOffersCount !== 1 ? 's' : ''}</strong>} for your area!</>)}
                 </div>

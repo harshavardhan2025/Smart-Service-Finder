@@ -893,7 +893,7 @@ function AiChatBot() {
         const count = finalWorkers.length;
         const categoryName = (finalCategory || "experts").toLowerCase();
         const bonusText = activePlans.length > 0 || activeOffers.length > 0
-          ? `🎁 **Location Bonuses Unlocked!**\nZy unlocked ${activePlans.length} Service Plans and ${activeOffers.length} Active Promo Offer for your area!`
+          ? `🎁 **Location Bonuses Unlocked!**\nZy analyzed ${activePlans.length} Service Plans and ${activeOffers.length} Active Promo Offer for your area!`
           : `🎁 **Location Bonuses Unlocked!**\nNo exclusive plans or promo codes available in your area right now.`;
 
         const formattedText = `🤖 **Zy AI — Nearby Search Active**\nHey ${userName}! 🎯 I found ${count} top-rated ${categoryName} near ${userLocation} ready to help you today.\n\n🔥 **Top Picks Near You**`;
@@ -924,7 +924,7 @@ function AiChatBot() {
         const count = fallbackWorkers.length;
         const categoryName = (matchedCategory || "experts").toLowerCase();
         const bonusText = activePlans.length > 0 || activeOffers.length > 0
-          ? `🎁 **Location Bonuses Unlocked!**\nZy unlocked ${activePlans.length} Service Plans and ${activeOffers.length} Active Promo Offer for your area!`
+          ? `🎁 **Location Bonuses Unlocked!**\nZy analyzed ${activePlans.length} Service Plans and ${activeOffers.length} Active Promo Offer for your area!`
           : `🎁 **Location Bonuses Unlocked!**\nNo exclusive plans or promo codes available in your area right now.`;
 
         const formattedText = `🤖 **Zy AI — Nearby Search Active**\nHey ${userName}! 🎯 I found ${count} top-rated ${categoryName} near ${userLocation} ready to help you today.\n\n🔥 **Top Picks Near You**`;
