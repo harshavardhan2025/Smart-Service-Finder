@@ -874,14 +874,35 @@ function AiChatBot() {
         linkText: actionLinkText
       };
 
+      let finalWorkers = null;
+      let finalCategory = null;
+
       if (backendWorkers && backendWorkers.length > 0) {
-        aiMsgObj.workersList = backendWorkers;
-        aiMsgObj.category = backendCategory;
+        finalWorkers = backendWorkers;
+        finalCategory = backendCategory;
       } else if (matchedCategory) {
         const workers = await fetchDynamicWorkers(matchedCategory, textToSend);
         if (workers && workers.length > 0) {
-          aiMsgObj.workersList = workers;
-          aiMsgObj.category = matchedCategory;
+          finalWorkers = workers;
+          finalCategory = matchedCategory;
+        }
+      }
+
+      if (finalWorkers && finalWorkers.length > 0) {
+        const userName = sessionStorage.getItem("userName") || "";
+        const greetingName = userName ? `Hey ${userName}! 🎯 ` : "";
+        const bonusText = activePlans.length > 0 || activeOffers.length > 0
+          ? `🎁 **Location Bonuses Unlocked!**\nZy unlocked ${activePlans.length} Service Plans and ${activeOffers.length} Active Promo Offer for your area!`
+          : `🎁 **Location Bonuses Unlocked!**\nNo exclusive plans or promo codes available in your area right now.`;
+
+        const formattedText = `🤖 **Zy AI — Nearby Search Active**\n${greetingName}Based on your location ${userLocation}, Zy found the best professionals, budget-friendly workers, and instant bookings in your area!\n\n🔍 **Zy's Top Picks For You:**\n\n${bonusText}`;
+
+        aiMsgObj.text = formattedText;
+        aiMsgObj.workersList = finalWorkers;
+        aiMsgObj.category = finalCategory;
+        if (!aiMsgObj.link) {
+          aiMsgObj.link = "/plans-offers";
+          aiMsgObj.linkText = "View Plans & Offers →";
         }
       }
 
@@ -891,16 +912,43 @@ function AiChatBot() {
       console.error("ChatBot API Fetch Failed, using local fallback", err);
       setIsTyping(false);
 
-      const replyText = getSupportReply(textToSend);
-      setMessages((prev) => [
-        ...prev,
-        {
-          sender: "ai",
-          text: replyText,
-          link: actionLink,
-          linkText: actionLinkText
-        }
-      ]);
+      let fallbackWorkers = null;
+      if (matchedCategory) {
+        fallbackWorkers = await fetchDynamicWorkers(matchedCategory, textToSend);
+      }
+
+      if (fallbackWorkers && fallbackWorkers.length > 0) {
+        const userName = sessionStorage.getItem("userName") || "";
+        const greetingName = userName ? `Hey ${userName}! 🎯 ` : "";
+        const bonusText = activePlans.length > 0 || activeOffers.length > 0
+          ? `🎁 **Location Bonuses Unlocked!**\nZy unlocked ${activePlans.length} Service Plans and ${activeOffers.length} Active Promo Offer for your area!`
+          : `🎁 **Location Bonuses Unlocked!**\nNo exclusive plans or promo codes available in your area right now.`;
+
+        const formattedText = `🤖 **Zy AI — Nearby Search Active**\n${greetingName}Based on your location ${userLocation}, Zy found the best professionals, budget-friendly workers, and instant bookings in your area!\n\n🔍 **Zy's Top Picks For You:**\n\n${bonusText}`;
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            sender: "ai",
+            text: formattedText,
+            workersList: fallbackWorkers,
+            category: matchedCategory,
+            link: actionLink || "/plans-offers",
+            linkText: actionLinkText || "View Plans & Offers →"
+          }
+        ]);
+      } else {
+        const replyText = getSupportReply(textToSend);
+        setMessages((prev) => [
+          ...prev,
+          {
+            sender: "ai",
+            text: replyText,
+            link: actionLink,
+            linkText: actionLinkText
+          }
+        ]);
+      }
       sendingRef.current = false;
     }
   };
