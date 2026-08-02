@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { getWalletBalance, addToWallet } from "../utils/wallet";
 
 const STATUS_STYLE = {
