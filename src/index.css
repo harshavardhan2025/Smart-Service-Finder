@@ -155,3 +155,87 @@ select:focus {
     transform: rotate(360deg);
   }
 }
+
+/* Responsive Layout Utilities */
+.responsive-flex {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.responsive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.dashboard-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.table-responsive-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  /* Global Resets */
+  body, html {
+    overflow-x: hidden;
+  }
+
+  /* Table Responsiveness Hack */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Typography Scaling */
+  h1 { font-size: 26px !important; }
+  h2 { font-size: 22px !important; }
+  h3 { font-size: 18px !important; }
+  
+  /* Padding Adjustments */
+  .premium-card {
+    padding: 16px !important;
+  }
+  
+  .dashboard-content {
+    padding: 16px 12px !important;
+  }
+  
+  /* Modal Scaling */
+  .custom-modal {
+    padding: 20px !important;
+    width: 95% !important;
+  }
+
+  /* Safe flex wrap for complex internal layouts */
+  .booking-card-header,
+  .dashboard-list-row,
+  .dashboard-header-container {
+    flex-wrap: wrap !important;
+    gap: 12px;
+  }
+
+  /* Booking Page specific */
+  .booking-page-container {
+    padding: 20px 10px !important;
+  }
+  .booking-page-card {
+    padding: 20px !important;
+  }
+
+  /* React Calendar Override for Mobile */
+  .react-calendar {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
