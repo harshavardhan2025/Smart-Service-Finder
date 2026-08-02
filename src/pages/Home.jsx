@@ -22,6 +22,7 @@ const truncateLocation = (loc) => {
 function Home() {
   const navigate = useNavigate();
   const role = sessionStorage.getItem("userRole") || "user";
+  const userName = sessionStorage.getItem("userName") || "";
 
   const [locationText, setLocationText] = useState("");
   const [plans, setPlans] = useState([]);
@@ -685,7 +686,7 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
               </span>
             </div>
             <div style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.9)", lineHeight: "1.5" }}>
-              {aiBannerText || (<>Based on your location <strong>{getShortLocation(searchedLocation)}</strong>, Zy found the best professionals, budget-friendly workers, and instant bookings in your area!</>)}
+              {aiBannerText || (<>Hey {userName ? userName.split(' ')[0] : 'there'}! Based on your location <strong>{getShortLocation(searchedLocation)}</strong>, Zy found the best professionals, budget-friendly workers, and instant bookings in your area!</>)}
             </div>
 
             {isAiLoading ? (
