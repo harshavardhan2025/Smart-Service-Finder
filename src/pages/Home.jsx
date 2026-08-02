@@ -564,8 +564,8 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
       {/* Hero Welcome Banner */}
       <div
         style={{
-          background: "linear-gradient(135deg, #dfb453 0%, #f1a829 100%)",
-          borderBottom: "4px solid #a67c1e",
+          background: "var(--hero-bg)",
+          borderBottom: "4px solid var(--hero-border)",
           color: "white",
           padding: "12px 20px",
           textAlign: "center",
@@ -628,10 +628,10 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
           }
         `}</style>
 
-        <h1 style={{ margin: "0 0 6px 0", fontSize: "24px", fontWeight: 800, color: "#1e3a8a", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+        <h1 style={{ margin: "0 0 6px 0", fontSize: "24px", fontWeight: 800, color: "var(--hero-text)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
           Find Reliable Service Experts Near You <FaMapMarkerAlt size={24} style={{ color: "#ef4444" }} />
         </h1>
-        <p style={{ margin: 0, fontSize: "14px", color: "rgba(30, 58, 138, 0.85)", fontWeight: "600" }}>
+        <p style={{ margin: 0, fontSize: "14px", color: "var(--hero-subtext)", fontWeight: "600" }}>
           Auto-matching, verified professional workers, and instant secure bookings.
         </p>
       </div>
@@ -663,8 +663,8 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
             style={{
               margin: "0 20px 14px 20px",
               padding: "20px 24px",
-              backgroundColor: "rgba(165, 185, 92, 1)",
-              borderLeft: "5px solid #6b17e1ff",
+              backgroundColor: "var(--ai-banner-bg)",
+              borderLeft: "5px solid var(--ai-banner-border)",
               borderRadius: "12px",
               fontSize: "14px",
               color: "#ffffff",
@@ -839,7 +839,7 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
               alignItems: "center",
               justifyContent: "center",
               gap: "8px",
-              backgroundColor: showMap ? "#f1f5f9" : "var(--primary-light)",
+              backgroundColor: showMap ? "var(--bg-card-hover)" : "var(--primary-light)",
               color: showMap ? "var(--text-primary)" : "var(--primary-dark)",
               borderTop: "1.5px solid var(--border-color)",
               borderBottom: "1.5px solid var(--border-color)",
