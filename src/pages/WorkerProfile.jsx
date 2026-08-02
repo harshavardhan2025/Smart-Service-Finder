@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { FaStar, FaMapMarkerAlt, FaCheckCircle, FaBriefcase, FaEnvelope, FaPhone, FaTools, FaCalendarCheck, FaBolt, FaClock, FaLock, FaShieldAlt, FaMagic } from "react-icons/fa";
+import { FaStar, FaMapMarkerAlt, FaCheckCircle, FaBolt, FaClock, FaLock, FaShieldAlt, FaMagic } from "react-icons/fa";
 
 function WorkerProfile() {
   const navigate = useNavigate();

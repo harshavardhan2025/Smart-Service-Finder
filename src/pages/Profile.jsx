@@ -19,7 +19,6 @@ const defaultProfile = {
 };
 
 function Profile() {
-  const navigate = useNavigate();
   const [profile, setProfile] = useState(defaultProfile);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(defaultProfile);
