@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -146,6 +145,11 @@ function App() {
 
         <Route
           path="/plans-offers"
+          element={<PlansOffers />}
+        />
+
+        <Route
+          path="/plans"
           element={<PlansOffers />}
         />
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { addToWallet } from "../utils/wallet";
 
 const POINTS_PER_REVIEW = 50;
 
@@ -162,24 +163,11 @@ function ReviewsRewards() {
        setReviews((prev) => [savedReview, ...prev]);
 
        // Record absolute physical cash-back award in cloud instantly flawlessly!
-       await fetch("/api/transactions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-             customer: sessionStorage.getItem("userName") || "Verified Client",
-             worker: bookingObj.worker_id,
-             service: `Review Reward - ${bookingObj.service}`,
-             amount: POINTS_PER_REVIEW,
-             status: "Added",
-             method: "Cashback"
-          })
-       });
+       await addToWallet(POINTS_PER_REVIEW, `Review Reward - ${bookingObj.service}`, "Cashback");
 
        showToast(`✅ Review submitted! ₹${POINTS_PER_REVIEW} added to Wallet & Rewards increased!`);
     } catch(err) { showToast("🛑 Sync Error: Review write failed."); }
   };
-
-
 
   const redeemReward = async (reward) => {
     if (availablePoints < reward.points) {
@@ -195,19 +183,7 @@ function ReviewsRewards() {
     // If it's the cashback reward, actually add it to the wallet
     if (reward.title.includes("Cashback") || reward.title.includes("Off")) {
       const amount = reward.title.includes("100") ? 100 : 50;
-      // Dispatch hard physical redemption write effortlessly seamlessly flawlessly instantly!
-      await fetch("/api/transactions", {
-         method: "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({
-            customer: sessionStorage.getItem("userName") || "Verified Client",
-            worker: "Loyalty Portal",
-            service: `Redeemed: ${reward.title}`,
-            amount: amount,
-            status: "Added",
-            method: "Reward"
-         })
-      });
+      await addToWallet(amount, `Redeemed Reward: ${reward.title}`, "Reward Cashback");
       showToast(`✅ "${reward.title}" redeemed! ₹${amount} was added to your wallet.`);
     } else {
       showToast(`✅ "${reward.title}" redeemed! Applied to your account.`);

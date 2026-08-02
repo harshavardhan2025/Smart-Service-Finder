@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { FaTag, FaLock, FaStar, FaUser, FaCheckCircle, FaCreditCard } from "react-icons/fa";
+import { deductFromWallet } from "../utils/wallet";
 
 const BASE_URL = "";
 
@@ -25,7 +26,13 @@ function PlansOffers() {
     } catch { return []; }
   });
   const [workers, setWorkers] = useState([]);
-  const [userPlans, setUserPlans] = useState([]);
+  const [userPlans, setUserPlans] = useState(() => {
+    try {
+      const stored = localStorage.getItem("userSubscriptions");
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return [];
+  });
   const [loading, setLoading] = useState(true);
 
   // Payment gateway states
@@ -41,7 +48,13 @@ function PlansOffers() {
   const [couponSuccess, setCouponSuccess] = useState("");
   const [discountAmount, setDiscountAmount] = useState(0);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
-  const [walletBal, setWalletBal] = useState(5000); // Default or load from actual user profile API if available
+  const [walletBal, setWalletBal] = useState(() => {
+    try {
+      const stored = localStorage.getItem("userWalletBalance");
+      if (stored !== null && !isNaN(parseFloat(stored))) return parseFloat(stored);
+    } catch {}
+    return 5000;
+  });
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [selectedTermsItem, setSelectedTermsItem] = useState(null);
 
@@ -84,12 +97,14 @@ function PlansOffers() {
                const userData = await userResp.json();
                if (userData.walletBalance !== undefined) {
                  setWalletBal(userData.walletBalance);
+                 localStorage.setItem("userWalletBalance", userData.walletBalance);
                }
                if (userData.subscriptions && Array.isArray(userData.subscriptions)) {
                  const activeSubs = userData.subscriptions
                     .filter(sub => sub.status === "Active" && new Date(sub.expiryDate) > new Date())
                     .map(sub => sub.planTitle);
                  setUserPlans(activeSubs);
+                 localStorage.setItem("userSubscriptions", JSON.stringify(activeSubs));
                }
              }
            } catch(err) {
@@ -204,20 +219,23 @@ function PlansOffers() {
     const finalPaidAmount = Math.max(0, (parseInt(payingPlan.price.replace(/[^\d]/g, ""), 10) || 0) - discountAmount);
 
     if (paymentMethod === "Wallet") {
-      if (walletBal < finalPaidAmount) {
-        alert(`Insufficient Wallet Balance! (Current: ₹${walletBal}, Required: ₹${finalPaidAmount})`);
+      const walletRes = await deductFromWallet(finalPaidAmount, `Plan Subscription: ${payingPlan.title}`, "Wallet");
+      if (!walletRes.success) {
+        alert(`⚠️ ${walletRes.error}`);
         return;
       }
+      setWalletBal(walletRes.balance);
     }
 
     setPaymentProcessing(true);
     setTimeout(async () => {
       try {
          if (paymentMethod === "Wallet") {
-            setWalletBal(prev => prev - finalPaidAmount);
+            const newBal = Math.max(0, walletBal - finalPaidAmount);
+            setWalletBal(newBal);
+            localStorage.setItem("userWalletBalance", newBal);
          }
 
-         // Support multiple subscriptions (no longer cancelling existing plans)
          // Execute Hard Physical Cloud Record instantly seamlessly flawlessly!
          await fetch(`${BASE_URL}/api/transactions`, {
             method: "POST",
@@ -252,11 +270,11 @@ function PlansOffers() {
 
       setPaymentProcessing(false);
 
-      alert(`🎉 Payment of ₹${finalPaidAmount} Successful!\n\nYou have subscribed to "${payingPlan.title}" successfully. All premium benefits are now active on your account.`);
-      setUserPlans(prev => {
-        if (!prev.includes(payingPlan.title)) return [...prev, payingPlan.title];
-        return prev;
-      }); // Append new plan instead of replacing
+      const updatedPlans = Array.from(new Set([...userPlans, payingPlan.title]));
+      setUserPlans(updatedPlans);
+      localStorage.setItem("userSubscriptions", JSON.stringify(updatedPlans));
+
+      alert(`🎉 Payment of ₹${finalPaidAmount} Successful!\n\nYou have subscribed to "${payingPlan.title}" successfully. All premium benefits are now active on your account!`);
       setPayingPlan(null);
       // Reset forms
       setUpiId("");
@@ -317,6 +335,78 @@ function PlansOffers() {
           <p style={{ color: "rgba(49, 82, 91, 0.85)", fontSize: "16px", maxWidth: "600px", margin: "0 auto", fontWeight: 500 }}>
             Save big on your home utilities with customized annual service packages and active promotional discount coupons.
           </p>
+        </div>
+
+        {/* 💳 USER SUBSCRIPTION & WALLET STATUS BANNER */}
+        <div style={{
+          background: userPlans.length > 0 
+            ? "linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.05) 100%)" 
+            : "linear-gradient(135deg, rgba(49, 82, 91, 0.08) 0%, rgba(14, 165, 233, 0.04) 100%)",
+          border: userPlans.length > 0 ? "1.5px solid rgba(16, 185, 129, 0.3)" : "1.5px solid rgba(49, 82, 91, 0.2)",
+          borderRadius: "20px",
+          padding: "20px 26px",
+          marginBottom: "36px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "16px",
+          boxShadow: "0 10px 30px -10px rgba(0,0,0,0.05)"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <div style={{
+              width: "48px",
+              height: "48px",
+              borderRadius: "14px",
+              background: userPlans.length > 0 ? "linear-gradient(135deg, #10b981 0%, #059669 100%)" : "linear-gradient(135deg, #31525B 0%, #1F353B 100%)",
+              color: "white",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "22px",
+              fontWeight: 800,
+              boxShadow: "0 6px 16px rgba(0,0,0,0.1)"
+            }}>
+              {userPlans.length > 0 ? "👑" : "💳"}
+            </div>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <h3 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "var(--text-main)" }}>
+                  {userPlans.length > 0 ? "Active Premium Member" : "Standard Account (Not Subscribed)"}
+                </h3>
+                <span style={{
+                  padding: "3px 10px",
+                  borderRadius: "20px",
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  backgroundColor: userPlans.length > 0 ? "#dcfce7" : "#f1f5f9",
+                  color: userPlans.length > 0 ? "#15803d" : "#475569",
+                  textTransform: "uppercase"
+                }}>
+                  {userPlans.length > 0 ? "✓ Subscribed" : "Free Member"}
+                </span>
+              </div>
+              <p style={{ margin: "4px 0 0 0", fontSize: "13.5px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                {userPlans.length > 0 
+                  ? `Active Package: ${userPlans.join(", ")} • Enjoying 0% platform fee, priority dispatch & cashback!`
+                  : "Subscribe to a package below using your wallet balance or UPI to unlock 0% platform fees and free service visits."
+                }
+              </p>
+            </div>
+          </div>
+
+          <div style={{
+            padding: "10px 18px",
+            background: "var(--bg-card)",
+            borderRadius: "14px",
+            border: "1.5px solid var(--border)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end"
+          }}>
+            <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Wallet Balance</span>
+            <span style={{ fontSize: "20px", fontWeight: 900, color: "#31525B" }}>₹{walletBal.toLocaleString()}</span>
+          </div>
         </div>
 
         {/* Pricing Segment */}
@@ -777,6 +867,31 @@ function PlansOffers() {
                     <option value="ICICI">ICICI Bank</option>
                     <option value="AXIS">Axis Bank</option>
                   </select>
+                )}
+
+                {paymentMethod === "Wallet" && (
+                  <div style={{ padding: "12px 14px", backgroundColor: "rgba(49, 82, 91, 0.08)", borderRadius: "10px", border: "1px solid rgba(49, 82, 91, 0.2)", fontSize: "13px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)", marginBottom: "4px" }}>
+                      <span>Current Wallet Balance</span>
+                      <strong style={{ color: "#31525B" }}>₹{walletBal.toLocaleString()}</strong>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)", marginBottom: "4px" }}>
+                      <span>Subscription Deduction</span>
+                      <strong style={{ color: "#ef4444" }}>- ₹{Math.max(0, (parseInt(payingPlan.price.replace(/[^\d]/g, ""), 10) || 0) - discountAmount).toLocaleString()}</strong>
+                    </div>
+                    <div style={{ height: "1px", backgroundColor: "var(--border)", margin: "6px 0" }} />
+                    <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700 }}>
+                      <span>Remaining Wallet Balance</span>
+                      <strong style={{ color: walletBal >= Math.max(0, (parseInt(payingPlan.price.replace(/[^\d]/g, ""), 10) || 0) - discountAmount) ? "#10b981" : "#ef4444" }}>
+                        ₹{Math.max(0, walletBal - Math.max(0, (parseInt(payingPlan.price.replace(/[^\d]/g, ""), 10) || 0) - discountAmount)).toLocaleString()}
+                      </strong>
+                    </div>
+                    {walletBal < Math.max(0, (parseInt(payingPlan.price.replace(/[^\d]/g, ""), 10) || 0) - discountAmount) && (
+                      <div style={{ color: "#ef4444", fontSize: "12px", fontWeight: 700, marginTop: "6px" }}>
+                        ⚠️ Insufficient Wallet Balance! Please select UPI/Card or add funds.
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 {/* Pricing Summary */}

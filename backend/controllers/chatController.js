@@ -506,7 +506,20 @@ Do not include any markdown formatting, no \`\`\`json wrappers. Respond with ONL
 
     // If AI identified a service lookup request, query database dynamically
     if (parsedResult.workerSearch && matchedCategory) {
-      const searchCity = parsedResult.city || userLocation.split(",")[0].trim();
+      let searchCity = parsedResult.city;
+      if (!searchCity) {
+        const qLower = userQuery.toLowerCase();
+        const citiesList = ["kakinada", "rajahmundry", "bangalore", "hyderabad", "mumbai", "delhi", "new delhi", "chennai", "pune", "kolkata"];
+        for (const c of citiesList) {
+          if (qLower.includes(c)) {
+            searchCity = c === "delhi" ? "New Delhi" : c.charAt(0).toUpperCase() + c.slice(1);
+            break;
+          }
+        }
+      }
+      if (!searchCity) {
+        searchCity = userLocation.split(",")[0].trim();
+      }
       
       const filter = {
         service: new RegExp(matchedCategory, "i"),
@@ -518,6 +531,19 @@ Do not include any markdown formatting, no \`\`\`json wrappers. Respond with ONL
       }
 
       workers = await Worker.find(filter).sort({ rating: -1 }).limit(3).lean();
+
+      // 🌍 Cross-location Fallback: If 0 workers found in specified city, search across all locations!
+      if (workers.length === 0) {
+        workers = await Worker.find({
+          service: new RegExp(matchedCategory, "i"),
+          status: "Active"
+        }).sort({ rating: -1 }).limit(3).lean();
+
+        if (workers.length > 0 && parsedResult.aiResponse) {
+          const citiesFound = [...new Set(workers.map(w => w.city).filter(Boolean))].join(", ");
+          parsedResult.aiResponse = `I couldn't find experts directly in ${searchCity}, but here are top-rated professionals for **${matchedCategory}** in nearby locations (${citiesFound}):`;
+        }
+      }
     }
 
     // Return exact payload expected by frontend, including the conversational reply and found workers

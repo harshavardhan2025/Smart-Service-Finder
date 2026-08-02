@@ -544,6 +544,7 @@ function AiChatBot() {
     ];
 
     // Fast-path: Check direct substring occurrence of any keyword
+    
     for (const service of servicesList) {
       for (const keyword of service.keywords) {
         if (qLower.includes(keyword)) {
@@ -699,7 +700,7 @@ function AiChatBot() {
     }
 
     if (matchedTopic === "cancel") {
-      return "You can easily cancel or reschedule your booking.\n\nJust go to 'My Bookings', select the upcoming service, and tap 'Cancel' or 'Reschedule'. Cancellations made at least 2 hours before the scheduled time are completely free of charge!";
+      return "📅 Can I reschedule my service booking?\n\nYes! You can reschedule any booking up to 2 hours before the scheduled time directly from your 'My Bookings' panel without any penalty.\n\n(Note: Rescheduling is available for scheduled services, not instant dispatch services.)";
     }
 
     if (matchedTopic === "safety") {
@@ -768,51 +769,55 @@ function AiChatBot() {
     const matchedCategory = parseProblem(textToSend);
     const userLocation = localStorage.getItem("userLocation") || "Unknown Location";
 
-    // --- Intercept Help/Support/Plans queries to inject direct links ---
+    // Determine dynamic action link based on user query intent
     const qLower = textToSend.toLowerCase();
-    if (qLower.includes("support") || qLower.includes("help") || qLower.includes("complaint") || qLower.includes("issue") || qLower.includes("contact")) {
-      setIsTyping(false);
-      setMessages((prev) => [
-        ...prev,
-        {
-          sender: "ai",
-          text: "I can help with any questions or complaints you have. For immediate assistance and official ticket generation, please head over to our support portal where our team will get in touch with you within 24 hours.",
-          link: "/support",
-          linkText: "Visit Support Portal"
-        }
-      ]);
-      sendingRef.current = false;
-      return;
-    }
+    let actionLink = null;
+    let actionLinkText = null;
 
-    if (qLower.includes("plan") || qLower.includes("subscribe") || qLower.includes("discount") || qLower.includes("offer")) {
-      setIsTyping(false);
-      setMessages((prev) => [
-        ...prev,
-        {
-          sender: "ai",
-          text: "Yes! We have dynamic offers and exclusive subscription plans running right now to save you money on your bookings.",
-          link: "/plans",
-          linkText: "View Plans & Offers"
-        }
-      ]);
-      sendingRef.current = false;
-      return;
+    if (qLower.includes("plan") || qLower.includes("subscribe") || qLower.includes("discount") || qLower.includes("offer") || qLower.includes("promo") || qLower.includes("coupon")) {
+      actionLink = "/plans-offers";
+      actionLinkText = "View Plans & Offers →";
+    } else if (qLower.includes("reschedule") || qLower.includes("reshuled") || qLower.includes("change time") || qLower.includes("postpone")) {
+      actionLink = "/my-bookings";
+      actionLinkText = "Go to My Bookings →";
+    } else if (qLower.includes("support") || qLower.includes("help") || qLower.includes("complaint") || qLower.includes("issue") || qLower.includes("contact")) {
+      actionLink = "/support";
+      actionLinkText = "Visit Support Portal →";
     }
 
     // Function to get real workers dynamically from shared store based on category and location
-    const fetchDynamicWorkers = async (category) => {
+    const fetchDynamicWorkers = async (category, textQuery = "") => {
       try {
-        let url = `/api/workers?service=${encodeURIComponent(category)}`;
-        const storedCity = localStorage.getItem("userCity") || (userLocation !== "Unknown Location" ? userLocation.split(",")[0].trim() : "");
-        if (storedCity) {
-          url += `&city=${encodeURIComponent(storedCity)}`;
+        const queryLower = (textQuery || "").toLowerCase();
+        const citiesList = ["kakinada", "rajahmundry", "bangalore", "hyderabad", "mumbai", "delhi", "new delhi", "chennai", "pune", "kolkata"];
+        let targetCity = "";
+        for (const c of citiesList) {
+          if (queryLower.includes(c)) {
+            targetCity = c === "delhi" ? "New Delhi" : c.charAt(0).toUpperCase() + c.slice(1);
+            break;
+          }
+        }
+        if (!targetCity) {
+          targetCity = localStorage.getItem("userCity") || (userLocation !== "Unknown Location" ? userLocation.split(",")[0].trim() : "");
         }
 
-        const resp = await fetch(url);
-        if (!resp.ok) return [];
-        const matches = await resp.json();
-        return matches.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        let url = `/api/workers?service=${encodeURIComponent(category)}`;
+        if (targetCity && !targetCity.toLowerCase().includes("unknown")) {
+          url += `&city=${encodeURIComponent(targetCity)}`;
+        }
+
+        let resp = await fetch(url);
+        let matches = resp.ok ? await resp.json() : [];
+
+        // 🌍 Cross-location Fallback: If 0 workers found in target city, query across all locations!
+        if (!matches || matches.length === 0) {
+          const fallbackResp = await fetch(`/api/workers?service=${encodeURIComponent(category)}`);
+          if (fallbackResp.ok) {
+            matches = await fallbackResp.json();
+          }
+        }
+
+        return (matches || []).sort((a, b) => (b.rating || 0) - (a.rating || 0));
       } catch (e) {
         console.error("Chatbot cloud discovery failed");
         return [];
@@ -862,78 +867,40 @@ function AiChatBot() {
       const backendWorkers = data.workers;
       const backendCategory = data.category;
 
+      const aiMsgObj = {
+        sender: "ai",
+        text: aiReply,
+        link: actionLink,
+        linkText: actionLinkText
+      };
+
       if (backendWorkers && backendWorkers.length > 0) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            sender: "ai",
-            text: aiReply + `\n\n🔍 Found top-rated experts near you for **${backendCategory}**:`,
-            workersList: backendWorkers,
-            category: backendCategory
-          }
-        ]);
+        aiMsgObj.workersList = backendWorkers;
+        aiMsgObj.category = backendCategory;
       } else if (matchedCategory) {
-        const workers = await fetchDynamicWorkers(matchedCategory);
+        const workers = await fetchDynamicWorkers(matchedCategory, textToSend);
         if (workers && workers.length > 0) {
-          setMessages((prev) => [
-            ...prev,
-            {
-              sender: "ai",
-              text: aiReply + `\n\n🔍 Found top-rated experts near you for **${matchedCategory}**:`,
-              workersList: workers,
-              category: matchedCategory
-            }
-          ]);
-        } else {
-          setMessages((prev) => [
-            ...prev,
-            {
-              sender: "ai",
-              text: aiReply + `\n\nI couldn't find any active local experts in our database specializing in **${matchedCategory}** in your immediate area at the moment. 🔍 Please try another service or check back later!`
-            }
-          ]);
+          aiMsgObj.workersList = workers;
+          aiMsgObj.category = matchedCategory;
         }
-      } else {
-        setMessages((prev) => [
-          ...prev,
-          { sender: "ai", text: aiReply }
-        ]);
       }
 
+      setMessages((prev) => [...prev, aiMsgObj]);
       sendingRef.current = false;
     } catch (err) {
       console.error("ChatBot API Fetch Failed, using local fallback", err);
       setIsTyping(false);
 
-      // Fallback local logic
-      if (matchedCategory) {
-        const workers = await fetchDynamicWorkers(matchedCategory);
-        if (workers && workers.length > 0) {
-          setMessages((prev) => [
-            ...prev,
-            {
-              sender: "ai",
-              text: `Based on your request and location, I've matched the best available experts specializing in ${matchedCategory}! 🛠️`,
-              workersList: workers,
-              category: matchedCategory
-            }
-          ]);
-        } else {
-          setMessages((prev) => [
-            ...prev,
-            {
-              sender: "ai",
-              text: `I've analyzed your description and matched it to **${matchedCategory}**, but I couldn't find any active professionals in your immediate area at the moment. 🔍 Please try another service or check back later!`
-            }
-          ]);
+      const replyText = getSupportReply(textToSend);
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "ai",
+          text: replyText,
+          link: actionLink,
+          linkText: actionLinkText
         }
-      } else {
-        const replyText = getSupportReply(textToSend);
-        setMessages((prev) => [
-          ...prev,
-          { sender: "ai", text: replyText }
-        ]);
-      }
+      ]);
       sendingRef.current = false;
     }
   };
@@ -1177,8 +1144,9 @@ function AiChatBot() {
                             <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: "#1F353B" }}>
                               {worker.name}
                             </h4>
-                            <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>
-                              {worker.service || msg.category}
+                            <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px", display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                              <span>{worker.service || msg.category}</span>
+                              {worker.city && <span style={{ color: "#31525B", fontWeight: 700, background: "rgba(49,82,91,0.08)", padding: "1px 6px", borderRadius: "4px", fontSize: "10.5px" }}>📍 {worker.city}</span>}
                             </div>
                           </div>
                         </div>

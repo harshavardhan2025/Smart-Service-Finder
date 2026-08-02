@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { getWalletBalance, addToWallet } from "../utils/wallet";
 
 const STATUS_STYLE = {
   Paid:     { color: "#16a34a", bg: "#dcfce7" },
@@ -26,35 +27,54 @@ function Profile() {
   const [expandedTxn, setExpandedTxn] = useState(null);
   const [showAllTxn, setShowAllTxn] = useState(false);
 
-  const [walletBal, setWalletBal] = useState(0);
+  const [walletBal, setWalletBal] = useState(getWalletBalance());
   const [txnHistory, setTxnHistory] = useState([]);
+  const [showAddMoneyModal, setShowAddMoneyModal] = useState(false);
+  const [topUpAmount, setTopUpAmount] = useState(500);
+  const [topUpProcessing, setTopUpProcessing] = useState(false);
 
-  const currentUsr = sessionStorage.getItem("userName") || "Harsha User";
+  const currentUsr = sessionStorage.getItem("userName") || "Verified User";
 
   const fetchUserData = async () => {
     try {
-       // Fetch physical transactions assigned to this user!
+       const currentBal = getWalletBalance();
+       setWalletBal(currentBal);
+
        const resp = await fetch(`/api/transactions?user=${encodeURIComponent(currentUsr)}`);
        if (resp.ok) {
           const data = await resp.json();
-          // Filter client-side just to be doubly safe if API returns total dump
           const userSpecific = data.filter(t => t.customer === currentUsr);
           setTxnHistory(userSpecific);
-
-          // 🏦 Dynamic Balance Derivation: Compute total velocity seamlessly instantly from reliable cloud source
-          const calculated = userSpecific.reduce((acc, t) => {
-             const isAdd = t.status === "Refunded" || t.status === "Added" || t.method === "Cashback" || t.method === "Reward" || t.method === "Wallet Topup";
-             return isAdd ? acc + t.amount : acc - t.amount;
-          }, 1000); // Base assumed baseline seed
-          setWalletBal(calculated);
        }
     } catch(err) { console.error("Profile ledger load fail"); }
   };
 
   useEffect(() => {
     fetchUserData();
+    const handleWalletUpdate = () => {
+      setWalletBal(getWalletBalance());
+      fetchUserData();
+    };
+    window.addEventListener("walletUpdated", handleWalletUpdate);
+    return () => window.removeEventListener("walletUpdated", handleWalletUpdate);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleConfirmAddMoney = async () => {
+    if (topUpAmount <= 0) {
+      showToast("⚠️ Please enter a valid top-up amount!");
+      return;
+    }
+    setTopUpProcessing(true);
+    setTimeout(async () => {
+      const newBal = await addToWallet(topUpAmount, "User Wallet Top-up", "UPI Topup");
+      setWalletBal(newBal);
+      setTopUpProcessing(false);
+      setShowAddMoneyModal(false);
+      showToast(`🎉 ₹${topUpAmount} added to your Wallet balance! New Balance: ₹${newBal.toLocaleString()}`);
+      fetchUserData();
+    }, 1000);
+  };
 
   const PREVIEW_COUNT = 2;
   const visibleTxns = showAllTxn ? txnHistory : txnHistory.slice(0, PREVIEW_COUNT);
@@ -258,7 +278,7 @@ function Profile() {
               <div style={{ fontSize: "12px", opacity: 0.9, fontWeight: 600, textTransform: "uppercase" }}>Available Wallet Balance</div>
               <div style={{ fontSize: "32px", fontWeight: 800, margin: "8px 0" }}>₹{walletBal.toLocaleString()}</div>
               <button 
-                onClick={() => navigate("/payment")}
+                onClick={() => setShowAddMoneyModal(true)}
                 style={{ padding: "8px 16px", backgroundColor: "var(--bg-card)", color: "var(--primary)", border: "none", borderRadius: "8px", fontWeight: 700, fontSize: "12px", cursor: "pointer", transition: "all 0.2s" }}
                 onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
                 onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
@@ -626,6 +646,136 @@ function Profile() {
           </div>
         </div>
       </div>
+
+      {/* 💳 ADD MONEY TO WALLET MODAL */}
+      {showAddMoneyModal && (
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(15, 23, 42, 0.75)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+          fontFamily: "'Inter', sans-serif",
+          backdropFilter: "blur(8px)"
+        }}>
+          <div
+            style={{
+              maxWidth: "420px",
+              width: "90%",
+              backgroundColor: "white",
+              borderRadius: "20px",
+              padding: "26px",
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 800, color: "#0f172a", display: "flex", alignItems: "center", gap: "8px" }}>
+                <span>💳</span> Add Money to Wallet
+              </h3>
+              <button
+                onClick={() => setShowAddMoneyModal(false)}
+                style={{ background: "none", border: "none", fontSize: "18px", color: "#64748b", cursor: "pointer" }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <p style={{ fontSize: "13px", color: "#64748b", margin: "0 0 16px 0" }}>
+              Current Balance: <strong style={{ color: "#31525B" }}>₹{walletBal.toLocaleString()}</strong>
+            </p>
+
+            <div style={{ marginBottom: "16px" }}>
+              <label style={{ fontSize: "12px", fontWeight: 700, color: "#475569", display: "block", marginBottom: "8px" }}>
+                SELECT QUICK AMOUNT
+              </label>
+              <div style={{ display: "flex", gap: "8px" }}>
+                {[500, 1000, 2000, 5000].map(amt => (
+                  <button
+                    key={amt}
+                    type="button"
+                    onClick={() => setTopUpAmount(amt)}
+                    style={{
+                      flex: 1,
+                      padding: "8px 4px",
+                      borderRadius: "8px",
+                      border: topUpAmount === amt ? "2px solid #31525B" : "1px solid #cbd5e1",
+                      backgroundColor: topUpAmount === amt ? "rgba(49,82,91,0.08)" : "white",
+                      color: topUpAmount === amt ? "#31525B" : "#475569",
+                      fontWeight: 800,
+                      fontSize: "12px",
+                      cursor: "pointer"
+                    }}
+                  >
+                    +₹{amt}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: "20px" }}>
+              <label style={{ fontSize: "12px", fontWeight: 700, color: "#475569", display: "block", marginBottom: "6px" }}>
+                ENTER AMOUNT (₹)
+              </label>
+              <input
+                type="number"
+                min="100"
+                value={topUpAmount}
+                onChange={(e) => setTopUpAmount(parseFloat(e.target.value) || 0)}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  borderRadius: "10px",
+                  border: "1.5px solid #cbd5e1",
+                  fontSize: "16px",
+                  fontWeight: 800,
+                  color: "#0f172a",
+                  boxSizing: "border-box",
+                  outline: "none"
+                }}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button
+                disabled={topUpProcessing}
+                onClick={handleConfirmAddMoney}
+                style={{
+                  flex: 1.5,
+                  backgroundColor: "#31525B",
+                  color: "white",
+                  border: "none",
+                  padding: "12px",
+                  borderRadius: "10px",
+                  fontWeight: 800,
+                  fontSize: "14px",
+                  cursor: topUpProcessing ? "not-allowed" : "pointer"
+                }}
+              >
+                {topUpProcessing ? "Adding Funds..." : "Confirm & Top Up 💳"}
+              </button>
+              <button
+                disabled={topUpProcessing}
+                onClick={() => setShowAddMoneyModal(false)}
+                style={{
+                  flex: 1,
+                  backgroundColor: "#f1f5f9",
+                  color: "#475569",
+                  border: "1px solid #cbd5e1",
+                  padding: "12px",
+                  borderRadius: "10px",
+                  fontWeight: 700,
+                  fontSize: "14px",
+                  cursor: "pointer"
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

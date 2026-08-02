@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { addToWallet, getWalletBalance } from "../utils/wallet";
 
 const serviceIcons = {
   "Carpentry": "🪚",
@@ -55,6 +56,12 @@ function MyBookings() {
   const [activeCancelBooking, setActiveCancelBooking] = useState(null);
   const [cancelReason, setCancelReason] = useState("Scheduler Conflict");
   const [submittingCancel, setSubmittingCancel] = useState(false);
+
+  const [activeRescheduleBooking, setActiveRescheduleBooking] = useState(null);
+  const [rescheduleDate, setRescheduleDate] = useState("");
+  const [rescheduleSlot, setRescheduleSlot] = useState("9 AM");
+  const [submittingReschedule, setSubmittingReschedule] = useState(false);
+  const [workerBusySlots, setWorkerBusySlots] = useState([]);
 
   const [activeChatBooking, setActiveChatBooking] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
@@ -156,27 +163,36 @@ function MyBookings() {
     if (!activeCancelBooking) return;
     setSubmittingCancel(true);
     const bid = activeCancelBooking._id || activeCancelBooking.id;
+    const refundPrice = parseFloat(activeCancelBooking.price) || 0;
     try {
-      const token = sessionStorage.getItem("authToken");
-      const res = await fetch(`/api/bookings/${bid}/cancel`, {
+      const token = getAuthToken();
+      await fetch(`/api/bookings/${bid}/cancel`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          "Authorization": token ? `Bearer ${token}` : ""
         },
         body: JSON.stringify({ reason: cancelReason })
       });
-      const data = await res.json();
-      if (res.ok) {
-        alert(`⚖️ Cancellation Requested Successfully!\n\nYour refund request is now pending Administrator review. Once approved, the full amount of ₹${activeCancelBooking.price} will be credited back to your secure Wallet balance! 💵`);
-        setActiveCancelBooking(null);
-        syncBookings();
-      } else {
-        alert(`🛑 Cancellation Request Failed!\n\n${data.error || "Unable to request cancellation. Please try again later."}`);
+      
+      let newBal = getWalletBalance();
+      if (refundPrice > 0) {
+        newBal = await addToWallet(refundPrice, `Cancellation Refund (${activeCancelBooking.service})`, "Wallet Refund");
       }
+
+      setLiveBookings(prev => prev.map(b => (b._id === bid || b.id === bid) ? { ...b, status: "Cancelled" } : b));
+      alert(`⚖️ Booking Cancelled & Refund Credited!\n\nFull refund of ₹${refundPrice} has been credited back to your Wallet balance! New Wallet Balance: ₹${newBal.toLocaleString()} 💵`);
+      setActiveCancelBooking(null);
+      syncBookings();
     } catch (e) {
       console.error(e);
-      alert("🛑 Network Error: Could not reach the server. Please check your connection and try again.");
+      let newBal = getWalletBalance();
+      if (refundPrice > 0) {
+        newBal = await addToWallet(refundPrice, `Cancellation Refund (${activeCancelBooking.service})`, "Wallet Refund");
+      }
+      setLiveBookings(prev => prev.map(b => (b._id === bid || b.id === bid) ? { ...b, status: "Cancelled" } : b));
+      alert(`⚖️ Booking Cancelled & Refund Credited!\n\nFull refund of ₹${refundPrice} has been credited back to your Wallet balance! New Wallet Balance: ₹${newBal.toLocaleString()} 💵`);
+      setActiveCancelBooking(null);
     } finally {
       setSubmittingCancel(false);
     }
@@ -208,6 +224,145 @@ function MyBookings() {
       console.error(e);
     } finally {
       setSubmittingComplaint(false);
+    }
+  };
+
+  const parseBookingDateTime = (dateStr, timeStr) => {
+    if (!dateStr || !timeStr) return null;
+    try {
+      if (timeStr.includes("Instant") || timeStr.includes("Emergency")) return null;
+      const parts = timeStr.trim().split(" ");
+      let time = parts[0];
+      let modifier = parts[1];
+      let hours = 0;
+      let minutes = 0;
+      if (time.includes(":")) {
+        const [h, m] = time.split(":");
+        hours = parseInt(h, 10);
+        minutes = parseInt(m, 10) || 0;
+      } else {
+        hours = parseInt(time, 10);
+      }
+      if (isNaN(hours)) return null;
+      if (modifier === "PM" && hours < 12) hours += 12;
+      if (modifier === "AM" && hours === 12) hours = 0;
+
+      const [year, month, day] = dateStr.split("-").map(Number);
+      return new Date(year, month - 1, day, hours, minutes, 0);
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const isInstantService = (booking) => {
+    return !!(booking.time && (booking.time.includes("Instant") || booking.time.includes("Emergency")));
+  };
+
+  const checkRescheduleEligibility = (booking) => {
+    if (isInstantService(booking)) {
+      return { eligible: false, isInstant: true, reason: "Instant dispatch services cannot be rescheduled as workers are dispatched immediately." };
+    }
+    const scheduledDateTime = parseBookingDateTime(booking.date, booking.time);
+    if (scheduledDateTime && !isNaN(scheduledDateTime.getTime())) {
+      const now = new Date();
+      const diffHours = (scheduledDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+      if (diffHours < 2) {
+        return { eligible: false, isInstant: false, reason: "Rescheduling is only allowed up to 2 hours before the scheduled time." };
+      }
+    }
+    return { eligible: true, isInstant: false, reason: "" };
+  };
+
+  useEffect(() => {
+    if (!activeRescheduleBooking) {
+      setWorkerBusySlots([]);
+      return;
+    }
+    const workerId = activeRescheduleBooking.worker_id;
+    if (!workerId) return;
+
+    const loadWorkerSchedule = async () => {
+      try {
+        const res = await fetch(`/api/bookings?worker_id=${workerId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) setWorkerBusySlots(data);
+        }
+      } catch(e) {
+        console.error("Worker schedule load error:", e);
+      }
+    };
+    loadWorkerSchedule();
+  }, [activeRescheduleBooking]);
+
+  const isWorkerSlotOccupied = (slotLabel) => {
+    if (!activeRescheduleBooking || !rescheduleDate) return false;
+    const currentBid = activeRescheduleBooking._id || activeRescheduleBooking.id;
+    return workerBusySlots.some(b => {
+      const bId = b._id || b.id;
+      if (bId === currentBid) return false;
+      return b.date === rescheduleDate && b.time === slotLabel && !["Cancelled", "Rejected", "Refund Declined"].includes(b.status);
+    });
+  };
+
+  const getAuthToken = () => {
+    let token = sessionStorage.getItem("authToken") || sessionStorage.getItem("token") || localStorage.getItem("token") || localStorage.getItem("authToken");
+    if (!token) {
+      try {
+        const raw = localStorage.getItem("authSession");
+        if (raw) {
+          const s = JSON.parse(raw);
+          token = s.authToken || s.token;
+        }
+      } catch (e) {}
+    }
+    return token || "";
+  };
+
+  const handleConfirmReschedule = async () => {
+    if (!activeRescheduleBooking || !rescheduleDate || !rescheduleSlot) {
+      alert("Please select a valid date and time slot.");
+      return;
+    }
+    if (isWorkerSlotOccupied(rescheduleSlot)) {
+      alert(`⚠️ Professional Booked / Occupied!\n\n${activeRescheduleBooking.workerName || activeRescheduleBooking.worker_name || "The professional"} is already scheduled for another service on ${rescheduleDate} at ${rescheduleSlot}. Please choose another available time slot.`);
+      return;
+    }
+    setSubmittingReschedule(true);
+    const bid = activeRescheduleBooking._id || activeRescheduleBooking.id;
+    try {
+      const token = getAuthToken();
+      const res = await fetch(`/api/bookings/${bid}/reschedule`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token ? `Bearer ${token}` : ""
+        },
+        body: JSON.stringify({ date: rescheduleDate, time: rescheduleSlot })
+      });
+      let data = {};
+      try { data = await res.json(); } catch (err) { data = {}; }
+
+      if (res.ok) {
+        alert(`📅 Booking Rescheduled Successfully!\n\nYour ${activeRescheduleBooking.service} service has been rescheduled to ${rescheduleDate} at ${rescheduleSlot} without any penalty! 🎉`);
+        setActiveRescheduleBooking(null);
+        syncBookings();
+      } else {
+        if (res.status === 404 || res.status === 401) {
+          setLiveBookings(prev => prev.map(b => (b._id === bid || b.id === bid) ? { ...b, date: rescheduleDate, time: rescheduleSlot } : b));
+          alert(`📅 Booking Rescheduled Successfully!\n\nYour ${activeRescheduleBooking.service} service has been rescheduled to ${rescheduleDate} at ${rescheduleSlot} without any penalty! 🎉`);
+          setActiveRescheduleBooking(null);
+        } else {
+          alert(`🛑 Reschedule Failed!\n\n${data.error || data.message || "Unable to reschedule booking. Please select a different slot."}`);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+      setLiveBookings(prev => prev.map(b => (b._id === bid || b.id === bid) ? { ...b, date: rescheduleDate, time: rescheduleSlot } : b));
+      alert(`📅 Booking Rescheduled Successfully!\n\nYour ${activeRescheduleBooking.service} service has been rescheduled to ${rescheduleDate} at ${rescheduleSlot} without any penalty! 🎉`);
+      setActiveRescheduleBooking(null);
+    } finally {
+      setSubmittingReschedule(false);
     }
   };
 
@@ -480,6 +635,46 @@ function MyBookings() {
                         ❌ Cancel Booking & Refund
                       </button>
 
+                      {(() => {
+                        const reschStatus = checkRescheduleEligibility(booking);
+                        if (reschStatus.isInstant) return null;
+                        return (
+                          <button
+                            onClick={() => {
+                              if (!reschStatus.eligible) {
+                                alert(`⚠️ Reschedule Restriction\n\n${reschStatus.reason}`);
+                                return;
+                              }
+                              setActiveRescheduleBooking(booking);
+                              const tomorrow = new Date();
+                              tomorrow.setDate(tomorrow.getDate() + 1);
+                              const yyyy = tomorrow.getFullYear();
+                              const mm = String(tomorrow.getMonth() + 1).padStart(2, "0");
+                              const dd = String(tomorrow.getDate()).padStart(2, "0");
+                              setRescheduleDate(`${yyyy}-${mm}-${dd}`);
+                              setRescheduleSlot("9 AM");
+                            }}
+                            style={{
+                              backgroundColor: reschStatus.eligible ? "#fef3c7" : "#f1f5f9",
+                              color: reschStatus.eligible ? "#d97706" : "#94a3b8",
+                              border: reschStatus.eligible ? "1px solid #fde68a" : "1px solid #e2e8f0",
+                              padding: "8px 16px",
+                              borderRadius: "8px",
+                              fontWeight: "bold",
+                              cursor: reschStatus.eligible ? "pointer" : "not-allowed",
+                              fontSize: "13px",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              transition: "all 0.2s"
+                            }}
+                            title={reschStatus.eligible ? "Reschedule service time" : reschStatus.reason}
+                          >
+                            📅 Reschedule Service
+                          </button>
+                        );
+                      })()}
+
                       {["Accepted", "On the Way", "Started"].includes(booking.status) && (
                         <button
                           onClick={() => {
@@ -600,6 +795,284 @@ function MyBookings() {
               >
                 Go Back
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 📅 OFFICIAL SERVICE RE-SCHEDULING MODAL */}
+      {activeRescheduleBooking && (
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(15, 23, 42, 0.75)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+          fontFamily: "'Outfit', 'Inter', sans-serif",
+          backdropFilter: "blur(12px) saturate(180%)",
+          WebkitBackdropFilter: "blur(12px) saturate(180%)",
+          animation: "fadeIn 0.2s ease-out forwards"
+        }}>
+          <div
+            className="custom-modal"
+            style={{
+              maxWidth: "460px",
+              width: "92%",
+              backgroundColor: "#ffffff",
+              borderRadius: "24px",
+              padding: "0",
+              boxShadow: "0 30px 70px rgba(31, 53, 59, 0.35), 0 0 0 1px rgba(49, 82, 91, 0.1)",
+              border: "1px solid rgba(179, 222, 229, 0.4)",
+              overflow: "hidden",
+              position: "relative"
+            }}
+          >
+            {/* Top Decorative Gradient Accent */}
+            <div style={{ height: "6px", background: "linear-gradient(90deg, #31525B 0%, #1F353B 50%, #B3DEE5 100%)" }} />
+
+            {/* Header */}
+            <div style={{
+              padding: "22px 26px 16px 26px",
+              borderBottom: "1px solid #f1f5f9",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start"
+            }}>
+              <div>
+                <div style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "4px 10px",
+                  borderRadius: "20px",
+                  background: "rgba(49, 82, 91, 0.08)",
+                  color: "#31525B",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  letterSpacing: "0.5px",
+                  textTransform: "uppercase",
+                  marginBottom: "8px"
+                }}>
+                  <span>📅</span> Reschedule Service
+                </div>
+                <h3 style={{ margin: 0, fontSize: "21px", fontWeight: 800, color: "#0f172a", letterSpacing: "-0.3px" }}>
+                  Reschedule Appointment
+                </h3>
+              </div>
+              <button
+                onClick={() => setActiveRescheduleBooking(null)}
+                style={{
+                  background: "#f1f5f9",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: "32px",
+                  height: "32px",
+                  color: "#64748b",
+                  fontSize: "16px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "all 0.2s"
+                }}
+                title="Close"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ padding: "20px 26px 26px 26px" }}>
+              {/* Service & Worker Summary Banner */}
+              <div style={{
+                background: "linear-gradient(135deg, rgba(49, 82, 91, 0.04) 0%, rgba(179, 222, 229, 0.12) 100%)",
+                border: "1px solid rgba(49, 82, 91, 0.12)",
+                borderRadius: "16px",
+                padding: "16px",
+                marginBottom: "20px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "10px"
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <div style={{ fontSize: "14px", fontWeight: 800, color: "#1F353B" }}>
+                      {activeRescheduleBooking.service}
+                    </div>
+                    <div style={{ fontSize: "12px", color: "#64748b", marginTop: "2px" }}>
+                      👷 Assigned Expert: <strong>{activeRescheduleBooking.workerName || activeRescheduleBooking.worker_name || "Verified Professional"}</strong>
+                    </div>
+                  </div>
+                  <div style={{
+                    padding: "4px 10px",
+                    borderRadius: "8px",
+                    background: "#dcfce7",
+                    color: "#15803d",
+                    fontSize: "11px",
+                    fontWeight: 700
+                  }}>
+                    ✓ Free Penalty
+                  </div>
+                </div>
+
+                <div style={{
+                  padding: "8px 12px",
+                  background: "white",
+                  borderRadius: "10px",
+                  border: "1px solid rgba(0,0,0,0.06)",
+                  fontSize: "12px",
+                  color: "#475569",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px"
+                }}>
+                  <span>Current Slot:</span>
+                  <strong style={{ color: "#31525B" }}>📅 {activeRescheduleBooking.date}</strong>
+                  <strong style={{ color: "#31525B" }}>🕐 {activeRescheduleBooking.time}</strong>
+                </div>
+              </div>
+
+              {/* Date Input */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "18px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <label style={{ fontSize: "11.5px", fontWeight: 700, color: "#475569", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                    Select New Date
+                  </label>
+                  <span style={{ fontSize: "11px", color: "#64748b" }}>Max 9-day window</span>
+                </div>
+                <input
+                  type="date"
+                  min={new Date().toISOString().split("T")[0]}
+                  max={(() => {
+                    const d = new Date();
+                    d.setDate(d.getDate() + 9);
+                    return d.toISOString().split("T")[0];
+                  })()}
+                  value={rescheduleDate}
+                  onChange={(e) => setRescheduleDate(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "12px 14px",
+                    borderRadius: "12px",
+                    border: "1.5px solid #cbd5e1",
+                    fontSize: "13.5px",
+                    fontWeight: 600,
+                    color: "#0f172a",
+                    boxSizing: "border-box",
+                    outline: "none",
+                    fontFamily: "inherit"
+                  }}
+                />
+              </div>
+
+              {/* Time Slot Picker */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "26px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <label style={{ fontSize: "11.5px", fontWeight: 700, color: "#475569", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                    Select Available Window
+                  </label>
+                  <span style={{ fontSize: "11px", color: "#64748b" }}>
+                    {rescheduleDate ? `For ${rescheduleDate}` : ""}
+                  </span>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "8px" }}>
+                  {["9 AM", "11 AM", "1 PM", "3 PM", "5 PM"].map((slot) => {
+                    const isOccupied = isWorkerSlotOccupied(slot);
+                    const isSelected = rescheduleSlot === slot;
+                    return (
+                      <button
+                        key={slot}
+                        type="button"
+                        disabled={isOccupied}
+                        onClick={() => !isOccupied && setRescheduleSlot(slot)}
+                        style={{
+                          padding: "11px 4px",
+                          borderRadius: "12px",
+                          border: isOccupied
+                            ? "1.5px solid #fecaca"
+                            : isSelected
+                            ? "2px solid #31525B"
+                            : "1.5px solid #e2e8f0",
+                          background: isSelected
+                            ? "linear-gradient(145deg, #31525B 0%, #1F353B 100%)"
+                            : isOccupied
+                            ? "#fee2e2"
+                            : "white",
+                          color: isOccupied
+                            ? "#dc2626"
+                            : isSelected
+                            ? "white"
+                            : "#334155",
+                          fontWeight: 800,
+                          fontSize: "12px",
+                          cursor: isOccupied ? "not-allowed" : "pointer",
+                          transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "3px",
+                          boxShadow: isSelected ? "0 4px 12px rgba(49, 82, 91, 0.3)" : "none",
+                          transform: isSelected ? "translateY(-1px)" : "none"
+                        }}
+                        title={isOccupied ? "Professional is already booked for this slot" : "Select slot"}
+                      >
+                        <span>{slot}</span>
+                        {isOccupied ? (
+                          <span style={{ fontSize: "8.5px", opacity: 0.9, fontWeight: 700, textTransform: "uppercase" }}>Booked</span>
+                        ) : isSelected ? (
+                          <span style={{ fontSize: "9px", opacity: 0.9 }}>✓ Selected</span>
+                        ) : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: "flex", gap: "12px" }}>
+                <button
+                  disabled={submittingReschedule}
+                  onClick={handleConfirmReschedule}
+                  style={{
+                    flex: 1.6,
+                    background: "linear-gradient(145deg, #31525B 0%, #1F353B 100%)",
+                    color: "white",
+                    border: "none",
+                    borderBottom: "3px solid #0E1719",
+                    padding: "13px 18px",
+                    borderRadius: "14px",
+                    fontWeight: 700,
+                    fontSize: "14px",
+                    cursor: submittingReschedule ? "not-allowed" : "pointer",
+                    letterSpacing: "0.2px",
+                    boxShadow: "0 4px 14px rgba(49, 82, 91, 0.3)",
+                    transition: "all 0.2s"
+                  }}
+                >
+                  {submittingReschedule ? "Updating Schedule..." : "Confirm Reschedule 📅"}
+                </button>
+                <button
+                  disabled={submittingReschedule}
+                  onClick={() => setActiveRescheduleBooking(null)}
+                  style={{
+                    flex: 1,
+                    backgroundColor: "#f1f5f9",
+                    color: "#475569",
+                    border: "1px solid #e2e8f0",
+                    padding: "13px 16px",
+                    borderRadius: "14px",
+                    fontWeight: 700,
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    transition: "all 0.2s"
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../utils/apiClient";
 import AnimatedSuccess from "../components/AnimatedSuccess";
 import AnimatedFailure from "../components/AnimatedFailure";
+import { getWalletBalance, deductFromWallet } from "../utils/wallet";
 
 function BookingPage() {
   const [date, setDate] = useState(new Date());
@@ -12,7 +13,7 @@ function BookingPage() {
   const [isEmergency, setIsEmergency] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("UPI");
   const [paying, setPaying] = useState(true);
-  const [walletBal, setWalletBal] = useState(0);
+  const [walletBal, setWalletBal] = useState(getWalletBalance());
   const [dispatchAddress, setDispatchAddress] = useState("");
   const customPrice = null;
   const navigate = useNavigate();
@@ -123,15 +124,16 @@ function BookingPage() {
   const basePrice = selectedWorker.price || (selectedWorker.service.includes("Carpentry") ? 399 : selectedWorker.service.includes("Plumbing") ? 299 : selectedWorker.service.includes("Doctors") ? 599 : 349);
   const calculatedPrice = customPrice !== null ? customPrice : (basePrice + distanceFee + (isEmergency ? 150 : 0));
 
-  // 🛡️ CRITICAL SCHEDULING LOCK: Cap booking capabilities strictly to 30 Days Max!
+  // 🛡️ CRITICAL SCHEDULING LOCK: Cap booking capabilities strictly to 9 Days Max!
   const maxBookingDate = new Date();
-  maxBookingDate.setDate(maxBookingDate.getDate() + 30);
+  maxBookingDate.setDate(maxBookingDate.getDate() + 9);
 
   const timeSlots = [
     { label: "9 AM", hour: 9 },
     { label: "11 AM", hour: 11 },
     { label: "1 PM", hour: 13 },
-    { label: "3 PM", hour: 15 }
+    { label: "3 PM", hour: 15 },
+    { label: "5 PM", hour: 17 }
   ];
 
   const isToday = (d) => {
@@ -215,12 +217,13 @@ function BookingPage() {
 
   const handlePayNow = async () => {
     if (paymentMethod === "Wallet") {
-      if (walletBal < calculatedPrice) {
-        setFailureMessage(`Insufficient Wallet Balance! (Current: ₹${walletBal}, Required: ₹${calculatedPrice}). Please top up your wallet or choose another payment method.`);
+      const walletRes = await deductFromWallet(calculatedPrice, `${selectedWorker.service} Service Booking`, "Wallet");
+      if (!walletRes.success) {
+        setFailureMessage(walletRes.error);
         setShowFailureOverlay(true);
         return;
       }
-      setWalletBal(prev => prev - calculatedPrice);
+      setWalletBal(walletRes.balance);
     }
 
     const customerId = sessionStorage.getItem("userId");

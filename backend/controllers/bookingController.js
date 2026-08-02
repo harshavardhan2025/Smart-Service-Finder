@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Booking from "../models/Booking.js";
 import Worker from "../models/Worker.js";
 import Transaction from "../models/Transaction.js";
@@ -73,6 +74,22 @@ const validateCancellationTime = (booking) => {
 export const createBooking = async (req, res) => {
   try {
     const { worker_id, date, time, customer_id, address } = req.body;
+
+    // 🛡️ 9-DAY SCHEDULING LOCK: Enforce strictly up to 9 days advance booking
+    if (date && !time?.includes("Instant") && !time?.includes("Emergency")) {
+      const todayDate = new Date();
+      todayDate.setHours(0, 0, 0, 0);
+      const maxDate = new Date(todayDate);
+      maxDate.setDate(maxDate.getDate() + 9);
+
+      const targetDate = new Date(`${date}T00:00:00`);
+      if (targetDate > maxDate) {
+        return res.status(400).json({
+          success: false,
+          error: "Advance service scheduling is strictly limited to 9 days into the future. Please choose a date within the next 9 days."
+        });
+      }
+    }
 
     // 🛡️ DOUBLE-BOOKING PREVENTION: Check if this worker already has an active booking at the same date+time
     if (worker_id && date && time) {
@@ -878,4 +895,110 @@ export const checkBookingTimeouts = async () => {
     console.error("Error in checkBookingTimeouts job:", error.message);
   }
 };
+
+export const rescheduleBooking = async (req, res) => {
+  try {
+    const { date, time } = req.body;
+    if (!date || !time) {
+      return res.status(400).json({ error: "Date and time slot are required for rescheduling." });
+    }
+
+    // 🛡️ 9-DAY SCHEDULING LOCK: Enforce strictly up to 9 days advance booking for rescheduling
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+    const maxDate = new Date(todayDate);
+    maxDate.setDate(maxDate.getDate() + 9);
+
+    const targetDate = new Date(`${date}T00:00:00`);
+    if (targetDate > maxDate) {
+      return res.status(400).json({
+        error: "Rescheduling is strictly limited to 9 days into the future. Please choose a date within the next 9 days."
+      });
+    }
+
+    let booking = null;
+    if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+      booking = await Booking.findById(req.params.id);
+    }
+    if (!booking) {
+      booking = await Booking.findOne({ id: req.params.id });
+    }
+
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    if (["Completed", "Paid Out", "Cancelled", "Rejected"].includes(booking.status)) {
+      return res.status(400).json({ error: `Cannot reschedule a booking that is ${booking.status}.` });
+    }
+
+    if (booking.time && (booking.time.includes("Instant") || booking.time.includes("Emergency"))) {
+      return res.status(400).json({ error: "Instant service bookings cannot be rescheduled as workers are dispatched immediately." });
+    }
+
+    const now = new Date();
+    const scheduledDateTime = parseBookingDateTime(booking.date, booking.time);
+    if (scheduledDateTime && !isNaN(scheduledDateTime.getTime())) {
+      const diffHours = (scheduledDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+      if (diffHours < 2) {
+        return res.status(400).json({ 
+          error: "Rescheduling is only allowed up to 2 hours before the scheduled service time." 
+        });
+      }
+    }
+
+    if (booking.worker_id && date && time) {
+      const conflict = await Booking.findOne({
+        _id: { $ne: booking._id },
+        worker_id: booking.worker_id,
+        date,
+        time,
+        status: { $nin: ["Cancelled", "Rejected", "Refund Declined"] }
+      }).lean();
+
+      if (conflict) {
+        return res.status(409).json({
+          error: "The service provider is already booked for this date and time slot. Please select another slot."
+        });
+      }
+    }
+
+    booking.date = date;
+    booking.time = time;
+    await booking.save();
+
+    await Notification.create({
+      role: "user",
+      user_id: booking.customer_id,
+      title: "📅 Booking Rescheduled",
+      message: `Your booking for ${booking.service} has been successfully rescheduled to ${date} at ${time}.`,
+      type: "success",
+      is_read: false
+    });
+
+    try {
+      const worker = await Worker.findById(booking.worker_id);
+      if (worker) {
+        const workerUser = await User.findOne({ email: worker.email });
+        if (workerUser) {
+          await Notification.create({
+            role: "worker",
+            user_id: workerUser._id.toString(),
+            title: "📅 Booking Rescheduled by Customer",
+            message: `Booking for ${booking.service} (Customer: ${booking.customer_name}) has been rescheduled to ${date} at ${time}.`,
+            type: "info",
+            is_read: false
+          });
+        }
+      }
+    } catch (e) {
+      console.error("Non-blocking notification error:", e);
+    }
+
+    res.status(200).json({ success: true, booking, message: "Booking rescheduled successfully!" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 
