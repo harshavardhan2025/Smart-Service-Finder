@@ -30,7 +30,7 @@ const REWARDS = [
     title: "₹100 Payment Cashback",
     points: 200,
     icon: "💸",
-    color: "#d97706",
+    color: "var(--warning)",
     bg: "#fffbeb",
     desc: "Get cashback on your next payment"
   },
@@ -48,7 +48,7 @@ const REWARDS = [
 function StarSlider({ value, onChange }) {
   return (
     <div style={{ marginBottom: "16px" }}>
-      <label style={{ display: "block", fontSize: "13px", fontWeight: 750, color: "#475569", marginBottom: "6px" }}>
+      <label style={{ display: "block", fontSize: "13px", fontWeight: 750, color: "var(--text-secondary)", marginBottom: "6px" }}>
         Adjust Star Rating Slider:
       </label>
       <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
@@ -66,7 +66,7 @@ function StarSlider({ value, onChange }) {
             background: `linear-gradient(90deg, #f59e0b ${((value || 3) - 1) * 25}%, #e2e8f0 ${((value || 3) - 1) * 25}%)`,
             outline: "none",
             cursor: "pointer",
-            accentColor: "#f59e0b"
+            accentcolor: "var(--warning)"
           }}
         />
         <div style={{ display: "flex", gap: "2px", alignItems: "center" }}>
@@ -84,7 +84,7 @@ function StarSlider({ value, onChange }) {
               ★
             </span>
           ))}
-          <span style={{ marginLeft: "8px", fontWeight: 800, fontSize: "14px", color: "#f59e0b" }}>({value || 3} Star{value > 1 ? 's' : ''})</span>
+          <span style={{ marginLeft: "8px", fontWeight: 800, fontSize: "14px", color: "var(--warning)" }}>({value || 3} Star{value > 1 ? 's' : ''})</span>
         </div>
       </div>
     </div>
@@ -197,7 +197,7 @@ function ReviewsRewards() {
     <div
       style={{
         minHeight: "100vh",
-        backgroundColor: "#f8fafc",
+        backgroundColor: "var(--bg-card-hover)",
         fontFamily: "'Inter', 'Segoe UI', sans-serif"
       }}
     >
@@ -208,7 +208,7 @@ function ReviewsRewards() {
             position: "fixed",
             top: "20px",
             right: "20px",
-            backgroundColor: "#1e293b",
+            backgroundcolor: "var(--text-main)",
             color: "white",
             padding: "14px 20px",
             borderRadius: "10px",
@@ -345,12 +345,12 @@ function ReviewsRewards() {
                         <h3 style={{ margin: "0 0 4px 0", fontSize: "16px", fontWeight: 700, color: "var(--text-main)" }}>
                           {r.service}
                         </h3>
-                        <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>👷 Service Expert · 📅 {r.date}</p>
+                        <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>👷 Service Expert · 📅 {r.date}</p>
                       </div>
                       <span
                         style={{
-                          backgroundColor: "#fef3c7",
-                          color: "#d97706",
+                          backgroundColor: "var(--warning-light)",
+                          color: "var(--warning)",
                           padding: "4px 10px",
                           borderRadius: "20px",
                           fontSize: "12px",
@@ -418,7 +418,7 @@ function ReviewsRewards() {
           <h2 style={{ fontSize: "18px", fontWeight: 700, color: "var(--text-main)", margin: "0 0 6px 0" }}>
             🎁 Redeem Rewards
           </h2>
-          <p style={{ fontSize: "13px", color: "#64748b", margin: "0 0 14px 0" }}>
+          <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: "0 0 14px 0" }}>
             Use your points on bookings, payments & priority slots
           </p>
           <div
@@ -452,7 +452,7 @@ function ReviewsRewards() {
                   <h3 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "var(--text-main)" }}>
                     {reward.title}
                   </h3>
-                  <p style={{ margin: "0 0 10px 0", fontSize: "12px", color: "#64748b" }}>{reward.desc}</p>
+                  <p style={{ margin: "0 0 10px 0", fontSize: "12px", color: "var(--text-secondary)" }}>{reward.desc}</p>
                   <p style={{ margin: "0 0 12px 0", fontWeight: 700, color: reward.color, fontSize: "13px" }}>
                     {reward.points} pts required
                   </p>
@@ -460,8 +460,8 @@ function ReviewsRewards() {
                     <span
                       style={{
                         display: "inline-block",
-                        backgroundColor: "#dcfce7",
-                        color: "#16a34a",
+                        backgroundColor: "var(--success-light)",
+                        color: "var(--success)",
                         padding: "6px 14px",
                         borderRadius: "20px",
                         fontSize: "12px",
@@ -566,12 +566,12 @@ function ReviewsRewards() {
                         <h3 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "var(--text-main)" }}>
                           {r.service || "Professional Service"}
                         </h3>
-                        <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>👷 Verified Partner · 📅 {r.date}</p>
+                        <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>👷 Verified Partner · 📅 {r.date}</p>
                       </div>
                       <span
                         style={{
-                          backgroundColor: "#dcfce7",
-                          color: "#16a34a",
+                          backgroundColor: "var(--success-light)",
+                          color: "var(--success)",
                           padding: "4px 10px",
                           borderRadius: "20px",
                           fontSize: "12px",
@@ -583,7 +583,7 @@ function ReviewsRewards() {
                     </div>
 
                     <div style={{ marginTop: "10px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
-                      <span style={{ color: "#f59e0b", fontSize: "18px" }}>
+                      <span style={{ color: "var(--warning)", fontSize: "18px" }}>
                         {"★".repeat(r.rating || 5)}{"☆".repeat(5 - (r.rating || 5))}
                       </span>
                       <span style={{ backgroundColor: tagBg, color: tagColor, border: `1px solid ${tagBorder}`, padding: "2px 8px", borderRadius: 12, fontSize: 10, fontWeight: 700 }}>
@@ -592,7 +592,7 @@ function ReviewsRewards() {
                     </div>
 
                     {r.comment && (
-                      <p style={{ margin: "10px 0 0 0", fontSize: "14px", color: "#475569", fontStyle: "italic", lineHeight: 1.5, backgroundColor: "#f8fafc", padding: "10px", borderRadius: "8px" }}>
+                      <p style={{ margin: "10px 0 0 0", fontSize: "14px", color: "var(--text-secondary)", fontStyle: "italic", lineHeight: 1.5, backgroundColor: "var(--bg-card-hover)", padding: "10px", borderRadius: "8px" }}>
                         "{r.comment}"
                       </p>
                     )}

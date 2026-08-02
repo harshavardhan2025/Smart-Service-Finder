@@ -345,7 +345,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
             localStorage.removeItem("manualLocationSet");
             window.location.reload();
           }}
-          style={{ backgroundColor: "#ef4444", color: "white" }}
+          style={{ backgroundcolor: "var(--danger)", color: "white" }}
         >
           Reset Location 🔄
         </button>
@@ -359,12 +359,12 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
             display: "inline-flex",
             alignItems: "center",
             gap: "6px",
-            backgroundColor: "#f0fdf4",
+            backgroundColor: "var(--success-light)",
             border: "1px solid #86efac",
             borderRadius: "20px",
             padding: "4px 12px",
             fontSize: "12px",
-            color: "#166534",
+            color: "var(--success)",
             marginBottom: "10px",
             fontWeight: 600,
           }}
@@ -425,12 +425,12 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
           }}>
             <div style={{ fontSize: "36px", marginBottom: "16px" }}>📍</div>
             <h3 style={{ margin: "0 0 12px 0", color: "var(--text-main)", fontFamily: "'Outfit', sans-serif" }}>Location Access Needed</h3>
-            <p style={{ margin: "0 0 24px 0", color: "#64748b", lineHeight: "1.5" }}>{locationError}</p>
+            <p style={{ margin: "0 0 24px 0", color: "var(--text-secondary)", lineHeight: "1.5" }}>{locationError}</p>
             <div style={{ display: "flex", gap: "12px" }}>
               <button
                 onClick={() => setLocationError(null)}
                 style={{
-                  backgroundColor: "#e2e8f0", color: "#475569", border: "none",
+                  backgroundColor: "#e2e8f0", color: "var(--text-secondary)", border: "none",
                   padding: "12px 16px", borderRadius: "8px", fontWeight: "600",
                   cursor: "pointer", flex: 1, fontSize: "16px"
                 }}

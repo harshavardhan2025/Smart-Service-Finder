@@ -155,7 +155,7 @@ function Navbar() {
                       position: "absolute",
                       top: "-2px",
                       right: "-2px",
-                      backgroundColor: "#ef4444",
+                      backgroundcolor: "var(--danger)",
                       color: "white",
                       fontSize: "10px",
                       fontWeight: "bold",
@@ -225,7 +225,7 @@ function Navbar() {
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                     {notifications.length === 0 ? (
-                      <p style={{ margin: 0, fontSize: "12px", color: "#64748b", textAlign: "center", padding: "16px 0" }}>No new notifications</p>
+                      <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)", textAlign: "center", padding: "16px 0" }}>No new notifications</p>
                     ) : (
                       notifications.map((n) => (
                         <div
@@ -241,11 +241,11 @@ function Navbar() {
                         >
                           <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, color: "var(--text-main)", marginBottom: "4px" }}>
                             <span style={{ fontWeight: 800 }}>{n.title || "Notification"}</span>
-                            <span style={{ fontSize: "9px", color: "#94a3b8" }}>
+                            <span style={{ fontSize: "9px", color: "var(--text-secondary)" }}>
                               {n.createdAt ? new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Just now"}
                             </span>
                           </div>
-                          <p style={{ margin: 0, color: "#475569", lineHeight: "1.4", whiteSpace: "pre-wrap" }}>{n.message}</p>
+                          <p style={{ margin: 0, color: "var(--text-secondary)", lineHeight: "1.4", whiteSpace: "pre-wrap" }}>{n.message}</p>
                         </div>
                       ))
                     )}
@@ -277,7 +277,7 @@ function Navbar() {
             }}
             title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
           >
-            {isDark ? <FaSun size={18} style={{ color: "#f59e0b" }} /> : <FaMoon size={18} style={{ color: "#4f46e5" }} />}
+            {isDark ? <FaSun size={18} style={{ color: "var(--warning)" }} /> : <FaMoon size={18} style={{ color: "#4f46e5" }} />}
           </button>
 
           {isLoggedIn ? (
@@ -351,7 +351,7 @@ function Navbar() {
                 <button
                   onClick={handleLogout}
                   style={{
-                    backgroundColor: "#ef4444",
+                    backgroundcolor: "var(--danger)",
                     color: "white",
                     border: "none",
                     padding: "10px 18px",

@@ -1196,7 +1196,7 @@ function AiChatBot() {
                             <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: "#1F353B" }}>
                               {worker.name}
                             </h4>
-                            <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px", display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                            <div style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "2px", display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
                               <span>{worker.service || msg.category}</span>
                               {worker.city && <span style={{ color: "#31525B", fontWeight: 700, background: "rgba(49,82,91,0.08)", padding: "1px 6px", borderRadius: "4px", fontSize: "10.5px" }}>📍 {worker.city}</span>}
                             </div>
@@ -1206,7 +1206,7 @@ function AiChatBot() {
                           display: "flex",
                           gap: "12px",
                           fontSize: "12px",
-                          color: "#475569",
+                          color: "var(--text-secondary)",
                           padding: "8px 10px",
                           background: "rgba(49, 82, 91, 0.04)",
                           borderRadius: "8px",

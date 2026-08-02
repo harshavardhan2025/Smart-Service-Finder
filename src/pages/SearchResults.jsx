@@ -383,7 +383,7 @@ function SearchResults() {
                       </div>
                       
                       <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", margin: "4px 0" }}>
-                        <span style={{ display: "flex", alignItems: "center", gap: "4px", color: "#eab308", fontWeight: "bold", fontSize: "13px" }}>
+                        <span style={{ display: "flex", alignItems: "center", gap: "4px", color: "var(--warning)", fontWeight: "bold", fontSize: "13px" }}>
                           <FaStar /> {worker.rating}
                         </span>
                         <span style={{ display: "flex", alignItems: "center", gap: "4px", color: "var(--text-secondary)", fontSize: "12.5px", fontWeight: 600 }}>

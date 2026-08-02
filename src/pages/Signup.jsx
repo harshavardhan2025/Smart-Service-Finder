@@ -46,7 +46,7 @@ function ResultPopup({ result, onClose, navigate }) {
     success: {
       icon: "✅",
       title: "Registration Successful!",
-      titleColor: "#15803d",
+      titlecolor: "var(--success)",
       bg: "#f0fdf4",
       border: "#bbf7d0",
     },
@@ -60,7 +60,7 @@ function ResultPopup({ result, onClose, navigate }) {
     fail: {
       icon: "❌",
       title: "Registration Failed",
-      titleColor: "#dc2626",
+      titlecolor: "var(--danger)",
       bg: "#fff1f2",
       border: "#fecaca",
     },
@@ -90,12 +90,12 @@ function ResultPopup({ result, onClose, navigate }) {
         <h2 style={{ margin: "0 0 10px 0", fontSize: "22px", fontWeight: 800, color: config.titleColor }}>
           {config.title}
         </h2>
-        <p style={{ margin: "0 0 26px 0", fontSize: "14px", color: "#64748b", lineHeight: 1.7 }}>
+        <p style={{ margin: "0 0 26px 0", fontSize: "14px", color: "var(--text-secondary)", lineHeight: 1.7 }}>
           {result.message}
         </p>
 
         {result.type === "success" && (
-          <p style={{ fontSize: "13px", color: "#94a3b8" }}>
+          <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
             {sessionStorage.getItem("userRole") ? "Logging you in and redirecting to your dashboard..." : "Redirecting..."}
           </p>
         )}
@@ -105,7 +105,7 @@ function ResultPopup({ result, onClose, navigate }) {
             <button
               onClick={() => navigate("/login")}
               style={{
-                backgroundColor: "#d97706",
+                backgroundcolor: "var(--warning)",
                 color: "white",
                 border: "none",
                 borderRadius: "12px",
@@ -122,7 +122,7 @@ function ResultPopup({ result, onClose, navigate }) {
               onClick={onClose}
               style={{
                 backgroundColor: "transparent",
-                color: "#94a3b8",
+                color: "var(--text-secondary)",
                 border: "1.5px solid #e2e8f0",
                 borderRadius: "12px",
                 padding: "11px 28px",
@@ -141,7 +141,7 @@ function ResultPopup({ result, onClose, navigate }) {
           <button
             onClick={onClose}
             style={{
-              backgroundColor: "#dc2626",
+              backgroundcolor: "var(--danger)",
               color: "white",
               border: "none",
               borderRadius: "12px",
@@ -481,7 +481,7 @@ function Signup() {
                 >
                   <span style={{ fontSize: "32px" }}>🛠️</span>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: "15px", color: "#15803d" }}>Sign up as Worker</div>
+                    <div style={{ fontWeight: 700, fontSize: "15px", color: "var(--success)" }}>Sign up as Worker</div>
                     <div style={{ fontSize: "12px", color: "#4ade80", marginTop: "2px" }}>Offer your services. Fill a few details first.</div>
                   </div>
                   <div style={{ marginLeft: "auto" }}>

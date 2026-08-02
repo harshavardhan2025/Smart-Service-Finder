@@ -308,7 +308,7 @@ function BookingPage() {
           <h1 style={{ color: "var(--text-main)", fontSize: 32, fontWeight: 900, marginBottom: 8, letterSpacing: "-0.5px" }}>
             📅 Schedule Service
           </h1>
-          <p style={{ color: "#64748b", fontSize: 15, fontWeight: 500 }}>
+          <p style={{ color: "var(--text-secondary)", fontSize: 15, fontWeight: 500 }}>
             Pick the perfect moment for your professional expert.
           </p>
         </div>
@@ -362,7 +362,7 @@ function BookingPage() {
                 lineHeight: "1.5" 
               }}>
                 {isBusyForInstant() && !isEmergency 
-                   ? <strong style={{ color: "#b91c1c" }}>⚠️ Worker is Currently Busy / In Another Job!</strong>
+                   ? <strong style={{ color: "var(--danger)" }}>⚠️ Worker is Currently Busy / In Another Job!</strong>
                    : <span>Bypass standard queues! Get arrival within <strong>10-20 Minutes</strong> flawlessly. (+₹150)</span>
                 }
               </p>
@@ -373,7 +373,7 @@ function BookingPage() {
               display: "flex", justifyContent: "center", alignItems: "center",
               background: isEmergency ? "white" : "transparent"
             }}>
-              {isEmergency && <div style={{ width: 12, height: 12, borderRadius: "50%", backgroundColor: "#ef4444" }} />}
+              {isEmergency && <div style={{ width: 12, height: 12, borderRadius: "50%", backgroundcolor: "var(--danger)" }} />}
             </div>
           </div>
         </div>
@@ -487,7 +487,7 @@ function BookingPage() {
             
             {/* 📍 DYNAMIC ADDRESS SELECTOR FOR PRECISE ARRIVAL */}
             <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 14, fontWeight: 700, color: "#475569", display: "block", marginBottom: 8 }}>📍 Service Dispatch Address</label>
+              <label style={{ fontSize: 14, fontWeight: 700, color: "var(--text-secondary)", display: "block", marginBottom: 8 }}>📍 Service Dispatch Address</label>
               <textarea 
                 value={dispatchAddress} 
                 onChange={e => setDispatchAddress(e.target.value)}
@@ -509,7 +509,7 @@ function BookingPage() {
             </div>
 
             <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 14, fontWeight: 700, color: "#475569", display: "block", marginBottom: 8 }}>Select Payment Gateway</label>
+              <label style={{ fontSize: 14, fontWeight: 700, color: "var(--text-secondary)", display: "block", marginBottom: 8 }}>Select Payment Gateway</label>
               <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)}
                 style={{ 
                   width: "100%", 
@@ -530,7 +530,7 @@ function BookingPage() {
 
             {paymentMethod === "Wallet" && walletBal < calculatedPrice && (
               <div style={{
-                backgroundColor: "#fef2f2",
+                backgroundColor: "var(--danger-light)",
                 border: "1.5px dashed #f87171",
                 borderRadius: 14,
                 padding: "16px",
@@ -567,38 +567,38 @@ function BookingPage() {
             )}
 
             <div style={{ 
-              background: "#f8fafc", 
+              background: "var(--bg-card-hover)", 
               borderRadius: 14, 
               padding: 18, 
               marginBottom: 24, 
               border: "1px solid var(--border-color)"
             }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, color: "#64748b", fontSize: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, color: "var(--text-secondary)", fontSize: 14 }}>
                 <span>Base Service Rate</span>
                 <span style={{ fontWeight: 600, color: "var(--text-main)" }}>₹{basePrice}</span>
               </div>
               
               {distanceFee > 0 && (
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, color: "#64748b", fontSize: 14 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, color: "var(--text-secondary)", fontSize: 14 }}>
                   <span>Distance Travel Fee ({distanceVal} KM)</span>
                   <span style={{ fontWeight: 600, color: "#ea580c" }}>+ ₹{distanceFee} ({distanceTier})</span>
                 </div>
               )}
 
               {isEmergency && (
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, color: "#64748b", fontSize: 14 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, color: "var(--text-secondary)", fontSize: 14 }}>
                   <span>Emergency Priority Rush Fee</span>
-                  <span style={{ fontWeight: 600, color: "#dc2626" }}>+ ₹150</span>
+                  <span style={{ fontWeight: 600, color: "var(--danger)" }}>+ ₹150</span>
                 </div>
               )}
 
-              <div style={{ height: "1px", backgroundColor: "#cbd5e1", margin: "10px 0" }}></div>
+              <div style={{ height: "1px", backgroundcolor: "var(--text-secondary)", margin: "10px 0" }}></div>
 
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, color: "#64748b", fontSize: 15 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, color: "var(--text-secondary)", fontSize: 15 }}>
                 <span>Total Cost</span>
                 <strong style={{ color: "#059669", fontSize: 20 }}>₹{calculatedPrice}</strong>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", color: "#64748b", fontSize: 13 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-secondary)", fontSize: 13 }}>
                 <span>Delivery Window</span>
                 <span style={{ fontWeight: 700, color: "var(--text-main)" }}>{date.toDateString()} — {selectedSlot}</span>
               </div>

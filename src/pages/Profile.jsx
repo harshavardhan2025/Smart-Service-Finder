@@ -3,10 +3,10 @@ import { Link } from "react-router-dom";
 import { getWalletBalance, addToWallet } from "../utils/wallet";
 
 const STATUS_STYLE = {
-  Paid:     { color: "#16a34a", bg: "#dcfce7" },
-  Pending:  { color: "#d97706", bg: "#fef3c7" },
+  Paid:     { color: "var(--success)", bg: "#dcfce7" },
+  Pending:  { color: "var(--warning)", bg: "#fef3c7" },
   Refunded: { color: "#425664", bg: "#b4d0e7" },
-  Completed: { color: "#16a34a", bg: "#dcfce7" }
+  Completed: { color: "var(--success)", bg: "#dcfce7" }
 };
 
 const defaultProfile = {
@@ -110,7 +110,7 @@ function Profile() {
     <div
       style={{
         minHeight: "100vh",
-        backgroundColor: "#f8fafc",
+        backgroundColor: "var(--bg-card-hover)",
         fontFamily: "'Inter', 'Segoe UI', sans-serif"
       }}
     >
@@ -121,7 +121,7 @@ function Profile() {
             position: "fixed",
             top: "20px",
             right: "20px",
-            backgroundColor: "#1e293b",
+            backgroundcolor: "var(--text-main)",
             color: "white",
             padding: "14px 20px",
             borderRadius: "10px",
@@ -147,7 +147,7 @@ function Profile() {
         <Link
           to="/"
           style={{
-            color: "#94a3b8",
+            color: "var(--text-secondary)",
             textDecoration: "none",
             fontSize: "14px",
             display: "inline-flex",
@@ -161,7 +161,7 @@ function Profile() {
         <h1 style={{ margin: "0 0 4px 0", fontSize: "26px", fontWeight: 800 }}>
           👤 My Profile
         </h1>
-        <p style={{ margin: 0, color: "#94a3b8", fontSize: "14px" }}>
+        <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "14px" }}>
           Manage your personal information and account settings
         </p>
       </div>
@@ -221,8 +221,8 @@ function Profile() {
               </span>
               <span
                 style={{
-                  backgroundColor: "#dcfce7",
-                  color: "#16a34a",
+                  backgroundColor: "var(--success-light)",
+                  color: "var(--success)",
                   padding: "3px 10px",
                   borderRadius: "20px",
                   fontSize: "12px",
@@ -232,7 +232,7 @@ function Profile() {
                 ✅ Verified
               </span>
             </div>
-            <p style={{ margin: "6px 0 0 0", fontSize: "13px", color: "#64748b" }}>
+            <p style={{ margin: "6px 0 0 0", fontSize: "13px", color: "var(--text-secondary)" }}>
               Member since {profile.memberSince}
             </p>
           </div>
@@ -331,7 +331,7 @@ function Profile() {
                       display: "block",
                       fontSize: "12px",
                       fontWeight: 600,
-                      color: "#64748b",
+                      color: "var(--text-secondary)",
                       marginBottom: "6px",
                       textTransform: "uppercase",
                       letterSpacing: "0.05em"
@@ -367,7 +367,7 @@ function Profile() {
                     display: "block",
                     fontSize: "12px",
                     fontWeight: 600,
-                    color: "#64748b",
+                    color: "var(--text-secondary)",
                     marginBottom: "6px",
                     textTransform: "uppercase",
                     letterSpacing: "0.05em"
@@ -379,10 +379,10 @@ function Profile() {
                   style={{
                     padding: "12px 14px",
                     borderRadius: "10px",
-                    backgroundColor: "#f8fafc",
+                    backgroundColor: "var(--bg-card-hover)",
                     border: "1.5px solid #e2e8f0",
                     fontSize: "15px",
-                    color: "#94a3b8"
+                    color: "var(--text-secondary)"
                   }}
                 >
                   {profile.role} (cannot be changed)
@@ -413,7 +413,7 @@ function Profile() {
                     flex: 1,
                     padding: "12px",
                     backgroundColor: "var(--bg-card)",
-                    color: "#64748b",
+                    color: "var(--text-secondary)",
                     border: "1.5px solid #e2e8f0",
                     borderRadius: "10px",
                     fontWeight: 700,
@@ -446,7 +446,7 @@ function Profile() {
                     borderBottom: i < arr.length - 1 ? "1px solid #f1f5f9" : "none"
                   }}
                 >
-                  <span style={{ fontSize: "13px", color: "#64748b", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ fontSize: "13px", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "6px" }}>
                     {icon} {label}
                   </span>
                   <span style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-main)" }}>
@@ -475,7 +475,7 @@ function Profile() {
               💳 Payment History
             </h3>
             {/* Total Spent */}
-            <div style={{ backgroundColor: "#f0fdf4", borderRadius: "10px", padding: "6px 14px", fontSize: "13px", color: "#16a34a", fontWeight: 700 }}>
+            <div style={{ backgroundColor: "var(--success-light)", borderRadius: "10px", padding: "6px 14px", fontSize: "13px", color: "var(--success)", fontWeight: 700 }}>
               Total Spent: ₹{txnHistory.filter(t => t.status === "Paid" && t.method !== "Cashback").reduce((s, t) => s + t.amount, 0)}
             </div>
           </div>
@@ -502,7 +502,7 @@ function Profile() {
           {/* Transaction Rows */}
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {visibleTxns.map((txn) => {
-              const s = STATUS_STYLE[txn.status] || { color: "#64748b", bg: "#f1f5f9" };
+              const s = STATUS_STYLE[txn.status] || { color: "var(--text-secondary)", bg: "#f1f5f9" };
               const txnIdentifier = txn._id || txn.id;
               const isOpen = expandedTxn === txnIdentifier;
               return (
@@ -532,7 +532,7 @@ function Profile() {
                       <span style={{ fontSize: "22px" }}>{txn.icon}</span>
                       <div>
                         <p style={{ margin: 0, fontWeight: 700, fontSize: "14px", color: "var(--text-main)" }}>{txn.service}</p>
-                        <p style={{ margin: 0, fontSize: "12px", color: "#64748b" }}>📅 {txn.date} &nbsp;·&nbsp; {txnIdentifier}</p>
+                        <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>📅 {txn.date} &nbsp;·&nbsp; {txnIdentifier}</p>
                       </div>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -540,7 +540,7 @@ function Profile() {
                       <span style={{ backgroundColor: s.bg, color: s.color, padding: "3px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700 }}>
                         {txn.status}
                       </span>
-                      <span style={{ color: "#94a3b8", fontSize: "12px" }}>{isOpen ? "▲" : "▼"}</span>
+                      <span style={{ color: "var(--text-secondary)", fontSize: "12px" }}>{isOpen ? "▲" : "▼"}</span>
                     </div>
                   </div>
 
@@ -549,7 +549,7 @@ function Profile() {
                     <div
                       className="txn-expanded-receipt"
                       style={{
-                        backgroundColor: "#f8fafc",
+                        backgroundColor: "var(--bg-card-hover)",
                         borderTop: "1px solid var(--border-color)",
                         padding: "14px 16px",
                         display: "grid",
@@ -567,7 +567,7 @@ function Profile() {
                         { label: "Status", value: txn.status }
                       ].map(({ label, value }) => (
                         <div key={label}>
-                          <p style={{ margin: "0 0 2px 0", color: "#94a3b8", fontSize: "11px", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>{label}</p>
+                          <p style={{ margin: "0 0 2px 0", color: "var(--text-secondary)", fontSize: "11px", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>{label}</p>
                           <p style={{ margin: 0, color: "var(--text-main)", fontWeight: 600 }}>{value}</p>
                         </div>
                       ))}
@@ -621,7 +621,7 @@ function Profile() {
             {[
               { to: "/my-bookings", label: "📋 My Bookings", color: "#2196F3", bg: "#eff6ff" },
               { to: "/reviews", label: "🎁 Rewards", color: "#7c3aed", bg: "#f5f3ff" },
-              { to: "/support", label: "💬 Support", color: "#16a34a", bg: "#f0fdf4" }
+              { to: "/support", label: "💬 Support", color: "var(--success)", bg: "#f0fdf4" }
             ].map(({ to, label, color, bg }) => (
               <Link
                 key={to}
@@ -675,18 +675,18 @@ function Profile() {
               </h3>
               <button
                 onClick={() => setShowAddMoneyModal(false)}
-                style={{ background: "none", border: "none", fontSize: "18px", color: "#64748b", cursor: "pointer" }}
+                style={{ background: "none", border: "none", fontSize: "18px", color: "var(--text-secondary)", cursor: "pointer" }}
               >
                 ✕
               </button>
             </div>
 
-            <p style={{ fontSize: "13px", color: "#64748b", margin: "0 0 16px 0" }}>
+            <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: "0 0 16px 0" }}>
               Current Balance: <strong style={{ color: "#31525B" }}>₹{walletBal.toLocaleString()}</strong>
             </p>
 
             <div style={{ marginBottom: "16px" }}>
-              <label style={{ fontSize: "12px", fontWeight: 700, color: "#475569", display: "block", marginBottom: "8px" }}>
+              <label style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)", display: "block", marginBottom: "8px" }}>
                 SELECT QUICK AMOUNT
               </label>
               <div style={{ display: "flex", gap: "8px" }}>
@@ -714,7 +714,7 @@ function Profile() {
             </div>
 
             <div style={{ marginBottom: "20px" }}>
-              <label style={{ fontSize: "12px", fontWeight: 700, color: "#475569", display: "block", marginBottom: "6px" }}>
+              <label style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)", display: "block", marginBottom: "6px" }}>
                 ENTER AMOUNT (₹)
               </label>
               <input
@@ -759,8 +759,8 @@ function Profile() {
                 onClick={() => setShowAddMoneyModal(false)}
                 style={{
                   flex: 1,
-                  backgroundColor: "#f1f5f9",
-                  color: "#475569",
+                  backgroundColor: "var(--bg-card-hover)",
+                  color: "var(--text-secondary)",
                   border: "1px solid #cbd5e1",
                   padding: "12px",
                   borderRadius: "10px",

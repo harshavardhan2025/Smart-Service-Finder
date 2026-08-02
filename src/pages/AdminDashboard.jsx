@@ -703,7 +703,7 @@ function AdminDashboard() {
         <div
           style={{
             width: "280px",
-            backgroundColor: "#1e293b",
+            backgroundcolor: "var(--text-main)",
             color: "white",
             padding: "30px 20px",
             display: "flex",
@@ -769,7 +769,7 @@ function AdminDashboard() {
           
           {hasActiveSos && (
             <div style={{
-              backgroundColor: "#ef4444",
+              backgroundcolor: "var(--danger)",
               color: "white",
               padding: "16px 24px",
               borderRadius: "12px",
@@ -794,7 +794,7 @@ function AdminDashboard() {
                 onClick={() => setActiveTab("sos-alerts")}
                 style={{
                   backgroundColor: "var(--bg-card)",
-                  color: "#ef4444",
+                  color: "var(--danger)",
                   border: "none",
                   padding: "10px 20px",
                   borderRadius: "8px",
@@ -879,8 +879,8 @@ function AdminDashboard() {
                     <div>
                       <div style={{ display: "flex", height: "14px", borderRadius: "7px", overflow: "hidden", backgroundColor: "var(--border-color)", margin: "24px 0" }}>
                         {completedBookingsCount > 0 && <div style={{ width: `${compPct}%`, backgroundColor: "#10b981", transition: "width 0.4s ease" }} title={`Completed: ${compPct}%`} />}
-                        {pendingBookingsCount > 0 && <div style={{ width: `${pendPct}%`, backgroundColor: "#f59e0b", transition: "width 0.4s ease" }} title={`Pending: ${pendPct}%`} />}
-                        {cancelledBookingsCount > 0 && <div style={{ width: `${cancPct}%`, backgroundColor: "#ef4444", transition: "width 0.4s ease" }} title={`Cancelled: ${cancPct}%`} />}
+                        {pendingBookingsCount > 0 && <div style={{ width: `${pendPct}%`, backgroundcolor: "var(--warning)", transition: "width 0.4s ease" }} title={`Pending: ${pendPct}%`} />}
+                        {cancelledBookingsCount > 0 && <div style={{ width: `${cancPct}%`, backgroundcolor: "var(--danger)", transition: "width 0.4s ease" }} title={`Cancelled: ${cancPct}%`} />}
                       </div>
 
                       {/* Legend / Metrics Grid */}
@@ -898,7 +898,7 @@ function AdminDashboard() {
                         <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px", backgroundColor: "rgba(245, 158, 11, 0.05)", borderRadius: "10px", borderLeft: "4px solid #f59e0b" }}>
                           <span style={{ fontSize: "20px" }}>🟡</span>
                           <div>
-                            <div style={{ fontSize: "11px", color: "#f59e0b", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Pending</div>
+                            <div style={{ fontSize: "11px", color: "var(--warning)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Pending</div>
                             <div style={{ fontSize: "18px", fontWeight: 850, color: "var(--text-main)", marginTop: "2px" }}>
                               {pendingBookingsCount} <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 600 }}>({pendPct}%)</span>
                             </div>
@@ -908,7 +908,7 @@ function AdminDashboard() {
                         <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px", backgroundColor: "rgba(239, 68, 68, 0.05)", borderRadius: "10px", borderLeft: "4px solid #ef4444" }}>
                           <span style={{ fontSize: "20px" }}>🔴</span>
                           <div>
-                            <div style={{ fontSize: "11px", color: "#ef4444", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Cancelled</div>
+                            <div style={{ fontSize: "11px", color: "var(--danger)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Cancelled</div>
                             <div style={{ fontSize: "18px", fontWeight: 850, color: "var(--text-main)", marginTop: "2px" }}>
                               {cancelledBookingsCount} <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 600 }}>({cancPct}%)</span>
                             </div>
@@ -1068,7 +1068,7 @@ function AdminDashboard() {
                               <span style={{ color: "var(--text-main)" }}>{stat.label}</span>
                               <span style={{ color: stat.color }}>{stat.pct}% ({stat.count})</span>
                             </div>
-                            <div style={{ width: "100%", height: "8px", backgroundColor: "#f1f5f9", borderRadius: "4px", overflow: "hidden" }}>
+                            <div style={{ width: "100%", height: "8px", backgroundColor: "var(--bg-card-hover)", borderRadius: "4px", overflow: "hidden" }}>
                               <div style={{
                                 width: `${stat.pct}%`,
                                 height: "100%",
@@ -1149,7 +1149,7 @@ function AdminDashboard() {
                   <h3 style={{ margin: "0 0 16px 0", fontSize: "16px", fontWeight: 700, color: "var(--text-main)" }}>Add New Service</h3>
                   <form onSubmit={handleAddService} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                      <label style={{ fontSize: "13px", fontWeight: 600, color: "#475569" }}>Service Name</label>
+                      <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-secondary)" }}>Service Name</label>
                       <input
                         type="text"
                         placeholder="e.g. Gardening"
@@ -1159,7 +1159,7 @@ function AdminDashboard() {
                       />
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                      <label style={{ fontSize: "13px", fontWeight: 600, color: "#475569" }}>Service Emoji Icon</label>
+                      <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-secondary)" }}>Service Emoji Icon</label>
                       <input
                         type="text"
                         placeholder="e.g. 🏡"
@@ -1199,7 +1199,7 @@ function AdminDashboard() {
                           padding: "16px",
                           textAlign: "center",
                           position: "relative",
-                          backgroundColor: "#f8fafc"
+                          backgroundColor: "var(--bg-card-hover)"
                         }}
                       >
                         <div style={{ fontSize: "36px", marginBottom: "8px" }}>{svc.icon}</div>
@@ -1207,8 +1207,8 @@ function AdminDashboard() {
                         <button
                           onClick={() => handleRemoveService(svc.id)}
                           style={{
-                            backgroundColor: "#fee2e2",
-                            color: "#ef4444",
+                            backgroundColor: "var(--danger-light)",
+                            color: "var(--danger)",
                             border: "none",
                             padding: "6px 12px",
                             borderRadius: "6px",
@@ -1231,7 +1231,7 @@ function AdminDashboard() {
                         <p style={{ margin: "4px 0 0 0", fontSize: "13px", color: "var(--text-muted)" }}>Add, edit and remove sub-services across all main service categories at once</p>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <span style={{ fontSize: "13px", fontWeight: 700, color: "#475569" }}>Add To Category:</span>
+                        <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-secondary)" }}>Add To Category:</span>
                         <select 
                           value={selectedMainSvc} 
                           onChange={(e) => setSelectedMainSvc(e.target.value)}
@@ -1243,7 +1243,7 @@ function AdminDashboard() {
                     </div>
 
                     {/* Add Sub-service form */}
-                    <form onSubmit={handleAddSubService} style={{ display: "flex", gap: "12px", backgroundColor: "#f8fafc", padding: "16px", borderRadius: "8px", marginBottom: "20px" }}>
+                    <form onSubmit={handleAddSubService} style={{ display: "flex", gap: "12px", backgroundColor: "var(--bg-card-hover)", padding: "16px", borderRadius: "8px", marginBottom: "20px" }}>
                       <input 
                         type="text" 
                         placeholder={`New sub-category under ${services.find(s => s.id === selectedMainSvc)?.name || "selected category"}`} 
@@ -1270,7 +1270,7 @@ function AdminDashboard() {
 
                     {/* Edit Sub-service inline form */}
                     {editingSub && (
-                      <form onSubmit={handleSaveEditSub} style={{ display: "flex", gap: "12px", backgroundColor: "#fffbeb", padding: "16px", borderRadius: "8px", marginBottom: "20px", border: "1px solid #fef3c7" }}>
+                      <form onSubmit={handleSaveEditSub} style={{ display: "flex", gap: "12px", backgroundColor: "var(--warning-light)", padding: "16px", borderRadius: "8px", marginBottom: "20px", border: "1px solid #fef3c7" }}>
                         <span style={{ alignSelf: "center", fontWeight: "bold", fontSize: "14px", color: "#b45309" }}>Editing Sub-Category:</span>
                         <input 
                           type="text" 
@@ -1288,14 +1288,14 @@ function AdminDashboard() {
                         />
                         <button 
                           type="submit" 
-                          style={{ padding: "10px 20px", backgroundColor: "#d97706", color: "white", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: "pointer" }}
+                          style={{ padding: "10px 20px", backgroundcolor: "var(--warning)", color: "white", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: "pointer" }}
                         >
                           Save Changes
                         </button>
                         <button 
                           type="button" 
                           onClick={() => setEditingSub(null)}
-                          style={{ padding: "10px 16px", backgroundColor: "#e2e8f0", color: "#475569", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: "pointer" }}
+                          style={{ padding: "10px 16px", backgroundColor: "#e2e8f0", color: "var(--text-secondary)", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: "pointer" }}
                         >
                           Cancel
                         </button>
@@ -1315,14 +1315,14 @@ function AdminDashboard() {
                           <h4 style={{ margin: "0 0 16px 0", fontSize: "15px", fontWeight: 800, color: "var(--text-main)", display: "flex", alignItems: "center", gap: "8px" }}>
                             <span style={{ fontSize: "20px" }}>{svc.icon}</span>
                             <span>{svc.name} Sub-Categories</span>
-                            <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 600, backgroundColor: "#f1f5f9", padding: "2px 8px", borderRadius: "20px" }}>
+                            <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 600, backgroundColor: "var(--bg-card-hover)", padding: "2px 8px", borderRadius: "20px" }}>
                               {((svc.subServices) || []).length} active
                             </span>
                           </h4>
 
                           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: "12px" }}>
                             {(!svc.subServices || svc.subServices.length === 0) ? (
-                              <p style={{ gridColumn: "1/-1", color: "#94a3b8", fontSize: "13px", margin: 0, fontStyle: "italic" }}>
+                              <p style={{ gridColumn: "1/-1", color: "var(--text-secondary)", fontSize: "13px", margin: 0, fontStyle: "italic" }}>
                                 No sub-categories defined yet. Choose this category in the selector above to add one!
                               </p>
                             ) : (
@@ -1331,7 +1331,7 @@ function AdminDashboard() {
                                   key={sub.id} 
                                   style={{ 
                                     display: "flex", alignItems: "center", justifyContent: "space-between", 
-                                    border: "1px solid var(--border-color)", padding: "10px 14px", borderRadius: "8px", backgroundColor: "#f8fafc" 
+                                    border: "1px solid var(--border-color)", padding: "10px 14px", borderRadius: "8px", backgroundColor: "var(--bg-card-hover)" 
                                   }}
                                 >
                                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -1341,13 +1341,13 @@ function AdminDashboard() {
                                   <div style={{ display: "flex", gap: "4px" }}>
                                     <button 
                                       onClick={() => setEditingSub({ svcId: svc.id, subId: sub.id, name: sub.name, icon: sub.icon })}
-                                      style={{ backgroundColor: "#fef3c7", color: "#d97706", border: "none", padding: "3px 6px", borderRadius: "4px", fontSize: "11px", fontWeight: "bold", cursor: "pointer" }}
+                                      style={{ backgroundColor: "var(--warning-light)", color: "var(--warning)", border: "none", padding: "3px 6px", borderRadius: "4px", fontSize: "11px", fontWeight: "bold", cursor: "pointer" }}
                                     >
                                       Edit
                                     </button>
                                     <button 
                                       onClick={() => handleRemoveSubService(svc.id, sub.id)}
-                                      style={{ backgroundColor: "#fee2e2", color: "#ef4444", border: "none", padding: "3px 6px", borderRadius: "4px", fontSize: "11px", fontWeight: "bold", cursor: "pointer" }}
+                                      style={{ backgroundColor: "var(--danger-light)", color: "var(--danger)", border: "none", padding: "3px 6px", borderRadius: "4px", fontSize: "11px", fontWeight: "bold", cursor: "pointer" }}
                                     >
                                       Remove
                                     </button>
@@ -1531,9 +1531,9 @@ function AdminDashboard() {
                         <td style={{ padding: "12px" }}>{w.service}</td>
                         <td style={{ padding: "12px" }}>📍 {w.city}</td>
                         <td style={{ padding: "12px", fontWeight: "800", color: "var(--success)" }}>₹{w.price || 0}</td>
-                        <td style={{ padding: "12px", fontWeight: "800", color: "#16a34a" }}>₹{w.walletBalance || 0}</td>
+                        <td style={{ padding: "12px", fontWeight: "800", color: "var(--success)" }}>₹{w.walletBalance || 0}</td>
                         <td style={{ padding: "12px" }}>
-                          <span style={{ color: "#f59e0b", marginRight: "4px" }}>⭐</span>
+                          <span style={{ color: "var(--warning)", marginRight: "4px" }}>⭐</span>
                           <strong>{w.rating}</strong> ({w.reviews} reviews)
                         </td>
                         <td style={{ padding: "12px" }}>
@@ -1609,8 +1609,8 @@ function AdminDashboard() {
                           <button
                             onClick={() => handleRemoveWorker(w._id, w.name)}
                             style={{
-                              backgroundColor: "#ffebee",
-                              color: "#c62828",
+                              backgroundColor: "var(--danger-light)",
+                              color: "var(--danger)",
                               border: "none",
                               padding: "6px 12px",
                               borderRadius: "6px",
@@ -1813,21 +1813,21 @@ function AdminDashboard() {
                                   }}>
                                     {sub.planTitle} ({sub.status})
                                   </span>
-                                  <span style={{ fontSize: "10px", color: "#64748b" }}>
+                                  <span style={{ fontSize: "10px", color: "var(--text-secondary)" }}>
                                     Valid till: {new Date(sub.expiryDate).toLocaleDateString()}
                                   </span>
                                 </div>
                               ))}
                             </div>
                           ) : (
-                            <span style={{ backgroundColor: "#f1f5f9", color: "#64748b", padding: "4px 8px", borderRadius: "6px", fontSize: "11px", border: "1px solid var(--border-color)" }}>No Active Plan</span>
+                            <span style={{ backgroundColor: "var(--bg-card-hover)", color: "var(--text-secondary)", padding: "4px 8px", borderRadius: "6px", fontSize: "11px", border: "1px solid var(--border-color)" }}>No Active Plan</span>
                           )}
                         </td>
                         <td style={{ padding: "12px", verticalAlign: "top" }}>
                           <div style={{ fontSize: "12px", fontWeight: "bold" }}>{c.bookings} bookings</div>
                           <div style={{ fontSize: "11px", color: "var(--primary-dark)", marginTop: "4px", fontWeight: 800 }}>Spent: {getCustomerSpent(c.name)}</div>
                         </td>
-                        <td style={{ padding: "12px", fontWeight: "800", color: "#16a34a", verticalAlign: "top" }}>₹{c.walletBalance || 0}</td>
+                        <td style={{ padding: "12px", fontWeight: "800", color: "var(--success)", verticalAlign: "top" }}>₹{c.walletBalance || 0}</td>
                         <td style={{ padding: "12px", textAlign: "right", verticalAlign: "top" }}>
                           {/* 💸 SEND MONEY ACTION */}
                           <button
@@ -1853,8 +1853,8 @@ function AdminDashboard() {
                           <button
                             onClick={() => handleDeleteCustomer(c.id, c.name)}
                             style={{
-                              backgroundColor: "#fee2e2",
-                              color: "#ef4444",
+                              backgroundColor: "var(--danger-light)",
+                              color: "var(--danger)",
                               border: "none",
                               padding: "6px 12px",
                               borderRadius: "6px",
@@ -1883,13 +1883,13 @@ function AdminDashboard() {
 
               <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
                 {complaintSearch && (
-                  <div style={{ marginBottom: "16px", backgroundColor: "#fffbeb", padding: "12px 16px", borderRadius: "8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ marginBottom: "16px", backgroundColor: "var(--warning-light)", padding: "12px 16px", borderRadius: "8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span style={{ fontSize: "14px", color: "#b45309", fontWeight: 600 }}>
                       🔍 Filtering complaints by Booking/ID: <strong>{complaintSearch}</strong>
                     </span>
                     <button 
                       onClick={() => setComplaintSearch("")}
-                      style={{ padding: "6px 12px", backgroundColor: "#d97706", color: "white", border: "none", borderRadius: "6px", fontSize: "12px", fontWeight: "bold", cursor: "pointer" }}
+                      style={{ padding: "6px 12px", backgroundcolor: "var(--warning)", color: "white", border: "none", borderRadius: "6px", fontSize: "12px", fontWeight: "bold", cursor: "pointer" }}
                     >
                       Clear Filter
                     </button>
@@ -1944,10 +1944,10 @@ function AdminDashboard() {
                                 {complaintWorker ? (
                                   <div style={{ marginBottom: "4px" }}>
                                     <span style={{ fontWeight: 700, color: "var(--text-main)" }}>👷 {complaintWorker.name}</span>
-                                    <div style={{ fontSize: "11px", color: "#64748b" }}>{complaintWorker.speciality || complaintWorker.specialty || "Worker"} • {complaintWorker.city || ""}</div>
+                                    <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>{complaintWorker.speciality || complaintWorker.specialty || "Worker"} • {complaintWorker.city || ""}</div>
                                   </div>
                                 ) : (
-                                  <div style={{ fontSize: "12px", color: "#94a3b8", marginBottom: "4px" }}>Worker info N/A</div>
+                                  <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>Worker info N/A</div>
                                 )}
                                 {/* Order Price */}
                                 {linkedBooking && (
@@ -1958,26 +1958,26 @@ function AdminDashboard() {
                                   </div>
                                 )}
                                 {/* Issue Type */}
-                                <div style={{ fontWeight: "bold", color: "#dc2626", fontSize: "12px" }}>⚠️ {c.issue_type}</div>
-                                <div style={{ fontSize: "11px", color: "#475569", fontWeight: 700, marginTop: "2px", backgroundColor: "#f1f5f9", padding: "2px 6px", borderRadius: "4px", display: "inline-block" }}>
+                                <div style={{ fontWeight: "bold", color: "var(--danger)", fontSize: "12px" }}>⚠️ {c.issue_type}</div>
+                                <div style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 700, marginTop: "2px", backgroundColor: "var(--bg-card-hover)", padding: "2px 6px", borderRadius: "4px", display: "inline-block" }}>
                                   Booking: {c.booking_id?.substr(-6) || "N/A"}
                                 </div>
                                 {isEscrowHeld && (
                                   <div style={{ marginTop: "4px" }}>
-                                    <span style={{ fontSize: "11px", backgroundColor: "#fff3e0", color: "#e65100", padding: "2px 6px", borderRadius: "4px", fontWeight: 700, display: "inline-block" }}>
+                                    <span style={{ fontSize: "11px", backgroundColor: "var(--warning-light)", color: "var(--warning)", padding: "2px 6px", borderRadius: "4px", fontWeight: 700, display: "inline-block" }}>
                                       🔒 Escrow Held: ₹{linkedBooking.price}
                                     </span>
                                   </div>
                                 )}
                                 {isEscrowReleased && (
                                   <div style={{ marginTop: "4px" }}>
-                                    <span style={{ fontSize: "11px", backgroundColor: "#dcfce7", color: "#16a34a", padding: "2px 6px", borderRadius: "4px", fontWeight: 700, display: "inline-block" }}>
+                                    <span style={{ fontSize: "11px", backgroundColor: "var(--success-light)", color: "var(--success)", padding: "2px 6px", borderRadius: "4px", fontWeight: 700, display: "inline-block" }}>
                                       ✅ Escrow Released: ₹{linkedBooking.price}
                                     </span>
                                   </div>
                                 )}
                               </td>
-                              <td style={{ padding: "12px", color: "#475569", fontSize: 13, fontStyle: "italic" }}>"{c.description}"</td>
+                              <td style={{ padding: "12px", color: "var(--text-secondary)", fontSize: 13, fontStyle: "italic" }}>"{c.description}"</td>
                               <td style={{ padding: "12px", fontSize: 12 }}>{c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "Recent"}</td>
                               <td style={{ padding: "12px" }}>
                                 <span
@@ -2019,19 +2019,19 @@ function AdminDashboard() {
                                     <>
                                       <button
                                         onClick={() => openRefundModal(c, "Valid")}
-                                        style={{ backgroundColor: "#ef4444", color: "white", border: "none", padding: "6px 10px", borderRadius: "4px", fontSize: "11px", fontWeight: "bold", cursor: "pointer" }}
+                                        style={{ backgroundcolor: "var(--danger)", color: "white", border: "none", padding: "6px 10px", borderRadius: "4px", fontSize: "11px", fontWeight: "bold", cursor: "pointer" }}
                                       >
                                         Valid (Deduct ⭐)
                                       </button>
                                       <button
                                         onClick={() => openRefundModal(c, "Dismissed")}
-                                        style={{ backgroundColor: "#e2e8f0", color: "#475569", border: "none", padding: "6px 10px", borderRadius: "4px", fontSize: "11px", fontWeight: "bold", cursor: "pointer" }}
+                                        style={{ backgroundColor: "#e2e8f0", color: "var(--text-secondary)", border: "none", padding: "6px 10px", borderRadius: "4px", fontSize: "11px", fontWeight: "bold", cursor: "pointer" }}
                                       >
                                         Dismiss
                                       </button>
                                     </>
                                   ) : (
-                                    <span style={{ fontSize: "12px", color: "#16a34a", fontWeight: "bold" }}>✅ DECIDED</span>
+                                    <span style={{ fontSize: "12px", color: "var(--success)", fontWeight: "bold" }}>✅ DECIDED</span>
                                   )}
                                 </div>
                               </td>
@@ -2069,7 +2069,7 @@ function AdminDashboard() {
                     />
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                       <div style={{ display: "flex", alignItems: "center", border: "1px solid #cbd5e1", borderRadius: "8px", overflow: "hidden", background: "#fff" }}>
-                        <span style={{ padding: "10px 14px", backgroundColor: "#f8fafc", color: "var(--text-secondary)", fontWeight: "bold", borderRight: "1px solid #cbd5e1" }}>₹</span>
+                        <span style={{ padding: "10px 14px", backgroundColor: "var(--bg-card-hover)", color: "var(--text-secondary)", fontWeight: "bold", borderRight: "1px solid #cbd5e1" }}>₹</span>
                         <input 
                           type="text" 
                           placeholder="Price (e.g. 2999)" 
@@ -2096,7 +2096,7 @@ function AdminDashboard() {
                     />
                     <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "8px", marginTop: "2px" }}>
                       <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase" }}>Quick Select Features / Services (Click to add/remove):</label>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", maxHeight: "120px", overflowY: "auto", padding: "10px", border: "1px solid #cbd5e1", borderRadius: "8px", backgroundColor: "#f8fafc" }}>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", maxHeight: "120px", overflowY: "auto", padding: "10px", border: "1px solid #cbd5e1", borderRadius: "8px", backgroundColor: "var(--bg-card-hover)" }}>
                         {services.reduce((acc, s) => { acc.push(s.name); if (s.subServices) { s.subServices.forEach(sub => acc.push(sub.name)); } return acc; }, []).map((serviceName) => {
                           const currentList = (typeof planForm.features === "string" ? planForm.features : "").split(",").map(s => s.trim()).filter(Boolean);
                           const isSelected = currentList.includes(serviceName);
@@ -2212,10 +2212,10 @@ function AdminDashboard() {
                           {planForm.workerId.split(",").map(id => id.trim()).filter(Boolean).map(id => {
                             const worker = workers.find(w => String(w._id || w.id) === id);
                             return (
-                              <div key={id} style={{ display: "flex", alignItems: "center", backgroundColor: "#f0fdf4", color: "#166534", padding: "6px 12px", borderRadius: "12px", fontSize: "11px", fontWeight: "600", border: "1px solid #bbf7d0", gap: "10px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
+                              <div key={id} style={{ display: "flex", alignItems: "center", backgroundColor: "var(--success-light)", color: "var(--success)", padding: "6px 12px", borderRadius: "12px", fontSize: "11px", fontWeight: "600", border: "1px solid #bbf7d0", gap: "10px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
                                 <div style={{ display: "flex", flexDirection: "column" }}>
                                   <span style={{ fontSize: "12px", fontWeight: "bold" }}>{worker ? worker.name : `ID: ${id.substr(-6).toUpperCase()}`}</span>
-                                  {worker && <span style={{ color: "#15803d", fontSize: "10px", marginTop: "2px", fontWeight: "normal" }}>📍 {worker.location || worker.city || "N/A"} | ⭐ {worker.rating?.toFixed(1) || "N/A"}</span>}
+                                  {worker && <span style={{ color: "var(--success)", fontSize: "10px", marginTop: "2px", fontWeight: "normal" }}>📍 {worker.location || worker.city || "N/A"} | ⭐ {worker.rating?.toFixed(1) || "N/A"}</span>}
                                 </div>
                                 <button
                                   type="button"
@@ -2224,7 +2224,7 @@ function AdminDashboard() {
                                     const newIds = currentIds.filter(i => i !== id);
                                     setPlanForm({ ...planForm, workerId: newIds.join(",") });
                                   }}
-                                  style={{ background: "rgba(22, 101, 52, 0.1)", border: "none", color: "#166534", cursor: "pointer", fontSize: "14px", fontWeight: "bold", padding: 0, width: "24px", height: "24px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "background-color 0.2s" }}
+                                  style={{ background: "rgba(22, 101, 52, 0.1)", border: "none", color: "var(--success)", cursor: "pointer", fontSize: "14px", fontWeight: "bold", padding: 0, width: "24px", height: "24px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "background-color 0.2s" }}
                                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(22, 101, 52, 0.2)"}
                                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "rgba(22, 101, 52, 0.1)"}
                                 >
@@ -2279,7 +2279,7 @@ function AdminDashboard() {
                             setEditingPlan(null);
                             setPlanForm({ title: "", price: "", period: "year", features: "", color: "#4f46e5", btnText: "Subscribe Now", workerId: "", terms: "", startDate: "", endDate: "", cancellationPolicy: "", city: "" });
                           }}
-                          style={{ backgroundColor: "#e2e8f0", color: "#475569", border: "none", padding: "12px 20px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}
+                          style={{ backgroundColor: "#e2e8f0", color: "var(--text-secondary)", border: "none", padding: "12px 20px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}
                         >
                           Cancel
                         </button>
@@ -2301,12 +2301,12 @@ function AdminDashboard() {
                         <tr key={p._id || p.id} style={{ borderBottom: "1px solid var(--border-color)" }}>
                           <td style={{ padding: "8px", fontWeight: "bold" }}>{p.title}</td>
                           <td style={{ padding: "8px" }}>₹{(p.price || "").replace("₹", "")}/{p.period || "year"}</td>
-                          <td style={{ padding: "8px", fontWeight: "600", color: "#475569", verticalAlign: "top" }}>
+                          <td style={{ padding: "8px", fontWeight: "600", color: "var(--text-secondary)", verticalAlign: "top" }}>
                             {p.workerId && p.workerId.trim() !== "" ? (
                               <div style={{ display: "flex", flexDirection: "column", gap: "6px", alignItems: "flex-start" }}>
                                 <button 
                                   onClick={() => setExpandedWorkerRow(expandedWorkerRow === (p._id || p.id) ? null : (p._id || p.id))}
-                                  style={{ color: "#166534", backgroundColor: "#f0fdf4", padding: "6px 10px", borderRadius: "8px", fontSize: "11px", border: "1px solid #bbf7d0", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px", fontWeight: "bold" }}
+                                  style={{ color: "var(--success)", backgroundColor: "var(--success-light)", padding: "6px 10px", borderRadius: "8px", fontSize: "11px", border: "1px solid #bbf7d0", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px", fontWeight: "bold" }}
                                 >
                                   ✅ Yes ({p.workerId.split(",").filter(Boolean).length} Workers) {expandedWorkerRow === (p._id || p.id) ? "▲" : "▼"}
                                 </button>
@@ -2314,11 +2314,11 @@ function AdminDashboard() {
                                   <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "4px" }}>
                                     {p.workerId.split(",").map(id => id.trim()).filter(Boolean).map(id => {
                                       const w = workers.find(worker => String(worker._id || worker.id) === id);
-                                      if (!w) return <span key={id} style={{ fontSize: "11px", backgroundColor: "#f1f5f9", padding: "4px 8px", borderRadius: "6px", color: "#94a3b8" }}>Unknown: {id.substring(id.length - 4)}</span>;
+                                      if (!w) return <span key={id} style={{ fontSize: "11px", backgroundColor: "var(--bg-card-hover)", padding: "4px 8px", borderRadius: "6px", color: "var(--text-secondary)" }}>Unknown: {id.substring(id.length - 4)}</span>;
                                       return (
-                                        <div key={id} style={{ display: "flex", flexDirection: "column", backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0", padding: "4px 8px", borderRadius: "8px", fontSize: "11px", minWidth: "100px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
-                                          <span style={{ color: "#166534", fontWeight: "bold" }}>{w.name}</span>
-                                          <span style={{ color: "#15803d", fontSize: "10px", marginTop: "2px" }}>📍 {w.location || w.city || "N/A"} | ⭐ {w.rating?.toFixed(1) || "N/A"}</span>
+                                        <div key={id} style={{ display: "flex", flexDirection: "column", backgroundColor: "var(--success-light)", border: "1px solid #bbf7d0", padding: "4px 8px", borderRadius: "8px", fontSize: "11px", minWidth: "100px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
+                                          <span style={{ color: "var(--success)", fontWeight: "bold" }}>{w.name}</span>
+                                          <span style={{ color: "var(--success)", fontSize: "10px", marginTop: "2px" }}>📍 {w.location || w.city || "N/A"} | ⭐ {w.rating?.toFixed(1) || "N/A"}</span>
                                         </div>
                                       );
                                     })}
@@ -2326,7 +2326,7 @@ function AdminDashboard() {
                                 )}
                               </div>
                             ) : (
-                              <span style={{ color: "#64748b", backgroundColor: "#f8fafc", padding: "6px 10px", borderRadius: "8px", fontSize: "11px", border: "1px solid var(--border-color)", display: "inline-block" }}>
+                              <span style={{ color: "var(--text-secondary)", backgroundColor: "var(--bg-card-hover)", padding: "6px 10px", borderRadius: "8px", fontSize: "11px", border: "1px solid var(--border-color)", display: "inline-block" }}>
                                 ❌ No
                               </span>
                             )}
@@ -2364,7 +2364,7 @@ function AdminDashboard() {
                                   } catch(e) { alert("Deletion failed."); }
                                 }
                               }}
-                              style={{ backgroundColor: "#ef4444", color: "white", border: "none", padding: "4px 8px", borderRadius: "4px", fontSize: "11px", cursor: "pointer" }}
+                              style={{ backgroundcolor: "var(--danger)", color: "white", border: "none", padding: "4px 8px", borderRadius: "4px", fontSize: "11px", cursor: "pointer" }}
                             >
                               Delete
                             </button>
@@ -2506,7 +2506,7 @@ function AdminDashboard() {
                         padding: "10px", 
                         border: "1px solid #cbd5e1", 
                         borderRadius: "8px", 
-                        backgroundColor: "#f8fafc" 
+                        backgroundColor: "var(--bg-card-hover)" 
                       }}>
                         {services.reduce((acc, s) => {
                           acc.push(s.name);
@@ -2605,7 +2605,7 @@ function AdminDashboard() {
                             setEditingOffer(null);
                             setOfferForm({ code: "", discount: "", desc: "", expiry: "", terms: "", startDate: "", endDate: "", city: "", validServices: "", minPrice: "" });
                           }}
-                          style={{ backgroundColor: "#e2e8f0", color: "#475569", border: "none", padding: "12px 20px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}
+                          style={{ backgroundColor: "#e2e8f0", color: "var(--text-secondary)", border: "none", padding: "12px 20px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}
                         >
                           Cancel
                         </button>
@@ -2658,7 +2658,7 @@ function AdminDashboard() {
                                   } catch(e) { alert("Deletion reject."); }
                                 }
                               }}
-                              style={{ backgroundColor: "#ef4444", color: "white", border: "none", padding: "4px 8px", borderRadius: "4px", fontSize: "11px", cursor: "pointer" }}
+                              style={{ backgroundcolor: "var(--danger)", color: "white", border: "none", padding: "4px 8px", borderRadius: "4px", fontSize: "11px", cursor: "pointer" }}
                             >
                               Delete
                             </button>
@@ -2709,7 +2709,7 @@ function AdminDashboard() {
 
                   if (escrowBookings.length === 0) {
                     return (
-                      <div style={{ textAlign: "center", color: "#94a3b8", padding: "48px 0" }}>
+                      <div style={{ textAlign: "center", color: "var(--text-secondary)", padding: "48px 0" }}>
                         <div style={{ fontSize: "48px", marginBottom: "12px" }}>⚖️</div>
                         <h3>No matching escrows found.</h3>
                         <p>Awaiting completion signals or try clearing the search filter.</p>
@@ -2738,7 +2738,7 @@ function AdminDashboard() {
                                 #{b._id.substr(-6).toUpperCase()}
                                 {linkedComplaint && (
                                   <div style={{ marginTop: "4px" }}>
-                                    <span style={{ fontSize: "10px", backgroundColor: "#ffebee", color: "#c62828", padding: "2px 6px", borderRadius: "4px", fontWeight: 700, display: "inline-block" }}>
+                                    <span style={{ fontSize: "10px", backgroundColor: "var(--danger-light)", color: "var(--danger)", padding: "2px 6px", borderRadius: "4px", fontWeight: 700, display: "inline-block" }}>
                                       ⚠️ Active Complaint
                                     </span>
                                     <button 
@@ -2748,8 +2748,8 @@ function AdminDashboard() {
                                       }}
                                       style={{
                                         marginLeft: "6px",
-                                        backgroundColor: "#fee2e2",
-                                        color: "#ef4444",
+                                        backgroundColor: "var(--danger-light)",
+                                        color: "var(--danger)",
                                         border: "none",
                                         padding: "2px 6px",
                                         borderRadius: "4px",
@@ -2773,7 +2773,7 @@ function AdminDashboard() {
                                 </div>
                               </td>
                               <td style={{ padding: "14px 8px", fontWeight: 600, color: "var(--text-main)" }}>{b.service}</td>
-                              <td style={{ padding: "14px 8px", fontWeight: 700, color: "#16a34a" }}>₹{b.price}</td>
+                              <td style={{ padding: "14px 8px", fontWeight: 700, color: "var(--success)" }}>₹{b.price}</td>
                               <td style={{ padding: "14px 8px" }}>
                                 <span style={{ padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700, backgroundColor: b.status === "Paid Out" ? "#dcfce7" : "#fff3e0", color: b.status === "Paid Out" ? "#16a34a" : "#e65100" }}>
                                   {b.status === "Paid Out" ? "✓ SENT TO WORKER" : "🔒 HELD BY ADMIN"}
@@ -2836,13 +2836,13 @@ function AdminDashboard() {
                                            } catch(err) { alert(`🛑 Decline Failed: ${err.message}`); }
                                         }
                                       }}
-                                      style={{ backgroundColor: "#ef4444", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer", flex: 1 }}
+                                      style={{ backgroundcolor: "var(--danger)", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer", flex: 1 }}
                                     >
                                       ❌ Decline & Refund
                                     </button>
                                   </div>
                                 ) : (
-                                  <span style={{ fontSize: "12px", color: "#94a3b8", fontStyle: "italic" }}>Completed Successfully</span>
+                                  <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontStyle: "italic" }}>Completed Successfully</span>
                                 )}
                               </td>
                             </tr>
@@ -2863,14 +2863,14 @@ function AdminDashboard() {
                   <h2 style={{ margin: "0 0 6px", fontWeight: 800, color: "var(--text-main)" }}>⚖️ Cancellation Refund Approvals</h2>
                   <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14px" }}>Review, Approve, or Decline customer-requested booking cancellations and refunds.</p>
                 </div>
-                <div style={{ backgroundColor: "#fef3c7", padding: "10px 20px", borderRadius: "8px", color: "#d97706", fontWeight: 700 }}>
+                <div style={{ backgroundColor: "var(--warning-light)", padding: "10px 20px", borderRadius: "8px", color: "var(--warning)", fontWeight: 700 }}>
                   ⚖️ Pending Review: {liveRealTimeBookings.filter(b => b.status === "Cancellation Pending").length} Requests
                 </div>
               </div>
 
               <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", padding: "24px" }}>
                 {liveRealTimeBookings.filter(b => b.status === "Cancellation Pending").length === 0 ? (
-                  <div style={{ textAlign: "center", color: "#94a3b8", padding: "48px 0" }}>
+                  <div style={{ textAlign: "center", color: "var(--text-secondary)", padding: "48px 0" }}>
                     <div style={{ fontSize: "48px", marginBottom: "12px" }}>⚖️</div>
                     <h3>No pending cancellation refunds.</h3>
                     <p>All client cancellation requests have been processed successfully.</p>
@@ -2895,9 +2895,9 @@ function AdminDashboard() {
                              <div style={{ fontWeight: 700, color: "var(--text-main)" }}>{b.customer_name}</div>
                              <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>Address: {b.address || "N/A"}</div>
                            </td>
-                          <td style={{ padding: "14px 8px", fontWeight: 600, color: "#475569" }}>{b.service}</td>
+                          <td style={{ padding: "14px 8px", fontWeight: 600, color: "var(--text-secondary)" }}>{b.service}</td>
                           <td style={{ padding: "14px 8px", fontWeight: 800, color: "#059669" }}>₹{b.price}</td>
-                          <td style={{ padding: "14px 8px", fontStyle: "italic", fontSize: "13px", color: "#64748b" }}>{b.cancelReason || "Client Request"}</td>
+                          <td style={{ padding: "14px 8px", fontStyle: "italic", fontSize: "13px", color: "var(--text-secondary)" }}>{b.cancelReason || "Client Request"}</td>
                           <td style={{ padding: "14px 8px", textAlign: "right" }}>
                             <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
                               <button 
@@ -2952,7 +2952,7 @@ function AdminDashboard() {
                                      } catch(err) { alert(`🛑 Decline Failed: ${err.message}`); }
                                   }
                                 }}
-                                style={{ backgroundColor: "#ef4444", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer" }}
+                                style={{ backgroundcolor: "var(--danger)", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer" }}
                               >
                                 🔴 Decline
                               </button>
@@ -2969,7 +2969,7 @@ function AdminDashboard() {
 
           {activeTab === "sos-alerts" && (
             <div className="fade-in">
-              <h2 style={{ margin: "0 0 24px 0", fontSize: "28px", fontWeight: 850, color: "#b91c1c", display: "flex", alignItems: "center", gap: 12 }}>
+              <h2 style={{ margin: "0 0 24px 0", fontSize: "28px", fontWeight: 850, color: "var(--danger)", display: "flex", alignItems: "center", gap: 12 }}>
                 🆘 Worker SOS Emergency Monitor
               </h2>
               
@@ -2992,7 +2992,7 @@ function AdminDashboard() {
                          } catch(e){}
                       }
                     }}
-                    style={{ backgroundColor: "#f8fafc", border: "1px solid var(--border-color)", padding: "8px 16px", borderRadius: "8px", cursor: "pointer", fontSize: 12, fontWeight: 700, color: "#475569" }}
+                    style={{ backgroundColor: "var(--bg-card-hover)", border: "1px solid var(--border-color)", padding: "8px 16px", borderRadius: "8px", cursor: "pointer", fontSize: 12, fontWeight: 700, color: "var(--text-secondary)" }}
                   >
                     Archive & Clear Stream
                   </button>
@@ -3020,14 +3020,14 @@ function AdminDashboard() {
                         }}
                       >
                         {!alertItem.is_read && (
-                          <span style={{ position: "absolute", top: "16px", right: "16px", backgroundColor: "#ef4444", color: "white", padding: "6px 14px", borderRadius: "20px", fontSize: "12px", fontWeight: 800, textTransform: "uppercase", boxShadow: "0 4px 10px rgba(239,68,68,0.3)" }}>
+                          <span style={{ position: "absolute", top: "16px", right: "16px", backgroundcolor: "var(--danger)", color: "white", padding: "6px 14px", borderRadius: "20px", fontSize: "12px", fontWeight: 800, textTransform: "uppercase", boxShadow: "0 4px 10px rgba(239,68,68,0.3)" }}>
                             🔴 Live Emergency
                           </span>
                         )}
                         <div style={{ display: "flex", gap: "24px", alignItems: "flex-start" }}>
                           <div style={{ fontSize: "48px" }}>🚨</div>
                           <div style={{ flex: 1 }}>
-                            <h4 style={{ margin: "0 0 12px", fontSize: "20px", fontWeight: 850, color: "#b91c1c" }}>{alertItem.title}</h4>
+                            <h4 style={{ margin: "0 0 12px", fontSize: "20px", fontWeight: 850, color: "var(--danger)" }}>{alertItem.title}</h4>
                             
                             {(() => {
                               const parseSosMessage = (msgText) => {
@@ -3103,49 +3103,49 @@ function AdminDashboard() {
                                     <div style={{ backgroundColor: "var(--bg-card)", padding: "16px", borderRadius: "12px", border: "1.5px solid #fca5a5", boxShadow: "0 2px 4px rgba(239,68,68,0.05)" }}>
                                       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                                         <span style={{ fontSize: "20px" }}>👤</span>
-                                        <span style={{ fontSize: "11px", fontWeight: 800, color: "#ef4444", textTransform: "uppercase", letterSpacing: "0.5px" }}>Distress Initiator</span>
+                                        <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--danger)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Distress Initiator</span>
                                       </div>
                                       <div style={{ fontSize: "15px", fontWeight: 700, color: "var(--text-main)" }}>{parsed.distressInitiator}</div>
-                                      <div style={{ fontSize: "11px", color: "#64748b", marginTop: "6px" }}>Time: {parsed.reportedAt}</div>
+                                      <div style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "6px" }}>Time: {parsed.reportedAt}</div>
                                     </div>
 
                                     {/* Location/Address Card */}
                                     <div style={{ backgroundColor: "var(--bg-card)", padding: "16px", borderRadius: "12px", border: "1.5px solid #fca5a5", boxShadow: "0 2px 4px rgba(239,68,68,0.05)" }}>
                                       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                                         <span style={{ fontSize: "20px" }}>📍</span>
-                                        <span style={{ fontSize: "11px", fontWeight: 800, color: "#ef4444", textTransform: "uppercase", letterSpacing: "0.5px" }}>Incident Location / Address</span>
+                                        <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--danger)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Incident Location / Address</span>
                                       </div>
                                       <div style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-main)" }}>
-                                        Address: <strong style={{ color: "#ef4444" }}>{parsed.bookingAddress}</strong>
+                                        Address: <strong style={{ color: "var(--danger)" }}>{parsed.bookingAddress}</strong>
                                       </div>
-                                      <div style={{ fontSize: "11px", color: "#64748b", marginTop: "6px" }}>GPS Coordinates: {parsed.realTimeLocation}</div>
+                                      <div style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "6px" }}>GPS Coordinates: {parsed.realTimeLocation}</div>
                                     </div>
 
                                     {/* Worker Card */}
                                     <div style={{ backgroundColor: "var(--bg-card)", padding: "16px", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
                                       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                                         <span style={{ fontSize: "20px" }}>👷</span>
-                                        <span style={{ fontSize: "11px", fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" }}>Assigned Professional</span>
+                                        <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Assigned Professional</span>
                                       </div>
                                       <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-main)" }}>{parsed.assignedWorker}</div>
-                                      <div style={{ fontSize: "12px", color: "#475569", marginTop: "6px", wordBreak: "break-word" }}>{parsed.workerContact}</div>
+                                      <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "6px", wordBreak: "break-word" }}>{parsed.workerContact}</div>
                                     </div>
 
                                     {/* Customer Card */}
                                     <div style={{ backgroundColor: "var(--bg-card)", padding: "16px", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
                                       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                                         <span style={{ fontSize: "20px" }}>🧑</span>
-                                        <span style={{ fontSize: "11px", fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" }}>Customer Details</span>
+                                        <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Customer Details</span>
                                       </div>
                                       <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-main)" }}>{parsed.customer}</div>
-                                      <div style={{ fontSize: "12px", color: "#475569", marginTop: "6px", wordBreak: "break-word" }}>{parsed.customerContact}</div>
+                                      <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "6px", wordBreak: "break-word" }}>{parsed.customerContact}</div>
                                     </div>
 
                                     {/* Linked Booking Card */}
                                     <div style={{ backgroundColor: "var(--bg-card)", padding: "16px", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
                                       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                                         <span style={{ fontSize: "20px" }}>📅</span>
-                                        <span style={{ fontSize: "11px", fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" }}>Linked Booking</span>
+                                        <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Linked Booking</span>
                                       </div>
                                       <div style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-main)" }}>{parsed.linkedBooking}</div>
                                     </div>
@@ -3276,7 +3276,7 @@ function AdminDashboard() {
                                        } catch(e) { alert("Failed to update database status."); }
                                     }
                                   }}
-                                  style={{ backgroundColor: "#1e293b", color: "white", border: "none", padding: "12px 24px", borderRadius: "10px", fontWeight: 800, fontSize: 13, cursor: "pointer", boxShadow: "0 4px 8px rgba(30,41,59,0.2)" }}
+                                  style={{ backgroundcolor: "var(--text-main)", color: "white", border: "none", padding: "12px 24px", borderRadius: "10px", fontWeight: 800, fontSize: 13, cursor: "pointer", boxShadow: "0 4px 8px rgba(30,41,59,0.2)" }}
                                 >
                                   Mark Investigated & Resolve ✅
                                 </button>
@@ -3308,12 +3308,12 @@ function AdminDashboard() {
               {/* Overdue Stats Cards */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", marginBottom: "24px" }}>
                 <div style={{ backgroundColor: "var(--bg-card)", padding: "20px", borderRadius: "12px", borderLeft: "4px solid #f59e0b", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                  <div style={{ fontSize: "11px", color: "#f59e0b", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Currently Started</div>
+                  <div style={{ fontSize: "11px", color: "var(--warning)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Currently Started</div>
                   <div style={{ fontSize: "28px", fontWeight: 850, color: "var(--text-main)", marginTop: "4px" }}>{liveRealTimeBookings.filter(b => b.status === "Started").length}</div>
                 </div>
                 <div style={{ backgroundColor: "var(--bg-card)", padding: "20px", borderRadius: "12px", borderLeft: "4px solid #ef4444", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                  <div style={{ fontSize: "11px", color: "#ef4444", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Overdue (&gt;24h)</div>
-                  <div style={{ fontSize: "28px", fontWeight: 850, color: "#ef4444", marginTop: "4px" }}>{overdueBookings.length}</div>
+                  <div style={{ fontSize: "11px", color: "var(--danger)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Overdue (&gt;24h)</div>
+                  <div style={{ fontSize: "28px", fontWeight: 850, color: "var(--danger)", marginTop: "4px" }}>{overdueBookings.length}</div>
                 </div>
                 <div style={{ backgroundColor: "var(--bg-card)", padding: "20px", borderRadius: "12px", borderLeft: "4px solid var(--secondary)", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
                   <div style={{ fontSize: "11px", color: "var(--secondary)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Locked Revenue at Risk</div>
@@ -3323,7 +3323,7 @@ function AdminDashboard() {
 
               <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", padding: "24px" }}>
                 {overdueBookings.length === 0 ? (
-                  <div style={{ textAlign: "center", color: "#94a3b8", padding: "60px 0" }}>
+                  <div style={{ textAlign: "center", color: "var(--text-secondary)", padding: "60px 0" }}>
                     <div style={{ fontSize: "56px", marginBottom: "16px" }}>✅</div>
                     <h3 style={{ fontSize: "20px", fontWeight: 800, color: "var(--text-main)", margin: "0 0 8px" }}>All Clear — No Overdue Jobs</h3>
                     <p style={{ margin: 0, fontSize: "14px" }}>All started bookings have been completed on time. No worker intervention required.</p>
@@ -3361,7 +3361,7 @@ function AdminDashboard() {
                               <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>{b.date} at {b.time}<br />Address: {b.address || "N/A"}</div>
                             </td>
                             <td style={{ padding: "14px 8px", fontWeight: 600, color: "var(--text-main)" }}>{b.service}</td>
-                            <td style={{ padding: "14px 8px", fontWeight: 700, color: "#16a34a" }}>₹{b.price}</td>
+                            <td style={{ padding: "14px 8px", fontWeight: 700, color: "var(--success)" }}>₹{b.price}</td>
                             <td style={{ padding: "14px 8px", fontSize: "12px", color: "var(--text-muted)" }}>{startedAt.toLocaleString()}</td>
                             <td style={{ padding: "14px 8px" }}>
                               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -3370,7 +3370,7 @@ function AdminDashboard() {
                                 </span>
                               </div>
                               {assignedWorker && (
-                                <div style={{ fontSize: "11px", color: "#64748b", marginTop: "4px", fontWeight: 600 }}>
+                                <div style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "4px", fontWeight: 600 }}>
                                   👷 Worker: {assignedWorker.name}
                                 </div>
                               )}
@@ -3404,7 +3404,7 @@ function AdminDashboard() {
                                   }
                                 }}
                                 style={{ 
-                                  backgroundColor: "#dc2626", 
+                                  backgroundcolor: "var(--danger)", 
                                   color: "white", 
                                   border: "none", 
                                   padding: "8px 16px", 
@@ -3471,25 +3471,25 @@ function AdminDashboard() {
               <span>{refundModal.verdict === "Valid" ? "⚖️" : "🔍"}</span>
               {refundModal.verdict === "Valid" ? "Mark Complaint Valid & Issue Refund" : "Dismiss Complaint"}
             </h3>
-            <p style={{ margin: "0 0 20px 0", fontSize: "13px", color: "#64748b", lineHeight: 1.5 }}>
+            <p style={{ margin: "0 0 20px 0", fontSize: "13px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
               {refundModal.verdict === "Valid" 
                 ? "This complaint will be marked as valid. You can issue a refund to the customer's wallet. Review the order details below."
                 : "This complaint will be dismissed. You may still issue a partial refund if needed."}
             </p>
 
             {/* Order & Worker Details Card */}
-            <div style={{ backgroundColor: "#f8fafc", borderRadius: "12px", padding: "16px", marginBottom: "20px", border: "1px solid var(--border-color)" }}>
-              <div style={{ fontSize: "12px", color: "#94a3b8", fontWeight: 600, marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Order & Worker Details</div>
+            <div style={{ backgroundColor: "var(--bg-card-hover)", borderRadius: "12px", padding: "16px", marginBottom: "20px", border: "1px solid var(--border-color)" }}>
+              <div style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600, marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Order & Worker Details</div>
               
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 {/* Worker */}
                 <div style={{ backgroundColor: "var(--bg-card)", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
-                  <div style={{ fontSize: "11px", color: "#94a3b8", fontWeight: 600, marginBottom: "4px" }}>👷 WORKER</div>
+                  <div style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 600, marginBottom: "4px" }}>👷 WORKER</div>
                   <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-main)" }}>
                     {refundModal.worker ? refundModal.worker.name : "Unknown"}
                   </div>
                   {refundModal.worker && (
-                    <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>
+                    <div style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "2px" }}>
                       {refundModal.worker.speciality || refundModal.worker.specialty || "Worker"} • {refundModal.worker.city || ""}
                     </div>
                   )}
@@ -3497,7 +3497,7 @@ function AdminDashboard() {
 
                 {/* Order Price */}
                 <div style={{ backgroundColor: "var(--bg-card)", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
-                  <div style={{ fontSize: "11px", color: "#94a3b8", fontWeight: 600, marginBottom: "4px" }}>💰 ORDER PRICE</div>
+                  <div style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 600, marginBottom: "4px" }}>💰 ORDER PRICE</div>
                   <div style={{ fontSize: "22px", fontWeight: 800, color: "#1d4ed8" }}>
                     ₹{refundModal.booking ? refundModal.booking.price : "N/A"}
                   </div>
@@ -3505,7 +3505,7 @@ function AdminDashboard() {
 
                 {/* Service */}
                 <div style={{ backgroundColor: "var(--bg-card)", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
-                  <div style={{ fontSize: "11px", color: "#94a3b8", fontWeight: 600, marginBottom: "4px" }}>🛠️ SERVICE</div>
+                  <div style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 600, marginBottom: "4px" }}>🛠️ SERVICE</div>
                   <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-main)" }}>
                     {refundModal.booking ? refundModal.booking.service : "N/A"}
                   </div>
@@ -3513,7 +3513,7 @@ function AdminDashboard() {
 
                 {/* Customer */}
                 <div style={{ backgroundColor: "var(--bg-card)", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
-                  <div style={{ fontSize: "11px", color: "#94a3b8", fontWeight: 600, marginBottom: "4px" }}>👤 CUSTOMER</div>
+                  <div style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 600, marginBottom: "4px" }}>👤 CUSTOMER</div>
                   <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-main)" }}>
                     {refundModal.complaint.reported_by || "Customer"}
                   </div>
@@ -3521,8 +3521,8 @@ function AdminDashboard() {
               </div>
 
               {/* Complaint Type */}
-              <div style={{ marginTop: "12px", padding: "8px 12px", backgroundColor: "#fee2e2", borderRadius: "8px", border: "1px solid #fecaca" }}>
-                <span style={{ fontSize: "12px", fontWeight: 700, color: "#dc2626" }}>
+              <div style={{ marginTop: "12px", padding: "8px 12px", backgroundColor: "var(--danger-light)", borderRadius: "8px", border: "1px solid #fecaca" }}>
+                <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--danger)" }}>
                   ⚠️ {refundModal.complaint.issue_type}: </span>
                 <span style={{ fontSize: "12px", color: "#7f1d1d", fontStyle: "italic" }}>
                   "{refundModal.complaint.description || 'No description provided'}"
@@ -3535,13 +3535,13 @@ function AdminDashboard() {
               <label style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-main)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span>Refund Amount to Customer Wallet</span>
                 {refundModal.booking && (
-                  <span style={{ fontSize: "11px", color: "#64748b", fontWeight: 500 }}>
+                  <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 500 }}>
                     Max: ₹{refundModal.booking.price}
                   </span>
                 )}
               </label>
               <div style={{ position: "relative" }}>
-                <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "16px", fontWeight: 700, color: "#64748b" }}>₹</span>
+                <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "16px", fontWeight: 700, color: "var(--text-secondary)" }}>₹</span>
                 <input 
                   type="number"
                   min="0"
@@ -3567,7 +3567,7 @@ function AdminDashboard() {
               <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
                 <button 
                   onClick={() => setRefundAmount("0")}
-                  style={{ padding: "4px 10px", borderRadius: "6px", border: "1px solid var(--border-color)", backgroundColor: "#f8fafc", color: "#475569", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}
+                  style={{ padding: "4px 10px", borderRadius: "6px", border: "1px solid var(--border-color)", backgroundColor: "var(--bg-card-hover)", color: "var(--text-secondary)", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}
                 >
                   No Refund
                 </button>
@@ -3575,13 +3575,13 @@ function AdminDashboard() {
                   <>
                     <button 
                       onClick={() => setRefundAmount(String(Math.round(refundModal.booking.price * 0.25)))}
-                      style={{ padding: "4px 10px", borderRadius: "6px", border: "1px solid var(--border-color)", backgroundColor: "#f8fafc", color: "#475569", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}
+                      style={{ padding: "4px 10px", borderRadius: "6px", border: "1px solid var(--border-color)", backgroundColor: "var(--bg-card-hover)", color: "var(--text-secondary)", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}
                     >
                       25% (₹{Math.round(refundModal.booking.price * 0.25)})
                     </button>
                     <button 
                       onClick={() => setRefundAmount(String(Math.round(refundModal.booking.price * 0.5)))}
-                      style={{ padding: "4px 10px", borderRadius: "6px", border: "1px solid var(--border-color)", backgroundColor: "#f8fafc", color: "#475569", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}
+                      style={{ padding: "4px 10px", borderRadius: "6px", border: "1px solid var(--border-color)", backgroundColor: "var(--bg-card-hover)", color: "var(--text-secondary)", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}
                     >
                       50% (₹{Math.round(refundModal.booking.price * 0.5)})
                     </button>
@@ -3621,7 +3621,7 @@ function AdminDashboard() {
                 style={{
                   flex: 0.6,
                   backgroundColor: "#e2e8f0",
-                  color: "#475569",
+                  color: "var(--text-secondary)",
                   border: "none",
                   padding: "14px",
                   borderRadius: "10px",

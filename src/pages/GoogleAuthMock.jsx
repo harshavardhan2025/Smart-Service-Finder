@@ -132,7 +132,7 @@ function GoogleAuthMock() {
   return (
     <div style={{
       minHeight: "100vh",
-      backgroundColor: "#f0f2f5",
+      backgroundColor: "var(--bg-card-hover)",
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
@@ -247,7 +247,7 @@ function GoogleAuthMock() {
                   width: "36px",
                   height: "36px",
                   borderRadius: "50%",
-                  backgroundColor: "#f1f3f4",
+                  backgroundColor: "var(--bg-card-hover)",
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",

@@ -114,7 +114,7 @@ function CheapWorkers({ searchedLocation, userCoords }) {
               )}
               <span className="price-badge">₹{worker.price}</span>
               <p style={{ margin: "5px 0" }}>
-                <span style={{ color: "#f59e0b" }}>⭐</span> {worker.rating}
+                <span style={{ color: "var(--warning)" }}>⭐</span> {worker.rating}
               </p>
 
               <Link

@@ -461,7 +461,7 @@ function PlansOffers() {
                   }}
                 >
                   {plan.popular && (
-                    <span style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", backgroundColor: "#eab308", color: "var(--text-main)", padding: "6px 16px", borderRadius: 20, fontSize: 11, fontWeight: 800, boxShadow: "0 4px 12px rgba(234, 179, 8, 0.4)", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <span style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", backgroundcolor: "var(--warning)", color: "var(--text-main)", padding: "6px 16px", borderRadius: 20, fontSize: 11, fontWeight: 800, boxShadow: "0 4px 12px rgba(234, 179, 8, 0.4)", display: "inline-flex", alignItems: "center", gap: "4px" }}>
                       MOST POPULAR <FaStar size={10} />
                     </span>
                   )}
@@ -618,7 +618,7 @@ function PlansOffers() {
           textAlign: "center"
         }}>
           <div>
-            <div style={{ color: "#eab308", fontSize: "20px", marginBottom: "8px" }}>⭐ ⭐ ⭐ ⭐ ⭐</div>
+            <div style={{ color: "var(--warning)", fontSize: "20px", marginBottom: "8px" }}>⭐ ⭐ ⭐ ⭐ ⭐</div>
             <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "var(--text-main)" }}>4.9/5 Average Rating</h4>
             <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.5 }}>From over 10,000+ satisfied homeowners</p>
           </div>
@@ -779,7 +779,7 @@ function PlansOffers() {
                       Apply
                     </button>
                   </div>
-                  {couponError && <span style={{ fontSize: "12px", color: "#ef4444", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px" }}>❌ {couponError}</span>}
+                  {couponError && <span style={{ fontSize: "12px", color: "var(--danger)", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px" }}>❌ {couponError}</span>}
                   {couponSuccess && <span style={{ fontSize: "12px", color: "#10b981", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px" }}>✅ {couponSuccess}</span>}
                 </div>
 
@@ -877,7 +877,7 @@ function PlansOffers() {
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)", marginBottom: "4px" }}>
                       <span>Subscription Deduction</span>
-                      <strong style={{ color: "#ef4444" }}>- ₹{Math.max(0, (parseInt(payingPlan.price.replace(/[^\d]/g, ""), 10) || 0) - discountAmount).toLocaleString()}</strong>
+                      <strong style={{ color: "var(--danger)" }}>- ₹{Math.max(0, (parseInt(payingPlan.price.replace(/[^\d]/g, ""), 10) || 0) - discountAmount).toLocaleString()}</strong>
                     </div>
                     <div style={{ height: "1px", backgroundColor: "var(--border)", margin: "6px 0" }} />
                     <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700 }}>
@@ -887,7 +887,7 @@ function PlansOffers() {
                       </strong>
                     </div>
                     {walletBal < Math.max(0, (parseInt(payingPlan.price.replace(/[^\d]/g, ""), 10) || 0) - discountAmount) && (
-                      <div style={{ color: "#ef4444", fontSize: "12px", fontWeight: 700, marginTop: "6px" }}>
+                      <div style={{ color: "var(--danger)", fontSize: "12px", fontWeight: 700, marginTop: "6px" }}>
                         ⚠️ Insufficient Wallet Balance! Please select UPI/Card or add funds.
                       </div>
                     )}
@@ -927,10 +927,10 @@ function PlansOffers() {
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(245, 158, 11, 0.1)"}
                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "rgba(245, 158, 11, 0.05)"}
                   >
-                    <strong style={{ display: "flex", alignItems: "center", gap: "8px", color: "#d97706", fontSize: "13px" }}>
+                    <strong style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--warning)", fontSize: "13px" }}>
                       📌 View Terms & Conditions
                     </strong>
-                    <span style={{ color: "#d97706", fontSize: "12px" }}>Click to read ›</span>
+                    <span style={{ color: "var(--warning)", fontSize: "12px" }}>Click to read ›</span>
                   </button>
                 )}
                 

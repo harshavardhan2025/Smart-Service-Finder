@@ -629,7 +629,7 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
         `}</style>
 
         <h1 style={{ margin: "0 0 6px 0", fontSize: "24px", fontWeight: 800, color: "var(--hero-text)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-          Find Reliable Service Experts Near You <FaMapMarkerAlt size={24} style={{ color: "#ef4444" }} />
+          Find Reliable Service Experts Near You <FaMapMarkerAlt size={24} style={{ color: "var(--danger)" }} />
         </h1>
         <p style={{ margin: 0, fontSize: "14px", color: "var(--hero-subtext)", fontWeight: "600" }}>
           Auto-matching, verified professional workers, and instant secure bookings.
@@ -710,7 +710,7 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
                       >
                         <span style={{ fontWeight: 800, fontSize: "14px", color: "var(--text-primary)" }}>{worker.name}</span>
                         <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{worker.service}</span>
-                        <span style={{ fontSize: "12px", color: "#eab308", fontWeight: "bold" }}>⭐ {worker.rating}</span>
+                        <span style={{ fontSize: "12px", color: "var(--warning)", fontWeight: "bold" }}>⭐ {worker.rating}</span>
                       </div>
                     </Link>
                   ))}
@@ -766,7 +766,7 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
               <FaMapMarkerAlt size={12} /> Set Service Location
             </span>
             {searchedLocation && (
-              <span style={{ fontSize: "11px", color: "#16a34a", fontWeight: "bold" }}>
+              <span style={{ fontSize: "11px", color: "var(--success)", fontWeight: "bold" }}>
                 Active Address Resolved
               </span>
             )}
@@ -863,10 +863,10 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
         <div className="fade-in home-section" style={{ padding: "20px 24px", margin: "14px 0px", background: "linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(239, 68, 68, 0.01) 100%)", borderRadius: "0px", borderTop: "1.5px solid rgba(239, 68, 68, 0.12)", borderBottom: "1.5px solid rgba(239, 68, 68, 0.12)", borderLeft: "none", borderRight: "none" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
             <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-primary)", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
-              <FaBolt style={{ color: "#eab308" }} /> Instant Booking Services
+              <FaBolt style={{ color: "var(--warning)" }} /> Instant Booking Services
             </h2>
-            <span style={{ backgroundColor: "#fee2e2", color: "#dc2626", padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
-              <span className="pulse-dot" style={{ width: "6px", height: "6px", backgroundColor: "#dc2626", borderRadius: "50%", display: "inline-block" }} />
+            <span style={{ backgroundColor: "var(--danger-light)", color: "var(--danger)", padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
+              <span className="pulse-dot" style={{ width: "6px", height: "6px", backgroundcolor: "var(--danger)", borderRadius: "50%", display: "inline-block" }} />
               10-20 MINS ARRIVAL
             </span>
           </div>
@@ -918,7 +918,7 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
                   }}
                 >
                   <span style={{ position: "absolute", top: "15px", right: "15px", backgroundColor: "var(--primary-light)", color: "var(--primary-dark)", padding: "4px 8px", borderRadius: "12px", fontSize: "10px", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                    <FaCircle size={8} style={{ color: "#22c55e" }} /> ONLINE
+                    <FaCircle size={8} style={{ color: "var(--success)" }} /> ONLINE
                   </span>
                   <div style={{ marginBottom: "12px" }}>
                     {worker.service.includes("Doctors") ? <FaStethoscope size={32} style={{ color: "var(--primary)" }} /> : <FaUser size={32} style={{ color: "var(--primary)" }} />}
@@ -960,7 +960,7 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
                 <div key={idx} className="premium-card" style={{ padding: "24px", border: plan.popular ? "2px solid #eab308" : "1px solid var(--border-color)", display: "flex", flexDirection: "column", justifyContent: "space-between", transform: plan.popular ? "scale(1.02)" : "none", boxShadow: plan.popular ? "0 10px 25px rgba(234, 179, 8, 0.15)" : "var(--shadow-3d)" }}>
                   <div>
                     {plan.popular && (
-                      <span style={{ backgroundColor: "#eab308", color: "var(--text-main)", padding: "3px 10px", borderRadius: 12, fontSize: 10, fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "2px", marginBottom: "10px" }}>
+                      <span style={{ backgroundcolor: "var(--warning)", color: "var(--text-main)", padding: "3px 10px", borderRadius: 12, fontSize: 10, fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "2px", marginBottom: "10px" }}>
                         POPULAR <FaStar size={8} />
                       </span>
                     )}
@@ -998,7 +998,7 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
           textAlign: "center"
         }}>
           <div>
-            <div style={{ color: "#eab308", fontSize: "20px", marginBottom: "8px" }}>⭐ ⭐ ⭐ ⭐ ⭐</div>
+            <div style={{ color: "var(--warning)", fontSize: "20px", marginBottom: "8px" }}>⭐ ⭐ ⭐ ⭐ ⭐</div>
             <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "var(--text-main)" }}>4.9/5 Average Rating</h4>
             <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.5 }}>From over 10,00+ satisfied homeowners</p>
           </div>
@@ -1045,12 +1045,12 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
           }}>
             <div style={{ fontSize: "36px", marginBottom: "16px" }}>📍</div>
             <h3 style={{ margin: "0 0 12px 0", color: "var(--text-main)", fontFamily: "'Outfit', sans-serif" }}>Location Access Needed</h3>
-            <p style={{ margin: "0 0 24px 0", color: "#64748b", lineHeight: "1.5" }}>{locationError}</p>
+            <p style={{ margin: "0 0 24px 0", color: "var(--text-secondary)", lineHeight: "1.5" }}>{locationError}</p>
             <div style={{ display: "flex", gap: "12px" }}>
               <button
                 onClick={() => setLocationError(null)}
                 style={{
-                  backgroundColor: "#e2e8f0", color: "#475569", border: "none",
+                  backgroundColor: "#e2e8f0", color: "var(--text-secondary)", border: "none",
                   padding: "12px 16px", borderRadius: "8px", fontWeight: "600",
                   cursor: "pointer", flex: 1, fontSize: "16px"
                 }}

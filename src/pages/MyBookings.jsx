@@ -369,10 +369,10 @@ function MyBookings() {
         return { color: "var(--primary)", bg: "#b4d0e7" };
       case "Accepted":
       case "Confirmed":
-        return { color: "#16a34a", bg: "#dcfce7" };
+        return { color: "var(--success)", bg: "#dcfce7" };
       case "Rejected":
       case "Refund Declined":
-        return { color: "#ef4444", bg: "#fee2e2" };
+        return { color: "var(--danger)", bg: "#fee2e2" };
       case "Cancelled":
       case "Escrow Declined":
         return { color: "#4b5563", bg: "#f3f4f6" };
@@ -380,7 +380,7 @@ function MyBookings() {
         return { color: "#ea580c", bg: "#ffedd5" };
       case "Upcoming":
       default:
-        return { color: "#d97706", bg: "#fef3c7" };
+        return { color: "var(--warning)", bg: "#fef3c7" };
     }
   };
 
@@ -388,7 +388,7 @@ function MyBookings() {
     <div
       style={{
         minHeight: "100vh",
-        backgroundColor: "#f8fafc",
+        backgroundColor: "var(--bg-card-hover)",
         fontFamily: "'Inter', 'Segoe UI', sans-serif"
       }}
     >
@@ -404,7 +404,7 @@ function MyBookings() {
         <Link
           to="/"
           style={{
-            color: "#94a3b8",
+            color: "var(--text-secondary)",
             textDecoration: "none",
             fontSize: "14px",
             display: "inline-flex",
@@ -418,7 +418,7 @@ function MyBookings() {
         <h1 style={{ margin: "0 0 6px 0", fontSize: "28px", fontWeight: 800 }}>
           📋 My Bookings
         </h1>
-        <p style={{ margin: 0, color: "#94a3b8", fontSize: "14px" }}>
+        <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "14px" }}>
           Track and manage all your service bookings
         </p>
       </div>
@@ -443,8 +443,8 @@ function MyBookings() {
         >
           {[
             { label: "Total", count: liveBookings.length, color: "var(--text-main)", bg: "#f1f5f9" },
-            { label: "Confirmed/Accepted", count: liveBookings.filter(b => b.status === "Confirmed" || b.status === "Accepted").length, color: "#16a34a", bg: "#dcfce7" },
-            { label: "Upcoming/Pending", count: liveBookings.filter(b => b.status === "Upcoming").length, color: "#d97706", bg: "#fef3c7" },
+            { label: "Confirmed/Accepted", count: liveBookings.filter(b => b.status === "Confirmed" || b.status === "Accepted").length, color: "var(--success)", bg: "#dcfce7" },
+            { label: "Upcoming/Pending", count: liveBookings.filter(b => b.status === "Upcoming").length, color: "var(--warning)", bg: "#fef3c7" },
             { label: "Completed", count: liveBookings.filter(b => b.status === "Completed" || b.status === "Paid Out").length, color: "var(--primary)", bg: "#b4d0e7" }
           ].map(({ label, count, color, bg }) => (
             <div
@@ -476,8 +476,8 @@ function MyBookings() {
               }}
             >
               <p style={{ fontSize: "36px", margin: "0 0 12px 0" }}>🔍</p>
-              <h4 style={{ margin: "0 0 4px 0", color: "#475569", fontWeight: 700 }}>No bookings found</h4>
-              <p style={{ margin: 0, fontSize: "13px", color: "#94a3b8" }}>You haven't booked any services yet.</p>
+              <h4 style={{ margin: "0 0 4px 0", color: "var(--text-secondary)", fontWeight: 700 }}>No bookings found</h4>
+              <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>You haven't booked any services yet.</p>
             </div>
           ) : (
             liveBookings.map((booking) => {
@@ -519,7 +519,7 @@ function MyBookings() {
                         <h3 style={{ margin: 0, fontSize: "17px", fontWeight: 700, color: "var(--text-main)" }}>
                           {booking.service}
                         </h3>
-                        <p style={{ margin: "3px 0 0 0", fontSize: "13px", color: "#64748b" }}>
+                        <p style={{ margin: "3px 0 0 0", fontSize: "13px", color: "var(--text-secondary)" }}>
                           👷 Professional: <strong>{booking.workerName || booking.worker_name || "Verified Professional"}</strong>
                         </p>
                       </div>
@@ -549,7 +549,7 @@ function MyBookings() {
                       gap: "20px",
                       flexWrap: "wrap",
                       fontSize: "13px",
-                      color: "#475569",
+                      color: "var(--text-secondary)",
                       paddingTop: "12px",
                       borderTop: "1px solid var(--border-color)"
                     }}
@@ -585,8 +585,8 @@ function MyBookings() {
                         <button
                           onClick={() => setActiveComplaintBooking(booking)}
                           style={{
-                            backgroundColor: "#fee2e2",
-                            color: "#dc2626",
+                            backgroundColor: "var(--danger-light)",
+                            color: "var(--danger)",
                             border: "1px solid #fecaca",
                             padding: "8px 16px",
                             borderRadius: "8px",
@@ -612,8 +612,8 @@ function MyBookings() {
                       <button
                         onClick={() => setActiveCancelBooking(booking)}
                         style={{
-                          backgroundColor: "#fee2e2",
-                          color: "#dc2626",
+                          backgroundColor: "var(--danger-light)",
+                          color: "var(--danger)",
                           border: "1px solid #fecaca",
                           padding: "8px 16px",
                           borderRadius: "8px",
@@ -735,12 +735,12 @@ function MyBookings() {
             <h3 style={{ margin: "0 0 8px 0", fontSize: "20px", fontWeight: 800, color: "var(--text-main)" }}>
               Cancel Booking Order?
             </h3>
-            <p style={{ margin: "0 0 20px 0", fontSize: "13px", color: "#64748b", lineHeight: 1.5 }}>
+            <p style={{ margin: "0 0 20px 0", fontSize: "13px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
               Are you sure you want to cancel this booking? Your request will be sent for review, and the total cost of <strong>₹{activeCancelBooking.price}</strong> will be refunded to your secure wallet upon approval.
             </p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "20px" }}>
-              <label style={{ fontSize: "12px", fontWeight: 700, color: "#475569" }}>Select Cancellation Reason</label>
+              <label style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)" }}>Select Cancellation Reason</label>
               <select
                 value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}
@@ -760,7 +760,7 @@ function MyBookings() {
                 onClick={handleConfirmCancel}
                 style={{
                   flex: 1,
-                  backgroundColor: "#ef4444",
+                  backgroundcolor: "var(--danger)",
                   color: "white",
                   border: "none",
                   padding: "12px",
@@ -778,7 +778,7 @@ function MyBookings() {
                 style={{
                   flex: 1,
                   backgroundColor: "#e2e8f0",
-                  color: "#475569",
+                  color: "var(--text-secondary)",
                   border: "none",
                   padding: "12px",
                   borderRadius: "10px",
@@ -860,12 +860,12 @@ function MyBookings() {
               <button
                 onClick={() => setActiveRescheduleBooking(null)}
                 style={{
-                  background: "#f1f5f9",
+                  background: "var(--bg-card-hover)",
                   border: "none",
                   borderRadius: "50%",
                   width: "32px",
                   height: "32px",
-                  color: "#64748b",
+                  color: "var(--text-secondary)",
                   fontSize: "16px",
                   cursor: "pointer",
                   display: "flex",
@@ -896,7 +896,7 @@ function MyBookings() {
                     <div style={{ fontSize: "14px", fontWeight: 800, color: "#1F353B" }}>
                       {activeRescheduleBooking.service}
                     </div>
-                    <div style={{ fontSize: "12px", color: "#64748b", marginTop: "2px" }}>
+                    <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "2px" }}>
                       👷 Assigned Expert: <strong>{activeRescheduleBooking.workerName || activeRescheduleBooking.worker_name || "Verified Professional"}</strong>
                     </div>
                   </div>
@@ -904,7 +904,7 @@ function MyBookings() {
                     padding: "4px 10px",
                     borderRadius: "8px",
                     background: "#dcfce7",
-                    color: "#15803d",
+                    color: "var(--success)",
                     fontSize: "11px",
                     fontWeight: 700
                   }}>
@@ -918,7 +918,7 @@ function MyBookings() {
                   borderRadius: "10px",
                   border: "1px solid rgba(0,0,0,0.06)",
                   fontSize: "12px",
-                  color: "#475569",
+                  color: "var(--text-secondary)",
                   display: "flex",
                   alignItems: "center",
                   gap: "12px"
@@ -932,10 +932,10 @@ function MyBookings() {
               {/* Date Input */}
               <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "18px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <label style={{ fontSize: "11.5px", fontWeight: 700, color: "#475569", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                  <label style={{ fontSize: "11.5px", fontWeight: 700, color: "var(--text-secondary)", letterSpacing: "0.5px", textTransform: "uppercase" }}>
                     Select New Date
                   </label>
-                  <span style={{ fontSize: "11px", color: "#64748b" }}>Max 9-day window</span>
+                  <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>Max 9-day window</span>
                 </div>
                 <input
                   type="date"
@@ -965,10 +965,10 @@ function MyBookings() {
               {/* Time Slot Picker */}
               <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "26px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <label style={{ fontSize: "11.5px", fontWeight: 700, color: "#475569", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                  <label style={{ fontSize: "11.5px", fontWeight: 700, color: "var(--text-secondary)", letterSpacing: "0.5px", textTransform: "uppercase" }}>
                     Select Available Window
                   </label>
-                  <span style={{ fontSize: "11px", color: "#64748b" }}>
+                  <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
                     {rescheduleDate ? `For ${rescheduleDate}` : ""}
                   </span>
                 </div>
@@ -1055,8 +1055,8 @@ function MyBookings() {
                   onClick={() => setActiveRescheduleBooking(null)}
                   style={{
                     flex: 1,
-                    backgroundColor: "#f1f5f9",
-                    color: "#475569",
+                    backgroundColor: "var(--bg-card-hover)",
+                    color: "var(--text-secondary)",
                     border: "1px solid var(--border-color)",
                     padding: "13px 16px",
                     borderRadius: "14px",
@@ -1100,15 +1100,15 @@ function MyBookings() {
               border: "1px solid rgba(0,0,0,0.05)"
             }}
           >
-            <h3 style={{ margin: "0 0 6px 0", fontSize: "20px", fontWeight: 800, color: "#b91c1c", display: "flex", alignItems: "center", gap: 8 }}>
+            <h3 style={{ margin: "0 0 6px 0", fontSize: "20px", fontWeight: 800, color: "var(--danger)", display: "flex", alignItems: "center", gap: 8 }}>
               <span>⚠️</span> Report Abuse or Grievance
             </h3>
-            <p style={{ margin: "0 0 20px 0", fontSize: "13px", color: "#64748b", lineHeight: 1.5 }}>
+            <p style={{ margin: "0 0 20px 0", fontSize: "13px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
               Workzy maintains a zero-tolerance policy for abuse. Please document details of the incident below for administrative review and ledger enforcement.
             </p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "16px" }}>
-              <label style={{ fontSize: "12px", fontWeight: 700, color: "#475569" }}>Incident / Grievance Type</label>
+              <label style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)" }}>Incident / Grievance Type</label>
               <select
                 value={issueType}
                 onChange={(e) => setIssueType(e.target.value)}
@@ -1123,7 +1123,7 @@ function MyBookings() {
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "20px" }}>
-              <label style={{ fontSize: "12px", fontWeight: 700, color: "#475569" }}>Detailed Incident Description</label>
+              <label style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)" }}>Detailed Incident Description</label>
               <textarea
                 rows={4}
                 value={complaintDesc}
@@ -1139,7 +1139,7 @@ function MyBookings() {
                 onClick={handleConfirmComplaint}
                 style={{
                   flex: 1,
-                  backgroundColor: "#dc2626",
+                  backgroundcolor: "var(--danger)",
                   color: "white",
                   border: "none",
                   padding: "12px",
@@ -1157,7 +1157,7 @@ function MyBookings() {
                 style={{
                   flex: 1,
                   backgroundColor: "#e2e8f0",
-                  color: "#475569",
+                  color: "var(--text-secondary)",
                   border: "none",
                   padding: "12px",
                   borderRadius: "10px",
@@ -1248,7 +1248,7 @@ function MyBookings() {
                   <button
                     onClick={handleStartCall}
                     style={{
-                      backgroundColor: "#16a34a",
+                      backgroundcolor: "var(--success)",
                       color: "white",
                       border: "none",
                       padding: "6px 12px",

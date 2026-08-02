@@ -130,7 +130,7 @@ function CustomAlert() {
               style={{
                 background: "none",
                 border: "none",
-                color: "#94a3b8",
+                color: "var(--text-secondary)",
                 cursor: "pointer",
                 fontSize: "18px",
                 marginLeft: "15px",

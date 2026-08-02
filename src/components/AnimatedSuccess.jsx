@@ -129,13 +129,13 @@ function AnimatedSuccess({ bookingDetails, onClose }) {
         <h2 style={{ margin: "0 0 8px 0", fontSize: "24px", fontWeight: 800, color: "var(--text-main)" }}>
           Booking Confirmed! 🚀
         </h2>
-        <p style={{ margin: "0 0 28px 0", fontSize: "14px", color: "#64748b", lineHeight: 1.5 }}>
+        <p style={{ margin: "0 0 28px 0", fontSize: "14px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
           Your service booking has been processed successfully. An expert partner is dispatched.
         </p>
 
         <div
           style={{
-            backgroundColor: "#f8fafc",
+            backgroundColor: "var(--bg-card-hover)",
             borderRadius: "16px",
             padding: "20px",
             marginBottom: "28px",
@@ -145,19 +145,19 @@ function AnimatedSuccess({ bookingDetails, onClose }) {
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "10px", borderBottom: "1px solid var(--border-color)", marginBottom: "10px" }}>
-            <span style={{ color: "#64748b", fontWeight: 500 }}>Assigned Service:</span>
+            <span style={{ color: "var(--text-secondary)", fontWeight: 500 }}>Assigned Service:</span>
             <span style={{ color: "var(--text-main)", fontWeight: 700 }}>{bookingDetails?.service || "Professional Expert"}</span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "10px", borderBottom: "1px solid var(--border-color)", marginBottom: "10px" }}>
-            <span style={{ color: "#64748b", fontWeight: 500 }}>Scheduled Date & Time:</span>
+            <span style={{ color: "var(--text-secondary)", fontWeight: 500 }}>Scheduled Date & Time:</span>
             <span style={{ color: "var(--text-main)", fontWeight: 700 }}>{bookingDetails?.date} at {bookingDetails?.time}</span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "10px", borderBottom: "1px solid var(--border-color)", marginBottom: "10px" }}>
-            <span style={{ color: "#64748b", fontWeight: 500 }}>Total Cost Paid:</span>
+            <span style={{ color: "var(--text-secondary)", fontWeight: 500 }}>Total Cost Paid:</span>
             <span style={{ color: "var(--primary)", fontWeight: 800 }}>₹{bookingDetails?.price || 399}</span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ color: "#64748b", fontWeight: 500 }}>Instant Cash Rewards:</span>
+            <span style={{ color: "var(--text-secondary)", fontWeight: 500 }}>Instant Cash Rewards:</span>
             <span style={{ backgroundColor: "rgba(198, 173, 143, 0.15)", color: "var(--primary)", padding: "4px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: 700, border: "1px solid var(--accent)" }}>
               ⭐ Wallet Cashback Active
             </span>

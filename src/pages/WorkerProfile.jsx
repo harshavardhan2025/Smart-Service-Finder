@@ -80,7 +80,7 @@ function WorkerProfile() {
         <Link
           to="/"
           style={{
-            color: "#64748b",
+            color: "var(--text-secondary)",
             textDecoration: "none",
             fontSize: "14px",
             display: "inline-flex",
@@ -116,7 +116,7 @@ function WorkerProfile() {
                 position: "absolute",
                 top: "24px",
                 right: "24px",
-                backgroundColor: "#22c55e",
+                backgroundcolor: "var(--success)",
                 backdropFilter: "blur(4px)",
                 color: "white",
                 padding: "6px 12px",
@@ -167,27 +167,27 @@ function WorkerProfile() {
           <div style={{ padding: "32px" }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px 20px", marginBottom: "28px" }}>
               <div>
-                <label style={{ fontSize: "12px", fontWeight: 500, color: "#64748b" }}>Specialization</label>
+                <label style={{ fontSize: "12px", fontWeight: 500, color: "var(--text-secondary)" }}>Specialization</label>
                 <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "6px" }}>
                   {worker.service}
                 </p>
               </div>
               <div>
-                <label style={{ fontSize: "12px", fontWeight: 500, color: "#64748b" }}>Location & Proximity</label>
+                <label style={{ fontSize: "12px", fontWeight: 500, color: "var(--text-secondary)" }}>Location & Proximity</label>
                 <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "6px" }}>
-                  <FaMapMarkerAlt size={14} style={{ color: "#ef4444" }} /> {worker.distance || "1.0 KM"} Away ({worker.city})
+                  <FaMapMarkerAlt size={14} style={{ color: "var(--danger)" }} /> {worker.distance || "1.0 KM"} Away ({worker.city})
                 </p>
               </div>
               <div>
-                <label style={{ fontSize: "12px", fontWeight: 500, color: "#64748b" }}>Overall Rating</label>
-                <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "#eab308", display: "flex", alignItems: "center", gap: "6px" }}>
-                  <FaStar size={14} style={{ color: "#eab308" }} /> {worker.rating} / 5.0
+                <label style={{ fontSize: "12px", fontWeight: 500, color: "var(--text-secondary)" }}>Overall Rating</label>
+                <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "var(--warning)", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <FaStar size={14} style={{ color: "var(--warning)" }} /> {worker.rating} / 5.0
                 </p>
               </div>
               <div>
-                <label style={{ fontSize: "12px", fontWeight: 500, color: "#64748b" }}>Response Time</label>
+                <label style={{ fontSize: "12px", fontWeight: 500, color: "var(--text-secondary)" }}>Response Time</label>
                 <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "var(--primary)", display: "flex", alignItems: "center", gap: "6px" }}>
-                  <FaBolt size={14} style={{ color: "#eab308" }} /> &lt; 15 Mins (Fast)
+                  <FaBolt size={14} style={{ color: "var(--warning)" }} /> &lt; 15 Mins (Fast)
                 </p>
               </div>
             </div>
@@ -222,13 +222,13 @@ function WorkerProfile() {
               <h4 style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-primary)", margin: "0 0 12px 0" }}>Hub Guarantees</h4>
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "var(--text-secondary)" }}>
-                  <FaShieldAlt size={14} style={{ color: "#16a34a" }} /> Background verified & certified professional
+                  <FaShieldAlt size={14} style={{ color: "var(--success)" }} /> Background verified & certified professional
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "var(--text-secondary)" }}>
                   <FaMagic size={14} style={{ color: "#3b82f6" }} /> Equipped with modern, sanitized equipment
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "var(--text-secondary)" }}>
-                  <FaClock size={14} style={{ color: "#f59e0b" }} /> On-time service arrival guarantee
+                  <FaClock size={14} style={{ color: "var(--warning)" }} /> On-time service arrival guarantee
                 </div>
               </div>
             </div>

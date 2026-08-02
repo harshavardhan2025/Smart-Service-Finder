@@ -83,7 +83,7 @@ function PaymentPage() {
 
          <div style={{ padding: "30px 24px" }}>
             {/* Amount Field */}
-            <label style={{ fontSize: "13px", fontWeight: 700, color: "#475569", textTransform: "uppercase", marginBottom: "8px", display: "block" }}>
+            <label style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", marginBottom: "8px", display: "block" }}>
                Load Amount
             </label>
             <div style={{ position: "relative", marginBottom: "24px" }}>
@@ -101,7 +101,7 @@ function PaymentPage() {
             </div>
 
             {/* Selector Grid */}
-            <label style={{ fontSize: "13px", fontWeight: 700, color: "#475569", textTransform: "uppercase", marginBottom: "12px", display: "block" }}>
+            <label style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", marginBottom: "12px", display: "block" }}>
                Select Settlement Instrument
             </label>
             
@@ -128,7 +128,7 @@ function PaymentPage() {
                         <div style={{ fontSize: "26px" }}>{opt.icon}</div>
                         <div style={{ flex: 1 }}>
                            <div style={{ fontWeight: 700, fontSize: "15px", color: "var(--text-main)" }}>{opt.label}</div>
-                           <div style={{ fontSize: "12px", color: "#64748b" }}>{opt.desc}</div>
+                           <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{opt.desc}</div>
                         </div>
                         <div style={{
                            width: "20px", height: "20px", borderRadius: "50%", border: "2px solid " + (isSelected ? "var(--primary)" : "#cbd5e1"),
@@ -173,7 +173,7 @@ function PaymentPage() {
                disabled={processing}
                style={{
                   width: "100%", marginTop: "14px", background: "none", border: "none",
-                  color: "#64748b", fontSize: "13px", fontWeight: 600, cursor: "pointer", textDecoration: "underline"
+                  color: "var(--text-secondary)", fontSize: "13px", fontWeight: 600, cursor: "pointer", textDecoration: "underline"
                }}
             >
                Cancel & Retreat

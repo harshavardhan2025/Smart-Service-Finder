@@ -319,7 +319,7 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
       {selectedService?.id === "beauty" && (
         <div
           style={{
-            backgroundColor: "#f8fafc",
+            backgroundColor: "var(--bg-card-hover)",
             borderRadius: "20px",
             padding: "20px",
             border: "1.5px solid #e2e8f0",
@@ -327,7 +327,7 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
             animation: "fadeIn 0.2s ease-out"
           }}
         >
-          <h3 style={{ fontSize: "15px", fontWeight: 700, color: "#475569", margin: "0 0 16px 0" }}>
+          <h3 style={{ fontSize: "15px", fontWeight: 700, color: "var(--text-secondary)", margin: "0 0 16px 0" }}>
             💅 Select Gender Category
           </h3>
           
@@ -367,7 +367,7 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
           {/* Sub-Services Grid based on Gender Selection */}
           {selectedGender && currentGenderData && (
             <div>
-              <h4 style={{ fontSize: "13px", fontWeight: 700, color: "#64748b", margin: "0 0 10px 0" }}>
+              <h4 style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-secondary)", margin: "0 0 10px 0" }}>
                 Available {currentGenderData.name} Spa & Salon Services
               </h4>
               <div
@@ -518,11 +518,11 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
 
             {filteredWorkers.length === 0 ? (
               <div className="premium-card" style={{ textAlign: "center", backgroundColor: "rgba(245, 158, 11, 0.1)", borderColor: "rgba(245, 158, 11, 0.3)" }}>
-                <FaSearch size={28} style={{ color: "#d97706", marginBottom: "8px" }} />
+                <FaSearch size={28} style={{ color: "var(--warning)", marginBottom: "8px" }} />
                 <p style={{ fontWeight: "800", color: "#b45309", margin: "0 0 4px 0", fontSize: "16px" }}>
                   No {activeServiceText} experts found near you
                 </p>
-                <p style={{ color: "#d97706", fontSize: "14px", margin: 0, fontWeight: 500 }}>
+                <p style={{ color: "var(--warning)", fontSize: "14px", margin: 0, fontWeight: 500 }}>
                   {searchedLocation ? `Try changing your location from "${searchedLocation.split(",")[0]}".` : "Try adding your location to auto-match nearby professionals."}
                 </p>
               </div>
@@ -589,8 +589,8 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
                           <FaMapMarkerAlt size={12} /> {worker.distance} Away
                         </p>
                       )}
-                      <p style={{ margin: "4px 0 4px 0", fontSize: "14px", color: "#eab308", fontWeight: "bold", display: "flex", alignItems: "center", gap: "4px" }}>
-                        <FaStar size={12} style={{ color: "#eab308" }} /> {worker.rating}
+                      <p style={{ margin: "4px 0 4px 0", fontSize: "14px", color: "var(--warning)", fontWeight: "bold", display: "flex", alignItems: "center", gap: "4px" }}>
+                        <FaStar size={12} style={{ color: "var(--warning)" }} /> {worker.rating}
                       </p>
                       <span className="price-badge">₹{worker.price || (worker.service.includes("Carpentry") ? 399 : worker.service.includes("Plumbing") ? 299 : worker.service.includes("Doctors") ? 599 : 349)}</span>
                     </div>

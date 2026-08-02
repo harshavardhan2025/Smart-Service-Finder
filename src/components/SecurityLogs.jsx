@@ -97,11 +97,11 @@ function SecurityLogs({ userId = "admin" }) {
       </div>
 
       {loading && logs.length === 0 ? (
-        <div style={{ padding: "40px 0", textAlign: "center", color: "#94a3b8" }}>
+        <div style={{ padding: "40px 0", textAlign: "center", color: "var(--text-secondary)" }}>
           <em>🧠 Pulse audit indexing...</em>
         </div>
       ) : logs.length === 0 ? (
-        <div style={{ padding: "40px 0", textAlign: "center", color: "#94a3b8" }}>
+        <div style={{ padding: "40px 0", textAlign: "center", color: "var(--text-secondary)" }}>
           No recorded security access events found.
         </div>
       ) : (
@@ -122,7 +122,7 @@ function SecurityLogs({ userId = "admin" }) {
                   <td style={{ padding: "12px 8px" }}>
                     <div style={{
                       width: "30px", height: "30px", borderRadius: "50%",
-                      backgroundColor: "#f8fafc", border: "1.5px solid var(--border-color)",
+                      backgroundColor: "var(--bg-card-hover)", border: "1.5px solid var(--border-color)",
                       display: "flex", justifyContent: "center", alignItems: "center", fontSize: "14px"
                     }}>
                       {getActionIcon(log.action)}
@@ -142,20 +142,20 @@ function SecurityLogs({ userId = "admin" }) {
                       </div>
                     )}
                   </td>
-                  <td style={{ padding: "12px 8px", color: "#475569" }}>
+                  <td style={{ padding: "12px 8px", color: "var(--text-secondary)" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <FaLaptop style={{ color: "#94a3b8" }} />
+                      <FaLaptop style={{ color: "var(--text-secondary)" }} />
                       <span>{parseUserAgent(log.device)}</span>
                     </div>
                   </td>
                   <td style={{ padding: "12px 8px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                      <FaMapMarkerAlt style={{ color: "#94a3b8" }} />
+                      <FaMapMarkerAlt style={{ color: "var(--text-secondary)" }} />
                       <span style={{ fontWeight: 600 }}>{log.city || "Kakinada"}</span>
-                      <span style={{ fontSize: "11px", color: "#94a3b8" }}>({log.ip})</span>
+                      <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>({log.ip})</span>
                     </div>
                   </td>
-                  <td style={{ padding: "12px 8px", color: "#64748b", fontWeight: 500 }}>
+                  <td style={{ padding: "12px 8px", color: "var(--text-secondary)", fontWeight: 500 }}>
                     {new Date(log.timestamp).toLocaleString()}
                   </td>
                 </tr>

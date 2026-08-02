@@ -582,7 +582,7 @@ function WorkerDashboard() {
                 <div style={{ textAlign: "center", marginBottom: 28 }}>
                   <div style={{ fontSize: 72, textShadow: "0 10px 20px rgba(0,0,0,0.1)" }}>{isActive ? "🟢" : "🔴"}</div>
                   <h2 style={{ margin: "12px 0 6px", color: "var(--text-primary)" }}>{isActive ? "You are Active" : "You are Inactive"}</h2>
-                  <p style={{ color: "#64748b", margin: 0 }}>
+                  <p style={{ color: "var(--text-secondary)", margin: 0 }}>
                     {isActive ? "Customers can see and book your services right now." : "You are currently not accepting new bookings."}
                   </p>
                 </div>
@@ -660,7 +660,7 @@ function WorkerDashboard() {
                                   }}
                                   style={{ 
                                     padding: "6px 14px", 
-                                    backgroundColor: "#ef4444", 
+                                    backgroundcolor: "var(--danger)", 
                                     color: "white", 
                                     border: "none", 
                                     borderRadius: "8px", 
@@ -697,7 +697,7 @@ function WorkerDashboard() {
                 )}
               </div>
               {notifications.length === 0 ? (
-                <div style={{ textAlign: "center", color: "#94a3b8", padding: "64px 0" }}>
+                <div style={{ textAlign: "center", color: "var(--text-secondary)", padding: "64px 0" }}>
                   <div style={{ fontSize: 56 }}>🔔</div>
                   <h3 style={{ margin: "16px 0 4px" }}>All caught up!</h3>
                   <p style={{ margin: 0 }}>No new alerts or bookings at the moment.</p>
@@ -760,7 +760,7 @@ function WorkerDashboard() {
                                 const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
                                 const isFuture = n.bookingDate && n.bookingDate > todayStr && !(n.bookingTime && n.bookingTime.includes("Instant"));
                                 return isFuture ? (
-                                  <span style={{ fontSize: 13, backgroundColor: "#f8fafc", color: "#64748b", padding: "10px 16px", borderRadius: 8, fontWeight: 800, border: "1.5px dashed #cbd5e1", display: "inline-flex", gap: 6, alignItems: "center" }}>
+                                  <span style={{ fontSize: 13, backgroundColor: "var(--bg-card-hover)", color: "var(--text-secondary)", padding: "10px 16px", borderRadius: 8, fontWeight: 800, border: "1.5px dashed #cbd5e1", display: "inline-flex", gap: 6, alignItems: "center" }}>
                                     ⏳ Dispatch Locked: Arriving on {n.bookingDate} ({n.bookingTime})
                                   </span>
                                 ) : (
@@ -774,26 +774,26 @@ function WorkerDashboard() {
 
                             {n.bookingStatus === "On the Way" && (
                               <button onClick={() => handleStatusChange(n.bookingId, "Started")}
-                                style={{ padding: "10px 20px", backgroundColor: "#f59e0b", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", display: "inline-flex", gap: 6, alignItems: "center" }}>
+                                style={{ padding: "10px 20px", backgroundcolor: "var(--warning)", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", display: "inline-flex", gap: 6, alignItems: "center" }}>
                                 Mark as 'Started Job' 🛠️
                               </button>
                             )}
 
                             {n.bookingStatus === "Started" && (
                               <button onClick={() => handleStatusChange(n.bookingId, "Completed")}
-                                style={{ padding: "10px 20px", backgroundColor: "#16a34a", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", display: "inline-flex", gap: 6, alignItems: "center" }}>
+                                style={{ padding: "10px 20px", backgroundcolor: "var(--success)", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", display: "inline-flex", gap: 6, alignItems: "center" }}>
                                 Mark as 'Completed' ✨
                               </button>
                             )}
 
                             {n.bookingStatus === "Rejected" && (
-                              <span style={{ fontSize: 13, backgroundColor: "#fee2e2", color: "#b91c1c", padding: "8px 14px", borderRadius: 8, fontWeight: 700 }}>
+                              <span style={{ fontSize: 13, backgroundColor: "var(--danger-light)", color: "var(--danger)", padding: "8px 14px", borderRadius: 8, fontWeight: 700 }}>
                                 ✗ Rejected & Cancelled
                               </span>
                             )}
 
                             {n.bookingStatus === "Cancelled" && (
-                              <span style={{ fontSize: 13, backgroundColor: "#fee2e2", color: "#b91c1c", padding: "8px 14px", borderRadius: 8, fontWeight: 700 }}>
+                              <span style={{ fontSize: 13, backgroundColor: "var(--danger-light)", color: "var(--danger)", padding: "8px 14px", borderRadius: 8, fontWeight: 700 }}>
                                 ✗ Cancelled
                               </span>
                             )}
@@ -845,7 +845,7 @@ function WorkerDashboard() {
                               }}
                                 style={{ 
                                   padding: "10px 24px", 
-                                  backgroundColor: "#ef4444", 
+                                  backgroundcolor: "var(--danger)", 
                                   color: "white", 
                                   border: "none", 
                                   borderRadius: 8, 
@@ -863,12 +863,12 @@ function WorkerDashboard() {
 
                           {openMapId === n.id && (
                             <div style={{ marginTop: 12, border: "1px solid var(--border-color)", borderRadius: 10, overflow: "hidden" }}>
-                              <div style={{ backgroundColor: "#1e293b", color: "white", padding: "12px 16px", display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+                              <div style={{ backgroundcolor: "var(--text-main)", color: "white", padding: "12px 16px", display: "flex", justifyContent: "space-between", fontSize: 13 }}>
                                 <span>📍 From: <strong>{n.workerAddr}</strong></span>
                                 <span>🏠 To: <strong>{n.customerAddr}</strong></span>
                               </div>
                               <RouteMap startAddress={n.workerAddr} endAddress={n.customerAddr} />
-                              <div style={{ padding: "10px 16px", backgroundColor: "#f8fafc", fontSize: 12, color: "#64748b", display: "flex", gap: 16 }}>
+                              <div style={{ padding: "10px 16px", backgroundColor: "var(--bg-card-hover)", fontSize: 12, color: "var(--text-secondary)", display: "flex", gap: 16 }}>
                                 <span>🛣️ Est. Distance: ~5-8 km</span>
                                 <span>⏱️ Est. Time: ~15-25 mins</span>
                                 <a href={`https://www.google.com/maps/dir/${encodeURIComponent(n.workerAddr)}/${encodeURIComponent(n.customerAddr)}`} target="_blank" rel="noreferrer"
@@ -894,31 +894,31 @@ function WorkerDashboard() {
               
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 24, marginBottom: 36 }}>
                 <div className="premium-card" style={{ borderTop: "6px solid #16a34a", textAlign: "center", padding: "28px 20px", boxShadow: "0 10px 20px rgba(22,163,74,0.05)" }}>
-                  <div style={{ fontSize: 11, color: "#16a34a", fontWeight: 850, textTransform: "uppercase", letterSpacing: "0.8px" }}>✓ Released Balance</div>
-                  <div style={{ fontSize: 40, fontWeight: 900, color: "#16a34a", marginTop: 10 }}>₹{releasedEarnings}</div>
-                  <div style={{ fontSize: 12, color: "#64748b", marginTop: 6, fontWeight: 600 }}>Funds disemburdened to account</div>
+                  <div style={{ fontSize: 11, color: "var(--success)", fontWeight: 850, textTransform: "uppercase", letterSpacing: "0.8px" }}>✓ Released Balance</div>
+                  <div style={{ fontSize: 40, fontWeight: 900, color: "var(--success)", marginTop: 10 }}>₹{releasedEarnings}</div>
+                  <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 6, fontWeight: 600 }}>Funds disemburdened to account</div>
                 </div>
                 <div className="premium-card" style={{ borderTop: "6px solid #ea580c", textAlign: "center", padding: "28px 20px", boxShadow: "0 10px 20px rgba(234,88,12,0.05)" }}>
                   <div style={{ fontSize: 11, color: "#ea580c", fontWeight: 850, textTransform: "uppercase", letterSpacing: "0.8px" }}>🔒 Held In Escrow</div>
                   <div style={{ fontSize: 40, fontWeight: 900, color: "#ea580c", marginTop: 10 }}>₹{pendingEscrow}</div>
-                  <div style={{ fontSize: 12, color: "#64748b", marginTop: 6, fontWeight: 600 }}>Awaiting admin disbursement</div>
+                  <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 6, fontWeight: 600 }}>Awaiting admin disbursement</div>
                 </div>
                 <div className="premium-card" style={{ borderTop: "6px solid var(--primary)", textAlign: "center", padding: "28px 20px", boxShadow: "0 10px 20px rgba(66,86,100,0.05)" }}>
                   <div style={{ fontSize: 11, color: "var(--primary)", fontWeight: 850, textTransform: "uppercase", letterSpacing: "0.8px" }}>⏳ Projected Intake</div>
                   <div style={{ fontSize: 40, fontWeight: 900, color: "var(--primary)", marginTop: 10 }}>₹{upcomingProjected}</div>
-                  <div style={{ fontSize: 12, color: "#64748b", marginTop: 6, fontWeight: 600 }}>Active outstanding workflows</div>
+                  <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 6, fontWeight: 600 }}>Active outstanding workflows</div>
                 </div>
                 <div className="premium-card" style={{ borderTop: "6px solid #64748b", textAlign: "center", padding: "28px 20px" }}>
                   <div style={{ fontSize: 11, color: "var(--text-secondary)", fontWeight: 850, textTransform: "uppercase", letterSpacing: "0.8px" }}>📊 Total Services</div>
                   <div style={{ fontSize: 40, fontWeight: 900, color: "var(--text-main)", marginTop: 10 }}>{activeValidBookings.length}</div>
-                  <div style={{ fontSize: 12, color: "#64748b", marginTop: 6, fontWeight: 600 }}>Aggregate service count</div>
+                  <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 6, fontWeight: 600 }}>Aggregate service count</div>
                 </div>
               </div>
 
               <div className="premium-card">
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, borderBottom: "1.5px solid var(--border-color)", paddingBottom: 14 }}>
                   <h3 style={{ margin: 0, fontWeight: 800, color: "var(--text-primary)" }}>Transactional Payments Matrix</h3>
-                  <span style={{ fontSize: 12, color: "#64748b", fontWeight: 700 }}>Automatic physical ledger sync</span>
+                  <span style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 700 }}>Automatic physical ledger sync</span>
                 </div>
                 {activeValidBookings.length === 0 ? (
                   <p style={{ color: "var(--text-secondary)", textAlign: "center", padding: 32 }}>No valid payment projections or records discovered.</p>
@@ -928,7 +928,7 @@ function WorkerDashboard() {
                       <div key={b._id || b.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 0", borderBottom: "1px solid var(--border-color)" }}>
                         <div>
                           <div style={{ fontWeight: 750, color: "var(--text-main)", fontSize: 15 }}>{b.service}</div>
-                          <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>👤 Client: <strong style={{ color: "var(--text-main)" }}>{b.customer_name || b.customer}</strong> · 📅 {b.date}</div>
+                          <div style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 4 }}>👤 Client: <strong style={{ color: "var(--text-main)" }}>{b.customer_name || b.customer}</strong> · 📅 {b.date}</div>
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
                           <div style={{ fontWeight: 900, fontSize: 20, color: b.status === "Paid Out" ? "#16a34a" : b.status === "Completed" ? "#c2410c" : "#475569" }}>
@@ -968,9 +968,9 @@ function WorkerDashboard() {
                     <h3 style={{ margin: "12px 0 4px", color: "var(--text-primary)" }}>{profile.name}</h3>
                     <div style={{ color: "var(--primary)", fontWeight: 700 }}>{profile.profession}</div>
                     <div style={{ marginTop: 8 }}>
-                      <span style={{ color: "#eab308", fontSize: 18 }}>{"⭐".repeat(Math.round(parseFloat(finalRating)))}</span>
+                      <span style={{ color: "var(--warning)", fontSize: 18 }}>{"⭐".repeat(Math.round(parseFloat(finalRating)))}</span>
                       <span style={{ fontWeight: 800, marginLeft: 6 }}>{finalRating}</span>
-                      <span style={{ color: "#94a3b8", fontSize: 13 }}> ({profile.totalReviews} reviews)</span>
+                      <span style={{ color: "var(--text-secondary)", fontSize: 13 }}> ({profile.totalReviews} reviews)</span>
                     </div>
                   </div>
                   {[
@@ -980,7 +980,7 @@ function WorkerDashboard() {
                     ["📅 Joined", profile.joinedDate],
                   ].map(([label, val]) => (
                     <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border-color)", fontSize: 14 }}>
-                      <span style={{ color: "#64748b" }}>{label}</span>
+                      <span style={{ color: "var(--text-secondary)" }}>{label}</span>
                       <span style={{ fontWeight: 600, color: "var(--text-main)" }}>{val}</span>
                     </div>
                   ))}
@@ -996,7 +996,7 @@ function WorkerDashboard() {
                       <input value={editProfile.phone} onChange={e => setEditProfile({ ...editProfile, phone: e.target.value })} placeholder="Phone" style={{ width: "100%", boxSizing: "border-box", padding: "8px 12px", borderRadius: "6px", border: "1px solid #cbd5e1" }} />
                       <div style={{ display: "flex", gap: 10 }}>
                         <button onClick={() => { setProfile({ ...editProfile }); setEditMode(false); alert("Profile updated!"); }} style={{ flex: 1, padding: "10px", backgroundColor: "var(--primary)", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer" }}>Save</button>
-                        <button onClick={() => setEditMode(false)} style={{ flex: 1, padding: "10px", backgroundColor: "#e2e8f0", color: "#475569", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer" }}>Cancel</button>
+                        <button onClick={() => setEditMode(false)} style={{ flex: 1, padding: "10px", backgroundColor: "#e2e8f0", color: "var(--text-secondary)", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer" }}>Cancel</button>
                       </div>
                     </div>
                   )}
@@ -1006,7 +1006,7 @@ function WorkerDashboard() {
                 <div className="premium-card">
                   <h3 style={{ margin: "0 0 16px", fontWeight: 800, color: "var(--text-primary)" }}>Customer Complaints</h3>
                   {complaints.length === 0 ? (
-                    <div style={{ textAlign: "center", color: "#94a3b8", padding: 32 }}>
+                    <div style={{ textAlign: "center", color: "var(--text-secondary)", padding: 32 }}>
                       <div style={{ fontSize: 40 }}>✅</div>
                       <p>No complaints on your profile!</p>
                     </div>
@@ -1015,23 +1015,23 @@ function WorkerDashboard() {
                       {complaints.map(c => (
                         <div key={c.id} style={{ border: "1px solid #fee2e2", borderRadius: 10, padding: 16, backgroundColor: "#fff5f5" }}>
                           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                            <strong style={{ color: "#c62828" }}>Complaint #{c.id}</strong>
+                            <strong style={{ color: "var(--danger)" }}>Complaint #{c.id}</strong>
                             <span style={{ fontSize: 12, padding: "3px 8px", borderRadius: 20, backgroundColor: c.adminVerdict === "Valid" ? "#ffebee" : c.adminVerdict === "Pending" ? "#fff3e0" : "var(--primary-light)", color: c.adminVerdict === "Valid" ? "#c62828" : c.adminVerdict === "Pending" ? "#e65100" : "var(--primary-dark)", fontWeight: 700 }}>
                               Admin: {c.adminVerdict}
                             </span>
                           </div>
-                          <div style={{ fontSize: 13, color: "#475569", marginBottom: 8 }}>👤 {c.customer} · {c.date}</div>
+                          <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 8 }}>👤 {c.customer} · {c.date}</div>
                           <div style={{ fontSize: 14, color: "var(--text-main)", marginBottom: 8 }}>"{c.desc}"</div>
                           {c.adminVerdict === "Valid" && (
-                            <div style={{ backgroundColor: "#ffebee", borderRadius: 6, padding: "8px 12px", fontSize: 13, color: "#c62828", fontWeight: 600 }}>
+                            <div style={{ backgroundColor: "var(--danger-light)", borderRadius: 6, padding: "8px 12px", fontSize: 13, color: "var(--danger)", fontWeight: 600 }}>
                               ⬇️ Rating deducted by -{c.ratingDeducted || 0.2} due to this verified complaint.
                             </div>
                           )}
-                          <div style={{ marginTop: 8, fontSize: 12, color: "#94a3b8" }}>Status: {c.status}</div>
+                          <div style={{ marginTop: 8, fontSize: 12, color: "var(--text-secondary)" }}>Status: {c.status}</div>
                         </div>
                       ))}
                       {complaintsRatingDeduction > 0 && (
-                        <div style={{ backgroundColor: "#fff3e0", borderRadius: 8, padding: 14, fontSize: 13, color: "#e65100", marginTop: 8 }}>
+                        <div style={{ backgroundColor: "var(--warning-light)", borderRadius: 8, padding: 14, fontSize: 13, color: "var(--warning)", marginTop: 8 }}>
                           ⚠️ Your effective rating: <strong>{finalRating} ⭐</strong> (deducted {complaintsRatingDeduction} for verified complaints)
                         </div>
                       )}
@@ -1051,7 +1051,7 @@ function WorkerDashboard() {
                 {/* Stats Panel */}
                 <div className="premium-card" style={{ padding: 24, textAlign: "center" }}>
                   <h3 style={{ margin: "0 0 8px", color: "var(--text-secondary)", fontSize: 14 }}>AVERAGE RATING</h3>
-                  <div style={{ fontSize: 48, fontWeight: 900, color: "#f59e0b", margin: "12px 0" }}>
+                  <div style={{ fontSize: 48, fontWeight: 900, color: "var(--warning)", margin: "12px 0" }}>
                     ⭐ {finalRating}
                   </div>
                   <p style={{ color: "var(--text-secondary)", fontSize: 13, margin: 0 }}>
@@ -1069,7 +1069,7 @@ function WorkerDashboard() {
                       </span>
                     )}
                     {workerReviews.filter(r => r.rating === 5).length > 0 && (
-                      <span style={{ backgroundColor: "#fef3c7", color: "#d97706", padding: "6px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, border: "1px solid #fde68a" }}>
+                      <span style={{ backgroundColor: "var(--warning-light)", color: "var(--warning)", padding: "6px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, border: "1px solid #fde68a" }}>
                         ✨ 5-Star Expert ({workerReviews.filter(r => r.rating === 5).length})
                       </span>
                     )}
@@ -1083,7 +1083,7 @@ function WorkerDashboard() {
                         🧹 Extremely Neat
                       </span>
                     )}
-                    <span style={{ backgroundColor: "#f1f5f9", color: "#475569", padding: "6px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, border: "1px solid #cbd5e1" }}>
+                    <span style={{ backgroundColor: "var(--bg-card-hover)", color: "var(--text-secondary)", padding: "6px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, border: "1px solid #cbd5e1" }}>
                       💬 {workerReviews.filter(r => r.reply).length} Replies Sent
                     </span>
                   </div>
@@ -1095,7 +1095,7 @@ function WorkerDashboard() {
                 {loading ? (
                   <SkeletonLoader type="list" count={2} />
                 ) : workerReviews.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "48px 0", color: "#64748b" }}>
+                  <div style={{ textAlign: "center", padding: "48px 0", color: "var(--text-secondary)" }}>
                     <div style={{ fontSize: 48 }}>📝</div>
                     <h3 style={{ margin: "12px 0 4px" }}>No reviews yet</h3>
                     <p style={{ margin: 0, fontSize: 14 }}>Once customers complete bookings and rate your work, they will show up here.</p>
@@ -1126,13 +1126,13 @@ function WorkerDashboard() {
                             <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
                               👤 {r.customer_name || "Verified Customer"}
                             </h4>
-                            <p style={{ margin: "2px 0 0 0", fontSize: 12, color: "#64748b" }}>
+                            <p style={{ margin: "2px 0 0 0", fontSize: 12, color: "var(--text-secondary)" }}>
                               💼 {r.service} · 📅 {r.date}
                             </p>
                           </div>
                           
                           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-                            <span style={{ color: "#f59e0b", fontSize: 18, fontWeight: "bold" }}>{stars}</span>
+                            <span style={{ color: "var(--warning)", fontSize: 18, fontWeight: "bold" }}>{stars}</span>
                             <span style={{ backgroundColor: tagBg, color: tagColor, border: `1px solid ${tagBorder}`, padding: "2px 8px", borderRadius: 12, fontSize: 10, fontWeight: 700 }}>
                               {sentimentTag}
                             </span>
@@ -1140,7 +1140,7 @@ function WorkerDashboard() {
                         </div>
 
                         {r.comment && (
-                          <p style={{ margin: "0 0 16px 0", fontSize: 14, color: "var(--text-secondary)", fontStyle: "italic", lineHeight: 1.5, padding: "10px 14px", backgroundColor: "#f8fafc", borderRadius: 8 }}>
+                          <p style={{ margin: "0 0 16px 0", fontSize: 14, color: "var(--text-secondary)", fontStyle: "italic", lineHeight: 1.5, padding: "10px 14px", backgroundColor: "var(--bg-card-hover)", borderRadius: 8 }}>
                             "{r.comment}"
                           </p>
                         )}
@@ -1237,7 +1237,7 @@ function WorkerDashboard() {
 
               <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 28 }}>
                 <span style={{ fontSize: 36 }}>🚨</span>
-                <h2 style={{ margin: 0, fontWeight: 850, color: "#ef4444", fontSize: 28 }}>Emergency & Worker Safety Center</h2>
+                <h2 style={{ margin: 0, fontWeight: 850, color: "var(--danger)", fontSize: 28 }}>Emergency & Worker Safety Center</h2>
               </div>
 
               {(!sosActive && !(isActive && bookings.some(b => ["Accepted", "On the Way", "Started"].includes(b.status)))) ? (
@@ -1257,8 +1257,8 @@ function WorkerDashboard() {
                   <div style={{ 
                     display: "inline-block", 
                     padding: "12px 24px", 
-                    backgroundColor: "#fee2e2", 
-                    color: "#b91c1c", 
+                    backgroundColor: "var(--danger-light)", 
+                    color: "var(--danger)", 
                     borderRadius: "10px", 
                     fontSize: "14px", 
                     fontWeight: 800 
@@ -1278,7 +1278,7 @@ function WorkerDashboard() {
                   marginBottom: 32
                 }}>
                   <div style={{ fontSize: 88, animation: "pulse 1s infinite" }}>🚨</div>
-                  <h1 style={{ color: "#b91c1c", fontSize: 32, fontWeight: 900, marginTop: 16, textTransform: "uppercase", letterSpacing: "1.5px" }}>SOS ACTIVATED</h1>
+                  <h1 style={{ color: "var(--danger)", fontSize: 32, fontWeight: 900, marginTop: 16, textTransform: "uppercase", letterSpacing: "1.5px" }}>SOS ACTIVATED</h1>
                   <p style={{ fontSize: 18, fontWeight: 700, color: "var(--text-main)", maxWidth: 600, margin: "16px auto", lineHeight: 1.6 }}>
                     Distress alert sent! Workzy platform administrators have been notified with your current coordinates. Emergency systems activated.
                   </p>
@@ -1309,7 +1309,7 @@ function WorkerDashboard() {
                             setAdminResolvedAlert(false);
                             alert("🟢 Physical safety verified. Distress siren permanently stood down.");
                           }}
-                          style={{ backgroundColor: "#16a34a", color: "white", border: "none", padding: "14px 24px", borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: "pointer", flex: 1, boxShadow: "0 4px 12px rgba(22,163,74,0.3)" }}
+                          style={{ backgroundcolor: "var(--success)", color: "white", border: "none", padding: "14px 24px", borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: "pointer", flex: 1, boxShadow: "0 4px 12px rgba(22,163,74,0.3)" }}
                         >
                           ✅ Yes, I Am Safe Now
                         </button>
@@ -1332,7 +1332,7 @@ function WorkerDashboard() {
                               alert("🔥 RE-ALERT DISPATCHED! Admin telemetry updated to MAXIMUM urgency. Stand by for immediate physical contact.");
                             } catch(e) { alert("Failed to dispatch escalation signal."); }
                           }}
-                          style={{ backgroundColor: "#dc2626", color: "white", border: "none", padding: "14px 24px", borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: "pointer", flex: 1, boxShadow: "0 4px 12px rgba(220,38,38,0.3)" }}
+                          style={{ backgroundcolor: "var(--danger)", color: "white", border: "none", padding: "14px 24px", borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: "pointer", flex: 1, boxShadow: "0 4px 12px rgba(220,38,38,0.3)" }}
                         >
                           🚨 NO, RE-ALERT ADMIN!
                         </button>
@@ -1342,12 +1342,12 @@ function WorkerDashboard() {
 
                   <div style={{ display: "flex", justifyContent: "center", gap: 20, margin: "36px 0" }}>
                     <a href="tel:112" style={{ textDecoration: "none", flex: 1, maxWidth: 260 }}>
-                      <div style={{ backgroundColor: "#ef4444", color: "white", padding: "18px", borderRadius: 14, fontWeight: 800, fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 10px 20px rgba(239,68,68,0.3)" }}>
+                      <div style={{ backgroundcolor: "var(--danger)", color: "white", padding: "18px", borderRadius: 14, fontWeight: 800, fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 10px 20px rgba(239,68,68,0.3)" }}>
                         📞 Call 112
                       </div>
                     </a>
                     <a href="tel:100" style={{ textDecoration: "none", flex: 1, maxWidth: 260 }}>
-                      <div style={{ backgroundColor: "#1e293b", color: "white", padding: "18px", borderRadius: 14, fontWeight: 800, fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 10px 20px rgba(30,41,59,0.3)" }}>
+                      <div style={{ backgroundcolor: "var(--text-main)", color: "white", padding: "18px", borderRadius: 14, fontWeight: 800, fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 10px 20px rgba(30,41,59,0.3)" }}>
                         🚓 Police (100)
                       </div>
                     </a>
@@ -1375,7 +1375,7 @@ function WorkerDashboard() {
                         alert("SOS disarmed. Platform administrators informed that you are safe!");
                       }
                     }} 
-                    style={{ border: "2px solid #cbd5e1", backgroundColor: "transparent", color: "#475569", padding: "12px 28px", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer", transition: "all 0.2s" }}
+                    style={{ border: "2px solid #cbd5e1", backgroundColor: "transparent", color: "var(--text-secondary)", padding: "12px 28px", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer", transition: "all 0.2s" }}
                   >
                     Cancel & Clear Warning
                   </button>
@@ -1410,7 +1410,7 @@ function WorkerDashboard() {
                         width: 190,
                         height: 190,
                         borderRadius: "50%",
-                        backgroundColor: "#ef4444",
+                        backgroundcolor: "var(--danger)",
                         color: "white",
                         border: "none",
                         fontSize: 32,
@@ -1452,7 +1452,7 @@ function WorkerDashboard() {
                     ].map(([name, num, icon]) => (
                       <div key={name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: 12, borderBottom: "1px solid var(--border-color)" }}>
                         <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>{icon} {name}</span>
-                        <a href={`tel:${num}`} style={{ fontWeight: 800, color: "#b91c1c", fontSize: 14, textDecoration: "none", backgroundColor: "#fff5f5", padding: "6px 14px", borderRadius: 8, border: "1px solid #fee2e2" }}>
+                        <a href={`tel:${num}`} style={{ fontWeight: 800, color: "var(--danger)", fontSize: 14, textDecoration: "none", backgroundColor: "#fff5f5", padding: "6px 14px", borderRadius: 8, border: "1px solid #fee2e2" }}>
                           {num}
                         </a>
                       </div>
@@ -1534,12 +1534,12 @@ function WorkerDashboard() {
             <h3 style={{ margin: "0 0 8px 0", fontSize: "20px", fontWeight: 800, color: "var(--text-main)" }}>
               Reject Booking Order?
             </h3>
-            <p style={{ margin: "0 0 20px 0", fontSize: "13px", color: "#64748b", lineHeight: 1.5 }}>
+            <p style={{ margin: "0 0 20px 0", fontSize: "13px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
               Are you sure you want to reject this booking? The customer will be immediately refunded. Please select a reason for rejection.
             </p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "20px" }}>
-              <label style={{ fontSize: "12px", fontWeight: 700, color: "#475569" }}>Select Rejection Reason</label>
+              <label style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)" }}>Select Rejection Reason</label>
               <select 
                 value={rejectReason} 
                 onChange={(e) => setRejectReason(e.target.value)}
@@ -1558,7 +1558,7 @@ function WorkerDashboard() {
                 disabled={submittingReject}
                 onClick={handleConfirmReject}
                 style={{
-                  flex: 1, backgroundColor: "#ef4444", color: "white", border: "none",
+                  flex: 1, backgroundcolor: "var(--danger)", color: "white", border: "none",
                   padding: "12px", borderRadius: "10px", fontWeight: "bold",
                   cursor: "pointer", fontSize: "14px"
                 }}
@@ -1569,7 +1569,7 @@ function WorkerDashboard() {
                 disabled={submittingReject}
                 onClick={() => setActiveRejectBooking(null)}
                 style={{
-                  flex: 1, backgroundColor: "#e2e8f0", color: "#475569", border: "none",
+                  flex: 1, backgroundColor: "#e2e8f0", color: "var(--text-secondary)", border: "none",
                   padding: "12px", borderRadius: "10px", fontWeight: "bold",
                   cursor: "pointer", fontSize: "14px"
                 }}
@@ -1654,7 +1654,7 @@ function WorkerDashboard() {
                   <button
                     onClick={handleStartCall}
                     style={{
-                      backgroundColor: "#16a34a",
+                      backgroundcolor: "var(--success)",
                       color: "white",
                       border: "none",
                       padding: "6px 12px",

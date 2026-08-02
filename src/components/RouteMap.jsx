@@ -111,16 +111,16 @@ const RouteMap = ({ startAddress, endAddress }) => {
 
   if (loading) {
     return (
-      <div style={{ height: 260, backgroundColor: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12 }}>
+      <div style={{ height: 260, backgroundColor: "var(--bg-card-hover)", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12 }}>
         <div className="spinner" style={{ width: 24, height: 24, border: "3px solid #e2e8f0", borderTopColor: "var(--primary)", borderRadius: "50%", animation: "spin 1s linear infinite" }}></div>
-        <span style={{ fontSize: 13, color: "#64748b", fontWeight: 600 }}>Calculating Optimal Path...</span>
+        <span style={{ fontSize: 13, color: "var(--text-secondary)", fontWeight: 600 }}>Calculating Optimal Path...</span>
       </div>
     );
   }
 
   if (error && !posA && !posB) {
     return (
-      <div style={{ height: 260, backgroundColor: "#fef2f2", display: "flex", alignItems: "center", justifyContent: "center", color: "#dc2626", padding: 20, textAlign: "center", fontSize: 13 }}>
+      <div style={{ height: 260, backgroundColor: "var(--danger-light)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--danger)", padding: 20, textAlign: "center", fontSize: 13 }}>
         ⚠️ <strong>Mapping Unavailable:</strong>&nbsp;{error}
       </div>
     );

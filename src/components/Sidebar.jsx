@@ -144,7 +144,7 @@ function Sidebar() {
             <FaTools style={{ color: "var(--primary)" }} />
             <span>Work<span style={{ color: "#c1851dff" }}>zy</span></span>
           </h2>
-          <p style={{ margin: "6px 0 0 0", fontSize: "12px", color: "#94a3b8" }}>
+          <p style={{ margin: "6px 0 0 0", fontSize: "12px", color: "var(--text-secondary)" }}>
             {sidebarSubtitle}
           </p>
         </div>
@@ -193,7 +193,7 @@ function Sidebar() {
                 style={{
                   width: "100%",
                   padding: "12px",
-                  backgroundColor: "#ef4444",
+                  backgroundcolor: "var(--danger)",
                   color: "white",
                   borderRadius: "10px",
                   fontWeight: "bold",
@@ -243,7 +243,7 @@ function Sidebar() {
         </nav>
 
         {/* Footer */}
-        <p style={{ fontSize: "11px", color: "#64748b", textAlign: "center", margin: 0, paddingTop: "20px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+        <p style={{ fontSize: "11px", color: "var(--text-secondary)", textAlign: "center", margin: 0, paddingTop: "20px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
           Workzy © 2026
         </p>
       </div>

@@ -38,7 +38,7 @@ function AnimatedFailure({ errorMessage, onRetry, onBack }) {
     if (isSlotConflict) {
       return (
         <div style={{
-          backgroundColor: "#fffbeb",
+          backgroundColor: "var(--warning-light)",
           borderRadius: "14px",
           padding: "14px 16px",
           marginBottom: "24px",
@@ -148,7 +148,7 @@ function AnimatedFailure({ errorMessage, onRetry, onBack }) {
         <h2 style={{ margin: "0 0 8px 0", fontSize: "22px", fontWeight: 800, color: config.accent }}>
           {config.title}
         </h2>
-        <p style={{ margin: "0 0 20px 0", fontSize: "14px", color: "#475569", lineHeight: 1.6 }}>
+        <p style={{ margin: "0 0 20px 0", fontSize: "14px", color: "var(--text-secondary)", lineHeight: 1.6 }}>
           {/* Strip the ugly 'Cloud Sync Dispatch Error:' prefix if present */}
           {msg.replace(/^Cloud Sync Dispatch Error:\s*/i, "") ||
            "We encountered an unexpected problem. Please try again."}
@@ -181,8 +181,8 @@ function AnimatedFailure({ errorMessage, onRetry, onBack }) {
             onClick={onBack}
             style={{
               flex: 1,
-              backgroundColor: "#f1f5f9",
-              color: "#475569",
+              backgroundColor: "var(--bg-card-hover)",
+              color: "var(--text-secondary)",
               border: "none",
               padding: "14px 20px",
               borderRadius: "12px",

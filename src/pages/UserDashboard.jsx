@@ -347,7 +347,7 @@ function UserDashboard() {
                   cursor: "pointer",
                   fontWeight: 700,
                   fontSize: "14px",
-                  backgroundColor: "#eab308",
+                  backgroundcolor: "var(--warning)",
                   color: "var(--text-main)",
                   boxShadow: "0 4px 12px rgba(234, 179, 8, 0.2)",
                   display: "flex",
@@ -383,7 +383,7 @@ function UserDashboard() {
           </div>
           
           <div className="premium-card metric-card" ref={activeCardRef} style={{ padding: "24px", display: "flex", alignItems: "center", gap: "20px" }}>
-            <div style={{ width: "60px", height: "60px", borderRadius: "12px", backgroundColor: "var(--border)", display: "flex", justifyContent: "center", alignItems: "center", color: "#16a34a", fontSize: "24px" }}>
+            <div style={{ width: "60px", height: "60px", borderRadius: "12px", backgroundColor: "var(--border)", display: "flex", justifyContent: "center", alignItems: "center", color: "var(--success)", fontSize: "24px" }}>
               <FaCalendarCheck />
             </div>
             <div>
@@ -393,7 +393,7 @@ function UserDashboard() {
           </div>
 
           <div className="premium-card metric-card" ref={totalCardRef} style={{ padding: "24px", display: "flex", alignItems: "center", gap: "20px" }}>
-            <div style={{ width: "60px", height: "60px", borderRadius: "12px", backgroundColor: "var(--border)", display: "flex", justifyContent: "center", alignItems: "center", color: "#d97706", fontSize: "24px" }}>
+            <div style={{ width: "60px", height: "60px", borderRadius: "12px", backgroundColor: "var(--border)", display: "flex", justifyContent: "center", alignItems: "center", color: "var(--warning)", fontSize: "24px" }}>
               <FaRegClock />
             </div>
             <div>
@@ -577,7 +577,7 @@ function UserDashboard() {
                         <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)" }}>Subscribed on {p.date || new Date(p.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
-                    <span style={{ padding: "6px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: "600", backgroundColor: "#dcfce7", color: "#16a34a" }}>
+                    <span style={{ padding: "6px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: "600", backgroundColor: "var(--success-light)", color: "var(--success)" }}>
                       Active
                     </span>
                   </div>
@@ -663,7 +663,7 @@ function UserDashboard() {
                   height: "90px",
                   borderRadius: "50%",
                   backgroundColor: "rgba(239, 68, 68, 0.1)",
-                  color: "#ef4444",
+                  color: "var(--danger)",
                   fontSize: "42px",
                   display: "flex",
                   justifyContent: "center",
@@ -676,13 +676,13 @@ function UserDashboard() {
                 <h2 style={{ margin: "0 0 10px 0", fontSize: "24px", fontWeight: 800, color: "var(--text-main)" }}>
                   Emergency Action Triggered
                 </h2>
-                <p style={{ margin: "0 0 24px 0", fontSize: "14px", color: "#64748b", lineHeight: 1.5 }}>
+                <p style={{ margin: "0 0 24px 0", fontSize: "14px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
                   The active system will broadcast an emergency panic signal to local dispatch and coordinates tracking in:
                 </p>
                 <div style={{
                   fontSize: "72px",
                   fontWeight: 900,
-                  color: "#ef4444",
+                  color: "var(--danger)",
                   margin: "20px 0",
                   fontVariantNumeric: "lining-nums"
                 }}>
@@ -691,8 +691,8 @@ function UserDashboard() {
                 <button
                   onClick={cancelSos}
                   style={{
-                    backgroundColor: "#f1f5f9",
-                    color: "#475569",
+                    backgroundColor: "var(--bg-card-hover)",
+                    color: "var(--text-secondary)",
                     border: "1.5px solid #cbd5e1",
                     padding: "14px 28px",
                     borderRadius: "14px",
@@ -713,7 +713,7 @@ function UserDashboard() {
                   width: "90px",
                   height: "90px",
                   borderRadius: "50%",
-                  backgroundColor: "#ef4444",
+                  backgroundcolor: "var(--danger)",
                   color: "white",
                   fontSize: "42px",
                   display: "flex",
@@ -724,10 +724,10 @@ function UserDashboard() {
                 }}>
                   🚨
                 </div>
-                <h2 style={{ margin: "0 0 10px 0", fontSize: "23px", fontWeight: 900, color: "#b91c1c" }}>
+                <h2 style={{ margin: "0 0 10px 0", fontSize: "23px", fontWeight: 900, color: "var(--danger)" }}>
                   EMERGENCY SIGNAL ACTIVE
                 </h2>
-                <p style={{ margin: "0 0 24px 0", fontSize: "14px", color: "#475569", lineHeight: 1.5, fontWeight: 500 }}>
+                <p style={{ margin: "0 0 24px 0", fontSize: "14px", color: "var(--text-secondary)", lineHeight: 1.5, fontWeight: 500 }}>
                   Responders are matching your coordinates. Please remain calm. Local police and ambulance channels are primed.
                 </p>
 
@@ -739,7 +739,7 @@ function UserDashboard() {
                       alignItems: "center",
                       justifyContent: "center",
                       gap: "10px",
-                      backgroundColor: "#ef4444",
+                      backgroundcolor: "var(--danger)",
                       color: "white",
                       padding: "14px",
                       borderRadius: "12px",
@@ -773,8 +773,8 @@ function UserDashboard() {
                 <button
                   onClick={() => setSosActive(false)}
                   style={{
-                    backgroundColor: "#f1f5f9",
-                    color: "#475569",
+                    backgroundColor: "var(--bg-card-hover)",
+                    color: "var(--text-secondary)",
                     border: "none",
                     padding: "12px 20px",
                     borderRadius: "10px",

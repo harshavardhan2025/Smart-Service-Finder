@@ -115,7 +115,7 @@ function TopWorkers({ searchedLocation, userCoords }) {
                 </span>
               )}
               <p style={{ margin: "8px 0", fontWeight: "bold", fontSize: "14px" }}>
-                <span style={{ color: "#f59e0b" }}>⭐</span> {worker.rating}
+                <span style={{ color: "var(--warning)" }}>⭐</span> {worker.rating}
               </p>
               <span className="price-badge">₹{worker.price || 350}</span>
 
