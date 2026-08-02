@@ -793,12 +793,11 @@ export const checkBookingTimeouts = async () => {
     const now = new Date();
     // Pre-compute the cutoff times so MongoDB filters instead of loading everything
     const instantCutoff = new Date(now.getTime() - 20 * 60000); // 20 minutes ago
-    const normalCutoff = new Date(now.getTime() - 45 * 60000);  // 45 minutes ago
 
-    // Only fetch bookings that are potentially expired (created before the normal cutoff)
+    // Only fetch bookings that are potentially expired (created before the instant cutoff)
     const bookings = await Booking.find({
       status: { $in: ["Pending", "Upcoming"] },
-      createdAt: { $lt: normalCutoff }
+      createdAt: { $lt: instantCutoff }
     }).lean();
 
     if (bookings.length === 0) return;

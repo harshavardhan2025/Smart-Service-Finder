@@ -1,4 +1,4 @@
-import crypto from "crypto";
+
 import Worker from "../models/Worker.js";
 import User from "../models/User.js";
 import Transaction from "../models/Transaction.js";
@@ -18,44 +18,7 @@ const LOCAL_CLUSTER_FALLBACKS = {
   "hyderabad": ["hyderabad", "secunderabad", "gachibowli", "hitech city", "madhapur", "kondapur", "kukatpally", "begumpet", "banjara hills", "jubilee hills"]
 };
 
-// Zhipu JWT signature builder for standard completions
-const generateZhipuToken = (apiKey) => {
-  if (!apiKey || !apiKey.includes(".")) return "";
-  const [id, secret] = apiKey.split(".");
-  const timestamp = Date.now();
-  const exp = timestamp + 180000; // 3 minutes validity in ms
-
-  const header = {
-    alg: "HS256",
-    sign_type: "SIGN"
-  };
-  const payload = {
-    api_key: id,
-    exp: exp,
-    timestamp: timestamp
-  };
-
-  const base64UrlEncode = (obj) => {
-    return Buffer.from(JSON.stringify(obj))
-      .toString("base64")
-      .replace(/=/g, "")
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_");
-  };
-
-  const headerPart = base64UrlEncode(header);
-  const payloadPart = base64UrlEncode(payload);
-  const signature = crypto
-    .createHmac("sha256", secret)
-    .update(`${headerPart}.${payloadPart}`)
-    .digest("base64")
-    .replace(/=/g, "")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_");
-
-  return `${headerPart}.${payloadPart}.${signature}`;
-};
-
+// ZhipuToken function removed because it is unused
 const getSurroundingAreasDynamically = async (cityName, lat, lon) => {
   const normName = cityName.toLowerCase().trim();
   const areas = [normName];
@@ -128,92 +91,6 @@ const analyzeLocationWithAi = async (cityName) => {
 
 const seedMockWorkersForCityOrCoords = async (city, lat, lng) => {
   return []; // Dynamic mock worker seeding disabled to guarantee only actual database workers are used.
-  try {
-    const cityName = city || "Mumbai";
-    let centerLat = lat;
-    let centerLng = lng;
-
-    if (centerLat === undefined || centerLng === undefined || centerLat === null || centerLng === null) {
-      const coords = await geocodeCity(cityName);
-      if (coords) {
-        centerLat = coords.lat;
-        centerLng = coords.lon;
-      } else {
-        centerLat = 19.0760;
-        centerLng = 72.8777;
-      }
-    }
-
-    const seededWorkers = [];
-    console.log(`🌱 [DYNAMIC SEEDER] Generating 15 realistic workers for: ${cityName} at (${centerLat}, ${centerLng})...`);
-
-    const templates = [
-      { name: "Rajesh Kumar", service: "Plumbing", price: 299 },
-      { name: "Srinivas Rao", service: "Plumbing", price: 349 },
-      { name: "Amit Patel", service: "Electrical", price: 399 },
-      { name: "Satish Murthy", service: "Electrical", price: 450 },
-      { name: "Vikram Singh", service: "Carpentry", price: 499 },
-      { name: "Suresh Babu", service: "Carpentry", price: 549 },
-      { name: "Sanjay Dutt", service: "AC Repair", price: 799 },
-      { name: "Ravi Shankar", service: "AC Repair", price: 899 },
-      { name: "Sunita Deshmukh", service: "House Cleaning", price: 999 },
-      { name: "Karan Malhotra", service: "Four-Wheeler (Cars)", price: 1200 },
-      { name: "Anil Mehta", service: "Two-Wheeler (Bikes)", price: 350 },
-      { name: "Rahul Varma", service: "Photography", price: 6500 },
-      { name: "Neha Gupta", service: "Beauty, Salon & Spa", price: 1200 },
-      { name: "Dr. Sandeep Sen", service: "Doctors", price: 500 },
-      { name: "Dr. Meenakshi", service: "Doctors", price: 600 }
-    ];
-
-    for (let i = 0; i < templates.length; i++) {
-      const t = templates[i];
-      const genRating = (4.0 + Math.random() * 1.0).toFixed(1);
-      const genReviews = Math.floor(Math.random() * 80) + 10;
-      const exp = (Math.floor(Math.random() * 8) + 2) + "+ Years";
-
-      const offsetLat = (Math.random() - 0.5) * 0.05;
-      const offsetLng = (Math.random() - 0.5) * 0.05;
-      const wLat = centerLat + offsetLat;
-      const wLng = centerLng + offsetLng;
-
-      const email = `${t.name.toLowerCase().replace(/\s+/g, "")}_${cityName.toLowerCase().replace(/\s+/g, "")}@workzy.com`;
-      const displayName = `${t.name} (${cityName})`;
-
-      const existingUser = await User.findOne({ email });
-      if (existingUser) continue;
-
-      const newWorker = await Worker.create({
-        name: displayName,
-        email,
-        service: t.service,
-        city: cityName,
-        location: `${cityName} Center`,
-        lat: wLat,
-        lon: wLng,
-        rating: Number(genRating),
-        reviews: genReviews,
-        price: t.price,
-        experience: exp,
-        status: "Active"
-      });
-
-      await User.create({
-        name: displayName,
-        email,
-        password: "password123",
-        role: "worker",
-        city: cityName
-      });
-
-      seededWorkers.push(newWorker);
-    }
-
-    await invalidateVersion("workers");
-    return seededWorkers;
-  } catch (err) {
-    console.error("🌱 [DYNAMIC SEEDER ERROR] Failed to seed mock workers:", err);
-    return [];
-  }
 };
 
 export const getWorkers = async (req, res) => {
@@ -226,13 +103,14 @@ export const getWorkers = async (req, res) => {
     if (city) {
       const coords = await geocodeCity(city);
       if (coords && coords.city) {
-        const cleanCityName = coords.city.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+        const cleanCityName = coords.city.replace(new RegExp("[-/\\\\^$*+?.()|[\\]{}]", "g"), '\\$&');
         const cityHasWorkers = await Worker.exists({ city: { $regex: new RegExp("^" + cleanCityName + "$", "i") } });
         if (!cityHasWorkers) {
           await seedMockWorkersForCityOrCoords(coords.city, coords.lat, coords.lon);
         }
       } else {
-        const cityHasWorkers = await Worker.exists({ city: new RegExp(city.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), "i") });
+        const cleanQueryCity = city.replace(new RegExp("[-/\\\\^$*+?.()|[\\]{}]", "g"), '\\$&');
+        const cityHasWorkers = await Worker.exists({ city: new RegExp(cleanQueryCity, "i") });
         if (!cityHasWorkers) {
           await seedMockWorkersForCityOrCoords(city);
         }

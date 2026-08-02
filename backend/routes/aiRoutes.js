@@ -1,7 +1,6 @@
 import express from "express";
 import Booking from "../models/Booking.js";
-import Service from "../models/Service.js";
-import Worker from "../models/Worker.js";
+
 import { findBestServiceMatch } from "../controllers/chatController.js";
 
 const router = express.Router();
@@ -19,7 +18,7 @@ router.get("/recommendations", async (req, res) => {
     const userBookings = await Booking.find({ customer_id: user_id });
 
     // Fallback default recommendations if user has zero history
-    const allServices = ["Electrical", "Plumbing", "House Cleaning", "AC Repair", "Carpentry", "Doctors & Medical", "Painting", "Events"];
+
     const fallbackRecs = ["House Cleaning", "Electrical", "AC Repair"];
 
     if (!userBookings || userBookings.length === 0) {

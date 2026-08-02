@@ -163,10 +163,9 @@ function MyBookings() {
     if (!activeCancelBooking) return;
     setSubmittingCancel(true);
     const bid = activeCancelBooking._id || activeCancelBooking.id;
-    const refundPrice = parseFloat(activeCancelBooking.price) || 0;
     try {
       const token = getAuthToken();
-      await fetch(`/api/bookings/${bid}/cancel`, {
+      const res = await fetch(`/api/bookings/${bid}/cancel`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -175,23 +174,20 @@ function MyBookings() {
         body: JSON.stringify({ reason: cancelReason })
       });
       
-      let newBal = getWalletBalance();
-      if (refundPrice > 0) {
-        newBal = await addToWallet(refundPrice, `Cancellation Refund (${activeCancelBooking.service})`, "Wallet Refund");
+      const data = await res.json();
+      
+      if (!res.ok) {
+        alert(`🛑 Cancellation Failed\n\n${data.error || "Unable to cancel booking."}`);
+        return;
       }
 
-      setLiveBookings(prev => prev.map(b => (b._id === bid || b.id === bid) ? { ...b, status: "Cancelled" } : b));
-      alert(`⚖️ Booking Cancelled & Refund Credited!\n\nFull refund of ₹${refundPrice} has been credited back to your Wallet balance! New Wallet Balance: ₹${newBal.toLocaleString()} 💵`);
+      setLiveBookings(prev => prev.map(b => (b._id === bid || b.id === bid) ? { ...b, status: "Cancellation Pending" } : b));
+      alert(`⏳ Cancellation Pending Review\n\n${data.message || "Your cancellation request has been submitted for review."}`);
       setActiveCancelBooking(null);
       syncBookings();
     } catch (e) {
       console.error(e);
-      let newBal = getWalletBalance();
-      if (refundPrice > 0) {
-        newBal = await addToWallet(refundPrice, `Cancellation Refund (${activeCancelBooking.service})`, "Wallet Refund");
-      }
-      setLiveBookings(prev => prev.map(b => (b._id === bid || b.id === bid) ? { ...b, status: "Cancelled" } : b));
-      alert(`⚖️ Booking Cancelled & Refund Credited!\n\nFull refund of ₹${refundPrice} has been credited back to your Wallet balance! New Wallet Balance: ₹${newBal.toLocaleString()} 💵`);
+      alert("Network error occurred while trying to cancel the booking.");
       setActiveCancelBooking(null);
     } finally {
       setSubmittingCancel(false);
@@ -740,7 +736,7 @@ function MyBookings() {
               Cancel Booking Order?
             </h3>
             <p style={{ margin: "0 0 20px 0", fontSize: "13px", color: "#64748b", lineHeight: 1.5 }}>
-              Are you sure you want to cancel this booking? The total cost of <strong>₹{activeCancelBooking.price}</strong> will be immediately refunded back to your secure wallet.
+              Are you sure you want to cancel this booking? Your request will be sent for review, and the total cost of <strong>₹{activeCancelBooking.price}</strong> will be refunded to your secure wallet upon approval.
             </p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "20px" }}>

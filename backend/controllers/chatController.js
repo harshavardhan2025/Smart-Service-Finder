@@ -151,8 +151,8 @@ export const normalizeServiceCategory = (category) => {
   if (clean.includes("bike") && (clean.includes("repair") || clean.includes("mechanic") || clean.includes("two-wheeler") || clean.includes("motorcycle") || clean.includes("puncture") || clean.includes("engine") || clean.includes("brake") || clean.includes("scooter") || clean.includes("activa") || clean.includes("pulsar"))) return "Two-Wheeler (Bikes)";
   if (clean.includes("car") && (clean.includes("repair") || clean.includes("mechanic") || clean.includes("four-wheeler") || clean.includes("sedan") || clean.includes("suv") || clean.includes("puncture") || clean.includes("engine") || clean.includes("brake") || clean.includes("denting") || clean.includes("wheel alignment"))) return "Four-Wheeler (Cars)";
   if (clean.includes("tractor") || clean.includes("crane") || clean.includes("heavy") || clean.includes("truck") || clean.includes("jcb") || clean.includes("lorry")) return "Others (Heavy)";
-  if (clean.includes("bike") && clean.includes("wash") || clean.includes("scooter wash") || clean.includes("bike clean")) return "Bike Wash";
-  if (clean.includes("car") && clean.includes("wash") || clean.includes("car clean") || clean.includes("car vacuum")) return "Car Wash";
+  if ((clean.includes("bike") && clean.includes("wash")) || clean.includes("scooter wash") || clean.includes("bike clean")) return "Bike Wash";
+  if ((clean.includes("car") && clean.includes("wash")) || clean.includes("car clean") || clean.includes("car vacuum")) return "Car Wash";
   if (clean.includes("photo") || clean.includes("video") || clean.includes("camera") || clean.includes("shoot") || clean.includes("photographer") || clean.includes("wedding shoot")) return "Photography";
   if (clean.includes("priest") || clean.includes("pandit") || clean.includes("pooja") || clean.includes("purohit") || clean.includes("havan") || clean.includes("homam") || clean.includes("satyanarayana")) return "Purohit";
   if (clean.includes("decor") || clean.includes("balloon") || clean.includes("flower") || clean.includes("stage") || clean.includes("decoration")) return "Decor";

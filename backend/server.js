@@ -1,27 +1,11 @@
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 import cors from "cors";
 import dotenv from "dotenv";
 import compression from "compression";
 import rateLimit from "express-rate-limit";
 import connectDB from "./config/db.js";
-
-dotenv.config({ override: true });
-
-// Connect Database — wrapped in try/catch so a MongoDB error never
-// calls process.exit() and kills the Vercel serverless function.
-(async () => {
-  try {
-    await connectDB();
-  } catch (err) {
-    console.error("⚠️  DB startup connection failed (will retry per request):", err.message);
-  }
-})();
-
 import authRoutes from "./routes/authRoutes.js";
 import workerRoutes from "./routes/workerRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
@@ -39,6 +23,21 @@ import securityRoutes from "./routes/securityRoutes.js";
 import callRoutes from "./routes/callRoutes.js";
 import { checkBookingTimeouts } from "./controllers/bookingController.js";
 import { checkSubscriptionExpiries } from "./controllers/userController.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ override: true });
+
+// Connect Database — wrapped in try/catch so a MongoDB error never
+// calls process.exit() and kills the Vercel serverless function.
+(async () => {
+  try {
+    await connectDB();
+  } catch (err) {
+    console.error("⚠️  DB startup connection failed (will retry per request):", err.message);
+  }
+})();
 
 const app = express();
 
