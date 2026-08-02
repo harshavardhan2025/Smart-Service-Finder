@@ -889,13 +889,14 @@ function AiChatBot() {
       }
 
       if (finalWorkers && finalWorkers.length > 0) {
-        const userName = sessionStorage.getItem("userName") || "";
-        const greetingName = userName ? `Hey ${userName}! 🎯 ` : "";
+        const userName = sessionStorage.getItem("userName") || "there";
+        const count = finalWorkers.length;
+        const categoryName = (finalCategory || "experts").toLowerCase();
         const bonusText = activePlans.length > 0 || activeOffers.length > 0
           ? `🎁 **Location Bonuses Unlocked!**\nZy unlocked ${activePlans.length} Service Plans and ${activeOffers.length} Active Promo Offer for your area!`
           : `🎁 **Location Bonuses Unlocked!**\nNo exclusive plans or promo codes available in your area right now.`;
 
-        const formattedText = `🤖 **Zy AI — Nearby Search Active**\n${greetingName}Based on your location ${userLocation}, Zy found the best professionals, budget-friendly workers, and instant bookings in your area!\n\n🔍 **Zy's Top Picks For You:**\n\n${bonusText}`;
+        const formattedText = `🤖 **Zy AI — Nearby Search Active**\nHey ${userName}! 🎯 I found ${count} top-rated ${categoryName} near ${userLocation} ready to help you today.\n\n🔍 **Zy's Top Picks For You:**\n\n${bonusText}`;
 
         aiMsgObj.text = formattedText;
         aiMsgObj.workersList = finalWorkers;
@@ -918,13 +919,14 @@ function AiChatBot() {
       }
 
       if (fallbackWorkers && fallbackWorkers.length > 0) {
-        const userName = sessionStorage.getItem("userName") || "";
-        const greetingName = userName ? `Hey ${userName}! 🎯 ` : "";
+        const userName = sessionStorage.getItem("userName") || "there";
+        const count = fallbackWorkers.length;
+        const categoryName = (matchedCategory || "experts").toLowerCase();
         const bonusText = activePlans.length > 0 || activeOffers.length > 0
           ? `🎁 **Location Bonuses Unlocked!**\nZy unlocked ${activePlans.length} Service Plans and ${activeOffers.length} Active Promo Offer for your area!`
           : `🎁 **Location Bonuses Unlocked!**\nNo exclusive plans or promo codes available in your area right now.`;
 
-        const formattedText = `🤖 **Zy AI — Nearby Search Active**\n${greetingName}Based on your location ${userLocation}, Zy found the best professionals, budget-friendly workers, and instant bookings in your area!\n\n🔍 **Zy's Top Picks For You:**\n\n${bonusText}`;
+        const formattedText = `🤖 **Zy AI — Nearby Search Active**\nHey ${userName}! 🎯 I found ${count} top-rated ${categoryName} near ${userLocation} ready to help you today.\n\n🔍 **Zy's Top Picks For You:**\n\n${bonusText}`;
 
         setMessages((prev) => [
           ...prev,
