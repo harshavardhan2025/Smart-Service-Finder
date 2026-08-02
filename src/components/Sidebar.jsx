@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FaBars, FaHome, FaBook, FaGift, FaUser, FaTimes, FaPercent, FaTools } from "react-icons/fa";
+import { FaBars, FaHome, FaBook, FaGift, FaUser, FaTimes, FaPercent, FaTools, FaHeadset } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 function Sidebar() {
@@ -37,6 +37,7 @@ function Sidebar() {
         { to: "/my-bookings", icon: <FaBook />, label: "My Bookings" },
         { to: "/plans-offers", icon: <FaPercent />, label: "Plans & Offers" },
         { to: "/reviews", icon: <FaGift />, label: "Reviews & Rewards" },
+        { to: "/support", icon: <FaHeadset />, label: "Get Support" },
         { to: "/profile", icon: <FaUser />, label: "My Profile" }
       );
     } else if (userRole === "worker") {

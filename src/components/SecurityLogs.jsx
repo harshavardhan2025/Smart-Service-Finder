@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { FaShieldAlt, FaKey, FaSignOutAlt, FaExclamationTriangle, FaMapMarkerAlt, FaLaptop } from "react-icons/fa";
 
-function SecurityLogs({ userId = "admin" }) {
+function SecurityLogs({ userId = "admin", limit = 0 }) {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -12,7 +12,7 @@ function SecurityLogs({ userId = "admin" }) {
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
-        setLogs(data);
+        setLogs(limit > 0 ? data.slice(0, limit) : data);
       }
     } catch(e) {
       console.error("Failed to query security logs audit ledger", e);

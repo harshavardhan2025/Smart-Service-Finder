@@ -228,7 +228,17 @@ function UserDashboard() {
         const txnResp = await fetch(`/api/transactions?customer=${encodeURIComponent(currentUserName)}`);
         if (txnResp.ok) {
           const txnData = await txnResp.json();
-          setTransactions(txnData.slice(0, 5)); // Top 5 recent
+          // Deduplicate transactions by creating a composite key (to prevent simulation loops from flooding the UI)
+          const uniqueTxns = [];
+          const seenTxns = new Set();
+          for(const t of txnData) {
+            const key = `${t.service}-${t.amount}-${t.status}-${new Date(t.createdAt).toDateString()}`;
+            if (!seenTxns.has(key)) {
+              seenTxns.add(key);
+              uniqueTxns.push(t);
+            }
+          }
+          setTransactions(uniqueTxns.slice(0, 5)); // Top 5 unique recent
           
           // Extract active plans from transactions with strict validity/expiration checks (monthly = 30 days, annual = 365 days)
           const activePlansFiltered = txnData.filter(t => {
@@ -247,7 +257,17 @@ function UserDashboard() {
             }
             return false;
           });
-          setActivePlans(activePlansFiltered);
+          
+          // Deduplicate plans so the user doesn't see "Annual Plan" repeated 9 times
+          const uniquePlans = [];
+          const seenPlans = new Set();
+          for (const plan of activePlansFiltered) {
+            if (!seenPlans.has(plan.service)) {
+              seenPlans.add(plan.service);
+              uniquePlans.push(plan);
+            }
+          }
+          setActivePlans(uniquePlans);
           
           // Calculate Wallet sum dynamically from authentic transaction ledger
           const total = txnData.reduce((acc, t) => {
@@ -592,7 +612,7 @@ function UserDashboard() {
         {isLoggedIn && (
           <>
             <div style={{ marginTop: "40px" }} />
-            <SecurityLogs userId={sessionStorage.getItem("userId")} />
+            <SecurityLogs userId={sessionStorage.getItem("userId")} limit={5} />
           </>
         )}
 
