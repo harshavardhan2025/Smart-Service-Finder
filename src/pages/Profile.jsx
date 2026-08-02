@@ -203,7 +203,7 @@ function Profile() {
           </div>
 
           <div style={{ flex: 1 }}>
-            <h2 style={{ margin: "0 0 4px 0", fontSize: "22px", fontWeight: 800, color: "#1e293b" }}>
+            <h2 style={{ margin: "0 0 4px 0", fontSize: "22px", fontWeight: 800, color: "var(--text-main)" }}>
               {profile.name}
             </h2>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
@@ -268,7 +268,7 @@ function Profile() {
             marginBottom: "20px"
           }}
         >
-          <h3 style={{ margin: "0 0 14px 0", fontSize: "16px", fontWeight: 700, color: "#1e293b", display: "flex", alignItems: "center", gap: "8px" }}>
+          <h3 style={{ margin: "0 0 14px 0", fontSize: "16px", fontWeight: 700, color: "var(--text-main)", display: "flex", alignItems: "center", gap: "8px" }}>
             🪙 Wallet & Rewards Dashboard
           </h3>
           <div className="wallet-cards-row" style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
@@ -312,7 +312,7 @@ function Profile() {
             marginBottom: "20px"
           }}
         >
-          <h3 style={{ margin: "0 0 14px 0", fontSize: "16px", fontWeight: 700, color: "#1e293b" }}>
+          <h3 style={{ margin: "0 0 14px 0", fontSize: "16px", fontWeight: 700, color: "var(--text-main)" }}>
             📋 Personal Information
           </h3>
 
@@ -449,7 +449,7 @@ function Profile() {
                   <span style={{ fontSize: "13px", color: "#64748b", display: "flex", alignItems: "center", gap: "6px" }}>
                     {icon} {label}
                   </span>
-                  <span style={{ fontSize: "15px", fontWeight: 600, color: "#1e293b" }}>
+                  <span style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-main)" }}>
                     {value}
                   </span>
                 </div>
@@ -471,7 +471,7 @@ function Profile() {
         >
           {/* Section Header */}
           <div className="payment-history-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", flexWrap: "wrap", gap: "8px" }}>
-            <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "#1e293b" }}>
+            <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "var(--text-main)" }}>
               💳 Payment History
             </h3>
             {/* Total Spent */}
@@ -531,12 +531,12 @@ function Profile() {
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                       <span style={{ fontSize: "22px" }}>{txn.icon}</span>
                       <div>
-                        <p style={{ margin: 0, fontWeight: 700, fontSize: "14px", color: "#1e293b" }}>{txn.service}</p>
+                        <p style={{ margin: 0, fontWeight: 700, fontSize: "14px", color: "var(--text-main)" }}>{txn.service}</p>
                         <p style={{ margin: 0, fontSize: "12px", color: "#64748b" }}>📅 {txn.date} &nbsp;·&nbsp; {txnIdentifier}</p>
                       </div>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <span style={{ fontWeight: 800, fontSize: "15px", color: "#1e293b" }}>₹{txn.amount}</span>
+                      <span style={{ fontWeight: 800, fontSize: "15px", color: "var(--text-main)" }}>₹{txn.amount}</span>
                       <span style={{ backgroundColor: s.bg, color: s.color, padding: "3px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700 }}>
                         {txn.status}
                       </span>
@@ -550,7 +550,7 @@ function Profile() {
                       className="txn-expanded-receipt"
                       style={{
                         backgroundColor: "#f8fafc",
-                        borderTop: "1px solid #e2e8f0",
+                        borderTop: "1px solid var(--border-color)",
                         padding: "14px 16px",
                         display: "grid",
                         gridTemplateColumns: "1fr 1fr",
@@ -568,7 +568,7 @@ function Profile() {
                       ].map(({ label, value }) => (
                         <div key={label}>
                           <p style={{ margin: "0 0 2px 0", color: "#94a3b8", fontSize: "11px", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>{label}</p>
-                          <p style={{ margin: 0, color: "#1e293b", fontWeight: 600 }}>{value}</p>
+                          <p style={{ margin: 0, color: "var(--text-main)", fontWeight: 600 }}>{value}</p>
                         </div>
                       ))}
                     </div>
@@ -614,7 +614,7 @@ function Profile() {
         <div
           className="profile-card premium-card quick-links-card"
         >
-          <h3 style={{ margin: "0 0 14px 0", fontSize: "16px", fontWeight: 700, color: "#1e293b" }}>
+          <h3 style={{ margin: "0 0 14px 0", fontSize: "16px", fontWeight: 700, color: "var(--text-main)" }}>
             🔗 Quick Links
           </h3>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
@@ -663,14 +663,14 @@ function Profile() {
             style={{
               maxWidth: "420px",
               width: "90%",
-              backgroundColor: "white",
+              backgroundColor: "var(--bg-card)",
               borderRadius: "20px",
               padding: "26px",
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-              <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 800, color: "#0f172a", display: "flex", alignItems: "center", gap: "8px" }}>
+              <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 800, color: "var(--text-main)", display: "flex", alignItems: "center", gap: "8px" }}>
                 <span>💳</span> Add Money to Wallet
               </h3>
               <button
@@ -729,7 +729,7 @@ function Profile() {
                   border: "1.5px solid #cbd5e1",
                   fontSize: "16px",
                   fontWeight: 800,
-                  color: "#0f172a",
+                  color: "var(--text-main)",
                   boxSizing: "border-box",
                   outline: "none"
                 }}

@@ -793,7 +793,7 @@ function AdminDashboard() {
               <button 
                 onClick={() => setActiveTab("sos-alerts")}
                 style={{
-                  backgroundColor: "white",
+                  backgroundColor: "var(--bg-card)",
                   color: "#ef4444",
                   border: "none",
                   padding: "10px 20px",
@@ -1103,7 +1103,7 @@ function AdminDashboard() {
                   </thead>
                   <tbody>
                     {transactions.map((t) => (
-                      <tr key={t._id || t.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                      <tr key={t._id || t.id} style={{ borderBottom: "1px solid var(--border-color)" }}>
                         <td style={{ padding: "12px", fontWeight: "bold" }}>
                           {t._id ? `#${t._id.substring(t._id.length - 8).toUpperCase()}` : t.id || "N/A"}
                         </td>
@@ -1194,7 +1194,7 @@ function AdminDashboard() {
                       <div
                         key={svc.id}
                         style={{
-                          border: "1px solid #e2e8f0",
+                          border: "1px solid var(--border-color)",
                           borderRadius: "10px",
                           padding: "16px",
                           textAlign: "center",
@@ -1308,7 +1308,7 @@ function AdminDashboard() {
                         <div 
                           key={svc.id} 
                           style={{ 
-                            padding: "20px", border: "1px solid #e2e8f0", borderRadius: "10px", 
+                            padding: "20px", border: "1px solid var(--border-color)", borderRadius: "10px", 
                             backgroundColor: "var(--bg-card)", boxShadow: "0 2px 4px rgba(0,0,0,0.02)" 
                           }}
                         >
@@ -1331,12 +1331,12 @@ function AdminDashboard() {
                                   key={sub.id} 
                                   style={{ 
                                     display: "flex", alignItems: "center", justifyContent: "space-between", 
-                                    border: "1px solid #f1f5f9", padding: "10px 14px", borderRadius: "8px", backgroundColor: "#f8fafc" 
+                                    border: "1px solid var(--border-color)", padding: "10px 14px", borderRadius: "8px", backgroundColor: "#f8fafc" 
                                   }}
                                 >
                                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                                     <span style={{ fontSize: "20px" }}>{sub.icon}</span>
-                                    <span style={{ fontSize: "13px", fontWeight: "bold", color: "#334155" }}>{sub.name}</span>
+                                    <span style={{ fontSize: "13px", fontWeight: "bold", color: "var(--text-main)" }}>{sub.name}</span>
                                   </div>
                                   <div style={{ display: "flex", gap: "4px" }}>
                                     <button 
@@ -1526,7 +1526,7 @@ function AdminDashboard() {
                   </thead>
                   <tbody>
                     {paginatedWorkers.map((w) => (
-                      <tr key={w._id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                      <tr key={w._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
                         <td style={{ padding: "12px", fontWeight: 700, color: "var(--text-main)" }}>{w.name}</td>
                         <td style={{ padding: "12px" }}>{w.service}</td>
                         <td style={{ padding: "12px" }}>📍 {w.city}</td>
@@ -1793,7 +1793,7 @@ function AdminDashboard() {
                   </thead>
                   <tbody>
                     {filteredCustomers.map((c) => (
-                      <tr key={c.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                      <tr key={c.id} style={{ borderBottom: "1px solid var(--border-color)" }}>
                         <td style={{ padding: "12px", fontWeight: 700, color: "var(--text-main)", verticalAlign: "top" }}>{c.name}</td>
                         <td style={{ padding: "12px", verticalAlign: "top" }}>
                           <div style={{ fontSize: "12px", color: "var(--text-main)" }}>✉️ {c.email}</div>
@@ -1820,7 +1820,7 @@ function AdminDashboard() {
                               ))}
                             </div>
                           ) : (
-                            <span style={{ backgroundColor: "#f1f5f9", color: "#64748b", padding: "4px 8px", borderRadius: "6px", fontSize: "11px", border: "1px solid #e2e8f0" }}>No Active Plan</span>
+                            <span style={{ backgroundColor: "#f1f5f9", color: "#64748b", padding: "4px 8px", borderRadius: "6px", fontSize: "11px", border: "1px solid var(--border-color)" }}>No Active Plan</span>
                           )}
                         </td>
                         <td style={{ padding: "12px", verticalAlign: "top" }}>
@@ -1929,7 +1929,7 @@ function AdminDashboard() {
                           const complaintWorker = linkedBooking ? workers.find(w => String(w._id) === String(linkedBooking.worker_id)) : null;
 
                           return (
-                            <tr key={c._id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                            <tr key={c._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
                               <td style={{ padding: "12px", fontWeight: "bold", fontSize: 11 }}>{c._id?.substr(-6).toUpperCase()}</td>
                               <td style={{ padding: "12px" }}>
                                  <div style={{ fontWeight: 700 }}>{c.reported_by || "User"}</div>
@@ -1943,7 +1943,7 @@ function AdminDashboard() {
                                 {/* Worker Info */}
                                 {complaintWorker ? (
                                   <div style={{ marginBottom: "4px" }}>
-                                    <span style={{ fontWeight: 700, color: "#1e293b" }}>👷 {complaintWorker.name}</span>
+                                    <span style={{ fontWeight: 700, color: "var(--text-main)" }}>👷 {complaintWorker.name}</span>
                                     <div style={{ fontSize: "11px", color: "#64748b" }}>{complaintWorker.speciality || complaintWorker.specialty || "Worker"} • {complaintWorker.city || ""}</div>
                                   </div>
                                 ) : (
@@ -2298,7 +2298,7 @@ function AdminDashboard() {
                     </thead>
                     <tbody>
                       {adminPlans.filter(p => !p.endDate || p.endDate >= new Date().toISOString().split("T")[0]).map(p => (
-                        <tr key={p._id || p.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                        <tr key={p._id || p.id} style={{ borderBottom: "1px solid var(--border-color)" }}>
                           <td style={{ padding: "8px", fontWeight: "bold" }}>{p.title}</td>
                           <td style={{ padding: "8px" }}>₹{(p.price || "").replace("₹", "")}/{p.period || "year"}</td>
                           <td style={{ padding: "8px", fontWeight: "600", color: "#475569", verticalAlign: "top" }}>
@@ -2326,7 +2326,7 @@ function AdminDashboard() {
                                 )}
                               </div>
                             ) : (
-                              <span style={{ color: "#64748b", backgroundColor: "#f8fafc", padding: "6px 10px", borderRadius: "8px", fontSize: "11px", border: "1px solid #e2e8f0", display: "inline-block" }}>
+                              <span style={{ color: "#64748b", backgroundColor: "#f8fafc", padding: "6px 10px", borderRadius: "8px", fontSize: "11px", border: "1px solid var(--border-color)", display: "inline-block" }}>
                                 ❌ No
                               </span>
                             )}
@@ -2623,7 +2623,7 @@ function AdminDashboard() {
                     </thead>
                     <tbody>
                       {adminOffers.filter(o => !o.endDate || o.endDate >= new Date().toISOString().split("T")[0]).map(o => (
-                        <tr key={o._id || o.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                        <tr key={o._id || o.id} style={{ borderBottom: "1px solid var(--border-color)" }}>
                           <td style={{ padding: "8px", fontWeight: "bold" }}>{o.code}</td>
                           <td style={{ padding: "8px" }}>{o.discount}</td>
                           <td style={{ padding: "8px", textAlign: "right" }}>
@@ -2733,7 +2733,7 @@ function AdminDashboard() {
                         {escrowBookings.map(b => {
                           const linkedComplaint = complaints.find(c => String(c.booking_id) === String(b._id));
                           return (
-                            <tr key={b._id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                            <tr key={b._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
                               <td style={{ padding: "14px 8px", fontFamily: "monospace", fontSize: "12px" }}>
                                 #{b._id.substr(-6).toUpperCase()}
                                 {linkedComplaint && (
@@ -2764,7 +2764,7 @@ function AdminDashboard() {
                                 )}
                               </td>
                               <td style={{ padding: "14px 8px" }}>
-                                <div style={{ fontWeight: 700, color: "#334155" }}>{b.customer_name}</div>
+                                <div style={{ fontWeight: 700, color: "var(--text-main)" }}>{b.customer_name}</div>
                                 <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>
                                   Email: {b.customerEmail || "N/A"}<br />
                                   Phone: {b.customerPhone || "N/A"}<br />
@@ -2772,7 +2772,7 @@ function AdminDashboard() {
                                   Address: {b.address || "N/A"}
                                 </div>
                               </td>
-                              <td style={{ padding: "14px 8px", fontWeight: 600, color: "#334155" }}>{b.service}</td>
+                              <td style={{ padding: "14px 8px", fontWeight: 600, color: "var(--text-main)" }}>{b.service}</td>
                               <td style={{ padding: "14px 8px", fontWeight: 700, color: "#16a34a" }}>₹{b.price}</td>
                               <td style={{ padding: "14px 8px" }}>
                                 <span style={{ padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700, backgroundColor: b.status === "Paid Out" ? "#dcfce7" : "#fff3e0", color: b.status === "Paid Out" ? "#16a34a" : "#e65100" }}>
@@ -2889,10 +2889,10 @@ function AdminDashboard() {
                     </thead>
                     <tbody>
                       {liveRealTimeBookings.filter(b => b.status === "Cancellation Pending").map(b => (
-                        <tr key={b._id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                        <tr key={b._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
                           <td style={{ padding: "14px 8px", fontFamily: "monospace", fontSize: "12px" }}>#{b._id.substr(-6).toUpperCase()}</td>
                            <td style={{ padding: "14px 8px" }}>
-                             <div style={{ fontWeight: 700, color: "#334155" }}>{b.customer_name}</div>
+                             <div style={{ fontWeight: 700, color: "var(--text-main)" }}>{b.customer_name}</div>
                              <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>Address: {b.address || "N/A"}</div>
                            </td>
                           <td style={{ padding: "14px 8px", fontWeight: 600, color: "#475569" }}>{b.service}</td>
@@ -2992,7 +2992,7 @@ function AdminDashboard() {
                          } catch(e){}
                       }
                     }}
-                    style={{ backgroundColor: "#f8fafc", border: "1px solid #e2e8f0", padding: "8px 16px", borderRadius: "8px", cursor: "pointer", fontSize: 12, fontWeight: 700, color: "#475569" }}
+                    style={{ backgroundColor: "#f8fafc", border: "1px solid var(--border-color)", padding: "8px 16px", borderRadius: "8px", cursor: "pointer", fontSize: 12, fontWeight: 700, color: "#475569" }}
                   >
                     Archive & Clear Stream
                   </button>
@@ -3001,7 +3001,7 @@ function AdminDashboard() {
                 {adminNotifications.filter(n => !n.is_read).length === 0 ? (
                   <div style={{ textAlign: "center", padding: "80px 0", color: "var(--text-muted)" }}>
                     <div style={{ fontSize: "72px", marginBottom: "20px" }}>🛡️</div>
-                    <h3 style={{ fontSize: 20, fontWeight: 800, color: "#334155", margin: "0 0 8px" }}>Security Status: Nominal</h3>
+                    <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--text-main)", margin: "0 0 8px" }}>Security Status: Nominal</h3>
                     <p style={{ margin: 0, fontSize: 14 }}>No active worker emergency distress telemetry feeds currently detected.</p>
                   </div>
                 ) : (
@@ -3100,54 +3100,54 @@ function AdminDashboard() {
                                     fontFamily: "'Outfit', 'Inter', sans-serif"
                                   }}>
                                     {/* Initiator Card */}
-                                    <div style={{ backgroundColor: "white", padding: "16px", borderRadius: "12px", border: "1.5px solid #fca5a5", boxShadow: "0 2px 4px rgba(239,68,68,0.05)" }}>
+                                    <div style={{ backgroundColor: "var(--bg-card)", padding: "16px", borderRadius: "12px", border: "1.5px solid #fca5a5", boxShadow: "0 2px 4px rgba(239,68,68,0.05)" }}>
                                       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                                         <span style={{ fontSize: "20px" }}>👤</span>
                                         <span style={{ fontSize: "11px", fontWeight: 800, color: "#ef4444", textTransform: "uppercase", letterSpacing: "0.5px" }}>Distress Initiator</span>
                                       </div>
-                                      <div style={{ fontSize: "15px", fontWeight: 700, color: "#1e293b" }}>{parsed.distressInitiator}</div>
+                                      <div style={{ fontSize: "15px", fontWeight: 700, color: "var(--text-main)" }}>{parsed.distressInitiator}</div>
                                       <div style={{ fontSize: "11px", color: "#64748b", marginTop: "6px" }}>Time: {parsed.reportedAt}</div>
                                     </div>
 
                                     {/* Location/Address Card */}
-                                    <div style={{ backgroundColor: "white", padding: "16px", borderRadius: "12px", border: "1.5px solid #fca5a5", boxShadow: "0 2px 4px rgba(239,68,68,0.05)" }}>
+                                    <div style={{ backgroundColor: "var(--bg-card)", padding: "16px", borderRadius: "12px", border: "1.5px solid #fca5a5", boxShadow: "0 2px 4px rgba(239,68,68,0.05)" }}>
                                       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                                         <span style={{ fontSize: "20px" }}>📍</span>
                                         <span style={{ fontSize: "11px", fontWeight: 800, color: "#ef4444", textTransform: "uppercase", letterSpacing: "0.5px" }}>Incident Location / Address</span>
                                       </div>
-                                      <div style={{ fontSize: "13px", fontWeight: 700, color: "#334155" }}>
+                                      <div style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-main)" }}>
                                         Address: <strong style={{ color: "#ef4444" }}>{parsed.bookingAddress}</strong>
                                       </div>
                                       <div style={{ fontSize: "11px", color: "#64748b", marginTop: "6px" }}>GPS Coordinates: {parsed.realTimeLocation}</div>
                                     </div>
 
                                     {/* Worker Card */}
-                                    <div style={{ backgroundColor: "white", padding: "16px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+                                    <div style={{ backgroundColor: "var(--bg-card)", padding: "16px", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
                                       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                                         <span style={{ fontSize: "20px" }}>👷</span>
                                         <span style={{ fontSize: "11px", fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" }}>Assigned Professional</span>
                                       </div>
-                                      <div style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b" }}>{parsed.assignedWorker}</div>
+                                      <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-main)" }}>{parsed.assignedWorker}</div>
                                       <div style={{ fontSize: "12px", color: "#475569", marginTop: "6px", wordBreak: "break-word" }}>{parsed.workerContact}</div>
                                     </div>
 
                                     {/* Customer Card */}
-                                    <div style={{ backgroundColor: "white", padding: "16px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+                                    <div style={{ backgroundColor: "var(--bg-card)", padding: "16px", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
                                       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                                         <span style={{ fontSize: "20px" }}>🧑</span>
                                         <span style={{ fontSize: "11px", fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" }}>Customer Details</span>
                                       </div>
-                                      <div style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b" }}>{parsed.customer}</div>
+                                      <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-main)" }}>{parsed.customer}</div>
                                       <div style={{ fontSize: "12px", color: "#475569", marginTop: "6px", wordBreak: "break-word" }}>{parsed.customerContact}</div>
                                     </div>
 
                                     {/* Linked Booking Card */}
-                                    <div style={{ backgroundColor: "white", padding: "16px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+                                    <div style={{ backgroundColor: "var(--bg-card)", padding: "16px", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
                                       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                                         <span style={{ fontSize: "20px" }}>📅</span>
                                         <span style={{ fontSize: "11px", fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" }}>Linked Booking</span>
                                       </div>
-                                      <div style={{ fontSize: "13px", fontWeight: 700, color: "#1e293b" }}>{parsed.linkedBooking}</div>
+                                      <div style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-main)" }}>{parsed.linkedBooking}</div>
                                     </div>
                                   </div>
                                 );
@@ -3325,7 +3325,7 @@ function AdminDashboard() {
                 {overdueBookings.length === 0 ? (
                   <div style={{ textAlign: "center", color: "#94a3b8", padding: "60px 0" }}>
                     <div style={{ fontSize: "56px", marginBottom: "16px" }}>✅</div>
-                    <h3 style={{ fontSize: "20px", fontWeight: 800, color: "#334155", margin: "0 0 8px" }}>All Clear — No Overdue Jobs</h3>
+                    <h3 style={{ fontSize: "20px", fontWeight: 800, color: "var(--text-main)", margin: "0 0 8px" }}>All Clear — No Overdue Jobs</h3>
                     <p style={{ margin: 0, fontSize: "14px" }}>All started bookings have been completed on time. No worker intervention required.</p>
                   </div>
                 ) : (
@@ -3354,13 +3354,13 @@ function AdminDashboard() {
                         const assignedWorker = workers.find(w => String(w._id) === String(b.worker_id));
                         
                         return (
-                          <tr key={b._id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                          <tr key={b._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
                             <td style={{ padding: "14px 8px", fontFamily: "monospace", fontSize: "12px", fontWeight: 700 }}>#{b._id.substr(-6).toUpperCase()}</td>
                             <td style={{ padding: "14px 8px" }}>
                               <div style={{ fontWeight: 700, color: "var(--text-main)", fontSize: "13px" }}>{b.customer_name}</div>
                               <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>{b.date} at {b.time}<br />Address: {b.address || "N/A"}</div>
                             </td>
-                            <td style={{ padding: "14px 8px", fontWeight: 600, color: "#334155" }}>{b.service}</td>
+                            <td style={{ padding: "14px 8px", fontWeight: 600, color: "var(--text-main)" }}>{b.service}</td>
                             <td style={{ padding: "14px 8px", fontWeight: 700, color: "#16a34a" }}>₹{b.price}</td>
                             <td style={{ padding: "14px 8px", fontSize: "12px", color: "var(--text-muted)" }}>{startedAt.toLocaleString()}</td>
                             <td style={{ padding: "14px 8px" }}>
@@ -3460,7 +3460,7 @@ function AdminDashboard() {
           <div style={{
             maxWidth: "500px",
             width: "92%",
-            backgroundColor: "white",
+            backgroundColor: "var(--bg-card)",
             borderRadius: "20px",
             padding: "32px",
             boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.3)",
@@ -3478,14 +3478,14 @@ function AdminDashboard() {
             </p>
 
             {/* Order & Worker Details Card */}
-            <div style={{ backgroundColor: "#f8fafc", borderRadius: "12px", padding: "16px", marginBottom: "20px", border: "1px solid #e2e8f0" }}>
+            <div style={{ backgroundColor: "#f8fafc", borderRadius: "12px", padding: "16px", marginBottom: "20px", border: "1px solid var(--border-color)" }}>
               <div style={{ fontSize: "12px", color: "#94a3b8", fontWeight: 600, marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Order & Worker Details</div>
               
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 {/* Worker */}
-                <div style={{ backgroundColor: "white", padding: "10px 12px", borderRadius: "8px", border: "1px solid #f1f5f9" }}>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
                   <div style={{ fontSize: "11px", color: "#94a3b8", fontWeight: 600, marginBottom: "4px" }}>👷 WORKER</div>
-                  <div style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b" }}>
+                  <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-main)" }}>
                     {refundModal.worker ? refundModal.worker.name : "Unknown"}
                   </div>
                   {refundModal.worker && (
@@ -3496,7 +3496,7 @@ function AdminDashboard() {
                 </div>
 
                 {/* Order Price */}
-                <div style={{ backgroundColor: "white", padding: "10px 12px", borderRadius: "8px", border: "1px solid #f1f5f9" }}>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
                   <div style={{ fontSize: "11px", color: "#94a3b8", fontWeight: 600, marginBottom: "4px" }}>💰 ORDER PRICE</div>
                   <div style={{ fontSize: "22px", fontWeight: 800, color: "#1d4ed8" }}>
                     ₹{refundModal.booking ? refundModal.booking.price : "N/A"}
@@ -3504,17 +3504,17 @@ function AdminDashboard() {
                 </div>
 
                 {/* Service */}
-                <div style={{ backgroundColor: "white", padding: "10px 12px", borderRadius: "8px", border: "1px solid #f1f5f9" }}>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
                   <div style={{ fontSize: "11px", color: "#94a3b8", fontWeight: 600, marginBottom: "4px" }}>🛠️ SERVICE</div>
-                  <div style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b" }}>
+                  <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-main)" }}>
                     {refundModal.booking ? refundModal.booking.service : "N/A"}
                   </div>
                 </div>
 
                 {/* Customer */}
-                <div style={{ backgroundColor: "white", padding: "10px 12px", borderRadius: "8px", border: "1px solid #f1f5f9" }}>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
                   <div style={{ fontSize: "11px", color: "#94a3b8", fontWeight: 600, marginBottom: "4px" }}>👤 CUSTOMER</div>
-                  <div style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b" }}>
+                  <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-main)" }}>
                     {refundModal.complaint.reported_by || "Customer"}
                   </div>
                 </div>
@@ -3532,7 +3532,7 @@ function AdminDashboard() {
 
             {/* Refund Amount Input */}
             <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "20px" }}>
-              <label style={{ fontSize: "13px", fontWeight: 700, color: "#1e293b", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <label style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-main)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span>Refund Amount to Customer Wallet</span>
                 {refundModal.booking && (
                   <span style={{ fontSize: "11px", color: "#64748b", fontWeight: 500 }}>
@@ -3567,7 +3567,7 @@ function AdminDashboard() {
               <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
                 <button 
                   onClick={() => setRefundAmount("0")}
-                  style={{ padding: "4px 10px", borderRadius: "6px", border: "1px solid #e2e8f0", backgroundColor: "#f8fafc", color: "#475569", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}
+                  style={{ padding: "4px 10px", borderRadius: "6px", border: "1px solid var(--border-color)", backgroundColor: "#f8fafc", color: "#475569", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}
                 >
                   No Refund
                 </button>
@@ -3575,13 +3575,13 @@ function AdminDashboard() {
                   <>
                     <button 
                       onClick={() => setRefundAmount(String(Math.round(refundModal.booking.price * 0.25)))}
-                      style={{ padding: "4px 10px", borderRadius: "6px", border: "1px solid #e2e8f0", backgroundColor: "#f8fafc", color: "#475569", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}
+                      style={{ padding: "4px 10px", borderRadius: "6px", border: "1px solid var(--border-color)", backgroundColor: "#f8fafc", color: "#475569", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}
                     >
                       25% (₹{Math.round(refundModal.booking.price * 0.25)})
                     </button>
                     <button 
                       onClick={() => setRefundAmount(String(Math.round(refundModal.booking.price * 0.5)))}
-                      style={{ padding: "4px 10px", borderRadius: "6px", border: "1px solid #e2e8f0", backgroundColor: "#f8fafc", color: "#475569", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}
+                      style={{ padding: "4px 10px", borderRadius: "6px", border: "1px solid var(--border-color)", backgroundColor: "#f8fafc", color: "#475569", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}
                     >
                       50% (₹{Math.round(refundModal.booking.price * 0.5)})
                     </button>

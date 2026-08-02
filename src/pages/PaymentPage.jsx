@@ -87,7 +87,7 @@ function PaymentPage() {
                Load Amount
             </label>
             <div style={{ position: "relative", marginBottom: "24px" }}>
-               <span style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", fontSize: "20px", fontWeight: 800, color: "#1e293b" }}>₹</span>
+               <span style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", fontSize: "20px", fontWeight: 800, color: "var(--text-main)" }}>₹</span>
                <input 
                  type="number"
                  value={amount}
@@ -95,7 +95,7 @@ function PaymentPage() {
                  disabled={processing}
                  style={{
                     width: "100%", padding: "16px 16px 16px 40px", borderRadius: "14px", border: "2.5px solid #e2e8f0",
-                    fontSize: "22px", fontWeight: 800, boxSizing: "border-box", outline: "none", color: "#1e293b"
+                    fontSize: "22px", fontWeight: 800, boxSizing: "border-box", outline: "none", color: "var(--text-main)"
                  }}
                />
             </div>
@@ -127,7 +127,7 @@ function PaymentPage() {
                      >
                         <div style={{ fontSize: "26px" }}>{opt.icon}</div>
                         <div style={{ flex: 1 }}>
-                           <div style={{ fontWeight: 700, fontSize: "15px", color: "#1e293b" }}>{opt.label}</div>
+                           <div style={{ fontWeight: 700, fontSize: "15px", color: "var(--text-main)" }}>{opt.label}</div>
                            <div style={{ fontSize: "12px", color: "#64748b" }}>{opt.desc}</div>
                         </div>
                         <div style={{

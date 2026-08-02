@@ -120,7 +120,7 @@ function AnimatedFailure({ errorMessage, onRetry, onBack }) {
         style={{
           width: "100%",
           maxWidth: "440px",
-          backgroundColor: "white",
+          backgroundColor: "var(--bg-card)",
           borderRadius: "24px",
           padding: "40px 32px",
           boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.3)",

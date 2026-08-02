@@ -642,7 +642,7 @@ function WorkerDashboard() {
                       </thead>
                       <tbody>
                         {bookings.map(b => (
-                          <tr key={b._id} style={{ borderBottom: "1px solid #e2e8f0", fontSize: 14 }}>
+                          <tr key={b._id} style={{ borderBottom: "1px solid var(--border-color)", fontSize: 14 }}>
                             <td style={{ padding: "14px 8px", fontWeight: 700 }}>{b.customer_name || "Verified Customer"}</td>
                             <td style={{ padding: "14px 8px" }}>{b.service}</td>
                             <td style={{ padding: "14px 8px" }}>📅 {b.date}<br />🕐 {b.time}</td>
@@ -718,7 +718,7 @@ function WorkerDashboard() {
                       </div>
 
                       {n.type === "booking" && (
-                        <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: 16, marginTop: 12 }}>
+                        <div style={{ borderTop: "1px solid var(--border-color)", paddingTop: 16, marginTop: 12 }}>
                           <div style={{ marginBottom: "12px" }}>
                             <a 
                               href={`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(n.workerAddr)}&destination=${encodeURIComponent(n.customerAddr)}`} 
@@ -862,7 +862,7 @@ function WorkerDashboard() {
                           </div>
 
                           {openMapId === n.id && (
-                            <div style={{ marginTop: 12, border: "1px solid #e2e8f0", borderRadius: 10, overflow: "hidden" }}>
+                            <div style={{ marginTop: 12, border: "1px solid var(--border-color)", borderRadius: 10, overflow: "hidden" }}>
                               <div style={{ backgroundColor: "#1e293b", color: "white", padding: "12px 16px", display: "flex", justifyContent: "space-between", fontSize: 13 }}>
                                 <span>📍 From: <strong>{n.workerAddr}</strong></span>
                                 <span>🏠 To: <strong>{n.customerAddr}</strong></span>
@@ -910,7 +910,7 @@ function WorkerDashboard() {
                 </div>
                 <div className="premium-card" style={{ borderTop: "6px solid #64748b", textAlign: "center", padding: "28px 20px" }}>
                   <div style={{ fontSize: 11, color: "var(--text-secondary)", fontWeight: 850, textTransform: "uppercase", letterSpacing: "0.8px" }}>📊 Total Services</div>
-                  <div style={{ fontSize: 40, fontWeight: 900, color: "#1e293b", marginTop: 10 }}>{activeValidBookings.length}</div>
+                  <div style={{ fontSize: 40, fontWeight: 900, color: "var(--text-main)", marginTop: 10 }}>{activeValidBookings.length}</div>
                   <div style={{ fontSize: 12, color: "#64748b", marginTop: 6, fontWeight: 600 }}>Aggregate service count</div>
                 </div>
               </div>
@@ -925,10 +925,10 @@ function WorkerDashboard() {
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                     {activeValidBookings.map(b => (
-                      <div key={b._id || b.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 0", borderBottom: "1px solid #f1f5f9" }}>
+                      <div key={b._id || b.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 0", borderBottom: "1px solid var(--border-color)" }}>
                         <div>
-                          <div style={{ fontWeight: 750, color: "#1e293b", fontSize: 15 }}>{b.service}</div>
-                          <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>👤 Client: <strong style={{ color: "#334155" }}>{b.customer_name || b.customer}</strong> · 📅 {b.date}</div>
+                          <div style={{ fontWeight: 750, color: "var(--text-main)", fontSize: 15 }}>{b.service}</div>
+                          <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>👤 Client: <strong style={{ color: "var(--text-main)" }}>{b.customer_name || b.customer}</strong> · 📅 {b.date}</div>
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
                           <div style={{ fontWeight: 900, fontSize: 20, color: b.status === "Paid Out" ? "#16a34a" : b.status === "Completed" ? "#c2410c" : "#475569" }}>
@@ -979,9 +979,9 @@ function WorkerDashboard() {
                     ["📧 Email", profile.email],
                     ["📅 Joined", profile.joinedDate],
                   ].map(([label, val]) => (
-                    <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #f1f5f9", fontSize: 14 }}>
+                    <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border-color)", fontSize: 14 }}>
                       <span style={{ color: "#64748b" }}>{label}</span>
-                      <span style={{ fontWeight: 600, color: "#1e293b" }}>{val}</span>
+                      <span style={{ fontWeight: 600, color: "var(--text-main)" }}>{val}</span>
                     </div>
                   ))}
                   {!editMode ? (
@@ -1021,7 +1021,7 @@ function WorkerDashboard() {
                             </span>
                           </div>
                           <div style={{ fontSize: 13, color: "#475569", marginBottom: 8 }}>👤 {c.customer} · {c.date}</div>
-                          <div style={{ fontSize: 14, color: "#1e293b", marginBottom: 8 }}>"{c.desc}"</div>
+                          <div style={{ fontSize: 14, color: "var(--text-main)", marginBottom: 8 }}>"{c.desc}"</div>
                           {c.adminVerdict === "Valid" && (
                             <div style={{ backgroundColor: "#ffebee", borderRadius: 6, padding: "8px 12px", fontSize: 13, color: "#c62828", fontWeight: 600 }}>
                               ⬇️ Rating deducted by -{c.ratingDeducted || 0.2} due to this verified complaint.
@@ -1527,11 +1527,11 @@ function WorkerDashboard() {
           animation: "fadeIn 0.2s ease-out forwards"
         }}>
           <div style={{
-            maxWidth: "400px", width: "90%", backgroundColor: "white",
+            maxWidth: "400px", width: "90%", backgroundColor: "var(--bg-card)",
             borderRadius: "20px", padding: "28px", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
             border: "1px solid rgba(0,0,0,0.05)"
           }}>
-            <h3 style={{ margin: "0 0 8px 0", fontSize: "20px", fontWeight: 800, color: "#1e293b" }}>
+            <h3 style={{ margin: "0 0 8px 0", fontSize: "20px", fontWeight: 800, color: "var(--text-main)" }}>
               Reject Booking Order?
             </h3>
             <p style={{ margin: "0 0 20px 0", fontSize: "13px", color: "#64748b", lineHeight: 1.5 }}>

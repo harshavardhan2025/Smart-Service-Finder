@@ -442,7 +442,7 @@ function MyBookings() {
           }}
         >
           {[
-            { label: "Total", count: liveBookings.length, color: "#1e293b", bg: "#f1f5f9" },
+            { label: "Total", count: liveBookings.length, color: "var(--text-main)", bg: "#f1f5f9" },
             { label: "Confirmed/Accepted", count: liveBookings.filter(b => b.status === "Confirmed" || b.status === "Accepted").length, color: "#16a34a", bg: "#dcfce7" },
             { label: "Upcoming/Pending", count: liveBookings.filter(b => b.status === "Upcoming").length, color: "#d97706", bg: "#fef3c7" },
             { label: "Completed", count: liveBookings.filter(b => b.status === "Completed" || b.status === "Paid Out").length, color: "var(--primary)", bg: "#b4d0e7" }
@@ -494,7 +494,7 @@ function MyBookings() {
                     borderRadius: "14px",
                     padding: "20px",
                     boxShadow: "0 2px 12px rgba(0,0,0,0.07)",
-                    border: "1px solid #f1f5f9",
+                    border: "1px solid var(--border-color)",
                     transition: "box-shadow 0.2s",
                     cursor: "default"
                   }}
@@ -516,7 +516,7 @@ function MyBookings() {
                         {serviceIcons[booking.service] || "🛠️"}
                       </span>
                       <div>
-                        <h3 style={{ margin: 0, fontSize: "17px", fontWeight: 700, color: "#1e293b" }}>
+                        <h3 style={{ margin: 0, fontSize: "17px", fontWeight: 700, color: "var(--text-main)" }}>
                           {booking.service}
                         </h3>
                         <p style={{ margin: "3px 0 0 0", fontSize: "13px", color: "#64748b" }}>
@@ -551,7 +551,7 @@ function MyBookings() {
                       fontSize: "13px",
                       color: "#475569",
                       paddingTop: "12px",
-                      borderTop: "1px solid #f1f5f9"
+                      borderTop: "1px solid var(--border-color)"
                     }}
                   >
                     <span>📅 Date: {booking.date}</span>
@@ -725,14 +725,14 @@ function MyBookings() {
             style={{
               maxWidth: "400px",
               width: "90%",
-              backgroundColor: "white",
+              backgroundColor: "var(--bg-card)",
               borderRadius: "20px",
               padding: "28px",
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
               border: "1px solid rgba(0,0,0,0.05)"
             }}
           >
-            <h3 style={{ margin: "0 0 8px 0", fontSize: "20px", fontWeight: 800, color: "#1e293b" }}>
+            <h3 style={{ margin: "0 0 8px 0", fontSize: "20px", fontWeight: 800, color: "var(--text-main)" }}>
               Cancel Booking Order?
             </h3>
             <p style={{ margin: "0 0 20px 0", fontSize: "13px", color: "#64748b", lineHeight: 1.5 }}>
@@ -816,7 +816,7 @@ function MyBookings() {
             style={{
               maxWidth: "460px",
               width: "92%",
-              backgroundColor: "#ffffff",
+              backgroundColor: "var(--bg-card)",
               borderRadius: "24px",
               padding: "0",
               boxShadow: "0 30px 70px rgba(31, 53, 59, 0.35), 0 0 0 1px rgba(49, 82, 91, 0.1)",
@@ -831,7 +831,7 @@ function MyBookings() {
             {/* Header */}
             <div style={{
               padding: "22px 26px 16px 26px",
-              borderBottom: "1px solid #f1f5f9",
+              borderBottom: "1px solid var(--border-color)",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "flex-start"
@@ -853,7 +853,7 @@ function MyBookings() {
                 }}>
                   <span>📅</span> Reschedule Service
                 </div>
-                <h3 style={{ margin: 0, fontSize: "21px", fontWeight: 800, color: "#0f172a", letterSpacing: "-0.3px" }}>
+                <h3 style={{ margin: 0, fontSize: "21px", fontWeight: 800, color: "var(--text-main)", letterSpacing: "-0.3px" }}>
                   Reschedule Appointment
                 </h3>
               </div>
@@ -954,7 +954,7 @@ function MyBookings() {
                     border: "1.5px solid #cbd5e1",
                     fontSize: "13.5px",
                     fontWeight: 600,
-                    color: "#0f172a",
+                    color: "var(--text-main)",
                     boxSizing: "border-box",
                     outline: "none",
                     fontFamily: "inherit"
@@ -1057,7 +1057,7 @@ function MyBookings() {
                     flex: 1,
                     backgroundColor: "#f1f5f9",
                     color: "#475569",
-                    border: "1px solid #e2e8f0",
+                    border: "1px solid var(--border-color)",
                     padding: "13px 16px",
                     borderRadius: "14px",
                     fontWeight: 700,
@@ -1093,7 +1093,7 @@ function MyBookings() {
             style={{
               maxWidth: "440px",
               width: "90%",
-              backgroundColor: "white",
+              backgroundColor: "var(--bg-card)",
               borderRadius: "20px",
               padding: "28px",
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",

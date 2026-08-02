@@ -39,9 +39,9 @@ function SkeletonLoader({ type = "card", count = 1 }) {
             alignItems: "center",
             gap: "16px",
             padding: "16px",
-            backgroundColor: "white",
+            backgroundColor: "var(--bg-card)",
             borderRadius: "12px",
-            border: "1px solid #e2e8f0",
+            border: "1px solid var(--border-color)",
             marginBottom: "12px",
             width: "100%",
             boxSizing: "border-box"
@@ -62,9 +62,9 @@ function SkeletonLoader({ type = "card", count = 1 }) {
           key={key}
           style={{
             padding: "24px",
-            backgroundColor: "white",
+            backgroundColor: "var(--bg-card)",
             borderRadius: "16px",
-            border: "1px solid #e2e8f0",
+            border: "1px solid var(--border-color)",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -91,9 +91,9 @@ function SkeletonLoader({ type = "card", count = 1 }) {
         key={key}
         style={{
           padding: "20px",
-          backgroundColor: "white",
+          backgroundColor: "var(--bg-card)",
           borderRadius: "14px",
-          border: "1px solid #f1f5f9",
+          border: "1px solid var(--border-color)",
           boxShadow: "0 4px 12px rgba(0,0,0,0.02)",
           display: "flex",
           flexDirection: "column",

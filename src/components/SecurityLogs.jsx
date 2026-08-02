@@ -118,7 +118,7 @@ function SecurityLogs({ userId = "admin" }) {
             </thead>
             <tbody>
               {logs.map((log) => (
-                <tr key={log._id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                <tr key={log._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
                   <td style={{ padding: "12px 8px" }}>
                     <div style={{
                       width: "30px", height: "30px", borderRadius: "50%",

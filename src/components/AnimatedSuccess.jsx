@@ -90,7 +90,7 @@ function AnimatedSuccess({ bookingDetails, onClose }) {
         style={{
           width: "100%",
           maxWidth: "460px",
-          backgroundColor: "white",
+          backgroundColor: "var(--bg-card)",
           borderRadius: "24px",
           padding: "40px 32px",
           boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.3)",
@@ -126,7 +126,7 @@ function AnimatedSuccess({ bookingDetails, onClose }) {
           </svg>
         </div>
 
-        <h2 style={{ margin: "0 0 8px 0", fontSize: "24px", fontWeight: 800, color: "#1e293b" }}>
+        <h2 style={{ margin: "0 0 8px 0", fontSize: "24px", fontWeight: 800, color: "var(--text-main)" }}>
           Booking Confirmed! 🚀
         </h2>
         <p style={{ margin: "0 0 28px 0", fontSize: "14px", color: "#64748b", lineHeight: 1.5 }}>
@@ -139,20 +139,20 @@ function AnimatedSuccess({ bookingDetails, onClose }) {
             borderRadius: "16px",
             padding: "20px",
             marginBottom: "28px",
-            border: "1px solid #e2e8f0",
+            border: "1px solid var(--border-color)",
             textAlign: "left",
             fontSize: "13px"
           }}
         >
-          <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "10px", borderBottom: "1px solid #e2e8f0", marginBottom: "10px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "10px", borderBottom: "1px solid var(--border-color)", marginBottom: "10px" }}>
             <span style={{ color: "#64748b", fontWeight: 500 }}>Assigned Service:</span>
-            <span style={{ color: "#1e293b", fontWeight: 700 }}>{bookingDetails?.service || "Professional Expert"}</span>
+            <span style={{ color: "var(--text-main)", fontWeight: 700 }}>{bookingDetails?.service || "Professional Expert"}</span>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "10px", borderBottom: "1px solid #e2e8f0", marginBottom: "10px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "10px", borderBottom: "1px solid var(--border-color)", marginBottom: "10px" }}>
             <span style={{ color: "#64748b", fontWeight: 500 }}>Scheduled Date & Time:</span>
-            <span style={{ color: "#1e293b", fontWeight: 700 }}>{bookingDetails?.date} at {bookingDetails?.time}</span>
+            <span style={{ color: "var(--text-main)", fontWeight: 700 }}>{bookingDetails?.date} at {bookingDetails?.time}</span>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "10px", borderBottom: "1px solid #e2e8f0", marginBottom: "10px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "10px", borderBottom: "1px solid var(--border-color)", marginBottom: "10px" }}>
             <span style={{ color: "#64748b", fontWeight: 500 }}>Total Cost Paid:</span>
             <span style={{ color: "var(--primary)", fontWeight: 800 }}>₹{bookingDetails?.price || 399}</span>
           </div>

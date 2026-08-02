@@ -79,10 +79,10 @@
       #1F353B 100%);
 
   --bg-card:
-    rgba(49, 82, 91, 0.25);
+    rgba(21, 35, 41, 0.7);
 
   --bg-card-hover:
-    rgba(49, 82, 91, 0.4);
+    rgba(25, 45, 55, 0.85);
 
   --text-main: #E8F6F7;
   --text-muted: #B3DEE5;

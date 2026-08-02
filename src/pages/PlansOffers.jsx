@@ -461,7 +461,7 @@ function PlansOffers() {
                   }}
                 >
                   {plan.popular && (
-                    <span style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", backgroundColor: "#eab308", color: "#1e293b", padding: "6px 16px", borderRadius: 20, fontSize: 11, fontWeight: 800, boxShadow: "0 4px 12px rgba(234, 179, 8, 0.4)", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <span style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", backgroundColor: "#eab308", color: "var(--text-main)", padding: "6px 16px", borderRadius: 20, fontSize: 11, fontWeight: 800, boxShadow: "0 4px 12px rgba(234, 179, 8, 0.4)", display: "inline-flex", alignItems: "center", gap: "4px" }}>
                       MOST POPULAR <FaStar size={10} />
                     </span>
                   )}

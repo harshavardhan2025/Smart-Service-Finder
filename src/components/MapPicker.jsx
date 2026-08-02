@@ -419,12 +419,12 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
           display: "flex", justifyContent: "center", alignItems: "center", padding: "20px"
         }}>
           <div style={{
-            backgroundColor: "white", padding: "24px", borderRadius: "12px",
+            backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "12px",
             boxShadow: "0 10px 25px rgba(0,0,0,0.2)", maxWidth: "400px", width: "100%",
             textAlign: "center"
           }}>
             <div style={{ fontSize: "36px", marginBottom: "16px" }}>📍</div>
-            <h3 style={{ margin: "0 0 12px 0", color: "#1e293b", fontFamily: "'Outfit', sans-serif" }}>Location Access Needed</h3>
+            <h3 style={{ margin: "0 0 12px 0", color: "var(--text-main)", fontFamily: "'Outfit', sans-serif" }}>Location Access Needed</h3>
             <p style={{ margin: "0 0 24px 0", color: "#64748b", lineHeight: "1.5" }}>{locationError}</p>
             <div style={{ display: "flex", gap: "12px" }}>
               <button

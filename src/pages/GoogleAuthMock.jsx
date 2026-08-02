@@ -140,7 +140,7 @@ function GoogleAuthMock() {
       padding: "20px"
     }}>
       <div style={{
-        backgroundColor: "white",
+        backgroundColor: "var(--bg-card)",
         width: "100%",
         maxWidth: "400px",
         borderRadius: "8px",

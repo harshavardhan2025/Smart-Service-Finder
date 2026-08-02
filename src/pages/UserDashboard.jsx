@@ -348,7 +348,7 @@ function UserDashboard() {
                   fontWeight: 700,
                   fontSize: "14px",
                   backgroundColor: "#eab308",
-                  color: "#1e293b",
+                  color: "var(--text-main)",
                   boxShadow: "0 4px 12px rgba(234, 179, 8, 0.2)",
                   display: "flex",
                   justifyContent: "center",
@@ -648,7 +648,7 @@ function UserDashboard() {
           <div style={{
             maxWidth: "420px",
             width: "90%",
-            backgroundColor: "#ffffff",
+            backgroundColor: "var(--bg-card)",
             borderRadius: "24px",
             padding: "32px",
             textAlign: "center",
@@ -673,7 +673,7 @@ function UserDashboard() {
                 }}>
                   🛡️
                 </div>
-                <h2 style={{ margin: "0 0 10px 0", fontSize: "24px", fontWeight: 800, color: "#1e293b" }}>
+                <h2 style={{ margin: "0 0 10px 0", fontSize: "24px", fontWeight: 800, color: "var(--text-main)" }}>
                   Emergency Action Triggered
                 </h2>
                 <p style={{ margin: "0 0 24px 0", fontSize: "14px", color: "#64748b", lineHeight: 1.5 }}>

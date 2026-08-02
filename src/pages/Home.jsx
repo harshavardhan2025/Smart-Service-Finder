@@ -704,7 +704,7 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
                       onClick={() => localStorage.setItem("selected_worker", JSON.stringify(worker))}
                       style={{ textDecoration: "none" }}
                     >
-                      <div style={{ backgroundColor: "white", padding: "8px 12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.2)", display: "flex", flexDirection: "column", gap: "4px", minWidth: "140px", cursor: "pointer", transition: "transform 0.2s" }}
+                      <div style={{ backgroundColor: "var(--bg-card)", padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: "4px", minWidth: "140px", cursor: "pointer", transition: "transform 0.2s" }}
                         onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.03)"}
                         onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
                       >
@@ -735,7 +735,7 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
                 <Link 
                   to="/plans-offers" 
                   onClick={(e) => e.stopPropagation()}
-                  style={{ display: "inline-block", marginTop: "10px", padding: "8px 14px", backgroundColor: "#ffffff", color: "#6b17e1ff", borderRadius: "8px", fontSize: "12px", fontWeight: "bold", textDecoration: "none", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", transition: "transform 0.1s" }}
+                  style={{ display: "inline-block", marginTop: "10px", padding: "8px 14px", backgroundColor: "var(--bg-card)", color: "#6b17e1ff", borderRadius: "8px", fontSize: "12px", fontWeight: "bold", textDecoration: "none", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", transition: "transform 0.1s" }}
                   onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
                   onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
                 >
@@ -960,7 +960,7 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
                 <div key={idx} className="premium-card" style={{ padding: "24px", border: plan.popular ? "2px solid #eab308" : "1px solid var(--border-color)", display: "flex", flexDirection: "column", justifyContent: "space-between", transform: plan.popular ? "scale(1.02)" : "none", boxShadow: plan.popular ? "0 10px 25px rgba(234, 179, 8, 0.15)" : "var(--shadow-3d)" }}>
                   <div>
                     {plan.popular && (
-                      <span style={{ backgroundColor: "#eab308", color: "#1e293b", padding: "3px 10px", borderRadius: 12, fontSize: 10, fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "2px", marginBottom: "10px" }}>
+                      <span style={{ backgroundColor: "#eab308", color: "var(--text-main)", padding: "3px 10px", borderRadius: 12, fontSize: 10, fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "2px", marginBottom: "10px" }}>
                         POPULAR <FaStar size={8} />
                       </span>
                     )}
@@ -1039,12 +1039,12 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
           display: "flex", justifyContent: "center", alignItems: "center", padding: "20px"
         }}>
           <div style={{
-            backgroundColor: "white", padding: "24px", borderRadius: "12px",
+            backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "12px",
             boxShadow: "0 10px 25px rgba(0,0,0,0.2)", maxWidth: "400px", width: "100%",
             textAlign: "center"
           }}>
             <div style={{ fontSize: "36px", marginBottom: "16px" }}>📍</div>
-            <h3 style={{ margin: "0 0 12px 0", color: "#1e293b", fontFamily: "'Outfit', sans-serif" }}>Location Access Needed</h3>
+            <h3 style={{ margin: "0 0 12px 0", color: "var(--text-main)", fontFamily: "'Outfit', sans-serif" }}>Location Access Needed</h3>
             <p style={{ margin: "0 0 24px 0", color: "#64748b", lineHeight: "1.5" }}>{locationError}</p>
             <div style={{ display: "flex", gap: "12px" }}>
               <button

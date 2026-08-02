@@ -305,7 +305,7 @@ function BookingPage() {
         boxShadow: "0 20px 40px rgba(0,0,0,0.1)"
       }}>
         <div style={{ textAlign: "center", marginBottom: 30 }}>
-          <h1 style={{ color: "#1e293b", fontSize: 32, fontWeight: 900, marginBottom: 8, letterSpacing: "-0.5px" }}>
+          <h1 style={{ color: "var(--text-main)", fontSize: 32, fontWeight: 900, marginBottom: 8, letterSpacing: "-0.5px" }}>
             📅 Schedule Service
           </h1>
           <p style={{ color: "#64748b", fontSize: 15, fontWeight: 500 }}>
@@ -411,7 +411,7 @@ function BookingPage() {
           transition: "all 0.3s ease",
           border: "1px solid rgba(0,0,0,0.05)"
         }}>
-          <h3 style={{ margin: "0 0 20px", color: "#1e293b", fontSize: 17, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
+          <h3 style={{ margin: "0 0 20px", color: "var(--text-main)", fontSize: 17, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
             🕒 Available Windows
           </h3>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: 12 }}>
@@ -483,7 +483,7 @@ function BookingPage() {
             border: "1px solid rgba(0,0,0,0.05)",
             animation: "slideUp 0.3s ease-out"
           }}>
-            <h3 style={{ margin: "0 0 20px", color: "#1e293b", fontSize: 20, fontWeight: 800 }}>💳 Checkout</h3>
+            <h3 style={{ margin: "0 0 20px", color: "var(--text-main)", fontSize: 20, fontWeight: 800 }}>💳 Checkout</h3>
             
             {/* 📍 DYNAMIC ADDRESS SELECTOR FOR PRECISE ARRIVAL */}
             <div style={{ marginBottom: 20 }}>
@@ -500,7 +500,7 @@ function BookingPage() {
                   border: "2px solid #e2e8f0", 
                   fontSize: 14,
                   fontWeight: 500,
-                  color: "#1e293b",
+                  color: "var(--text-main)",
                   fontFamily: "inherit",
                   resize: "vertical",
                   boxSizing: "border-box"
@@ -518,7 +518,7 @@ function BookingPage() {
                   border: "2px solid #e2e8f0", 
                   fontSize: 15,
                   fontWeight: 600,
-                  color: "#1e293b",
+                  color: "var(--text-main)",
                   cursor: "pointer"
                 }}>
                 <option value="UPI">📱 Google Pay / UPI</option>
@@ -571,11 +571,11 @@ function BookingPage() {
               borderRadius: 14, 
               padding: 18, 
               marginBottom: 24, 
-              border: "1px solid #e2e8f0"
+              border: "1px solid var(--border-color)"
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, color: "#64748b", fontSize: 14 }}>
                 <span>Base Service Rate</span>
-                <span style={{ fontWeight: 600, color: "#1e293b" }}>₹{basePrice}</span>
+                <span style={{ fontWeight: 600, color: "var(--text-main)" }}>₹{basePrice}</span>
               </div>
               
               {distanceFee > 0 && (
@@ -600,7 +600,7 @@ function BookingPage() {
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", color: "#64748b", fontSize: 13 }}>
                 <span>Delivery Window</span>
-                <span style={{ fontWeight: 700, color: "#1e293b" }}>{date.toDateString()} — {selectedSlot}</span>
+                <span style={{ fontWeight: 700, color: "var(--text-main)" }}>{date.toDateString()} — {selectedSlot}</span>
               </div>
             </div>
             

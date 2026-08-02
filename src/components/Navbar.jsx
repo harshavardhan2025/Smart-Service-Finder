@@ -194,7 +194,7 @@ function Navbar() {
                   }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", borderBottom: "1px solid rgba(0,0,0,0.06)", paddingBottom: "8px" }}>
-                    <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "#1e293b" }}>Notifications</h4>
+                    <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "var(--text-main)" }}>Notifications</h4>
                     <button
                       onClick={async () => {
                         try {
@@ -239,7 +239,7 @@ function Navbar() {
                             transition: "background-color 0.2s"
                           }}
                         >
-                          <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, color: "var(--text-main)", marginBottom: "4px" }}>
                             <span style={{ fontWeight: 800 }}>{n.title || "Notification"}</span>
                             <span style={{ fontSize: "9px", color: "#94a3b8" }}>
                               {n.createdAt ? new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Just now"}

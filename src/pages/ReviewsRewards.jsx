@@ -322,7 +322,7 @@ function ReviewsRewards() {
         {/* Pending Reviews */}
         {pendingReviews.length > 0 && (
           <div style={{ marginBottom: "28px" }}>
-            <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#1e293b", margin: "0 0 14px 0" }}>
+            <h2 style={{ fontSize: "18px", fontWeight: 700, color: "var(--text-main)", margin: "0 0 14px 0" }}>
               ✍️ Pending Reviews ({pendingReviews.length})
             </h2>
             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -342,7 +342,7 @@ function ReviewsRewards() {
                   >
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
                       <div>
-                        <h3 style={{ margin: "0 0 4px 0", fontSize: "16px", fontWeight: 700, color: "#1e293b" }}>
+                        <h3 style={{ margin: "0 0 4px 0", fontSize: "16px", fontWeight: 700, color: "var(--text-main)" }}>
                           {r.service}
                         </h3>
                         <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>👷 Service Expert · 📅 {r.date}</p>
@@ -382,7 +382,7 @@ function ReviewsRewards() {
                         width: "100%",
                         padding: "10px 14px",
                         borderRadius: "8px",
-                        border: "1px solid #e2e8f0",
+                        border: "1px solid var(--border-color)",
                         fontSize: "14px",
                         resize: "vertical",
                         boxSizing: "border-box",
@@ -415,7 +415,7 @@ function ReviewsRewards() {
 
         {/* Redeem Rewards */}
         <div style={{ marginBottom: "28px" }}>
-          <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#1e293b", margin: "0 0 6px 0" }}>
+          <h2 style={{ fontSize: "18px", fontWeight: 700, color: "var(--text-main)", margin: "0 0 6px 0" }}>
             🎁 Redeem Rewards
           </h2>
           <p style={{ fontSize: "13px", color: "#64748b", margin: "0 0 14px 0" }}>
@@ -449,7 +449,7 @@ function ReviewsRewards() {
                   onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
                 >
                   <div style={{ fontSize: "30px", marginBottom: "8px" }}>{reward.icon}</div>
-                  <h3 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "#1e293b" }}>
+                  <h3 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "var(--text-main)" }}>
                     {reward.title}
                   </h3>
                   <p style={{ margin: "0 0 10px 0", fontSize: "12px", color: "#64748b" }}>{reward.desc}</p>
@@ -498,7 +498,7 @@ function ReviewsRewards() {
         {doneReviews.length > 0 && (
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "0 0 14px 0", flexWrap: "wrap", gap: 10 }}>
-              <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#1e293b", margin: 0 }}>
+              <h2 style={{ fontSize: "18px", fontWeight: 700, color: "var(--text-main)", margin: 0 }}>
                 📝 Your Reviews
               </h2>
               {/* Category Filters */}
@@ -557,13 +557,13 @@ function ReviewsRewards() {
                       backgroundColor: "var(--bg-card)",
                       borderRadius: "12px",
                       padding: "16px 20px",
-                      border: "1px solid #f1f5f9",
+                      border: "1px solid var(--border-color)",
                       boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
                     }}
                   >
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
                       <div>
-                        <h3 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "#1e293b" }}>
+                        <h3 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "var(--text-main)" }}>
                           {r.service || "Professional Service"}
                         </h3>
                         <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>👷 Verified Partner · 📅 {r.date}</p>
