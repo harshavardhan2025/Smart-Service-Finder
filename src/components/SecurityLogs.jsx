@@ -105,7 +105,7 @@ function SecurityLogs({ userId = "admin", limit = 0 }) {
           No recorded security access events found.
         </div>
       ) : (
-        <div style={{ overflowX: "auto" }}>
+        <div className="custom-scrollbar" style={{ overflowX: "auto", maxHeight: "400px", overflowY: "auto", paddingRight: "8px" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "13px" }}>
             <thead>
               <tr style={{ borderBottom: "1.5px solid var(--border-color)", color: "var(--text-secondary)" }}>
@@ -131,7 +131,7 @@ function SecurityLogs({ userId = "admin", limit = 0 }) {
                   <td style={{ padding: "12px 8px" }}>
                     <strong style={{ 
                       color: log.action === "SOS_TRIGGERED" ? "#ef4444" : 
-                             log.action === "BOOKING_CANCELLED" ? "#ea580c" : "#1e293b",
+                             log.action === "BOOKING_CANCELLED" ? "#ea580c" : "var(--text-main)",
                       fontSize: "13px"
                     }}>
                       {log.action}

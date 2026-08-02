@@ -514,7 +514,7 @@ function UserDashboard() {
             ) : loading ? (
               <SkeletonLoader type="list" count={2} />
             ) : bookings.length > 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div className="custom-scrollbar" style={{ display: "flex", flexDirection: "column", gap: "16px", maxHeight: "300px", overflowY: "auto", paddingRight: "8px" }}>
                 {bookings.map(b => (
                   <div key={b._id || b.id} className="dashboard-list-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "16px", borderBottom: "1px solid var(--border)" }}>
                     <div>
@@ -545,7 +545,7 @@ function UserDashboard() {
                 <button onClick={() => navigate("/login")} className="btn-secondary" style={{ padding: "8px 16px", fontSize: "12px", cursor: "pointer", fontWeight: 700 }}>Login Now</button>
               </div>
             ) : transactions.length > 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div className="custom-scrollbar" style={{ display: "flex", flexDirection: "column", gap: "16px", maxHeight: "300px", overflowY: "auto", paddingRight: "8px" }}>
                 {transactions.map(t => (
                   <div key={t._id || t.id} className="dashboard-list-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "16px", borderBottom: "1px solid var(--border)" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -585,7 +585,7 @@ function UserDashboard() {
                 <button onClick={() => navigate("/login")} className="btn-secondary" style={{ padding: "8px 16px", fontSize: "12px", cursor: "pointer", fontWeight: 700 }}>Login Now</button>
               </div>
             ) : activePlans.length > 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div className="custom-scrollbar" style={{ display: "flex", flexDirection: "column", gap: "16px", maxHeight: "300px", overflowY: "auto", paddingRight: "8px" }}>
                 {activePlans.map(p => (
                   <div key={p._id || p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "16px", borderBottom: "1px solid var(--border)" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
