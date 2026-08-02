@@ -896,7 +896,7 @@ function AiChatBot() {
           ? `🎁 **Location Bonuses Unlocked!**\nZy unlocked ${activePlans.length} Service Plans and ${activeOffers.length} Active Promo Offer for your area!`
           : `🎁 **Location Bonuses Unlocked!**\nNo exclusive plans or promo codes available in your area right now.`;
 
-        const formattedText = `🤖 **Zy AI — Nearby Search Active**\nHey ${userName}! 🎯 I found ${count} top-rated ${categoryName} near ${userLocation} ready to help you today.\n\n🔍 **Zy's Top Picks For You:**\n\n${bonusText}`;
+        const formattedText = `🤖 **Zy AI — Nearby Search Active**\nHey ${userName}! 🎯 I found ${count} top-rated ${categoryName} near ${userLocation} ready to help you today.\n\n🔥 **Top Picks Near You**`;
 
         aiMsgObj.text = formattedText;
         aiMsgObj.workersList = finalWorkers;
@@ -905,6 +905,7 @@ function AiChatBot() {
           aiMsgObj.link = "/plans-offers";
           aiMsgObj.linkText = "View Plans & Offers →";
         }
+        aiMsgObj.bonusText = bonusText;
       }
 
       setMessages((prev) => [...prev, aiMsgObj]);
@@ -926,7 +927,7 @@ function AiChatBot() {
           ? `🎁 **Location Bonuses Unlocked!**\nZy unlocked ${activePlans.length} Service Plans and ${activeOffers.length} Active Promo Offer for your area!`
           : `🎁 **Location Bonuses Unlocked!**\nNo exclusive plans or promo codes available in your area right now.`;
 
-        const formattedText = `🤖 **Zy AI — Nearby Search Active**\nHey ${userName}! 🎯 I found ${count} top-rated ${categoryName} near ${userLocation} ready to help you today.\n\n🔍 **Zy's Top Picks For You:**\n\n${bonusText}`;
+        const formattedText = `🤖 **Zy AI — Nearby Search Active**\nHey ${userName}! 🎯 I found ${count} top-rated ${categoryName} near ${userLocation} ready to help you today.\n\n🔥 **Top Picks Near You**`;
 
         setMessages((prev) => [
           ...prev,
@@ -935,6 +936,7 @@ function AiChatBot() {
             text: formattedText,
             workersList: fallbackWorkers,
             category: matchedCategory,
+            bonusText: bonusText,
             link: actionLink || "/plans-offers",
             linkText: actionLinkText || "View Plans & Offers →"
           }
@@ -1143,7 +1145,7 @@ function AiChatBot() {
                 >
                   {msg.text}
 
-                  {msg.link && (
+                  {!msg.bonusText && msg.link && (
                     <div style={{ marginTop: "12px" }}>
                       <Link
                         to={msg.link}
@@ -1228,6 +1230,47 @@ function AiChatBot() {
                         </Link>
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {/* Bonus Text Block */}
+                {msg.bonusText && (
+                  <div
+                    className="zy-msg-ai"
+                    style={{
+                      padding: "12px 16px",
+                      fontSize: "13.5px",
+                      lineHeight: "1.55",
+                      whiteSpace: "pre-line",
+                      letterSpacing: "0.1px",
+                      marginTop: "10px"
+                    }}
+                  >
+                    {msg.bonusText}
+                    {msg.link && (
+                      <div style={{ marginTop: "12px" }}>
+                        <Link
+                          to={msg.link}
+                          onClick={() => setIsOpen(false)}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            padding: "8px 14px",
+                            background: "#E5F6F8",
+                            color: "#1F353B",
+                            borderRadius: "8px",
+                            textDecoration: "none",
+                            fontWeight: 700,
+                            fontSize: "13px",
+                            border: "1px solid #B3DEE5",
+                            transition: "all 0.2s"
+                          }}
+                        >
+                          {msg.linkText} →
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
