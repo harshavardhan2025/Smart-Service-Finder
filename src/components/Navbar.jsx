@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import "../App.css";
 import Sidebar from "./Sidebar";
-import { FaTools, FaTag, FaBell, FaSun, FaMoon, FaUser, FaCrown } from "react-icons/fa";
+import { FaTools, FaTag, FaBell, FaSun, FaMoon, FaUser, FaCrown, FaSignOutAlt } from "react-icons/fa";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -52,15 +52,20 @@ function Navbar() {
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem("userRole");
-    sessionStorage.removeItem("userId");
-    sessionStorage.removeItem("userName");
-    sessionStorage.removeItem("userEmail");
-    sessionStorage.removeItem("authToken");
+    sessionStorage.clear();
     localStorage.removeItem("manualLocationSet");
     localStorage.removeItem("authSession");
+    
+    // Purge cached AI greetings
+    Object.keys(localStorage).forEach(k => {
+      if (k.startsWith("aiBanner_")) {
+        localStorage.removeItem(k);
+      }
+    });
+
     alert("Logged out successfully! 👋");
     navigate("/");
+    window.location.reload();
   };
 
   const isDark = theme === "dark";
@@ -155,7 +160,7 @@ function Navbar() {
                       position: "absolute",
                       top: "-2px",
                       right: "-2px",
-                      backgroundcolor: "var(--danger)",
+                      backgroundColor: "#ef4444",
                       color: "white",
                       fontSize: "10px",
                       fontWeight: "bold",
@@ -283,85 +288,97 @@ function Navbar() {
           {isLoggedIn ? (
             <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
                {/* Worker Dashboard Quick Link */}
-               {sessionStorage.getItem("userRole") === "worker" && !isMobile && (
+               {sessionStorage.getItem("userRole") === "worker" && (
                  <Link to="/worker-dashboard" state={{ resetTab: "status" }} style={{ textDecoration: "none" }}>
                     <button
                       style={{
-                        backgroundColor: "var(--primary)",
+                        background: "linear-gradient(135deg, #0284c7 0%, #0369a1 100%)",
                         color: "white",
                         border: "none",
-                        padding: "10px 18px",
+                        padding: isMobile ? "8px 12px" : "9px 16px",
                         cursor: "pointer",
-                        borderRadius: "8px",
-                        fontWeight: 600,
+                        borderRadius: "10px",
+                        fontWeight: 700,
+                        fontSize: isMobile ? "12.5px" : "13.5px",
                         display: "inline-flex",
                         alignItems: "center",
-                        gap: "6px"
+                        gap: "6px",
+                        boxShadow: "0 3px 10px rgba(2, 132, 199, 0.25)"
                       }}
                     >
-                      <FaTools size={14} /> Worker Panel
+                      <FaTools size={13} /> Worker Panel
                     </button>
                  </Link>
                )}
 
                {/* User Dashboard Quick Link */}
-               {sessionStorage.getItem("userRole") === "user" && !isMobile && (
+               {sessionStorage.getItem("userRole") === "user" && (
                  <Link to="/user-dashboard" style={{ textDecoration: "none" }}>
                     <button
                       style={{
-                        backgroundColor: "var(--primary)",
+                        background: "linear-gradient(135deg, #0284c7 0%, #0369a1 100%)",
                         color: "white",
                         border: "none",
-                        padding: "10px 18px",
+                        padding: isMobile ? "8px 12px" : "9px 16px",
                         cursor: "pointer",
-                        borderRadius: "8px",
-                        fontWeight: 600,
+                        borderRadius: "10px",
+                        fontWeight: 700,
+                        fontSize: isMobile ? "12.5px" : "13.5px",
                         display: "inline-flex",
                         alignItems: "center",
-                        gap: "6px"
+                        gap: "6px",
+                        boxShadow: "0 3px 10px rgba(2, 132, 199, 0.25)"
                       }}
                     >
-                      <FaUser size={14} /> My Dashboard
+                      <FaUser size={13} /> My Dashboard
                     </button>
                  </Link>
                )}
 
                {/* Admin Dashboard Quick Link */}
-               {sessionStorage.getItem("userRole") === "admin" && !isMobile && (
+               {sessionStorage.getItem("userRole") === "admin" && (
                  <Link to="/admin-dashboard" state={{ resetTab: "overview" }} style={{ textDecoration: "none" }}>
                     <button
                       style={{
-                        backgroundColor: "var(--primary)",
+                        background: "linear-gradient(135deg, #0284c7 0%, #0369a1 100%)",
                         color: "white",
                         border: "none",
-                        padding: "10px 18px",
+                        padding: isMobile ? "8px 12px" : "9px 16px",
                         cursor: "pointer",
-                        borderRadius: "8px",
-                        fontWeight: 600,
+                        borderRadius: "10px",
+                        fontWeight: 700,
+                        fontSize: isMobile ? "12.5px" : "13.5px",
                         display: "inline-flex",
                         alignItems: "center",
-                        gap: "6px"
+                        gap: "6px",
+                        boxShadow: "0 3px 10px rgba(2, 132, 199, 0.25)"
                       }}
                     >
-                      <FaCrown size={14} /> Admin Panel
+                      <FaCrown size={13} /> Admin Panel
                     </button>
                  </Link>
                )}
               <button
                 onClick={handleLogout}
                 style={{
-                  backgroundColor: "#ef4444",
-                  color: "white",
+                  background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+                  color: "#ffffff",
                   border: "none",
-                  padding: isMobile ? "8px 14px" : "10px 18px",
+                  padding: isMobile ? "8px 14px" : "9px 16px",
                   cursor: "pointer",
-                  borderRadius: "8px",
-                  fontWeight: 700,
-                  fontSize: isMobile ? "13px" : "14px",
-                  boxShadow: "0 2px 6px rgba(239, 68, 68, 0.3)"
+                  borderRadius: "10px",
+                  fontWeight: 800,
+                  fontSize: isMobile ? "12.5px" : "13.5px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  boxShadow: "0 4px 12px rgba(239, 68, 68, 0.3)",
+                  transition: "all 0.15s ease"
                 }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.03)"}
+                onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
               >
-                Logout 🚪
+                <FaSignOutAlt size={14} /> Logout
               </button>
             </div>
           ) : (

@@ -462,8 +462,9 @@ function Home() {
   useEffect(() => {
     if (isAiLoading || !searchedLocation) return;
 
-    // Check cache — only regenerate when location changes
-    const cacheKey = `aiBanner_${searchedLocation}`;
+    // Check cache — only regenerate when location or user changes
+    const userName = sessionStorage.getItem("userName") || "";
+    const cacheKey = `aiBanner_${searchedLocation}_${userName || "guest"}`;
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
       try {
@@ -480,7 +481,6 @@ function Home() {
     const workerNames = aiSuggestedWorkers.slice(0, 3).map(w => w.name).join(", ");
     const workerServices = [...new Set(aiSuggestedWorkers.map(w => w.service))].join(", ");
     const shortLoc = getShortLocation(searchedLocation);
-    const userName = sessionStorage.getItem("userName") || "";
 
     const generateBannerText = async () => {
       try {
@@ -561,26 +561,26 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Navbar />
 
-      {/* Hero Welcome Banner */}
+      {/* Hero Welcome Banner - Compact Executive Height */}
       <div
         style={{
           background: "var(--hero-bg)",
           borderBottom: "1.5px solid var(--hero-border)",
           color: "white",
-          padding: "24px 20px 22px 20px",
+          padding: "10px 16px 12px 16px",
           textAlign: "center",
-          boxShadow: "0 12px 32px -8px rgba(15, 23, 42, 0.4)",
+          boxShadow: "0 6px 20px -5px rgba(15, 23, 42, 0.35)",
           position: "relative",
           overflow: "hidden"
         }}
       >
-        <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(255, 255, 255, 0.12)", backdropFilter: "blur(12px)", border: "1px solid rgba(255, 255, 255, 0.2)", padding: "4px 14px", borderRadius: "20px", fontSize: "11px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(255, 255, 255, 0.12)", backdropFilter: "blur(12px)", border: "1px solid rgba(255, 255, 255, 0.2)", padding: "2px 10px", borderRadius: "16px", fontSize: "10px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: "4px" }}>
           ✨ VERIFIED ON-DEMAND SERVICE NETWORK
         </div>
-        <h1 style={{ margin: "0 0 8px 0", fontSize: "28px", fontWeight: 900, color: "var(--hero-text)", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", letterSpacing: "-0.5px" }}>
-          Find Reliable Service Experts Near You <FaMapMarkerAlt size={26} style={{ color: "#38bdf8" }} />
+        <h1 style={{ margin: "0 0 3px 0", fontSize: "20px", fontWeight: 900, color: "var(--hero-text)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", letterSpacing: "-0.3px" }}>
+          Find Reliable Service Experts Near You <FaMapMarkerAlt size={18} style={{ color: "#38bdf8" }} />
         </h1>
-        <p style={{ margin: 0, fontSize: "15px", color: "var(--hero-subtext)", fontWeight: "500", maxWidth: "680px", marginLeft: "auto", marginRight: "auto" }}>
+        <p style={{ margin: 0, fontSize: "13px", color: "var(--hero-subtext)", fontWeight: "500", maxWidth: "650px", marginLeft: "auto", marginRight: "auto" }}>
           Auto-matching, verified professional workers, and instant secure bookings.
         </p>
       </div>
@@ -952,7 +952,7 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
                 <div key={idx} className="premium-card" style={{ padding: "24px", border: plan.popular ? "2px solid #eab308" : "1px solid var(--border-color)", display: "flex", flexDirection: "column", justifyContent: "space-between", transform: plan.popular ? "scale(1.02)" : "none", boxShadow: plan.popular ? "0 10px 25px rgba(234, 179, 8, 0.15)" : "var(--shadow-3d)" }}>
                   <div>
                     {plan.popular && (
-                      <span style={{ backgroundcolor: "var(--warning)", color: "var(--text-main)", padding: "3px 10px", borderRadius: 12, fontSize: 10, fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "2px", marginBottom: "10px" }}>
+                      <span style={{ backgroundColor: "var(--warning)", color: "#000000", padding: "3px 10px", borderRadius: 12, fontSize: 10, fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "2px", marginBottom: "10px" }}>
                         POPULAR <FaStar size={8} />
                       </span>
                     )}

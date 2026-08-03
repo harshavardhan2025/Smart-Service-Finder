@@ -345,7 +345,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
             localStorage.removeItem("manualLocationSet");
             window.location.reload();
           }}
-          style={{ backgroundcolor: "var(--danger)", color: "white" }}
+          style={{ backgroundColor: "#ef4444", color: "white" }}
         >
           Reset Location 🔄
         </button>

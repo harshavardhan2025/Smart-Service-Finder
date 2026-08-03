@@ -703,8 +703,8 @@ function AdminDashboard() {
         <div
           style={{
             width: "280px",
-            backgroundcolor: "var(--text-main)",
-            color: "white",
+            backgroundColor: "var(--bg-card)",
+            color: "var(--text-main)",
             padding: "30px 20px",
             display: "flex",
             flexDirection: "column",
@@ -769,7 +769,7 @@ function AdminDashboard() {
           
           {hasActiveSos && (
             <div style={{
-              backgroundcolor: "var(--danger)",
+              backgroundColor: "#ef4444",
               color: "white",
               padding: "16px 24px",
               borderRadius: "12px",
@@ -879,8 +879,8 @@ function AdminDashboard() {
                     <div>
                       <div style={{ display: "flex", height: "14px", borderRadius: "7px", overflow: "hidden", backgroundColor: "var(--border-color)", margin: "24px 0" }}>
                         {completedBookingsCount > 0 && <div style={{ width: `${compPct}%`, backgroundColor: "#10b981", transition: "width 0.4s ease" }} title={`Completed: ${compPct}%`} />}
-                        {pendingBookingsCount > 0 && <div style={{ width: `${pendPct}%`, backgroundcolor: "var(--warning)", transition: "width 0.4s ease" }} title={`Pending: ${pendPct}%`} />}
-                        {cancelledBookingsCount > 0 && <div style={{ width: `${cancPct}%`, backgroundcolor: "var(--danger)", transition: "width 0.4s ease" }} title={`Cancelled: ${cancPct}%`} />}
+                        {pendingBookingsCount > 0 && <div style={{ width: `${pendPct}%`, backgroundColor: "var(--warning)", transition: "width 0.4s ease" }} title={`Pending: ${pendPct}%`} />}
+                        {cancelledBookingsCount > 0 && <div style={{ width: `${cancPct}%`, backgroundColor: "var(--danger)", transition: "width 0.4s ease" }} title={`Cancelled: ${cancPct}%`} />}
                       </div>
 
                       {/* Legend / Metrics Grid */}
