@@ -622,9 +622,6 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
           }
         `}</style>
 
-        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(255, 255, 255, 0.45)", backdropFilter: "blur(12px)", border: "1px solid rgba(30, 58, 138, 0.25)", padding: "3px 12px", borderRadius: "16px", fontSize: "10.5px", fontWeight: 800, color: "#1e3a8a", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: "5px" }}>
-          ✨ VERIFIED ON-DEMAND SERVICE NETWORK
-        </div>
         <h1 style={{ margin: "0 0 4px 0", fontSize: "22px", fontWeight: 900, color: "var(--hero-text)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", letterSpacing: "-0.3px" }}>
           Find Reliable Service Experts Near You <FaMapMarkerAlt size={20} style={{ color: "#dc2626" }} />
         </h1>

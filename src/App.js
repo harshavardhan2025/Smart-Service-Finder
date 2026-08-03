@@ -1,3 +1,4 @@
+import React, { lazy, Suspense } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -5,26 +6,28 @@ import {
   Navigate
 } from "react-router-dom";
 
-
+// Eager load critical components for instant rendering on low internet
 import Home from "./pages/Home";
-import SearchResults from "./pages/SearchResults";
-import WorkerProfile from "./pages/WorkerProfile";
-import BookingPage from "./pages/BookingPage";
-import PaymentPage from "./pages/PaymentPage";
-import UserDashboard from "./pages/UserDashboard";
-import WorkerDashboard from "./pages/WorkerDashboard";
-import AdminDashboard from "./pages/AdminDashboard";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import SupportPage from "./pages/SupportPage";
-import MyBookings from "./pages/MyBookings";
-import ReviewsRewards from "./pages/ReviewsRewards";
-import Profile from "./pages/Profile";
-import PlansOffers from "./pages/PlansOffers";
-import AiChatBot from "./components/AiChatBot";
-import GoogleAuthMock from "./pages/GoogleAuthMock";
 import GlobalCallManager from "./components/GlobalCallManager";
 import CustomAlert from "./components/CustomAlert";
+
+// Lazy load secondary routes so initial bundle download is fast & lightweight
+const SearchResults = lazy(() => import("./pages/SearchResults"));
+const WorkerProfile = lazy(() => import("./pages/WorkerProfile"));
+const BookingPage = lazy(() => import("./pages/BookingPage"));
+const PaymentPage = lazy(() => import("./pages/PaymentPage"));
+const UserDashboard = lazy(() => import("./pages/UserDashboard"));
+const WorkerDashboard = lazy(() => import("./pages/WorkerDashboard"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const Login = lazy(() => import("./pages/Login"));
+const Signup = lazy(() => import("./pages/Signup"));
+const SupportPage = lazy(() => import("./pages/SupportPage"));
+const MyBookings = lazy(() => import("./pages/MyBookings"));
+const ReviewsRewards = lazy(() => import("./pages/ReviewsRewards"));
+const Profile = lazy(() => import("./pages/Profile"));
+const PlansOffers = lazy(() => import("./pages/PlansOffers"));
+const AiChatBot = lazy(() => import("./components/AiChatBot"));
+const GoogleAuthMock = lazy(() => import("./pages/GoogleAuthMock"));
 
 // 🔒 PERSISTENT SESSION RESTORE: Recover auth from localStorage on cold start
 function restoreSession() {
@@ -65,107 +68,44 @@ function PrivateRoute({ children }) {
   return isLoggedIn ? children : <Navigate to="/login" replace />;
 }
 
+// Lightweight Loading Indicator for low internet connections
+const PageLoader = () => (
+  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh", color: "var(--primary)", fontWeight: 700, fontSize: "14px", gap: "10px" }}>
+    <div style={{ width: "24px", height: "24px", border: "3px solid var(--primary)", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }}></div>
+    <span>Loading Workzy...</span>
+    <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+  </div>
+);
+
 function App() {
   return (
-
     <BrowserRouter>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/search" element={<SearchResults />} />
+          <Route path="/worker" element={<WorkerProfile />} />
+          <Route path="/booking" element={<PrivateRoute><BookingPage /></PrivateRoute>} />
+          <Route path="/payment" element={<PrivateRoute><PaymentPage /></PrivateRoute>} />
+          <Route path="/user-dashboard" element={<UserDashboard />} />
+          <Route path="/worker-dashboard" element={<PrivateRoute><WorkerDashboard /></PrivateRoute>} />
+          <Route path="/admin-dashboard" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/support" element={<PrivateRoute><SupportPage /></PrivateRoute>} />
+          <Route path="/my-bookings" element={<PrivateRoute><MyBookings /></PrivateRoute>} />
+          <Route path="/reviews" element={<PrivateRoute><ReviewsRewards /></PrivateRoute>} />
+          <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          <Route path="/plans-offers" element={<PlansOffers />} />
+          <Route path="/plans" element={<PlansOffers />} />
+          <Route path="/google-auth" element={<GoogleAuthMock />} />
+        </Routes>
+        <AiChatBot />
+      </Suspense>
 
-      <Routes>
-
-        <Route
-          path="/"
-          element={<Home />}
-        />
-
-        <Route
-          path="/search"
-          element={<SearchResults />}
-        />
-
-        <Route
-          path="/worker"
-          element={<WorkerProfile />}
-        />
-
-        <Route
-          path="/booking"
-          element={<PrivateRoute><BookingPage /></PrivateRoute>}
-        />
-
-        <Route
-          path="/payment"
-          element={<PrivateRoute><PaymentPage /></PrivateRoute>}
-        />
-
-        <Route
-          path="/user-dashboard"
-          element={<UserDashboard />}
-        />
-
-        <Route
-          path="/worker-dashboard"
-          element={<PrivateRoute><WorkerDashboard /></PrivateRoute>}
-        />
-
-        <Route
-          path="/admin-dashboard"
-          element={<PrivateRoute><AdminDashboard /></PrivateRoute>}
-        />
-
-        <Route
-          path="/login"
-          element={<Login />}
-        />
-
-        <Route
-          path="/signup"
-          element={<Signup />}
-        />
-
-
-        <Route
-          path="/support"
-          element={<PrivateRoute><SupportPage /></PrivateRoute>}
-        />
-
-        <Route
-          path="/my-bookings"
-          element={<PrivateRoute><MyBookings /></PrivateRoute>}
-        />
-
-        <Route
-          path="/reviews"
-          element={<PrivateRoute><ReviewsRewards /></PrivateRoute>}
-        />
-
-        <Route
-          path="/profile"
-          element={<PrivateRoute><Profile /></PrivateRoute>}
-        />
-
-        <Route
-          path="/plans-offers"
-          element={<PlansOffers />}
-        />
-
-        <Route
-          path="/plans"
-          element={<PlansOffers />}
-        />
-
-        <Route
-          path="/google-auth"
-          element={<GoogleAuthMock />}
-        />
-
-      </Routes>
-
-      <AiChatBot />
       <GlobalCallManager />
       <CustomAlert />
-
     </BrowserRouter>
-
   );
 }
 
