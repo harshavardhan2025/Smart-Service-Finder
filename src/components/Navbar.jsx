@@ -370,9 +370,9 @@ function Navbar() {
               <button
                 onClick={handleLogout}
                 style={{
-                  background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+                  background: "linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)",
                   color: "#ffffff",
-                  border: "none",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
                   padding: isMobile ? "8px 14px" : "9px 16px",
                   cursor: "pointer",
                   borderRadius: "10px",
@@ -381,11 +381,17 @@ function Navbar() {
                   display: "inline-flex",
                   alignItems: "center",
                   gap: "6px",
-                  boxShadow: "0 4px 12px rgba(239, 68, 68, 0.3)",
+                  boxShadow: "0 4px 14px rgba(225, 29, 72, 0.35)",
                   transition: "all 0.15s ease"
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.03)"}
-                onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "scale(1.04)";
+                  e.currentTarget.style.boxShadow = "0 6px 18px rgba(225, 29, 72, 0.45)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "none";
+                  e.currentTarget.style.boxShadow = "0 4px 14px rgba(225, 29, 72, 0.35)";
+                }}
               >
                 <FaSignOutAlt size={14} /> Logout
               </button>
