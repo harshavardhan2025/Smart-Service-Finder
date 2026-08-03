@@ -292,7 +292,7 @@ function Navbar() {
                  <Link to="/worker-dashboard" state={{ resetTab: "status" }} style={{ textDecoration: "none" }}>
                     <button
                       style={{
-                        background: "linear-gradient(135deg, #0284c7 0%, #0369a1 100%)",
+                        background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
                         color: "white",
                         border: "none",
                         padding: isMobile ? "8px 12px" : "9px 16px",
@@ -303,8 +303,11 @@ function Navbar() {
                         display: "inline-flex",
                         alignItems: "center",
                         gap: "6px",
-                        boxShadow: "0 3px 10px rgba(2, 132, 199, 0.25)"
+                        boxShadow: "0 4px 12px rgba(79, 70, 229, 0.3)",
+                        transition: "all 0.15s ease"
                       }}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.03)"}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
                     >
                       <FaTools size={13} /> Worker Panel
                     </button>
@@ -316,7 +319,7 @@ function Navbar() {
                  <Link to="/user-dashboard" style={{ textDecoration: "none" }}>
                     <button
                       style={{
-                        background: "linear-gradient(135deg, #0284c7 0%, #0369a1 100%)",
+                        background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
                         color: "white",
                         border: "none",
                         padding: isMobile ? "8px 12px" : "9px 16px",
@@ -327,8 +330,11 @@ function Navbar() {
                         display: "inline-flex",
                         alignItems: "center",
                         gap: "6px",
-                        boxShadow: "0 3px 10px rgba(2, 132, 199, 0.25)"
+                        boxShadow: "0 4px 12px rgba(79, 70, 229, 0.3)",
+                        transition: "all 0.15s ease"
                       }}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.03)"}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
                     >
                       <FaUser size={13} /> My Dashboard
                     </button>
@@ -340,7 +346,7 @@ function Navbar() {
                  <Link to="/admin-dashboard" state={{ resetTab: "overview" }} style={{ textDecoration: "none" }}>
                     <button
                       style={{
-                        background: "linear-gradient(135deg, #0284c7 0%, #0369a1 100%)",
+                        background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
                         color: "white",
                         border: "none",
                         padding: isMobile ? "8px 12px" : "9px 16px",
@@ -351,8 +357,11 @@ function Navbar() {
                         display: "inline-flex",
                         alignItems: "center",
                         gap: "6px",
-                        boxShadow: "0 3px 10px rgba(2, 132, 199, 0.25)"
+                        boxShadow: "0 4px 12px rgba(79, 70, 229, 0.3)",
+                        transition: "all 0.15s ease"
                       }}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.03)"}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
                     >
                       <FaCrown size={13} /> Admin Panel
                     </button>
