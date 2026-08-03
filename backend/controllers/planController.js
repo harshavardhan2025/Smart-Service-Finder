@@ -4,10 +4,16 @@ export const getPlans = async (req, res) => {
   try {
     const filter = {};
     if (req.query.adminView !== "true") {
+      const today = new Date();
+      const todayStr = today.toISOString().split("T")[0];
       filter.$or = [
-        { expiryDate: { $gt: new Date() } },
+        { expiryDate: { $gt: today } },
         { expiryDate: { $exists: false } },
-        { expiryDate: null }
+        { expiryDate: null },
+        { endDate: { $gte: todayStr } },
+        { endDate: { $exists: false } },
+        { endDate: null },
+        { endDate: "" }
       ];
     }
     const plans = await Plan.find(filter);
@@ -45,7 +51,7 @@ export const updatePlan = async (req, res) => {
         return res.status(409).json({ error: "A subscription plan with this title already exists." });
       }
     }
-    const plan = await Plan.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
+    const plan = await Plan.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.status(200).json({ success: true, plan });
   } catch (error) {
     res.status(400).json({ error: error.message });

@@ -4,10 +4,16 @@ export const getOffers = async (req, res) => {
   try {
     const filter = {};
     if (req.query.adminView !== "true") {
+      const today = new Date();
+      const todayStr = today.toISOString().split("T")[0];
       filter.$or = [
-        { expiryDate: { $gt: new Date() } },
+        { expiryDate: { $gt: today } },
         { expiryDate: { $exists: false } },
-        { expiryDate: null }
+        { expiryDate: null },
+        { endDate: { $gte: todayStr } },
+        { endDate: { $exists: false } },
+        { endDate: null },
+        { endDate: "" }
       ];
     }
     const offers = await Offer.find(filter);
@@ -45,7 +51,7 @@ export const updateOffer = async (req, res) => {
         return res.status(409).json({ error: "An offer with this code already exists." });
       }
     }
-    const offer = await Offer.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
+    const offer = await Offer.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.status(200).json({ success: true, offer });
   } catch (error) {
     res.status(400).json({ error: error.message });
