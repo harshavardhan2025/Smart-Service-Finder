@@ -561,26 +561,73 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Navbar />
 
-      {/* Hero Welcome Banner - Compact Executive Height */}
+      {/* Hero Welcome Banner - Golden Orange with Floating Clouds */}
       <div
         style={{
           background: "var(--hero-bg)",
-          borderBottom: "1.5px solid var(--hero-border)",
-          color: "white",
-          padding: "10px 16px 12px 16px",
+          borderBottom: "2px solid var(--hero-border)",
+          color: "var(--hero-text)",
+          padding: "12px 16px 14px 16px",
           textAlign: "center",
-          boxShadow: "0 6px 20px -5px rgba(15, 23, 42, 0.35)",
+          boxShadow: "0 8px 24px -6px rgba(223, 180, 83, 0.4)",
           position: "relative",
           overflow: "hidden"
         }}
       >
-        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(255, 255, 255, 0.12)", backdropFilter: "blur(12px)", border: "1px solid rgba(255, 255, 255, 0.2)", padding: "2px 10px", borderRadius: "16px", fontSize: "10px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: "4px" }}>
+        {/* Floating clouds on both sides */}
+        <svg
+          viewBox="0 0 24 24"
+          style={{
+            position: "absolute",
+            left: "4%",
+            bottom: "10%",
+            width: "65px",
+            height: "65px",
+            opacity: 0.25,
+            fill: "white",
+            pointerEvents: "none",
+            animation: "drift 25s linear infinite"
+          }}
+        >
+          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
+        </svg>
+        <svg
+          viewBox="0 0 24 24"
+          style={{
+            position: "absolute",
+            right: "5%",
+            top: "10%",
+            width: "80px",
+            height: "80px",
+            opacity: 0.22,
+            fill: "white",
+            pointerEvents: "none",
+            animation: "driftReverse 30s linear infinite"
+          }}
+        >
+          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
+        </svg>
+
+        <style>{`
+          @keyframes drift {
+            0% { transform: translateX(0px) translateY(0px); }
+            50% { transform: translateX(15px) translateY(-5px); }
+            100% { transform: translateX(0px) translateY(0px); }
+          }
+          @keyframes driftReverse {
+            0% { transform: translateX(0px) translateY(0px); }
+            50% { transform: translateX(-20px) translateY(5px); }
+            100% { transform: translateX(0px) translateY(0px); }
+          }
+        `}</style>
+
+        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(255, 255, 255, 0.45)", backdropFilter: "blur(12px)", border: "1px solid rgba(30, 58, 138, 0.25)", padding: "3px 12px", borderRadius: "16px", fontSize: "10.5px", fontWeight: 800, color: "#1e3a8a", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: "5px" }}>
           ✨ VERIFIED ON-DEMAND SERVICE NETWORK
         </div>
-        <h1 style={{ margin: "0 0 3px 0", fontSize: "20px", fontWeight: 900, color: "var(--hero-text)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", letterSpacing: "-0.3px" }}>
-          Find Reliable Service Experts Near You <FaMapMarkerAlt size={18} style={{ color: "#38bdf8" }} />
+        <h1 style={{ margin: "0 0 4px 0", fontSize: "22px", fontWeight: 900, color: "var(--hero-text)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", letterSpacing: "-0.3px" }}>
+          Find Reliable Service Experts Near You <FaMapMarkerAlt size={20} style={{ color: "#dc2626" }} />
         </h1>
-        <p style={{ margin: 0, fontSize: "13px", color: "var(--hero-subtext)", fontWeight: "500", maxWidth: "650px", marginLeft: "auto", marginRight: "auto" }}>
+        <p style={{ margin: 0, fontSize: "13.5px", color: "var(--hero-subtext)", fontWeight: 700, maxWidth: "650px", marginLeft: "auto", marginRight: "auto" }}>
           Auto-matching, verified professional workers, and instant secure bookings.
         </p>
       </div>

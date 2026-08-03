@@ -23,11 +23,11 @@
   --warning-light: #fef3c7;
   --info-light: #e0f2fe;
 
-  /* HOME PAGE SPECIFIC - EXECUTIVE DARK SLATE & EMERALD GLASS */
-  --hero-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0369a1 100%);
-  --hero-border: #0284c7;
-  --hero-text: #ffffff;
-  --hero-subtext: rgba(241, 245, 249, 0.9);
+  /* HOME PAGE SPECIFIC - GOLDEN ORANGE HERO BANNER */
+  --hero-bg: linear-gradient(135deg, #dfb453 0%, #f1a829 100%);
+  --hero-border: #a67c1e;
+  --hero-text: #1e3a8a;
+  --hero-subtext: rgba(30, 58, 138, 0.9);
   --ai-banner-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #064e3b 100%);
   --ai-banner-border: #10b981;
 
@@ -86,10 +86,10 @@
   --info-light: rgba(14, 165, 233, 0.15);
 
   /* HOME PAGE SPECIFIC */
-  --hero-bg: linear-gradient(135deg, #0b1329 0%, #111c38 60%, #0284c7 100%);
-  --hero-border: #38bdf8;
-  --hero-text: #f8fafc;
-  --hero-subtext: rgba(226, 232, 240, 0.9);
+  --hero-bg: linear-gradient(135deg, #dfb453 0%, #f1a829 100%);
+  --hero-border: #a67c1e;
+  --hero-text: #1e3a8a;
+  --hero-subtext: rgba(30, 58, 138, 0.9);
   --ai-banner-bg: linear-gradient(135deg, #090d16 0%, #0f172a 60%, #064e3b 100%);
   --ai-banner-border: #10b981;
 
