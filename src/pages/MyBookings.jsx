@@ -366,21 +366,21 @@ function MyBookings() {
     switch (status) {
       case "Completed":
       case "Paid Out":
-        return { color: "var(--primary)", bg: "#b4d0e7" };
+        return { color: "var(--primary)", bg: "var(--info-light)" };
       case "Accepted":
       case "Confirmed":
-        return { color: "var(--success)", bg: "#dcfce7" };
+        return { color: "var(--success)", bg: "var(--success-light)" };
       case "Rejected":
       case "Refund Declined":
-        return { color: "var(--danger)", bg: "#fee2e2" };
+        return { color: "var(--danger)", bg: "var(--danger-light)" };
       case "Cancelled":
       case "Escrow Declined":
-        return { color: "#4b5563", bg: "#f3f4f6" };
+        return { color: "var(--text-secondary)", bg: "var(--bg-card-hover)" };
       case "Cancellation Pending":
-        return { color: "#ea580c", bg: "#ffedd5" };
+        return { color: "var(--warning)", bg: "var(--warning-light)" };
       case "Upcoming":
       default:
-        return { color: "var(--warning)", bg: "#fef3c7" };
+        return { color: "var(--warning)", bg: "var(--warning-light)" };
     }
   };
 
@@ -442,10 +442,11 @@ function MyBookings() {
           }}
         >
           {[
-            { label: "Total", count: liveBookings.length, color: "var(--text-main)", bg: "#f1f5f9" },
-            { label: "Confirmed/Accepted", count: liveBookings.filter(b => b.status === "Confirmed" || b.status === "Accepted").length, color: "var(--success)", bg: "#dcfce7" },
-            { label: "Upcoming/Pending", count: liveBookings.filter(b => b.status === "Upcoming").length, color: "var(--warning)", bg: "#fef3c7" },
-            { label: "Completed", count: liveBookings.filter(b => b.status === "Completed" || b.status === "Paid Out").length, color: "var(--primary)", bg: "#b4d0e7" }
+            { label: "Total", count: liveBookings.length, color: "var(--text-main)", bg: "var(--bg-card-hover)" },
+            { label: "Confirmed/Accepted", count: liveBookings.filter(b => b.status === "Confirmed" || b.status === "Accepted").length, color: "var(--success)", bg: "var(--success-light)" },
+            { label: "Upcoming/Pending", count: liveBookings.filter(b => b.status === "Upcoming").length, color: "var(--warning)", bg: "var(--warning-light)" },
+            { label: "Completed", count: liveBookings.filter(b => b.status === "Completed" || b.status === "Paid Out").length, color: "var(--primary)", bg: "var(--info-light)" },
+            { label: "Cancelled/Rejected", count: liveBookings.filter(b => b.status === "Cancelled" || b.status === "Cancellation Pending" || b.status === "Rejected").length, color: "var(--danger)", bg: "var(--danger-light)" }
           ].map(({ label, count, color, bg }) => (
             <div
               key={label}
