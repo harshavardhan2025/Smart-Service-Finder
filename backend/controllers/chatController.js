@@ -373,7 +373,6 @@ const localAIEngine = (userQuery, userLocation) => {
     aiResponse = "Pricing is dynamic and depends on the specific professional you choose! 💰 Basic visits start at ₹150, and rates are listed transparently on each worker's profile.";
   } else if (matchedTopic === "discount") {
     aiResponse = "__DYNAMIC_OFFERS_RESPONSE__";
-  }
   } else if (matchedTopic === "cancel") {
     aiResponse = "You can easily cancel or reschedule bookings free of charge up to 2 hours before the appointment via the 'My Bookings' tab! 🕐✨";
   } else if (matchedTopic === "safety") {
