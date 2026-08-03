@@ -4,6 +4,8 @@ import Worker from "../models/Worker.js";
 import Message from "../models/Message.js";
 import Booking from "../models/Booking.js";
 import User from "../models/User.js";
+import Offer from "../models/Offer.js";
+import Plan from "../models/Plan.js";
 
 // Levenshtein distance algorithm for robust character-level spelling correction
 const levenshtein = (a, b) => {
@@ -269,6 +271,69 @@ const findBestSupportMatch = (queryText) => {
   return bestTopic;
 };
 
+// 🎁 Dynamic Database-Driven Promo & Plans Generator for AI Assistant
+export const getDynamicOffersAndPlansResponse = async (userCity = "") => {
+  try {
+    const todayStr = new Date().toISOString().split("T")[0];
+    const rawOffers = await Offer.find({}).lean();
+    const rawPlans = await Plan.find({}).lean();
+
+    const uCity = (userCity || "").toLowerCase().trim();
+
+    const activeOffers = rawOffers.filter(o => {
+      if (o.endDate && o.endDate < todayStr) return false;
+      if (!o.city || o.city.trim() === "" || o.city.toLowerCase() === "all") return true;
+      if (!uCity) return true;
+      const cities = o.city.toLowerCase().split(",").map(c => c.trim());
+      return cities.some(c => uCity.includes(c) || c.includes(uCity));
+    });
+
+    const activePlans = rawPlans.filter(p => {
+      if (p.endDate && p.endDate < todayStr) return false;
+      if (!p.city || p.city.trim() === "" || p.city.toLowerCase() === "all") return true;
+      if (!uCity) return true;
+      const cities = p.city.toLowerCase().split(",").map(c => c.trim());
+      return cities.some(c => uCity.includes(c) || c.includes(uCity));
+    });
+
+    let text = "Yes! 🎁 Here are the active promo coupons & subscription plans currently live on Workzy:\n\n";
+
+    if (activeOffers.length > 0) {
+      text += "🏷️ **Active Promo Coupons:**\n";
+      activeOffers.forEach(o => {
+        text += `• **${o.code}**: ${o.discount} — ${o.desc || "Valid at checkout"}`;
+        if (o.minPrice) text += ` *(Min subtotal: ₹${o.minPrice})*`;
+        text += "\n";
+      });
+      text += "\n";
+    }
+
+    if (activePlans.length > 0) {
+      text += "⭐ **Available Service Plans:**\n";
+      activePlans.forEach(p => {
+        const cleanPrice = String(p.price || "").replace("₹", "");
+        text += `• **${p.title}**: ₹${cleanPrice}/${p.period || "month"}`;
+        if (p.features && p.features.length > 0) {
+          text += ` (${p.features.slice(0, 2).join(", ")})`;
+        }
+        text += "\n";
+      });
+      text += "\n";
+    }
+
+    if (activeOffers.length === 0 && activePlans.length === 0) {
+      text = "🎁 We currently have special promotional codes available at checkout! Enter **WORKZY20** for 20% OFF or **WELCOME100** for ₹100 OFF on your booking! 🏷️✨\n\nVisit [Plans & Offers](/plans-offers) to explore all available deals.";
+    } else {
+      text += "Apply coupon codes directly at checkout or head over to our **[Plans & Offers](/plans-offers)** page to subscribe! 🚀✨";
+    }
+
+    return text;
+  } catch (err) {
+    console.error("Error generating dynamic offers response:", err);
+    return "🎁 Use promo code **WORKZY20** for 20% OFF or **WELCOME100** for ₹100 OFF at checkout! Visit [Plans & Offers](/plans-offers) to see all active deals.";
+  }
+};
+
 // Fallback in-memory NLP engine utilizing fuzzy matching and a rich guide database
 const localAIEngine = (userQuery, userLocation) => {
   const query = userQuery.toLowerCase().trim();
@@ -307,7 +372,8 @@ const localAIEngine = (userQuery, userLocation) => {
   } else if (matchedTopic === "price") {
     aiResponse = "Pricing is dynamic and depends on the specific professional you choose! 💰 Basic visits start at ₹150, and rates are listed transparently on each worker's profile.";
   } else if (matchedTopic === "discount") {
-    aiResponse = "Yes! 🎁 We have awesome promo coupons running (like **DOCFREE** for flat ₹150 off or **FESTIVE25** for 25% off). Apply them at checkout to save!";
+    aiResponse = "__DYNAMIC_OFFERS_RESPONSE__";
+  }
   } else if (matchedTopic === "cancel") {
     aiResponse = "You can easily cancel or reschedule bookings free of charge up to 2 hours before the appointment via the 'My Bookings' tab! 🕐✨";
   } else if (matchedTopic === "safety") {
@@ -499,6 +565,21 @@ Do not include any markdown formatting, no \`\`\`json wrappers. Respond with ONL
     if (!parsedResult) {
       console.log("🚀 [DUAL-ENGINE] Serving high-performance in-memory local AI response for:", userQuery);
       parsedResult = localAIEngine(userQuery, userLocation);
+    }
+
+    // 🎁 DYNAMIC DATABASE INTERCEPTOR FOR OFFERS & PLANS QUERIES
+    const qLower = userQuery.toLowerCase();
+    if (
+      parsedResult.aiResponse === "__DYNAMIC_OFFERS_RESPONSE__" ||
+      (!parsedResult.workerSearch && (
+        qLower.includes("offer") ||
+        qLower.includes("coupon") ||
+        qLower.includes("promo") ||
+        qLower.includes("discount") ||
+        qLower.includes("plan")
+      ))
+    ) {
+      parsedResult.aiResponse = await getDynamicOffersAndPlansResponse(userLocation);
     }
 
     let workers = [];

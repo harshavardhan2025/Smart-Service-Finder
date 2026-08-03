@@ -1,1 +1,3 @@
 [SUBSCRIBE] HIT! req.body: {"planTitle":"🚗 Unlimited Annual Car Wash Plan","period":"year","paymentMethod":"Wallet","amount":1499}
+[SUBSCRIBE] HIT! req.body: {"planTitle":"Home Pro Annual","period":"month","paymentMethod":"Net Banking","amount":2499}
+[SUBSCRIBE] HIT! req.body: {"planTitle":"RIDE360","period":"quarter","paymentMethod":"Net Banking","amount":1827}

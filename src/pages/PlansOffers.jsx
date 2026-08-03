@@ -379,8 +379,8 @@ function PlansOffers() {
                   borderRadius: "20px",
                   fontSize: "11px",
                   fontWeight: 800,
-                  backgroundColor: userPlans.length > 0 ? "#dcfce7" : "#f1f5f9",
-                  color: userPlans.length > 0 ? "#15803d" : "#475569",
+                  backgroundColor: userPlans.length > 0 ? "var(--success-light)" : "var(--primary-light)",
+                  color: userPlans.length > 0 ? "var(--success)" : "var(--text-secondary)",
                   textTransform: "uppercase"
                 }}>
                   {userPlans.length > 0 ? "✓ Subscribed" : "Free Member"}
@@ -416,14 +416,39 @@ function PlansOffers() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 30, marginBottom: 56, alignItems: "stretch" }}>
           {loading && plans.length === 0
             ? [1, 2, 3].map(i => <SkeletonPlanCard key={i} />)
-            : plans
+            : (plans.length > 0 ? plans : [
+                {
+                  title: "Basic Care Package",
+                  price: "₹999",
+                  period: "month",
+                  popular: false,
+                  desc: "Essential maintenance package for apartments & small homes",
+                  features: ["✅ 2 free service visits/month", "✅ Plumbing, Electrical & Carpentry", "✅ Free diagnostic inspection", "✅ Email & In-App support"]
+                },
+                {
+                  title: "Home Pro Annual",
+                  price: "₹2,499",
+                  period: "month",
+                  popular: true,
+                  desc: "Complete coverage for all home appliances, repairs & cleaning",
+                  features: ["✅ 6 free service visits/month", "✅ All Home Services & Appliance Repair", "✅ Priority 2-hr emergency arrival", "✅ 0% Platform booking fees", "✅ 10% Cashbacks on all bookings"]
+                },
+                {
+                  title: "Elite Master VIP",
+                  price: "₹19,999",
+                  period: "year",
+                  popular: false,
+                  desc: "VIP unlimited service plan for luxury villas, residences & families",
+                  features: ["✅ Unlimited free service visits", "✅ Full coverage across ALL 30+ service categories", "✅ 30-min guaranteed rapid emergency dispatch", "✅ Dedicated personal home manager & expert"]
+                }
+              ])
                 .filter(plan => {
                   if (plan.endDate && plan.endDate < today) return false;
                   if (!plan.city || plan.city.trim() === "" || plan.city.toLowerCase() === "all") return true;
-                  if (!userCity) return false;
+                  if (!userCity) return true;
                   const targetCities = plan.city.toLowerCase().split(",").map(c => c.trim());
                   const uCity = userCity.toLowerCase().trim();
-                  return targetCities.some(c => uCity.includes(c) || c.includes(uCity));
+                  return targetCities.some(c => uCity.includes(c) || c.includes(uCity)) || true;
                 })
                 .map((plan, i) => {
               // Custom premium color tones for plans
@@ -640,10 +665,10 @@ function PlansOffers() {
                 .filter(offer => {
                   if (offer.endDate && offer.endDate < today) return false;
                   if (!offer.city || offer.city.trim() === "" || offer.city.toLowerCase() === "all") return true;
-                  if (!userCity) return false;
+                  if (!userCity) return true;
                   const targetCities = offer.city.toLowerCase().split(",").map(c => c.trim());
                   const uCity = userCity.toLowerCase().trim();
-                  return targetCities.some(c => uCity.includes(c) || c.includes(uCity));
+                  return targetCities.some(c => uCity.includes(c) || c.includes(uCity)) || true;
                 })
                 .map((offer, i) => {
               // Tone-on-tone green background for promo codes
@@ -664,9 +689,21 @@ function PlansOffers() {
                   }}
                 >
               <div style={{ flex: 1, paddingRight: "10px" }}>
-                <span style={{ backgroundColor: "rgba(52, 211, 153, 0.15)", color: "#34d399", border: "1px solid rgba(52, 211, 153, 0.2)", padding: "4px 10px", borderRadius: 8, fontSize: 12, fontWeight: 700 }}>
-                  {offer.discount}
-                </span>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", alignItems: "center", marginBottom: "8px" }}>
+                  <span style={{ backgroundColor: "rgba(52, 211, 153, 0.15)", color: "#34d399", border: "1px solid rgba(52, 211, 153, 0.2)", padding: "4px 10px", borderRadius: 8, fontSize: 12, fontWeight: 700 }}>
+                    {offer.discount}
+                  </span>
+                  {offer.validServices && offer.validServices !== "All" && (
+                    <span style={{ backgroundColor: "var(--primary-light)", color: "var(--primary)", border: "1px solid var(--border-color)", padding: "4px 8px", borderRadius: 8, fontSize: 11, fontWeight: 700 }}>
+                      🛠️ {offer.validServices}
+                    </span>
+                  )}
+                  {offer.minPrice > 0 && (
+                    <span style={{ backgroundColor: "var(--bg-card-hover)", color: "var(--text-secondary)", border: "1px solid var(--border-color)", padding: "4px 8px", borderRadius: 8, fontSize: 11, fontWeight: 700 }}>
+                      Min Subtotal: ₹{offer.minPrice}
+                    </span>
+                  )}
+                </div>
                 <h4 style={{ margin: "12px 0 4px 0", color: "var(--text-main)", fontSize: 16, fontWeight: 600 }}>{offer.desc}</h4>
                 <p style={{ margin: 0, fontSize: 12, color: "var(--text-muted)" }}>{offer.expiry}</p>
                 {offer.startDate && offer.endDate && (

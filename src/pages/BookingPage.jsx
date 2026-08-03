@@ -18,6 +18,12 @@ function BookingPage() {
   const customPrice = null;
   const navigate = useNavigate();
 
+  // 🏷️ Dynamic Promo & Offer Code State
+  const [availableOffers, setAvailableOffers] = useState([]);
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedOffer, setAppliedOffer] = useState(null);
+  const [couponStatus, setCouponStatus] = useState(null);
+
   const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
   const [showFailureOverlay, setShowFailureOverlay] = useState(false);
   const [failureMessage, setFailureMessage] = useState("");
@@ -121,8 +127,111 @@ function BookingPage() {
     distanceTier = "Standard Travel (5 - 13 KM)";
   }
 
+  // 🏷️ Fetch available promotional offers from cloud API
+  useEffect(() => {
+    const fetchOffers = async () => {
+      try {
+        const res = await fetch("/api/offers");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) setAvailableOffers(data);
+        }
+      } catch (e) { console.error("Offers fetch error", e); }
+    };
+    fetchOffers();
+  }, []);
+
   const basePrice = selectedWorker.price || (selectedWorker.service.includes("Carpentry") ? 399 : selectedWorker.service.includes("Plumbing") ? 299 : selectedWorker.service.includes("Doctors") ? 599 : 349);
-  const calculatedPrice = customPrice !== null ? customPrice : (basePrice + distanceFee + (isEmergency ? 150 : 0));
+  const rawSubTotal = customPrice !== null ? customPrice : (basePrice + distanceFee + (isEmergency ? 150 : 0));
+
+  let discountVal = 0;
+  if (appliedOffer) {
+    const rawDisc = appliedOffer.discount || "";
+    if (rawDisc.includes("%")) {
+      const pct = parseFloat(rawDisc) || 0;
+      discountVal = Math.round((rawSubTotal * pct) / 100);
+    } else {
+      const val = parseFloat(rawDisc.replace(/[^0-9.]/g, '')) || 0;
+      discountVal = Math.round(val);
+    }
+    if (discountVal >= rawSubTotal) {
+      discountVal = Math.max(0, rawSubTotal - 1);
+    }
+  }
+
+  const calculatedPrice = Math.max(1, rawSubTotal - discountVal);
+
+  const handleApplyCoupon = (codeToApply) => {
+    const code = (codeToApply || couponInput).trim().toUpperCase();
+    if (!code) {
+      setCouponStatus({ type: "error", message: "Please enter or select a promo code!" });
+      return;
+    }
+
+    setCouponStatus(null);
+
+    let offerObj = availableOffers.find(o => o.code && o.code.toUpperCase().trim() === code);
+
+    // Fallback default offers if database offers list is empty
+    if (!offerObj) {
+      const fallbacks = [
+        { code: "WELCOME100", discount: "₹100 OFF", desc: "Flat ₹100 Instant Discount on any booking", minPrice: 200 },
+        { code: "WORKZY20", discount: "20% OFF", desc: "Get 20% OFF on home & expert services", minPrice: 300 },
+        { code: "SUMMER50", discount: "₹50 OFF", desc: "Special ₹50 discount on summer repairs", minPrice: 150 }
+      ];
+      offerObj = fallbacks.find(o => o.code === code);
+    }
+
+    if (!offerObj) {
+      setCouponStatus({ type: "error", message: `Invalid promo code "${code}". Please check and try again.` });
+      return;
+    }
+
+    if (offerObj.minPrice && rawSubTotal < offerObj.minPrice) {
+      setCouponStatus({ 
+        type: "error", 
+        message: `Code "${offerObj.code}" requires a minimum booking subtotal of ₹${offerObj.minPrice}. (Current: ₹${rawSubTotal})` 
+      });
+      return;
+    }
+
+    if (offerObj.city && offerObj.city.trim() !== "" && offerObj.city.toLowerCase() !== "all") {
+      const uCity = (localStorage.getItem("userCity") || selectedWorker.city || "").toLowerCase().trim();
+      const oCities = offerObj.city.toLowerCase().split(",").map(c => c.trim());
+      if (uCity && !oCities.some(c => uCity.includes(c) || c.includes(uCity))) {
+        setCouponStatus({
+          type: "error",
+          message: `Code "${offerObj.code}" is valid only for users in ${offerObj.city}.`
+        });
+        return;
+      }
+    }
+
+    if (offerObj.validServices && offerObj.validServices.trim() !== "" && offerObj.validServices.toLowerCase() !== "all") {
+      const sName = (selectedWorker.service || "").toLowerCase();
+      const validS = offerObj.validServices.toLowerCase().split(",").map(s => s.trim());
+      if (!validS.some(s => sName.includes(s) || s.includes(sName))) {
+        setCouponStatus({
+          type: "error",
+          message: `Code "${offerObj.code}" is valid only for services: ${offerObj.validServices}.`
+        });
+        return;
+      }
+    }
+
+    setAppliedOffer(offerObj);
+    setCouponInput(offerObj.code);
+    setCouponStatus({
+      type: "success",
+      message: `🎉 Offer "${offerObj.code}" Applied! (${offerObj.discount} - ${offerObj.desc || "Discount activated"})`
+    });
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedOffer(null);
+    setCouponInput("");
+    setCouponStatus(null);
+  };
 
   // 🛡️ CRITICAL SCHEDULING LOCK: Cap booking capabilities strictly to 9 Days Max!
   const maxBookingDate = new Date();
@@ -253,6 +362,9 @@ function BookingPage() {
          time: selectedSlot,
          service: selectedWorker.service,
          price: calculatedPrice,
+         originalPrice: rawSubTotal,
+         couponCode: appliedOffer ? appliedOffer.code : "",
+         discountAmount: discountVal,
          address: dispatchAddress || "Standard Client Address, Rajahmundry",
          status: "Pending"
       });
@@ -291,18 +403,19 @@ function BookingPage() {
   return (
     <div className="booking-page-container" style={{ 
       minHeight: "100vh", 
-      background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)", 
+      background: "var(--bg-main)", 
       padding: "40px 20px", 
       fontFamily: "'Inter', sans-serif" 
     }}>
       <div className="booking-page-card" style={{ 
         maxWidth: 550, 
         margin: "0 auto", 
-        background: "rgba(255, 255, 255, 0.9)", 
+        background: "var(--bg-card)", 
         backdropFilter: "blur(10px)",
         borderRadius: 24,
         padding: 30,
-        boxShadow: "0 20px 40px rgba(0,0,0,0.1)"
+        boxShadow: "var(--shadow-3d)",
+        border: "1px solid var(--border-color)"
       }}>
         <div style={{ textAlign: "center", marginBottom: 30 }}>
           <h1 style={{ color: "var(--text-main)", fontSize: 32, fontWeight: 900, marginBottom: 8, letterSpacing: "-0.5px" }}>
@@ -330,11 +443,11 @@ function BookingPage() {
             }
           }}
           style={{
-            background: isEmergency ? "linear-gradient(135deg, #ef4444 0%, #991b1b 100%)" : (isBusyForInstant() ? "#f1f5f9" : "white"),
-            border: isEmergency ? "none" : "1px solid #e2e8f0",
+            background: isEmergency ? "linear-gradient(135deg, #ef4444 0%, #991b1b 100%)" : (isBusyForInstant() ? "var(--primary-light)" : "var(--bg-card-hover)"),
+            border: isEmergency ? "none" : "1px solid var(--border-color)",
             borderRadius: 16,
             padding: "24px",
-            boxShadow: isEmergency ? "0 12px 24px rgba(239, 68, 68, 0.3)" : "0 4px 6px rgba(0,0,0,0.03)",
+            boxShadow: isEmergency ? "0 12px 24px rgba(239, 68, 68, 0.3)" : "var(--shadow-3d)",
             marginBottom: 24,
             cursor: isBusyForInstant() && !isEmergency ? "not-allowed" : "pointer",
             transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -358,7 +471,7 @@ function BookingPage() {
               <p style={{ 
                 margin: "6px 0 0 0", 
                 fontSize: "13px", 
-                color: isEmergency ? "rgba(255,255,255,0.9)" : "#64748b", 
+                color: isEmergency ? "rgba(255,255,255,0.9)" : "var(--text-secondary)", 
                 lineHeight: "1.5" 
               }}>
                 {isBusyForInstant() && !isEmergency 
@@ -369,11 +482,11 @@ function BookingPage() {
             </div>
             <div style={{
               width: 24, height: 24, borderRadius: "50%", 
-              border: "2px solid " + (isEmergency ? "white" : "#e2e8f0"),
+              border: "2px solid " + (isEmergency ? "white" : "var(--border-color)"),
               display: "flex", justifyContent: "center", alignItems: "center",
               background: isEmergency ? "white" : "transparent"
             }}>
-              {isEmergency && <div style={{ width: 12, height: 12, borderRadius: "50%", backgroundcolor: "var(--danger)" }} />}
+              {isEmergency && <div style={{ width: 12, height: 12, borderRadius: "50%", backgroundColor: "var(--danger)" }} />}
             </div>
           </div>
         </div>
@@ -383,12 +496,12 @@ function BookingPage() {
           backgroundColor: "var(--bg-card)", 
           borderRadius: 20, 
           padding: 20, 
-          boxShadow: "0 4px 20px rgba(0,0,0,0.05)", 
+          boxShadow: "var(--shadow-3d)", 
           marginBottom: 24, 
           opacity: isEmergency ? 0.4 : 1, 
           pointerEvents: isEmergency ? "none" : "auto", 
           transition: "all 0.3s ease",
-          border: "1px solid rgba(0,0,0,0.05)"
+          border: "1px solid var(--border-color)"
         }}>
           <Calendar 
             className="modern-booking-calendar"
@@ -404,12 +517,12 @@ function BookingPage() {
           backgroundColor: "var(--bg-card)", 
           borderRadius: 20, 
           padding: 24, 
-          boxShadow: "0 4px 20px rgba(0,0,0,0.05)", 
+          boxShadow: "var(--shadow-3d)", 
           marginBottom: 30, 
           opacity: isEmergency ? 0.4 : 1, 
           pointerEvents: isEmergency ? "none" : "auto", 
           transition: "all 0.3s ease",
-          border: "1px solid rgba(0,0,0,0.05)"
+          border: "1px solid var(--border-color)"
         }}>
           <h3 style={{ margin: "0 0 20px", color: "var(--text-main)", fontSize: 17, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
             🕒 Available Windows
@@ -428,9 +541,9 @@ function BookingPage() {
                     padding: "14px 0", 
                     textAlign: "center",
                     borderRadius: 12, 
-                    border: selected ? "2px solid var(--primary)" : "1px solid #e2e8f0",
-                    backgroundColor: isBusy ? "#fee2e2" : (disabled ? "#f8fafc" : (selected ? "var(--primary-light)" : "white")),
-                    color: isBusy ? "#b91c1c" : (disabled ? "#cbd5e1" : (selected ? "var(--primary)" : "#334155")),
+                    border: selected ? "2px solid var(--primary)" : "1px solid var(--border-color)",
+                    backgroundColor: isBusy ? "var(--danger-light)" : (disabled ? "var(--primary-light)" : (selected ? "var(--primary-light)" : "var(--bg-card-hover)")),
+                    color: isBusy ? "var(--danger)" : (disabled ? "var(--text-muted)" : (selected ? "var(--primary)" : "var(--text-main)")),
                     cursor: disabled ? "not-allowed" : "pointer", 
                     fontWeight: 700,
                     fontSize: 15,
@@ -455,8 +568,8 @@ function BookingPage() {
             style={{
               width: "100%",
               padding: "18px 24px",
-              background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
-              color: "white",
+              background: "var(--primary)",
+              color: "var(--primary-dark)",
               border: "none",
               borderRadius: 16,
               cursor: "pointer",
@@ -476,11 +589,11 @@ function BookingPage() {
           </button>
         ) : (
           <div style={{ 
-            background: "white", 
+            background: "var(--bg-card)", 
             borderRadius: 20, 
             padding: 28, 
-            boxShadow: "0 10px 40px rgba(0,0,0,0.1)",
-            border: "1px solid rgba(0,0,0,0.05)",
+            boxShadow: "var(--shadow-3d)",
+            border: "1px solid var(--border-color)",
             animation: "slideUp 0.3s ease-out"
           }}>
             <h3 style={{ margin: "0 0 20px", color: "var(--text-main)", fontSize: 20, fontWeight: 800 }}>💳 Checkout</h3>
@@ -497,7 +610,8 @@ function BookingPage() {
                   width: "100%", 
                   padding: "14px", 
                   borderRadius: 12, 
-                  border: "2px solid #e2e8f0", 
+                  border: "1.5px solid var(--border-color)", 
+                  backgroundColor: "var(--bg-card-hover)",
                   fontSize: 14,
                   fontWeight: 500,
                   color: "var(--text-main)",
@@ -515,7 +629,8 @@ function BookingPage() {
                   width: "100%", 
                   padding: "14px", 
                   borderRadius: 12, 
-                  border: "2px solid #e2e8f0", 
+                  border: "1.5px solid var(--border-color)", 
+                  backgroundColor: "var(--bg-card-hover)",
                   fontSize: 15,
                   fontWeight: 600,
                   color: "var(--text-main)",
@@ -566,6 +681,133 @@ function BookingPage() {
               </div>
             )}
 
+            {/* 🏷️ DYNAMIC PROMO & OFFER CODE SYSTEM */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ fontSize: 14, fontWeight: 700, color: "var(--text-secondary)", display: "block", marginBottom: 8 }}>
+                🏷️ Apply Promo / Offer Code
+              </label>
+
+              {appliedOffer ? (
+                <div style={{
+                  backgroundColor: "var(--primary-light)",
+                  border: "1.5px solid var(--primary)",
+                  borderRadius: 12,
+                  padding: "12px 16px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center"
+                }}>
+                  <div>
+                    <span style={{ fontSize: 14, fontWeight: 800, color: "var(--primary)", display: "block" }}>
+                      🎉 Code "{appliedOffer.code}" Active ({appliedOffer.discount})
+                    </span>
+                    <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>
+                      {appliedOffer.desc || "Discount applied to subtotal"}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleRemoveCoupon}
+                    style={{
+                      backgroundColor: "transparent",
+                      color: "var(--danger)",
+                      border: "1px solid var(--danger)",
+                      borderRadius: 8,
+                      padding: "4px 10px",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: "pointer"
+                    }}
+                  >
+                    Remove ✕
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                    <input
+                      type="text"
+                      value={couponInput}
+                      onChange={e => setCouponInput(e.target.value.toUpperCase())}
+                      placeholder="ENTER OFFER CODE (e.g. WORKZY20)..."
+                      style={{
+                        flex: 1,
+                        padding: "12px 14px",
+                        borderRadius: 12,
+                        border: "1.5px solid var(--border-color)",
+                        backgroundColor: "var(--bg-card-hover)",
+                        fontSize: 14,
+                        fontWeight: 700,
+                        letterSpacing: "0.5px",
+                        color: "var(--text-main)",
+                        textTransform: "uppercase"
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleApplyCoupon(couponInput)}
+                      style={{
+                        backgroundColor: "var(--primary)",
+                        color: "white",
+                        border: "none",
+                        borderRadius: 12,
+                        padding: "0 20px",
+                        fontSize: 14,
+                        fontWeight: 800,
+                        cursor: "pointer",
+                        boxShadow: "0 4px 10px rgba(49, 82, 91, 0.2)"
+                      }}
+                    >
+                      Apply
+                    </button>
+                  </div>
+
+                  {/* Available Quick Coupon Badges / Chips */}
+                  {availableOffers.length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
+                      <span style={{ fontSize: 11, color: "var(--text-secondary)", fontWeight: 700, width: "100%", marginBottom: 2 }}>
+                        Available Offers for you:
+                      </span>
+                      {availableOffers.map((off, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => {
+                            setCouponInput(off.code);
+                            handleApplyCoupon(off.code);
+                          }}
+                          style={{
+                            backgroundColor: "var(--primary-light)",
+                            color: "var(--primary)",
+                            border: "1px dashed var(--primary)",
+                            borderRadius: 20,
+                            padding: "4px 10px",
+                            fontSize: 11,
+                            fontWeight: 800,
+                            cursor: "pointer",
+                            transition: "all 0.2s"
+                          }}
+                          title={off.desc}
+                        >
+                          ⚡ {off.code} ({off.discount})
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {couponStatus && (
+                <div style={{
+                  marginTop: 8,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: couponStatus.type === "success" ? "#16a34a" : "#dc2626"
+                }}>
+                  {couponStatus.message}
+                </div>
+              )}
+            </div>
+
             <div style={{ 
               background: "var(--bg-card-hover)", 
               borderRadius: 14, 
@@ -592,11 +834,25 @@ function BookingPage() {
                 </div>
               )}
 
-              <div style={{ height: "1px", backgroundcolor: "var(--text-secondary)", margin: "10px 0" }}></div>
+              {appliedOffer && discountVal > 0 && (
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, color: "#16a34a", fontSize: 14, fontWeight: 700 }}>
+                  <span>🏷️ Coupon Discount ({appliedOffer.code})</span>
+                  <span>- ₹{discountVal}</span>
+                </div>
+              )}
+
+              <div style={{ height: "1px", backgroundColor: "var(--border-color)", margin: "10px 0" }}></div>
 
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, color: "var(--text-secondary)", fontSize: 15 }}>
                 <span>Total Cost</span>
-                <strong style={{ color: "#059669", fontSize: 20 }}>₹{calculatedPrice}</strong>
+                <div>
+                  {appliedOffer && discountVal > 0 && (
+                    <span style={{ textDecoration: "line-through", color: "var(--text-secondary)", fontSize: 14, marginRight: 8 }}>
+                      ₹{rawSubTotal}
+                    </span>
+                  )}
+                  <strong style={{ color: "#059669", fontSize: 20 }}>₹{calculatedPrice}</strong>
+                </div>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-secondary)", fontSize: 13 }}>
                 <span>Delivery Window</span>

@@ -182,19 +182,19 @@ function Navbar() {
                     right: 0,
                     width: "320px",
                     maxHeight: "360px",
-                    backgroundColor: "rgba(255, 255, 255, 0.85)",
-                    backdropFilter: "blur(16px)",
-                    border: "1px solid rgba(255, 255, 255, 0.5)",
+                    backgroundColor: "var(--bg-card)",
+                    backdropFilter: "var(--blur)",
+                    border: "1px solid var(--border-color)",
                     borderRadius: "16px",
-                    boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+                    boxShadow: "var(--shadow-3d)",
                     zIndex: 1000,
                     overflowY: "auto",
                     padding: "16px",
                     boxSizing: "border-box"
                   }}
                 >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", borderBottom: "1px solid rgba(0,0,0,0.06)", paddingBottom: "8px" }}>
-                    <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "var(--text-main)" }}>Notifications</h4>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", borderBottom: "1px solid var(--border-color)", paddingBottom: "8px" }}>
+                    <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "var(--text-main)" }}>Notifications & Messages</h4>
                     <button
                       onClick={async () => {
                         try {
@@ -225,7 +225,7 @@ function Navbar() {
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                     {notifications.length === 0 ? (
-                      <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)", textAlign: "center", padding: "16px 0" }}>No new notifications</p>
+                      <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)", textAlign: "center", padding: "16px 0" }}>No new messages or notifications</p>
                     ) : (
                       notifications.map((n) => (
                         <div
@@ -233,7 +233,7 @@ function Navbar() {
                           style={{
                             padding: "10px",
                             borderRadius: "10px",
-                            backgroundColor: n.is_read ? "rgba(0,0,0,0.02)" : "rgba(66, 86, 100, 0.08)",
+                            backgroundColor: n.is_read ? "var(--bg-card-hover)" : "var(--primary-light)",
                             borderLeft: n.is_read ? "3px solid transparent" : "3px solid var(--primary)",
                             fontSize: "12px",
                             transition: "background-color 0.2s"
@@ -281,89 +281,89 @@ function Navbar() {
           </button>
 
           {isLoggedIn ? (
-            !isMobile && (
-              <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                 {/* Worker Dashboard Quick Link */}
-                 {sessionStorage.getItem("userRole") === "worker" && (
-                   <Link to="/worker-dashboard" state={{ resetTab: "status" }} style={{ textDecoration: "none" }}>
-                      <button
-                        style={{
-                          backgroundColor: "var(--primary)",
-                          color: "white",
-                          border: "none",
-                          padding: "10px 18px",
-                          cursor: "pointer",
-                          borderRadius: "8px",
-                          fontWeight: 600,
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "6px"
-                        }}
-                      >
-                        <FaTools size={14} /> Worker Panel
-                      </button>
-                   </Link>
-                 )}
+            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+               {/* Worker Dashboard Quick Link */}
+               {sessionStorage.getItem("userRole") === "worker" && !isMobile && (
+                 <Link to="/worker-dashboard" state={{ resetTab: "status" }} style={{ textDecoration: "none" }}>
+                    <button
+                      style={{
+                        backgroundColor: "var(--primary)",
+                        color: "white",
+                        border: "none",
+                        padding: "10px 18px",
+                        cursor: "pointer",
+                        borderRadius: "8px",
+                        fontWeight: 600,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px"
+                      }}
+                    >
+                      <FaTools size={14} /> Worker Panel
+                    </button>
+                 </Link>
+               )}
 
-                 {/* User Dashboard Quick Link */}
-                 {sessionStorage.getItem("userRole") === "user" && (
-                   <Link to="/user-dashboard" style={{ textDecoration: "none" }}>
-                      <button
-                        style={{
-                          backgroundColor: "var(--primary)",
-                          color: "white",
-                          border: "none",
-                          padding: "10px 18px",
-                          cursor: "pointer",
-                          borderRadius: "8px",
-                          fontWeight: 600,
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "6px"
-                        }}
-                      >
-                        <FaUser size={14} /> My Dashboard
-                      </button>
-                   </Link>
-                 )}
+               {/* User Dashboard Quick Link */}
+               {sessionStorage.getItem("userRole") === "user" && !isMobile && (
+                 <Link to="/user-dashboard" style={{ textDecoration: "none" }}>
+                    <button
+                      style={{
+                        backgroundColor: "var(--primary)",
+                        color: "white",
+                        border: "none",
+                        padding: "10px 18px",
+                        cursor: "pointer",
+                        borderRadius: "8px",
+                        fontWeight: 600,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px"
+                      }}
+                    >
+                      <FaUser size={14} /> My Dashboard
+                    </button>
+                 </Link>
+               )}
 
-                 {/* Admin Dashboard Quick Link */}
-                 {sessionStorage.getItem("userRole") === "admin" && (
-                   <Link to="/admin-dashboard" state={{ resetTab: "overview" }} style={{ textDecoration: "none" }}>
-                      <button
-                        style={{
-                          backgroundColor: "var(--primary)",
-                          color: "white",
-                          border: "none",
-                          padding: "10px 18px",
-                          cursor: "pointer",
-                          borderRadius: "8px",
-                          fontWeight: 600,
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "6px"
-                        }}
-                      >
-                        <FaCrown size={14} /> Admin Panel
-                      </button>
-                   </Link>
-                 )}
-                <button
-                  onClick={handleLogout}
-                  style={{
-                    backgroundcolor: "var(--danger)",
-                    color: "white",
-                    border: "none",
-                    padding: "10px 18px",
-                    cursor: "pointer",
-                    borderRadius: "8px",
-                    fontWeight: 600
-                  }}
-                >
-                  Logout
-                </button>
-              </div>
-            )
+               {/* Admin Dashboard Quick Link */}
+               {sessionStorage.getItem("userRole") === "admin" && !isMobile && (
+                 <Link to="/admin-dashboard" state={{ resetTab: "overview" }} style={{ textDecoration: "none" }}>
+                    <button
+                      style={{
+                        backgroundColor: "var(--primary)",
+                        color: "white",
+                        border: "none",
+                        padding: "10px 18px",
+                        cursor: "pointer",
+                        borderRadius: "8px",
+                        fontWeight: 600,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px"
+                      }}
+                    >
+                      <FaCrown size={14} /> Admin Panel
+                    </button>
+                 </Link>
+               )}
+              <button
+                onClick={handleLogout}
+                style={{
+                  backgroundColor: "#ef4444",
+                  color: "white",
+                  border: "none",
+                  padding: isMobile ? "8px 14px" : "10px 18px",
+                  cursor: "pointer",
+                  borderRadius: "8px",
+                  fontWeight: 700,
+                  fontSize: isMobile ? "13px" : "14px",
+                  boxShadow: "0 2px 6px rgba(239, 68, 68, 0.3)"
+                }}
+              >
+                Logout 🚪
+              </button>
+            </div>
           ) : (
             !isMobile && (
               <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>

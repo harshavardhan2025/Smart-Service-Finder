@@ -443,7 +443,7 @@ function Profile() {
                     justifyContent: "space-between",
                     alignItems: "center",
                     padding: "14px 0",
-                    borderBottom: i < arr.length - 1 ? "1px solid #f1f5f9" : "none"
+                    borderBottom: i < arr.length - 1 ? "1px solid var(--border-color)" : "none"
                   }}
                 >
                   <span style={{ fontSize: "13px", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "6px" }}>
@@ -465,7 +465,7 @@ function Profile() {
             backgroundColor: "var(--bg-card)",
             borderRadius: "20px",
             padding: "28px",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.07)",
+            boxShadow: "var(--shadow-3d)",
             marginBottom: "20px"
           }}
         >
@@ -502,14 +502,14 @@ function Profile() {
           {/* Transaction Rows */}
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {visibleTxns.map((txn) => {
-              const s = STATUS_STYLE[txn.status] || { color: "var(--text-secondary)", bg: "#f1f5f9" };
+              const s = STATUS_STYLE[txn.status] || { color: "var(--text-secondary)", bg: "var(--primary-light)" };
               const txnIdentifier = txn._id || txn.id;
               const isOpen = expandedTxn === txnIdentifier;
               return (
                 <div
                   key={txnIdentifier}
                   style={{
-                    border: `1.5px solid ${isOpen ? "#2196F3" : "#f1f5f9"}`,
+                    border: `1.5px solid ${isOpen ? "var(--primary)" : "var(--border-color)"}`,
                     borderRadius: "12px",
                     overflow: "hidden",
                     transition: "border 0.2s"
@@ -524,7 +524,7 @@ function Profile() {
                       alignItems: "center",
                       padding: "14px 16px",
                       cursor: "pointer",
-                      backgroundColor: isOpen ? "#f0f9ff" : "white",
+                      backgroundColor: isOpen ? "var(--primary-light)" : "var(--bg-card-hover)",
                       transition: "background 0.2s"
                     }}
                   >
@@ -593,9 +593,9 @@ function Profile() {
                 width: "100%",
                 marginTop: "12px",
                 padding: "11px",
-                backgroundColor: showAllTxn ? "#f1f5f9" : "rgba(198, 173, 143, 0.15)",
-                color: showAllTxn ? "#64748b" : "var(--primary)",
-                border: `1.5px dashed ${showAllTxn ? "#cbd5e1" : "var(--accent)"}`,
+                backgroundColor: showAllTxn ? "var(--primary-light)" : "rgba(198, 173, 143, 0.15)",
+                color: showAllTxn ? "var(--text-secondary)" : "var(--primary)",
+                border: `1.5px dashed ${showAllTxn ? "var(--border-color)" : "var(--accent)"}`,
                 borderRadius: "10px",
                 fontWeight: 700,
                 fontSize: "13px",
@@ -699,9 +699,9 @@ function Profile() {
                       flex: 1,
                       padding: "8px 4px",
                       borderRadius: "8px",
-                      border: topUpAmount === amt ? "2px solid #31525B" : "1px solid #cbd5e1",
-                      backgroundColor: topUpAmount === amt ? "rgba(49,82,91,0.08)" : "white",
-                      color: topUpAmount === amt ? "#31525B" : "#475569",
+                      border: topUpAmount === amt ? "2px solid var(--primary)" : "1px solid var(--border-color)",
+                      backgroundColor: topUpAmount === amt ? "var(--primary-light)" : "var(--bg-card-hover)",
+                      color: topUpAmount === amt ? "var(--primary)" : "var(--text-secondary)",
                       fontWeight: 800,
                       fontSize: "12px",
                       cursor: "pointer"

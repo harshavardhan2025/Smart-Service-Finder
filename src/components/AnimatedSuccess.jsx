@@ -95,7 +95,7 @@ function AnimatedSuccess({ bookingDetails, onClose }) {
           padding: "40px 32px",
           boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.3)",
           textAlign: "center",
-          border: "1.5px solid #e2e8f0",
+          border: "1.5px solid var(--border-color)",
           animation: "pop-success 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
           position: "relative",
           zIndex: 100001

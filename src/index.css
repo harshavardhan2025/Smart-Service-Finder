@@ -23,8 +23,8 @@
 body {
   margin: 0;
   font-family: 'Outfit', sans-serif;
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: var(--bg-main, #f8fafc);
+  color: var(--text-main, #0f172a);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -70,10 +70,10 @@ select {
   font-family: 'Outfit', sans-serif;
   padding: 14px 18px;
   border-radius: 12px;
-  border: 1.5px solid #e2e8f0;
-  background-color: rgba(255, 255, 255, 0.8);
+  border: 1.5px solid var(--border-color, #e2e8f0);
+  background-color: var(--bg-card, rgba(255, 255, 255, 0.8));
   backdrop-filter: blur(8px);
-  color: #0f172a;
+  color: var(--text-main, #0f172a);
   font-size: 15px;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
@@ -91,13 +91,13 @@ textarea:focus,
 select:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--primary-glow);
-  background-color: #ffffff;
+  background-color: var(--bg-card-hover, #ffffff);
 }
 
 /* Premium Card Classes (Physical 3D Extrusion) */
 .premium-card {
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: var(--bg-card, rgba(255, 255, 255, 0.95));
+  border: 1px solid var(--border-color, rgba(226, 232, 240, 0.8));
   border-bottom: 4px solid rgba(49, 82, 91, 0.15);
   border-radius: 20px;
   padding: 28px;

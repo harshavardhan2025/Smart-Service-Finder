@@ -1122,7 +1122,7 @@ function AiChatBot() {
                 <div style={{
                   fontSize: "10.5px",
                   fontWeight: 600,
-                  color: msg.sender === "user" ? "#64748b" : "#31525B",
+                  color: msg.sender === "user" ? "var(--text-secondary)" : "var(--primary)",
                   marginBottom: "4px",
                   paddingLeft: msg.sender === "user" ? "0" : "2px",
                   paddingRight: msg.sender === "user" ? "2px" : "0",

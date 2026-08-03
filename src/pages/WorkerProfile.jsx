@@ -116,7 +116,7 @@ function WorkerProfile() {
                 position: "absolute",
                 top: "24px",
                 right: "24px",
-                backgroundcolor: "var(--success)",
+                backgroundColor: "var(--primary)",
                 backdropFilter: "blur(4px)",
                 color: "white",
                 padding: "6px 12px",

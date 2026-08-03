@@ -660,7 +660,7 @@ function WorkerDashboard() {
                                   }}
                                   style={{ 
                                     padding: "6px 14px", 
-                                    backgroundcolor: "var(--danger)", 
+                                    backgroundColor: "var(--danger)", 
                                     color: "white", 
                                     border: "none", 
                                     borderRadius: "8px", 
@@ -774,14 +774,14 @@ function WorkerDashboard() {
 
                             {n.bookingStatus === "On the Way" && (
                               <button onClick={() => handleStatusChange(n.bookingId, "Started")}
-                                style={{ padding: "10px 20px", backgroundcolor: "var(--warning)", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", display: "inline-flex", gap: 6, alignItems: "center" }}>
+                                style={{ padding: "10px 20px", backgroundColor: "var(--warning)", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", display: "inline-flex", gap: 6, alignItems: "center" }}>
                                 Mark as 'Started Job' 🛠️
                               </button>
                             )}
 
                             {n.bookingStatus === "Started" && (
                               <button onClick={() => handleStatusChange(n.bookingId, "Completed")}
-                                style={{ padding: "10px 20px", backgroundcolor: "var(--success)", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", display: "inline-flex", gap: 6, alignItems: "center" }}>
+                                style={{ padding: "10px 20px", backgroundColor: "var(--success)", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", display: "inline-flex", gap: 6, alignItems: "center" }}>
                                 Mark as 'Completed' ✨
                               </button>
                             )}
@@ -845,7 +845,7 @@ function WorkerDashboard() {
                               }}
                                 style={{ 
                                   padding: "10px 24px", 
-                                  backgroundcolor: "var(--danger)", 
+                                  backgroundColor: "var(--danger)", 
                                   color: "white", 
                                   border: "none", 
                                   borderRadius: 8, 
@@ -863,7 +863,7 @@ function WorkerDashboard() {
 
                           {openMapId === n.id && (
                             <div style={{ marginTop: 12, border: "1px solid var(--border-color)", borderRadius: 10, overflow: "hidden" }}>
-                              <div style={{ backgroundcolor: "var(--text-main)", color: "white", padding: "12px 16px", display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+                              <div style={{ backgroundColor: "var(--text-main)", color: "white", padding: "12px 16px", display: "flex", justifyContent: "space-between", fontSize: 13 }}>
                                 <span>📍 From: <strong>{n.workerAddr}</strong></span>
                                 <span>🏠 To: <strong>{n.customerAddr}</strong></span>
                               </div>
@@ -908,7 +908,7 @@ function WorkerDashboard() {
                   <div style={{ fontSize: 40, fontWeight: 900, color: "var(--primary)", marginTop: 10 }}>₹{upcomingProjected}</div>
                   <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 6, fontWeight: 600 }}>Active outstanding workflows</div>
                 </div>
-                <div className="premium-card" style={{ borderTop: "6px solid #64748b", textAlign: "center", padding: "28px 20px" }}>
+                <div className="premium-card" style={{ borderTop: "6px solid var(--text-secondary)", textAlign: "center", padding: "28px 20px" }}>
                   <div style={{ fontSize: 11, color: "var(--text-secondary)", fontWeight: 850, textTransform: "uppercase", letterSpacing: "0.8px" }}>📊 Total Services</div>
                   <div style={{ fontSize: 40, fontWeight: 900, color: "var(--text-main)", marginTop: 10 }}>{activeValidBookings.length}</div>
                   <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 6, fontWeight: 600 }}>Aggregate service count</div>
@@ -931,7 +931,7 @@ function WorkerDashboard() {
                           <div style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 4 }}>👤 Client: <strong style={{ color: "var(--text-main)" }}>{b.customer_name || b.customer}</strong> · 📅 {b.date}</div>
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-                          <div style={{ fontWeight: 900, fontSize: 20, color: b.status === "Paid Out" ? "#16a34a" : b.status === "Completed" ? "#c2410c" : "#475569" }}>
+                          <div style={{ fontWeight: 900, fontSize: 20, color: b.status === "Paid Out" ? "var(--success)" : b.status === "Completed" ? "var(--warning)" : "var(--text-secondary)" }}>
                             ₹{b.price}
                           </div>
                           <span style={{ 
@@ -941,8 +941,8 @@ function WorkerDashboard() {
                             fontWeight: 850, 
                             textTransform: "uppercase",
                             letterSpacing: "0.5px",
-                            backgroundColor: b.status === "Paid Out" ? "#dcfce7" : b.status === "Completed" ? "#ffedd5" : "#f1f5f9",
-                            color: b.status === "Paid Out" ? "#16a34a" : b.status === "Completed" ? "#c2410c" : "#475569"
+                            backgroundColor: b.status === "Paid Out" ? "var(--success-light)" : b.status === "Completed" ? "var(--warning-light)" : "var(--primary-light)",
+                            color: b.status === "Paid Out" ? "var(--success)" : b.status === "Completed" ? "var(--warning)" : "var(--text-secondary)"
                           }}>
                             {b.status === "Paid Out" ? "✓ Paid Out" : b.status === "Completed" ? "🔒 Locked Escrow" : "⌛ Pipeline"}
                           </span>
@@ -1242,7 +1242,7 @@ function WorkerDashboard() {
 
               {(!sosActive && !(isActive && bookings.some(b => ["Accepted", "On the Way", "Started"].includes(b.status)))) ? (
                 <div className="premium-card" style={{ 
-                  borderTop: "8px solid #64748b", 
+                  borderTop: "8px solid var(--text-secondary)", 
                   padding: "60px 40px", 
                   textAlign: "center", 
                   backgroundColor: "var(--bg-card)",
@@ -1309,7 +1309,7 @@ function WorkerDashboard() {
                             setAdminResolvedAlert(false);
                             alert("🟢 Physical safety verified. Distress siren permanently stood down.");
                           }}
-                          style={{ backgroundcolor: "var(--success)", color: "white", border: "none", padding: "14px 24px", borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: "pointer", flex: 1, boxShadow: "0 4px 12px rgba(22,163,74,0.3)" }}
+                          style={{ backgroundColor: "var(--success)", color: "white", border: "none", padding: "14px 24px", borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: "pointer", flex: 1, boxShadow: "0 4px 12px rgba(22,163,74,0.3)" }}
                         >
                           ✅ Yes, I Am Safe Now
                         </button>
@@ -1332,7 +1332,7 @@ function WorkerDashboard() {
                               alert("🔥 RE-ALERT DISPATCHED! Admin telemetry updated to MAXIMUM urgency. Stand by for immediate physical contact.");
                             } catch(e) { alert("Failed to dispatch escalation signal."); }
                           }}
-                          style={{ backgroundcolor: "var(--danger)", color: "white", border: "none", padding: "14px 24px", borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: "pointer", flex: 1, boxShadow: "0 4px 12px rgba(220,38,38,0.3)" }}
+                          style={{ backgroundColor: "var(--danger)", color: "white", border: "none", padding: "14px 24px", borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: "pointer", flex: 1, boxShadow: "0 4px 12px rgba(220,38,38,0.3)" }}
                         >
                           🚨 NO, RE-ALERT ADMIN!
                         </button>
@@ -1342,12 +1342,12 @@ function WorkerDashboard() {
 
                   <div style={{ display: "flex", justifyContent: "center", gap: 20, margin: "36px 0" }}>
                     <a href="tel:112" style={{ textDecoration: "none", flex: 1, maxWidth: 260 }}>
-                      <div style={{ backgroundcolor: "var(--danger)", color: "white", padding: "18px", borderRadius: 14, fontWeight: 800, fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 10px 20px rgba(239,68,68,0.3)" }}>
+                      <div style={{ backgroundColor: "var(--danger)", color: "white", padding: "18px", borderRadius: 14, fontWeight: 800, fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 10px 20px rgba(239,68,68,0.3)" }}>
                         📞 Call 112
                       </div>
                     </a>
                     <a href="tel:100" style={{ textDecoration: "none", flex: 1, maxWidth: 260 }}>
-                      <div style={{ backgroundcolor: "var(--text-main)", color: "white", padding: "18px", borderRadius: 14, fontWeight: 800, fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 10px 20px rgba(30,41,59,0.3)" }}>
+                      <div style={{ backgroundColor: "var(--text-main)", color: "white", padding: "18px", borderRadius: 14, fontWeight: 800, fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 10px 20px rgba(30,41,59,0.3)" }}>
                         🚓 Police (100)
                       </div>
                     </a>

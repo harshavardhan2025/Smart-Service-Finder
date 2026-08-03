@@ -101,9 +101,9 @@ function TopWorkers({ searchedLocation, userCoords }) {
                 <span
                   style={{
                     display: "inline-block",
-                    backgroundColor: "#eff6ff",
-                    color: "#1d4ed8",
-                    border: "1px solid #bfdbfe",
+                    backgroundColor: "var(--info-light)",
+                    color: "var(--text-main)",
+                    border: "1px solid var(--border-color)",
                     borderRadius: "12px",
                     padding: "2px 10px",
                     fontSize: "12px",

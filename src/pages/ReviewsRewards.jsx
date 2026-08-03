@@ -518,8 +518,8 @@ function ReviewsRewards() {
                       fontSize: "11px",
                       fontWeight: 700,
                       cursor: "pointer",
-                      backgroundColor: filterType === pill.id ? "#7c3aed" : "#e2e8f0",
-                      color: filterType === pill.id ? "white" : "#475569",
+                      backgroundColor: filterType === pill.id ? "var(--primary)" : "var(--primary-light)",
+                      color: filterType === pill.id ? "var(--primary-dark)" : "var(--text-secondary)",
                       transition: "all 0.2s"
                     }}
                   >

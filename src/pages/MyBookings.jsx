@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { addToWallet, getWalletBalance } from "../utils/wallet";
+
 
 const serviceIcons = {
   "Carpentry": "🪚",
@@ -679,9 +679,9 @@ function MyBookings() {
                             setChatMessages([]);
                           }}
                           style={{
-                            backgroundColor: "#e0f2fe",
-                            color: "#0284c7",
-                            border: "1px solid #bae6fd",
+                            backgroundColor: "var(--info-light)",
+                            color: "var(--primary-dark)",
+                            border: "1px solid var(--border-color)",
                             padding: "8px 16px",
                             borderRadius: "8px",
                             fontWeight: "bold",
@@ -692,8 +692,8 @@ function MyBookings() {
                             gap: "6px",
                             transition: "all 0.2s"
                           }}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#bae6fd"}
-                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#e0f2fe"}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--primary-light)"}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "var(--info-light)"}
                         >
                           💬 Chat with Provider
                         </button>
@@ -729,8 +729,8 @@ function MyBookings() {
               backgroundColor: "var(--bg-card)",
               borderRadius: "20px",
               padding: "28px",
-              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-              border: "1px solid rgba(0,0,0,0.05)"
+              boxShadow: "var(--shadow-3d)",
+              border: "1px solid var(--border-color)"
             }}
           >
             <h3 style={{ margin: "0 0 8px 0", fontSize: "20px", fontWeight: 800, color: "var(--text-main)" }}>
@@ -745,7 +745,7 @@ function MyBookings() {
               <select
                 value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}
-                style={{ width: "100%", padding: "10px", borderRadius: "10px", border: "1px solid #cbd5e1" }}
+                style={{ width: "100%", padding: "10px", borderRadius: "10px", border: "1px solid var(--border-color)", backgroundColor: "var(--bg-card-hover)", color: "var(--text-main)" }}
               >
                 <option value="Scheduler Conflict">📅 Scheduler Conflict / Change of Plans</option>
                 <option value="Found alternative worker">👷 Found alternative worker</option>
@@ -761,7 +761,7 @@ function MyBookings() {
                 onClick={handleConfirmCancel}
                 style={{
                   flex: 1,
-                  backgroundcolor: "var(--danger)",
+                  backgroundColor: "var(--danger)",
                   color: "white",
                   border: "none",
                   padding: "12px",
@@ -778,7 +778,7 @@ function MyBookings() {
                 onClick={() => setActiveCancelBooking(null)}
                 style={{
                   flex: 1,
-                  backgroundColor: "#e2e8f0",
+                  backgroundColor: "var(--primary-light)",
                   color: "var(--text-secondary)",
                   border: "none",
                   padding: "12px",
@@ -1288,7 +1288,7 @@ function MyBookings() {
             <div style={{
               flex: 1,
               padding: "20px",
-              backgroundColor: chatTheme === 'light' ? "#eef2f6" : "#0b0f19",
+              backgroundColor: "var(--bg-card-hover)",
               overflowY: "auto",
               display: "flex",
               flexDirection: "column",
@@ -1298,7 +1298,7 @@ function MyBookings() {
                 <div style={{
                   margin: "auto",
                   textAlign: "center",
-                  color: chatTheme === 'light' ? "#6b7280" : "#4b5563"
+                  color: "var(--text-secondary)"
                 }}>
                   <p style={{ fontSize: "40px", margin: "0 0 10px 0" }}>💬</p>
                   <p style={{ fontSize: "13px", margin: 0 }}>No messages yet. Say hello to get started!</p>
@@ -1314,13 +1314,14 @@ function MyBookings() {
                         key={msg._id || msg.id}
                         style={{
                           alignSelf: "center",
-                          backgroundColor: chatTheme === 'light' ? "#e0e7ff" : "#1e1b4b",
-                          color: chatTheme === 'light' ? "#3730a3" : "#c7d2fe",
+                          backgroundColor: "var(--info-light)",
+                          color: "var(--text-main)",
+                          border: "1px solid var(--border-color)",
                           padding: "6px 16px",
                           borderRadius: "20px",
                           fontSize: "12px",
                           fontWeight: "600",
-                          boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+                          boxShadow: "var(--shadow-3d)",
                           textAlign: "center",
                           margin: "6px 0",
                           maxWidth: "85%",
@@ -1346,15 +1347,15 @@ function MyBookings() {
                         alignSelf: isMe ? "flex-end" : "flex-start",
                         maxWidth: "75%",
                         backgroundColor: isMe 
-                          ? (chatTheme === 'light' ? "#6366f1" : "#4f46e5") 
-                          : (chatTheme === 'light' ? "white" : "#1f2937"),
+                          ? "var(--primary)" 
+                          : "var(--bg-card)",
                         color: isMe 
-                          ? "white" 
-                          : (chatTheme === 'light' ? "#1f2937" : "#f9fafb"),
+                          ? "#ffffff" 
+                          : "var(--text-main)",
                         padding: "10px 14px",
                         borderRadius: isMe ? "16px 16px 0 16px" : "16px 16px 16px 0",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                        border: isMe ? "none" : (chatTheme === 'light' ? "1px solid #e5e7eb" : "1px solid #374151")
+                        boxShadow: "var(--shadow-3d)",
+                        border: isMe ? "none" : "1px solid var(--border-color)"
                       }}
                     >
                       <p style={{ margin: 0, fontSize: "14px", wordBreak: "break-word", lineHeight: 1.4 }}>
@@ -1362,11 +1363,11 @@ function MyBookings() {
                       </p>
                       <span style={{
                         fontSize: "9px",
-                        opacity: 0.7,
+                        opacity: 0.8,
                         display: "block",
                         textAlign: "right",
                         marginTop: "4px",
-                        color: isMe ? "rgba(255,255,255,0.8)" : (chatTheme === 'light' ? "#6b7280" : "#9ca3af")
+                        color: isMe ? "rgba(255,255,255,0.9)" : "var(--text-secondary)"
                       }}>
                         {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
@@ -1381,8 +1382,8 @@ function MyBookings() {
               onSubmit={handleSendMessage}
               style={{
                 padding: "14px 20px",
-                borderTop: chatTheme === 'light' ? "1px solid #cbd5e1" : "1px solid #1f2937",
-                backgroundColor: chatTheme === 'light' ? "white" : "#111827",
+                borderTop: "1px solid var(--border-color)",
+                backgroundColor: "var(--bg-card)",
                 display: "flex",
                 gap: "10px"
               }}
@@ -1396,9 +1397,9 @@ function MyBookings() {
                   flex: 1,
                   padding: "12px",
                   borderRadius: "10px",
-                  border: chatTheme === 'light' ? "1px solid #cbd5e1" : "1px solid #374151",
-                  backgroundColor: chatTheme === 'light' ? "white" : "#0b0f19",
-                  color: chatTheme === 'light' ? "#1f2937" : "#f9fafb",
+                  border: "1px solid var(--border-color)",
+                  backgroundColor: "var(--bg-card-hover)",
+                  color: "var(--text-main)",
                   fontSize: "14px",
                   outline: "none"
                 }}

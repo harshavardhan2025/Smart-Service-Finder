@@ -1050,7 +1050,7 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
               <button
                 onClick={() => setLocationError(null)}
                 style={{
-                  backgroundColor: "#e2e8f0", color: "var(--text-secondary)", border: "none",
+                  backgroundColor: "var(--primary-light)", color: "var(--text-secondary)", border: "none",
                   padding: "12px 16px", borderRadius: "8px", fontWeight: "600",
                   cursor: "pointer", flex: 1, fontSize: "16px"
                 }}

@@ -390,7 +390,7 @@ function SearchResults() {
                           <FaMapMarkerAlt /> {worker.city}
                         </span>
                         {worker.distanceKm !== undefined && (
-                          <span style={{ backgroundColor: "#eff6ff", color: "#1d4ed8", border: "1px solid #bfdbfe", padding: "1px 6px", borderRadius: "8px", fontSize: "11px", fontWeight: 700 }}>
+                          <span style={{ backgroundColor: "var(--info-light)", color: "var(--text-main)", border: "1px solid var(--border-color)", padding: "1px 6px", borderRadius: "8px", fontSize: "11px", fontWeight: 700 }}>
                             {worker.distanceKm < 0.5 ? "Under 0.5 km away" : `${worker.distanceKm} km away`}
                           </span>
                         )}

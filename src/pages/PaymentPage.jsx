@@ -60,7 +60,7 @@ function PaymentPage() {
   return (
     <div style={{ 
       minHeight: "100vh", 
-      background: "linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%)", 
+      background: "var(--bg-main)", 
       display: "flex", 
       justifyContent: "center", 
       alignItems: "center",

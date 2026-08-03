@@ -26,12 +26,12 @@ function AnimatedFailure({ errorMessage, onRetry, onBack }) {
                          msg.toLowerCase().includes("authentication");
 
   const config = isSlotConflict
-    ? { icon: "📅", title: "Slot Already Taken",  accent: "#d97706", bg: "#fffbeb", border: "#fde68a", textColor: "#92400e" }
+    ? { icon: "📅", title: "Slot Already Taken",  accent: "#d97706", bg: "var(--warning-light)", border: "var(--border-color)", textColor: "var(--text-main)" }
     : isWalletError
-    ? { icon: "💼", title: "Insufficient Balance", accent: "#dc2626", bg: "#fef2f2", border: "#fecaca", textColor: "#991b1b" }
+    ? { icon: "💼", title: "Insufficient Balance", accent: "#dc2626", bg: "var(--danger-light)", border: "var(--border-color)", textColor: "var(--text-main)" }
     : isAuthError
-    ? { icon: "🔐", title: "Session Expired",      accent: "#7c3aed", bg: "#f5f3ff", border: "#ddd6fe", textColor: "#5b21b6" }
-    : { icon: "⚠️", title: "Booking Failed",       accent: "#dc2626", bg: "#fef2f2", border: "#fecaca", textColor: "#991b1b" };
+    ? { icon: "🔐", title: "Session Expired",      accent: "#7c3aed", bg: "var(--info-light)", border: "var(--border-color)", textColor: "var(--text-main)" }
+    : { icon: "⚠️", title: "Booking Failed",       accent: "#dc2626", bg: "var(--danger-light)", border: "var(--border-color)", textColor: "var(--text-main)" };
 
   // For slot conflicts, show actionable guidance, not generic technical causes
   const renderHelpBox = () => {

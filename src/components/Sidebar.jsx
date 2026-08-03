@@ -194,7 +194,7 @@ function Sidebar() {
                 style={{
                   width: "100%",
                   padding: "12px",
-                  backgroundcolor: "var(--danger)",
+                  backgroundColor: "#ef4444",
                   color: "white",
                   borderRadius: "10px",
                   fontWeight: "bold",

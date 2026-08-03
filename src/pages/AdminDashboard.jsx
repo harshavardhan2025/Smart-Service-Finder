@@ -971,9 +971,9 @@ function AdminDashboard() {
                           </defs>
                           
                           {/* Grid Lines */}
-                          <line x1="0" y1="30" x2="400" y2="30" stroke="#f1f5f9" strokeWidth="1.5" strokeDasharray="4 4" />
-                          <line x1="0" y1="75" x2="400" y2="75" stroke="#f1f5f9" strokeWidth="1.5" strokeDasharray="4 4" />
-                          <line x1="0" y1="120" x2="400" y2="120" stroke="#f1f5f9" strokeWidth="1.5" strokeDasharray="4 4" />
+                          <line x1="0" y1="30" x2="400" y2="30" stroke="var(--border-color)" strokeWidth="1.5" strokeDasharray="4 4" />
+                          <line x1="0" y1="75" x2="400" y2="75" stroke="var(--border-color)" strokeWidth="1.5" strokeDasharray="4 4" />
+                          <line x1="0" y1="120" x2="400" y2="120" stroke="var(--border-color)" strokeWidth="1.5" strokeDasharray="4 4" />
                           
                           {/* Dynamic Area Fill */}
                           <path d={areaPath} fill="url(#chartGradient)" />
@@ -1014,7 +1014,7 @@ function AdminDashboard() {
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-around", flex: 1, gap: 16 }}>
                         <div style={{ position: "relative", width: "130px", height: "130px", display: "flex", justifyContent: "center", alignItems: "center" }}>
                           <svg width="130" height="130" viewBox="0 0 42 42" style={{ transform: "rotate(-90deg)", overflow: "visible" }}>
-                            <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#f1f5f9" strokeWidth="3" />
+                            <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="var(--border-color)" strokeWidth="3" />
                             {(() => {
                               let currentOffset = 0;
                               return finalStats.map((stat, idx) => {
@@ -2720,7 +2720,7 @@ function AdminDashboard() {
                   return (
                     <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                       <thead>
-                        <tr style={{ borderBottom: "2px solid #f1f5f9", color: "var(--text-muted)", fontSize: "13px" }}>
+                        <tr style={{ borderBottom: "2px solid var(--border-color)", color: "var(--text-muted)", fontSize: "13px" }}>
                           <th style={{ padding: "12px 8px" }}>Booking ID</th>
                           <th style={{ padding: "12px 8px" }}>Customer Details</th>
                           <th style={{ padding: "12px 8px" }}>Service</th>
@@ -2878,7 +2878,7 @@ function AdminDashboard() {
                 ) : (
                   <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                     <thead>
-                      <tr style={{ borderBottom: "2px solid #f1f5f9", color: "var(--text-muted)", fontSize: "13px" }}>
+                      <tr style={{ borderBottom: "2px solid var(--border-color)", color: "var(--text-muted)", fontSize: "13px" }}>
                         <th style={{ padding: "12px 8px" }}>Booking ID</th>
                         <th style={{ padding: "12px 8px" }}>Customer</th>
                         <th style={{ padding: "12px 8px" }}>Service</th>
@@ -2974,7 +2974,7 @@ function AdminDashboard() {
               </h2>
               
               <div style={{ backgroundColor: "var(--bg-card)", padding: "36px", borderRadius: "16px", boxShadow: "0 10px 25px rgba(0,0,0,0.05)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, borderBottom: "2px solid #f1f5f9", paddingBottom: 16 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, borderBottom: "2px solid var(--border-color)", paddingBottom: 16 }}>
                   <div>
                     <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "var(--text-main)" }}>Distress Broadcast Stream</h3>
                     <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-muted)" }}>Live incoming telemetry feeds from endangered service providers</p>
@@ -3331,7 +3331,7 @@ function AdminDashboard() {
                 ) : (
                   <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                     <thead>
-                      <tr style={{ borderBottom: "2px solid #f1f5f9", color: "var(--text-muted)", fontSize: "13px" }}>
+                      <tr style={{ borderBottom: "2px solid var(--border-color)", color: "var(--text-muted)", fontSize: "13px" }}>
                         <th style={{ padding: "12px 8px" }}>Booking ID</th>
                         <th style={{ padding: "12px 8px" }}>Customer</th>
                         <th style={{ padding: "12px 8px" }}>Service</th>
