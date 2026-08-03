@@ -563,6 +563,7 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
 
       {/* Hero Welcome Banner - Golden Orange with Floating Clouds */}
       <div
+        className="hero-welcome-banner"
         style={{
           background: "var(--hero-bg)",
           borderBottom: "2px solid var(--hero-border)",
@@ -650,6 +651,7 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
         {/* Location context banner - Ultra Modern Glassmorphism AI Card */}
         {searchedLocation && (
           <div
+            className="ai-banner-card"
             onClick={() => {
               setShowMap(true);
               setTimeout(() => {
