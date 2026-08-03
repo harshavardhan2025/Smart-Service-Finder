@@ -34,6 +34,8 @@ dotenv.config({ override: true });
 (async () => {
   try {
     await connectDB();
+    console.log("🚀 Workzy API Server is LIVE & ACTIVE on http://localhost:5000");
+    console.log("🟢 Ready to process incoming frontend requests!");
   } catch (err) {
     console.error("⚠️  DB startup connection failed (will retry per request):", err.message);
   }
@@ -43,6 +45,16 @@ const app = express();
 
 // Trust proxy headers for rate limiting (needed behind reverse proxies like Vercel/Webpack)
 app.set("trust proxy", 1);
+
+// HTTP Request Logger for active visibility
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    console.log(`[${new Date().toLocaleTimeString()}] ${req.method} ${req.originalUrl} - ${res.statusCode} (${duration}ms)`);
+  });
+  next();
+});
 
 const isDev = process.env.NODE_ENV === "development" || !process.env.NODE_ENV;
 const limiter = rateLimit({
