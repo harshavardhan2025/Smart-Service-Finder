@@ -12,7 +12,6 @@ function BookingPage() {
   const [selectedSlot, setSelectedSlot] = useState("Instant (10-20 mins)");
   const [isEmergency, setIsEmergency] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("UPI");
-  const [paying, setPaying] = useState(true);
   const [walletBal, setWalletBal] = useState(getWalletBalance());
   const [dispatchAddress, setDispatchAddress] = useState("");
   const customPrice = null;
@@ -319,11 +318,6 @@ function BookingPage() {
     }
   };
 
-  const handleBooking = () => {
-    if (!selectedSlot) { alert("Please select an available time slot or toggle Emergency Booking!"); return; }
-    setPaying(true);
-  };
-
   const handlePayNow = async () => {
     if (paymentMethod === "Wallet") {
       const walletRes = await deductFromWallet(calculatedPrice, `${selectedWorker.service} Service Booking`, "Wallet");
@@ -404,203 +398,196 @@ function BookingPage() {
     <div className="booking-page-container" style={{ 
       minHeight: "100vh", 
       background: "var(--bg-main)", 
-      padding: "40px 20px", 
+      padding: "32px 20px 60px 20px", 
       fontFamily: "'Inter', sans-serif" 
     }}>
-      <div className="booking-page-card" style={{ 
-        maxWidth: 550, 
-        margin: "0 auto", 
-        background: "var(--bg-card)", 
-        backdropFilter: "blur(10px)",
-        borderRadius: 24,
-        padding: 30,
-        boxShadow: "var(--shadow-3d)",
-        border: "1px solid var(--border-color)"
-      }}>
-        <div style={{ textAlign: "center", marginBottom: 30 }}>
-          <h1 style={{ color: "var(--text-main)", fontSize: 32, fontWeight: 900, marginBottom: 8, letterSpacing: "-0.5px" }}>
-            📅 Schedule Service
-          </h1>
-          <p style={{ color: "var(--text-secondary)", fontSize: 15, fontWeight: 500 }}>
-            Pick the perfect moment for your professional expert.
-          </p>
-        </div>
-
-        {/* 🚨 ELITE EMERGENCY TOGGLE CARD */}
-        <div 
-          onClick={() => {
-            if (isBusyForInstant() && !isEmergency) {
-               alert(`⚠️ Worker Busy Now!\n\n${selectedWorker.name} is currently handling a priority task or scheduled booking. Instant arrival is blocked until they clear their backlog!`);
-               return;
-            }
-            const nextEmergencyState = !isEmergency;
-            setIsEmergency(nextEmergencyState);
-            if (nextEmergencyState) {
-              setDate(new Date());
-              setSelectedSlot("Instant (10-20 mins)");
-            } else {
-              setSelectedSlot(null);
-            }
-          }}
-          style={{
-            background: isEmergency ? "linear-gradient(135deg, #ef4444 0%, #991b1b 100%)" : (isBusyForInstant() ? "var(--primary-light)" : "var(--bg-card-hover)"),
-            border: isEmergency ? "none" : "1px solid var(--border-color)",
-            borderRadius: 16,
-            padding: "24px",
-            boxShadow: isEmergency ? "0 12px 24px rgba(239, 68, 68, 0.3)" : "var(--shadow-3d)",
-            marginBottom: 24,
-            cursor: isBusyForInstant() && !isEmergency ? "not-allowed" : "pointer",
-            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-            transform: isEmergency ? "scale(1.02)" : "scale(1)",
-            opacity: isBusyForInstant() && !isEmergency ? 0.7 : 1
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div style={{ flex: 1, paddingRight: "15px" }}>
-              <h3 style={{ 
-                margin: 0, 
-                color: isEmergency ? "white" : "#dc2626", 
-                fontSize: "18px", 
-                fontWeight: 800, 
-                display: "flex", 
-                alignItems: "center", 
-                gap: "10px" 
-              }}>
-                <span>🚀</span> Rush & Emergency Arrival
-              </h3>
-              <p style={{ 
-                margin: "6px 0 0 0", 
-                fontSize: "13px", 
-                color: isEmergency ? "rgba(255,255,255,0.9)" : "var(--text-secondary)", 
-                lineHeight: "1.5" 
-              }}>
-                {isBusyForInstant() && !isEmergency 
-                   ? <strong style={{ color: "var(--danger)" }}>⚠️ Worker is Currently Busy / In Another Job!</strong>
-                   : <span>Bypass standard queues! Get arrival within <strong>10-20 Minutes</strong> flawlessly. (+₹150)</span>
-                }
-              </p>
-            </div>
-            <div style={{
-              width: 24, height: 24, borderRadius: "50%", 
-              border: "2px solid " + (isEmergency ? "white" : "var(--border-color)"),
-              display: "flex", justifyContent: "center", alignItems: "center",
-              background: isEmergency ? "white" : "transparent"
-            }}>
-              {isEmergency && <div style={{ width: 12, height: 12, borderRadius: "50%", backgroundColor: "var(--danger)" }} />}
-            </div>
-          </div>
-        </div>
-
-        {/* 🗓️ PREMIUM CALENDAR WRAPPER */}
+      <div style={{ maxWidth: 720, margin: "0 auto" }}>
+        
+        {/* Top Executive Header */}
         <div style={{ 
-          backgroundColor: "var(--bg-card)", 
-          borderRadius: 20, 
-          padding: 20, 
-          boxShadow: "var(--shadow-3d)", 
-          marginBottom: 24, 
-          opacity: isEmergency ? 0.4 : 1, 
-          pointerEvents: isEmergency ? "none" : "auto", 
-          transition: "all 0.3s ease",
-          border: "1px solid var(--border-color)"
+          background: "var(--bg-card)",
+          borderRadius: 20,
+          padding: "24px 28px",
+          marginBottom: 24,
+          border: "1.5px solid var(--border-color)",
+          boxShadow: "var(--card-shadow)",
+          display: "flex", 
+          alignItems: "center", 
+          justifyContent: "space-between", 
+          flexWrap: "wrap", 
+          gap: 16 
         }}>
-          <Calendar 
-            className="modern-booking-calendar"
-            onChange={(d) => { setDate(d); setSelectedSlot(null); setIsEmergency(false); }} 
-            value={date} 
-            minDate={new Date()} 
-            maxDate={maxBookingDate}
-          />
-        </div>
-
-        {/* ⏰ PREMIUM TIME SLOTS */}
-        <div style={{ 
-          backgroundColor: "var(--bg-card)", 
-          borderRadius: 20, 
-          padding: 24, 
-          boxShadow: "var(--shadow-3d)", 
-          marginBottom: 30, 
-          opacity: isEmergency ? 0.4 : 1, 
-          pointerEvents: isEmergency ? "none" : "auto", 
-          transition: "all 0.3s ease",
-          border: "1px solid var(--border-color)"
-        }}>
-          <h3 style={{ margin: "0 0 20px", color: "var(--text-main)", fontSize: 17, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
-            🕒 Available Windows
-          </h3>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: 12 }}>
-            {timeSlots.map(slot => {
-              const isBusy = isSlotAlreadyBooked(slot.label);
-              const disabled = isSlotPast(slot.hour) || isBusy;
-              const selected = selectedSlot === slot.label;
-              return (
-                <button 
-                  key={slot.label} 
-                  disabled={disabled} 
-                  onClick={() => { setSelectedSlot(slot.label); setIsEmergency(false); }}
-                  style={{ 
-                    padding: "14px 0", 
-                    textAlign: "center",
-                    borderRadius: 12, 
-                    border: selected ? "2px solid var(--primary)" : "1px solid var(--border-color)",
-                    backgroundColor: isBusy ? "var(--danger-light)" : (disabled ? "var(--primary-light)" : (selected ? "var(--primary-light)" : "var(--bg-card-hover)")),
-                    color: isBusy ? "var(--danger)" : (disabled ? "var(--text-muted)" : (selected ? "var(--primary)" : "var(--text-main)")),
-                    cursor: disabled ? "not-allowed" : "pointer", 
-                    fontWeight: 700,
-                    fontSize: 15,
-                    transition: "all 0.2s ease",
-                    transform: selected ? "translateY(-2px)" : "none",
-                    boxShadow: selected ? "0 4px 12px rgba(57, 79, 138, 0.2)" : "none",
-                    position: "relative"
-                  }}>
-                  {isBusy ? "Occupied" : slot.label}
-                </button>
-              );
-            })}
+          <div>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(2, 132, 199, 0.1)", color: "#0284c7", padding: "4px 12px", borderRadius: 20, fontSize: 11.5, fontWeight: 800, marginBottom: 8, letterSpacing: "0.5px" }}>
+              🔒 SECURE CHECKOUT GATEWAY
+            </div>
+            <h1 style={{ color: "var(--text-main)", fontSize: 26, fontWeight: 900, margin: 0, letterSpacing: "-0.5px" }}>
+              📅 Service Booking & Checkout
+            </h1>
+            <p style={{ color: "var(--text-secondary)", fontSize: 14, fontWeight: 500, margin: "6px 0 0 0" }}>
+              Booking <strong>{selectedWorker.service}</strong> with expert <strong>{selectedWorker.name}</strong>
+            </p>
           </div>
-        </div>
 
-        <div style={{ marginBottom: "24px" }} />
-
-        {/* 🚀 ACTION AREA */}
-        {!paying ? (
-          <button 
-            onClick={handleBooking} 
+          <button
+            onClick={() => navigate(-1)}
             style={{
-              width: "100%",
-              padding: "18px 24px",
-              background: "var(--primary)",
-              color: "var(--primary-dark)",
-              border: "none",
-              borderRadius: 16,
+              padding: "10px 18px",
+              borderRadius: 12,
+              backgroundColor: "var(--bg-card-hover)",
+              color: "var(--text-main)",
+              border: "1.5px solid var(--border-color)",
+              fontWeight: 700,
+              fontSize: 13,
               cursor: "pointer",
-              fontSize: 18,
-              fontWeight: 800,
-              boxShadow: "0 10px 20px rgba(0,0,0,0.15)",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: 10,
-              transition: "transform 0.2s ease"
+              transition: "all 0.2s"
             }}
-            onMouseDown={(e) => e.currentTarget.style.transform = "scale(0.98)"}
-            onMouseUp={(e) => e.currentTarget.style.transform = "scale(1)"}
           >
-            Proceed to Payment <span style={{ fontSize: 22 }}>→</span>
+            ← Back
           </button>
-        ) : (
+        </div>
+
+        {/* SINGLE STRAIGHT VERTICAL FLOW */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+
+          {/* SECTION 1: 🚀 RUSH & EMERGENCY ARRIVAL CARD */}
+          <div 
+            onClick={() => {
+              if (isBusyForInstant() && !isEmergency) {
+                 alert(`⚠️ Worker Busy Now!\n\n${selectedWorker.name} is currently handling a priority task or scheduled booking. Instant arrival is blocked until they clear their backlog!`);
+                 return;
+              }
+              const nextEmergencyState = !isEmergency;
+              setIsEmergency(nextEmergencyState);
+              if (nextEmergencyState) {
+                setDate(new Date());
+                setSelectedSlot("Instant (10-20 mins)");
+              } else {
+                setSelectedSlot(null);
+              }
+            }}
+            style={{
+              background: isEmergency ? "linear-gradient(135deg, #ef4444 0%, #991b1b 100%)" : (isBusyForInstant() ? "var(--primary-light)" : "var(--bg-card)"),
+              border: isEmergency ? "none" : "1.5px solid var(--border-color)",
+              borderRadius: 20,
+              padding: "20px 24px",
+              boxShadow: isEmergency ? "0 12px 24px rgba(239, 68, 68, 0.3)" : "var(--card-shadow)",
+              cursor: isBusyForInstant() && !isEmergency ? "not-allowed" : "pointer",
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+              transform: isEmergency ? "scale(1.01)" : "scale(1)",
+              opacity: isBusyForInstant() && !isEmergency ? 0.7 : 1
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ flex: 1, paddingRight: "15px" }}>
+                <h3 style={{ 
+                  margin: 0, 
+                  color: isEmergency ? "white" : "#dc2626", 
+                  fontSize: "17px", 
+                  fontWeight: 800, 
+                  display: "flex", 
+                  alignItems: "center", 
+                  gap: "8px" 
+                }}>
+                  <span>🚀</span> Rush & Emergency Arrival
+                </h3>
+                <p style={{ 
+                  margin: "4px 0 0 0", 
+                  fontSize: "13.5px", 
+                  color: isEmergency ? "rgba(255,255,255,0.9)" : "var(--text-secondary)", 
+                  lineHeight: "1.5" 
+                }}>
+                  {isBusyForInstant() && !isEmergency 
+                     ? <strong style={{ color: "var(--danger)" }}>⚠️ Worker is Currently Busy / In Another Job!</strong>
+                     : <span>Bypass standard queues! Get arrival within <strong>10-20 Minutes</strong> (+₹150)</span>
+                  }
+                </p>
+              </div>
+              <div style={{
+                width: 24, height: 24, borderRadius: "50%", 
+                border: "2px solid " + (isEmergency ? "white" : "var(--border-color)"),
+                display: "flex", justifyContent: "center", alignItems: "center",
+                background: isEmergency ? "white" : "transparent"
+              }}>
+                {isEmergency && <div style={{ width: 12, height: 12, borderRadius: "50%", backgroundColor: "var(--danger)" }} />}
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION 2: 🗓️ DATE & TIME SELECTION */}
+          <div style={{ 
+            backgroundColor: "var(--bg-card)", 
+            borderRadius: 20, 
+            padding: 26, 
+            boxShadow: "var(--card-shadow)", 
+            opacity: isEmergency ? 0.4 : 1, 
+            pointerEvents: isEmergency ? "none" : "auto", 
+            transition: "all 0.3s ease",
+            border: "1.5px solid var(--border-color)"
+          }}>
+            <h3 style={{ margin: "0 0 18px", color: "var(--text-main)", fontSize: 17, fontWeight: 800, display: "flex", alignItems: "center", gap: 8 }}>
+              📅 1. Choose Service Date & Time Window
+            </h3>
+
+            <Calendar 
+              className="modern-booking-calendar"
+              onChange={(d) => { setDate(d); setSelectedSlot(null); setIsEmergency(false); }} 
+              value={date} 
+              minDate={new Date()} 
+              maxDate={maxBookingDate}
+            />
+
+            <div style={{ marginTop: 22 }}>
+              <label style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text-secondary)", display: "block", marginBottom: 12 }}>
+                🕒 Select Available Window for {date.toDateString()}:
+              </label>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: 12 }}>
+                {timeSlots.map(slot => {
+                  const isBusy = isSlotAlreadyBooked(slot.label);
+                  const disabled = isSlotPast(slot.hour) || isBusy;
+                  const selected = selectedSlot === slot.label;
+                  return (
+                    <button 
+                      key={slot.label} 
+                      disabled={disabled} 
+                      onClick={() => { setSelectedSlot(slot.label); setIsEmergency(false); }}
+                      style={{ 
+                        padding: "14px 0", 
+                        textAlign: "center",
+                        borderRadius: 12, 
+                        border: selected ? "2px solid #0284c7" : "1px solid var(--border-color)",
+                        backgroundColor: isBusy ? "var(--danger-light)" : (disabled ? "var(--primary-light)" : (selected ? "rgba(2, 132, 199, 0.12)" : "var(--bg-card-hover)")),
+                        color: isBusy ? "var(--danger)" : (disabled ? "var(--text-muted)" : (selected ? "#0284c7" : "var(--text-main)")),
+                        cursor: disabled ? "not-allowed" : "pointer", 
+                        fontWeight: 800,
+                        fontSize: 14.5,
+                        transition: "all 0.2s ease",
+                        transform: selected ? "translateY(-2px)" : "none",
+                        boxShadow: selected ? "0 4px 12px rgba(2, 132, 199, 0.25)" : "none"
+                      }}>
+                      {isBusy ? "Occupied" : slot.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION 3: 📍 DISPATCH ADDRESS & PAYMENT GATEWAY */}
           <div style={{ 
             background: "var(--bg-card)", 
             borderRadius: 20, 
-            padding: 28, 
-            boxShadow: "var(--shadow-3d)",
-            border: "1px solid var(--border-color)",
-            animation: "slideUp 0.3s ease-out"
+            padding: 26, 
+            boxShadow: "var(--card-shadow)",
+            border: "1.5px solid var(--border-color)"
           }}>
-            <h3 style={{ margin: "0 0 20px", color: "var(--text-main)", fontSize: 20, fontWeight: 800 }}>💳 Checkout</h3>
+            <h3 style={{ margin: "0 0 18px", color: "var(--text-main)", fontSize: 17, fontWeight: 800, borderBottom: "1.5px solid var(--border-color)", paddingBottom: 12 }}>
+              📍 2. Dispatch Address & Payment Gateway
+            </h3>
             
             {/* 📍 DYNAMIC ADDRESS SELECTOR FOR PRECISE ARRIVAL */}
             <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 14, fontWeight: 700, color: "var(--text-secondary)", display: "block", marginBottom: 8 }}>📍 Service Dispatch Address</label>
+              <label style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text-main)", display: "block", marginBottom: 8 }}>📍 Service Dispatch Address</label>
               <textarea 
                 value={dispatchAddress} 
                 onChange={e => setDispatchAddress(e.target.value)}
@@ -608,11 +595,11 @@ function BookingPage() {
                 rows={3}
                 style={{ 
                   width: "100%", 
-                  padding: "14px", 
+                  padding: "12px 14px", 
                   borderRadius: 12, 
                   border: "1.5px solid var(--border-color)", 
                   backgroundColor: "var(--bg-card-hover)",
-                  fontSize: 14,
+                  fontSize: 13.5,
                   fontWeight: 500,
                   color: "var(--text-main)",
                   fontFamily: "inherit",
@@ -622,16 +609,16 @@ function BookingPage() {
               />
             </div>
 
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 14, fontWeight: 700, color: "var(--text-secondary)", display: "block", marginBottom: 8 }}>Select Payment Gateway</label>
+            <div>
+              <label style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text-main)", display: "block", marginBottom: 8 }}>Select Payment Gateway</label>
               <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)}
                 style={{ 
                   width: "100%", 
-                  padding: "14px", 
+                  padding: "12px 14px", 
                   borderRadius: 12, 
                   border: "1.5px solid var(--border-color)", 
                   backgroundColor: "var(--bg-card-hover)",
-                  fontSize: 15,
+                  fontSize: 14.5,
                   fontWeight: 600,
                   color: "var(--text-main)",
                   cursor: "pointer"
@@ -649,7 +636,7 @@ function BookingPage() {
                 border: "1.5px dashed #f87171",
                 borderRadius: 14,
                 padding: "16px",
-                marginBottom: 20,
+                marginTop: 16,
                 display: "flex",
                 flexDirection: "column",
                 gap: "10px",
@@ -680,183 +667,202 @@ function BookingPage() {
                 </button>
               </div>
             )}
+          </div>
 
-            {/* 🏷️ DYNAMIC PROMO & OFFER CODE SYSTEM */}
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 14, fontWeight: 700, color: "var(--text-secondary)", display: "block", marginBottom: 8 }}>
-                🏷️ Apply Promo / Offer Code
-              </label>
+          {/* SECTION 4: 🏷️ PROMO / OFFER CODE CARD */}
+          <div style={{ 
+            background: "var(--bg-card)", 
+            borderRadius: 20, 
+            padding: 26, 
+            boxShadow: "var(--card-shadow)",
+            border: "1.5px solid var(--border-color)"
+          }}>
+            <h3 style={{ margin: "0 0 16px", color: "var(--text-main)", fontSize: 17, fontWeight: 800, display: "flex", alignItems: "center", gap: 8 }}>
+              🏷️ 3. Apply Promo / Offer Code
+            </h3>
 
-              {appliedOffer ? (
-                <div style={{
-                  backgroundColor: "var(--primary-light)",
-                  border: "1.5px solid var(--primary)",
-                  borderRadius: 12,
-                  padding: "12px 16px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center"
-                }}>
-                  <div>
-                    <span style={{ fontSize: 14, fontWeight: 800, color: "var(--primary)", display: "block" }}>
-                      🎉 Code "{appliedOffer.code}" Active ({appliedOffer.discount})
-                    </span>
-                    <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>
-                      {appliedOffer.desc || "Discount applied to subtotal"}
-                    </span>
-                  </div>
-                  <button
-                    onClick={handleRemoveCoupon}
+            {appliedOffer ? (
+              <div style={{
+                backgroundColor: "rgba(16, 185, 129, 0.1)",
+                border: "1.5px solid #10b981",
+                borderRadius: 12,
+                padding: "14px 18px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}>
+                <div>
+                  <span style={{ fontSize: 14.5, fontWeight: 800, color: "#059669", display: "block" }}>
+                    🎉 Code "{appliedOffer.code}" Active ({appliedOffer.discount})
+                  </span>
+                  <span style={{ fontSize: 12.5, color: "var(--text-secondary)" }}>
+                    {appliedOffer.desc || "Discount applied to subtotal"}
+                  </span>
+                </div>
+                <button
+                  onClick={handleRemoveCoupon}
+                  style={{
+                    backgroundColor: "transparent",
+                    color: "var(--danger)",
+                    border: "1px solid var(--danger)",
+                    borderRadius: 8,
+                    padding: "4px 12px",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer"
+                  }}
+                >
+                  Remove ✕
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div style={{ display: "flex", gap: 10 }}>
+                  <input
+                    type="text"
+                    value={couponInput}
+                    onChange={e => setCouponInput(e.target.value.toUpperCase())}
+                    placeholder="ENTER OFFER CODE (e.g. WORKZY20)..."
                     style={{
-                      backgroundColor: "transparent",
-                      color: "var(--danger)",
-                      border: "1px solid var(--danger)",
-                      borderRadius: 8,
-                      padding: "4px 10px",
-                      fontSize: 12,
+                      flex: 1,
+                      padding: "12px 14px",
+                      borderRadius: 12,
+                      border: "1.5px solid var(--border-color)",
+                      backgroundColor: "var(--bg-card-hover)",
+                      fontSize: 14,
                       fontWeight: 700,
-                      cursor: "pointer"
+                      letterSpacing: "0.5px",
+                      color: "var(--text-main)",
+                      textTransform: "uppercase"
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleApplyCoupon(couponInput)}
+                    style={{
+                      background: "linear-gradient(135deg, #0284c7 0%, #0369a1 100%)",
+                      color: "white",
+                      border: "none",
+                      borderRadius: 12,
+                      padding: "0 24px",
+                      fontSize: 14,
+                      fontWeight: 800,
+                      cursor: "pointer",
+                      boxShadow: "0 4px 10px rgba(2, 132, 199, 0.25)"
                     }}
                   >
-                    Remove ✕
+                    Apply
                   </button>
                 </div>
-              ) : (
-                <div>
-                  <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-                    <input
-                      type="text"
-                      value={couponInput}
-                      onChange={e => setCouponInput(e.target.value.toUpperCase())}
-                      placeholder="ENTER OFFER CODE (e.g. WORKZY20)..."
-                      style={{
-                        flex: 1,
-                        padding: "12px 14px",
-                        borderRadius: 12,
-                        border: "1.5px solid var(--border-color)",
-                        backgroundColor: "var(--bg-card-hover)",
-                        fontSize: 14,
-                        fontWeight: 700,
-                        letterSpacing: "0.5px",
-                        color: "var(--text-main)",
-                        textTransform: "uppercase"
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleApplyCoupon(couponInput)}
-                      style={{
-                        backgroundColor: "var(--primary)",
-                        color: "white",
-                        border: "none",
-                        borderRadius: 12,
-                        padding: "0 20px",
-                        fontSize: 14,
-                        fontWeight: 800,
-                        cursor: "pointer",
-                        boxShadow: "0 4px 10px rgba(49, 82, 91, 0.2)"
-                      }}
-                    >
-                      Apply
-                    </button>
+
+                {/* Available Quick Coupon Badges / Chips */}
+                {availableOffers.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+                    <span style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 700, width: "100%", marginBottom: 2 }}>
+                      Available Offers for you:
+                    </span>
+                    {availableOffers.map((off, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => {
+                          setCouponInput(off.code);
+                          handleApplyCoupon(off.code);
+                        }}
+                        style={{
+                          backgroundColor: "rgba(2, 132, 199, 0.1)",
+                          color: "#0284c7",
+                          border: "1px dashed rgba(2, 132, 199, 0.4)",
+                          borderRadius: 20,
+                          padding: "5px 12px",
+                          fontSize: 12,
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          transition: "all 0.2s"
+                        }}
+                        title={off.desc}
+                      >
+                        ⚡ {off.code} ({off.discount})
+                      </button>
+                    ))}
                   </div>
+                )}
+              </div>
+            )}
 
-                  {/* Available Quick Coupon Badges / Chips */}
-                  {availableOffers.length > 0 && (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
-                      <span style={{ fontSize: 11, color: "var(--text-secondary)", fontWeight: 700, width: "100%", marginBottom: 2 }}>
-                        Available Offers for you:
-                      </span>
-                      {availableOffers.map((off, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => {
-                            setCouponInput(off.code);
-                            handleApplyCoupon(off.code);
-                          }}
-                          style={{
-                            backgroundColor: "var(--primary-light)",
-                            color: "var(--primary)",
-                            border: "1px dashed var(--primary)",
-                            borderRadius: 20,
-                            padding: "4px 10px",
-                            fontSize: 11,
-                            fontWeight: 800,
-                            cursor: "pointer",
-                            transition: "all 0.2s"
-                          }}
-                          title={off.desc}
-                        >
-                          ⚡ {off.code} ({off.discount})
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+            {couponStatus && (
+              <div style={{
+                marginTop: 10,
+                fontSize: 13,
+                fontWeight: 700,
+                color: couponStatus.type === "success" ? "#16a34a" : "#dc2626"
+              }}>
+                {couponStatus.message}
+              </div>
+            )}
+          </div>
 
-              {couponStatus && (
-                <div style={{
-                  marginTop: 8,
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: couponStatus.type === "success" ? "#16a34a" : "#dc2626"
-                }}>
-                  {couponStatus.message}
-                </div>
-              )}
-            </div>
+          {/* SECTION 5: 📊 FINAL ORDER SUMMARY & BOOK BUTTON */}
+          <div style={{ 
+            background: "var(--bg-card)", 
+            borderRadius: 20, 
+            padding: 28, 
+            boxShadow: "var(--card-shadow)",
+            border: "1.5px solid var(--border-color)"
+          }}>
+            <h3 style={{ margin: "0 0 18px", color: "var(--text-main)", fontSize: 18, fontWeight: 800, borderBottom: "1.5px solid var(--border-color)", paddingBottom: 12 }}>
+              📊 Order Summary & Final Payment
+            </h3>
 
             <div style={{ 
               background: "var(--bg-card-hover)", 
               borderRadius: 14, 
-              padding: 18, 
+              padding: 20, 
               marginBottom: 24, 
-              border: "1px solid var(--border-color)"
+              border: "1.5px solid var(--border-color)"
             }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, color: "var(--text-secondary)", fontSize: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, color: "var(--text-secondary)", fontSize: 14 }}>
                 <span>Base Service Rate</span>
-                <span style={{ fontWeight: 600, color: "var(--text-main)" }}>₹{basePrice}</span>
+                <span style={{ fontWeight: 700, color: "var(--text-main)" }}>₹{basePrice}</span>
               </div>
               
               {distanceFee > 0 && (
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, color: "var(--text-secondary)", fontSize: 14 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, color: "var(--text-secondary)", fontSize: 14 }}>
                   <span>Distance Travel Fee ({distanceVal} KM)</span>
-                  <span style={{ fontWeight: 600, color: "#ea580c" }}>+ ₹{distanceFee} ({distanceTier})</span>
+                  <span style={{ fontWeight: 700, color: "#ea580c" }}>+ ₹{distanceFee} ({distanceTier})</span>
                 </div>
               )}
 
               {isEmergency && (
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, color: "var(--text-secondary)", fontSize: 14 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, color: "var(--text-secondary)", fontSize: 14 }}>
                   <span>Emergency Priority Rush Fee</span>
-                  <span style={{ fontWeight: 600, color: "var(--danger)" }}>+ ₹150</span>
+                  <span style={{ fontWeight: 700, color: "var(--danger)" }}>+ ₹150</span>
                 </div>
               )}
 
               {appliedOffer && discountVal > 0 && (
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, color: "#16a34a", fontSize: 14, fontWeight: 700 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, color: "#16a34a", fontSize: 14, fontWeight: 700 }}>
                   <span>🏷️ Coupon Discount ({appliedOffer.code})</span>
                   <span>- ₹{discountVal}</span>
                 </div>
               )}
 
-              <div style={{ height: "1px", backgroundColor: "var(--border-color)", margin: "10px 0" }}></div>
+              <div style={{ height: "1px", backgroundColor: "var(--border-color)", margin: "14px 0" }}></div>
 
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, color: "var(--text-secondary)", fontSize: 15 }}>
-                <span>Total Cost</span>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, color: "var(--text-main)", fontSize: 16, fontWeight: 800 }}>
+                <span>Total Payable Amount</span>
                 <div>
                   {appliedOffer && discountVal > 0 && (
                     <span style={{ textDecoration: "line-through", color: "var(--text-secondary)", fontSize: 14, marginRight: 8 }}>
                       ₹{rawSubTotal}
                     </span>
                   )}
-                  <strong style={{ color: "#059669", fontSize: 20 }}>₹{calculatedPrice}</strong>
+                  <strong style={{ color: "#059669", fontSize: 24 }}>₹{calculatedPrice}</strong>
                 </div>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-secondary)", fontSize: 13 }}>
-                <span>Delivery Window</span>
-                <span style={{ fontWeight: 700, color: "var(--text-main)" }}>{date.toDateString()} — {selectedSlot}</span>
+              <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-secondary)", fontSize: 13.5 }}>
+                <span>Scheduled Delivery Window</span>
+                <span style={{ fontWeight: 700, color: "var(--text-main)" }}>{date.toDateString()} — {selectedSlot || "Select slot"}</span>
               </div>
             </div>
             
@@ -870,15 +876,20 @@ function BookingPage() {
                 border: "none",
                 borderRadius: 16,
                 fontSize: 18,
-                fontWeight: 800,
+                fontWeight: 900,
                 cursor: "pointer",
-                boxShadow: "0 8px 16px rgba(16, 185, 129, 0.3)"
+                boxShadow: "0 8px 20px rgba(16, 185, 129, 0.35)",
+                transition: "all 0.2s ease"
               }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-1px)"}
+              onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
             >
               Complete Payment & Book ✅
             </button>
           </div>
-        )}
+
+        </div>
+
       </div>
 
       {showSuccessOverlay && (
@@ -897,7 +908,6 @@ function BookingPage() {
           }}
           onBack={() => {
             setShowFailureOverlay(false);
-            setPaying(false);
           }}
         />
       )}

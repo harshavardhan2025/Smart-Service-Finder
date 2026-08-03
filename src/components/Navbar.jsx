@@ -80,16 +80,16 @@ function Navbar() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          padding: "16px 24px",
-          backgroundColor: "var(--bg-card)",
-          color: "var(--text-primary)",
-          borderBottom: "1px solid var(--border-color)",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+          padding: "14px 24px",
+          background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+          color: "#ffffff",
+          borderBottom: "1.5px solid rgba(255, 255, 255, 0.12)",
+          boxShadow: "0 4px 20px rgba(15, 23, 42, 0.25)",
           position: "sticky",
           top: 0,
           zIndex: 100,
           transition: "all 0.3s ease",
-          backdropFilter: "blur(10px)",
+          backdropFilter: "blur(12px)",
         }}
       >
         <Link 
@@ -102,8 +102,8 @@ function Navbar() {
           }}
         >
           <h2 style={{ margin: 0, fontWeight: 800, fontSize: "22px", letterSpacing: "-0.5px", display: "flex", alignItems: "center", gap: "8px", whiteSpace: "nowrap" }}>
-            <FaTools style={{ color: "var(--primary)" }} />
-            <span><span style={{ color: "var(--primary)" }}>Work</span><span style={{ color: "#c1851dff" }}>zy</span></span>
+            <FaTools style={{ color: "#38bdf8" }} />
+            <span><span style={{ color: "#ffffff" }}>Work</span><span style={{ color: "#f1a829" }}>zy</span></span>
           </h2>
         </Link>
 
@@ -115,7 +115,7 @@ function Navbar() {
               to="/plans-offers"
               style={{ 
                 textDecoration: "none", 
-                color: "var(--text-secondary)", 
+                color: "#f8fafc", 
                 fontWeight: 700, 
                 fontSize: isMobile ? "13px" : "14px", 
                 display: "flex", 
@@ -125,8 +125,8 @@ function Navbar() {
                 cursor: "pointer",
                 transition: "color 0.2s"
               }}
-              onMouseEnter={(e) => e.currentTarget.style.color = "var(--primary)"}
-              onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-secondary)"}
+              onMouseEnter={(e) => e.currentTarget.style.color = "#38bdf8"}
+              onMouseLeave={(e) => e.currentTarget.style.color = "#f8fafc"}
             >
               <FaTag size={13} style={{ color: "#f1a829" }} /> Plans & Offers
             </Link>
@@ -138,7 +138,7 @@ function Navbar() {
                 onClick={() => setShowNotifications(!showNotifications)}
                 style={{
                   background: "none",
-                  border: "none",
+                  border: "1px solid rgba(255, 255, 255, 0.15)",
                   padding: "8px",
                   fontSize: "20px",
                   cursor: "pointer",
@@ -146,8 +146,8 @@ function Navbar() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  backgroundColor: "var(--border-color)",
-                  color: "var(--text-primary)",
+                  backgroundColor: "rgba(255, 255, 255, 0.12)",
+                  color: "#ffffff",
                   transition: "all 0.2s",
                   position: "relative"
                 }}
@@ -266,7 +266,6 @@ function Navbar() {
             className="theme-toggle-btn"
             style={{
               background: "none",
-              border: "none",
               padding: "8px",
               fontSize: "20px",
               cursor: "pointer",
@@ -274,15 +273,15 @@ function Navbar() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)",
-              color: "var(--text-primary)",
+              backgroundColor: "rgba(255, 255, 255, 0.12)",
+              color: "#ffffff",
               transition: "all 0.2s",
-              borderBottom: "none",
+              border: "1px solid rgba(255, 255, 255, 0.15)",
               boxShadow: "none"
             }}
             title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
           >
-            {isDark ? <FaSun size={18} style={{ color: "var(--warning)" }} /> : <FaMoon size={18} style={{ color: "#4f46e5" }} />}
+            {isDark ? <FaSun size={18} style={{ color: "#f1a829" }} /> : <FaMoon size={18} style={{ color: "#38bdf8" }} />}
           </button>
 
           {isLoggedIn ? (
