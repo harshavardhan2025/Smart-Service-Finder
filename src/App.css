@@ -1382,6 +1382,8 @@ button {
   color: #f87171 !important;
 }
 
+/* Force production deployment across all Vercel project links (smart-service-finder, workzy, smart-service-finder-g36f) */
+
 .badge-warning {
   background-color: var(--warning-light) !important;
   color: #d97706 !important;
