@@ -5,19 +5,34 @@ import { Link } from "react-router-dom";
 function Sidebar() {
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  // Keep theme synced with the global system toggle
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Keep theme synced with global toggle
   useEffect(() => {
     const handleStorageChange = () => {
       setTheme(localStorage.getItem("theme") || "light");
     };
     window.addEventListener("storage", handleStorageChange);
-    const interval = setInterval(handleStorageChange, 1000); // Quick check to sync instantly
+    const interval = setInterval(handleStorageChange, 1000);
     return () => {
       window.removeEventListener("storage", handleStorageChange);
       clearInterval(interval);
     };
   }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === "light" ? "dark" : "light";
+    setTheme(nextTheme);
+    localStorage.setItem("theme", nextTheme);
+    document.documentElement.setAttribute("data-theme", nextTheme);
+    window.dispatchEvent(new Event("storage"));
+  };
 
   const isDark = theme === "dark";
   const isLoggedIn = !!sessionStorage.getItem("userId");
@@ -72,20 +87,20 @@ function Sidebar() {
 
   return (
     <div>
-      {/* Premium Hamburger Button aligned perfectly inside Navbar height */}
+      {/* Premium Hamburger Button aligned inside Navbar */}
       <button
         onClick={() => setOpen(!open)}
         style={{
           position: "fixed",
-          top: "16px",
-          left: "24px",
+          top: "12px",
+          left: isMobile ? "10px" : "18px",
           zIndex: 1100,
-          background: "transparent",
-          border: "none",
-          fontSize: "22px",
-          color: isDark ? "#f8fafc" : "#1e293b",
+          background: "rgba(255, 255, 255, 0.12)",
+          border: "1px solid rgba(255, 255, 255, 0.2)",
+          fontSize: "18px",
+          color: "#ffffff",
           cursor: "pointer",
-          padding: "6px 10px",
+          padding: "7px 10px",
           borderRadius: "8px",
           display: "flex",
           alignItems: "center",
@@ -93,11 +108,11 @@ function Sidebar() {
           transition: "all 0.2s ease-in-out"
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)";
-          e.currentTarget.style.transform = "scale(1.08)";
+          e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.25)";
+          e.currentTarget.style.transform = "scale(1.05)";
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "transparent";
+          e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.12)";
           e.currentTarget.style.transform = "scale(1)";
         }}
         aria-label="Toggle sidebar"
@@ -186,8 +201,34 @@ function Sidebar() {
             </Link>
           ))}
 
+          {/* Theme Mode Toggle inside Sidebar */}
+          <div style={{ marginTop: "16px", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "16px" }}>
+            <button
+              onClick={toggleTheme}
+              style={{
+                width: "100%",
+                padding: "10px 14px",
+                backgroundColor: "rgba(255, 255, 255, 0.08)",
+                color: "#ffffff",
+                border: "1px solid rgba(255, 255, 255, 0.15)",
+                borderRadius: "10px",
+                fontWeight: 700,
+                fontSize: "13.5px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between"
+              }}
+            >
+              <span>Appearance Mode</span>
+              <span style={{ fontWeight: 800, color: isDark ? "#f1a829" : "#38bdf8" }}>
+                {isDark ? "☀️ Light Mode" : "🌙 Dark Mode"}
+              </span>
+            </button>
+          </div>
+
           {/* Dynamic Login/Signup/Logout for Mobile/Sidebar view */}
-          <div style={{ margin: "20px 0 0 0", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "20px" }}>
+          <div style={{ margin: "14px 0 0 0", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "14px" }}>
             {isLoggedIn ? (
               <button
                 onClick={handleLogout}
