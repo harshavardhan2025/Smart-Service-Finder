@@ -129,10 +129,10 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
   };
 
   return (
-    <div className="service-search-container" style={{ padding: "20px 24px", margin: "14px 20px", background: "linear-gradient(135deg, rgba(49, 82, 91, 0.04) 0%, rgba(49, 82, 91, 0.01) 100%)", border: "1.5px solid rgba(49, 82, 91, 0.1)", borderRadius: "16px" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
-        <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary, #6b7280)", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
-          <FaSearch size={14} style={{ color: "var(--primary)" }} /> Search Services or Workers
+    <div className="service-search-container" style={{ padding: "22px 28px", margin: "16px 20px 20px 20px", background: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "20px", boxShadow: "var(--card-shadow)", backdropFilter: "blur(16px)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", flexWrap: "wrap", gap: "8px" }}>
+        <p style={{ margin: 0, fontSize: "14px", color: "var(--text-main)", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px", letterSpacing: "0.2px" }}>
+          <FaSearch size={15} style={{ color: "#0284c7" }} /> Search Services or Workers
         </p>
         {detectedLocation && (
           <div 
@@ -141,23 +141,26 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
               display: "inline-flex", 
               alignItems: "center", 
               gap: "6px", 
-              backgroundColor: "var(--success-light)", 
-              color: "var(--success)", 
-              padding: "4px 12px", 
+              backgroundColor: "rgba(14, 165, 233, 0.12)", 
+              color: "#0284c7", 
+              padding: "5px 14px", 
               borderRadius: "20px", 
-              fontSize: "12px", 
-              fontWeight: 600,
-              border: "1px solid #bbf7d0",
-              cursor: onLocationClick ? "pointer" : "default"
+              fontSize: "12.5px", 
+              fontWeight: 700,
+              border: "1px solid rgba(14, 165, 233, 0.3)",
+              cursor: onLocationClick ? "pointer" : "default",
+              transition: "transform 0.15s ease"
             }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.03)"}
+            onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
           >
-            <span>📍</span>
+            <span style={{ fontSize: "13px" }}>📍</span>
             {detectedLocation.split(",").slice(0, 2).join(",").trim()}
           </div>
         )}
       </div>
-      <div style={{ display: "flex", alignItems: "center", width: "100%", gap: "10px", flexWrap: "wrap" }}>
-        <div style={{ position: "relative", flex: 1, maxWidth: "350px", width: "100%" }}>
+      <div style={{ display: "flex", alignItems: "center", width: "100%", gap: "12px", flexWrap: "wrap" }}>
+        <div style={{ position: "relative", flex: 1, maxWidth: "420px", width: "100%" }}>
           <input
             id="service-search-input"
             type="text"
@@ -169,15 +172,16 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
             onBlur={() => setTimeout(() => setFocused(false), 150)}
             style={{
               width: "100%",
-              padding: "10px 45px 10px 12px",
-              borderRadius: "8px",
-              border: isListening ? "1.5px solid #ef4444" : "1.5px solid var(--border)",
-              backgroundColor: "var(--bg-card)",
+              padding: "12px 48px 12px 16px",
+              borderRadius: "12px",
+              border: isListening ? "2px solid #ef4444" : "1.5px solid var(--border-color)",
+              backgroundColor: "var(--bg-card-hover)",
               color: "var(--text-main)",
-              fontSize: "14px",
+              fontSize: "14.5px",
+              fontWeight: 500,
               outline: "none",
               boxSizing: "border-box",
-              boxShadow: isListening ? "0 0 8px rgba(239, 68, 68, 0.4)" : "none",
+              boxShadow: isListening ? "0 0 12px rgba(239, 68, 68, 0.4)" : "inset 0 1px 3px rgba(0, 0, 0, 0.03)",
               transition: "all 0.2s ease"
             }}
           />
@@ -187,7 +191,7 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
             onClick={handleVoiceClick}
             style={{
               position: "absolute",
-              right: "12px",
+              right: "14px",
               top: "50%",
               transform: "translateY(-50%)",
               cursor: "pointer",
@@ -197,7 +201,7 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
               color: isListening ? "#ef4444" : "var(--text-secondary, #94a3b8)",
               fontSize: "16px",
               zIndex: 10,
-              padding: "4px",
+              padding: "6px",
               borderRadius: "50%",
               backgroundColor: isListening ? "rgba(239, 68, 68, 0.1)" : "transparent",
               animation: isListening ? "pulse-mic 1.2s infinite ease-in-out" : "none"
@@ -220,20 +224,20 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
             <ul
               style={{
                 position: "absolute",
-                top: "calc(100% + 4px)",
+                top: "calc(100% + 6px)",
                 left: 0,
                 right: 0,
                 backgroundColor: "var(--bg-card)",
-                border: "1px solid var(--border)",
-                borderRadius: "10px",
-                boxShadow: "var(--shadow-3d)",
+                border: "1.5px solid var(--border-color)",
+                borderRadius: "14px",
+                boxShadow: "var(--hover-shadow)",
                 listStyle: "none",
                 margin: 0,
-                padding: "6px 0",
+                padding: "8px 0",
                 zIndex: 1000,
                 maxHeight: "220px",
                 overflowY: "auto",
-                backdropFilter: "var(--blur)",
+                backdropFilter: "blur(16px)",
               }}
             >
               {suggestions.map((s) => (
@@ -241,14 +245,15 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
                   key={s}
                   onMouseDown={() => pickSuggestion(s)}
                   style={{
-                    padding: "10px 16px",
+                    padding: "10px 18px",
                     cursor: "pointer",
                     fontSize: "14px",
+                    fontWeight: 600,
                     color: "var(--text-main)",
                     display: "flex",
                     alignItems: "center",
-                    gap: "8px",
-                    transition: "background 0.15s",
+                    gap: "10px",
+                    transition: "background 0.15s ease",
                   }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = "var(--primary-light)")}
                   onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
@@ -264,15 +269,22 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
         <button
           id="service-search-btn"
           onClick={handleSearch}
-          className="btn-primary"
           style={{
-            padding: "10px 20px",
-            borderRadius: "8px",
+            padding: "12px 24px",
+            borderRadius: "12px",
+            background: "linear-gradient(135deg, #0284c7 0%, #0369a1 100%)",
+            color: "#ffffff",
             border: "none",
+            borderBottom: "3px solid #075985",
             cursor: "pointer",
-            fontWeight: "bold",
-            flexShrink: 0
+            fontWeight: 800,
+            fontSize: "14px",
+            flexShrink: 0,
+            boxShadow: "0 4px 12px rgba(2, 132, 199, 0.3)",
+            transition: "all 0.15s ease"
           }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-1px)"}
+          onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
         >
           Search
         </button>

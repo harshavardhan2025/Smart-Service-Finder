@@ -8,7 +8,7 @@ import CheapWorkers from "../components/CheapWorkers";
 import NearbyWorkers from "../components/NearbyWorkers";
 import { filterWorkersClientSide } from "../utils/workerService";
 import SkeletonLoader from "../components/SkeletonLoader";
-import { FaMapMarkerAlt, FaRobot, FaLocationArrow, FaMap, FaBolt, FaCircle, FaUser, FaStethoscope, FaPercent, FaStar } from "react-icons/fa";
+import { FaMapMarkerAlt, FaLocationArrow, FaMap, FaBolt, FaCircle, FaUser, FaStethoscope, FaPercent, FaStar } from "react-icons/fa";
 
 const truncateLocation = (loc) => {
   if (!loc) return "";
@@ -565,73 +565,22 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
       <div
         style={{
           background: "var(--hero-bg)",
-          borderBottom: "4px solid var(--hero-border)",
+          borderBottom: "1.5px solid var(--hero-border)",
           color: "white",
-          padding: "12px 20px",
+          padding: "24px 20px 22px 20px",
           textAlign: "center",
-          boxShadow: "0 10px 30px rgba(223, 180, 83, 0.25)",
+          boxShadow: "0 12px 32px -8px rgba(15, 23, 42, 0.4)",
           position: "relative",
           overflow: "hidden"
         }}
       >
-        {/* Subtle clouds */}
-        <svg
-          viewBox="0 0 24 24"
-          style={{
-            position: "absolute",
-            left: "8%",
-            bottom: "15%",
-            width: "70px",
-            height: "70px",
-            opacity: 0.15,
-            fill: "white",
-            pointerEvents: "none",
-            animation: "drift 25s linear infinite"
-          }}
-        >
-          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
-        </svg>
-        <svg
-          viewBox="0 0 24 24"
-          style={{
-            position: "absolute",
-            right: "10%",
-            top: "10%",
-            width: "90px",
-            height: "90px",
-            opacity: 0.12,
-            fill: "white",
-            pointerEvents: "none",
-            animation: "driftReverse 30s linear infinite"
-          }}
-        >
-          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
-        </svg>
-
-        <style>{`
-          @keyframes drift {
-            0% { transform: translateX(0px) translateY(0px); }
-            50% { transform: translateX(15px) translateY(-5px); }
-            100% { transform: translateX(0px) translateY(0px); }
-          }
-          @keyframes driftReverse {
-            0% { transform: translateX(0px) translateY(0px); }
-            50% { transform: translateX(-20px) translateY(5px); }
-            100% { transform: translateX(0px) translateY(0px); }
-          }
-          .horizontal-scroll-container {
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-          }
-          .horizontal-scroll-container::-webkit-scrollbar {
-            display: none;
-          }
-        `}</style>
-
-        <h1 style={{ margin: "0 0 6px 0", fontSize: "24px", fontWeight: 800, color: "var(--hero-text)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-          Find Reliable Service Experts Near You <FaMapMarkerAlt size={24} style={{ color: "var(--danger)" }} />
+        <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(255, 255, 255, 0.12)", backdropFilter: "blur(12px)", border: "1px solid rgba(255, 255, 255, 0.2)", padding: "4px 14px", borderRadius: "20px", fontSize: "11px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>
+          ✨ VERIFIED ON-DEMAND SERVICE NETWORK
+        </div>
+        <h1 style={{ margin: "0 0 8px 0", fontSize: "28px", fontWeight: 900, color: "var(--hero-text)", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", letterSpacing: "-0.5px" }}>
+          Find Reliable Service Experts Near You <FaMapMarkerAlt size={26} style={{ color: "#38bdf8" }} />
         </h1>
-        <p style={{ margin: 0, fontSize: "14px", color: "var(--hero-subtext)", fontWeight: "600" }}>
+        <p style={{ margin: 0, fontSize: "15px", color: "var(--hero-subtext)", fontWeight: "500", maxWidth: "680px", marginLeft: "auto", marginRight: "auto" }}>
           Auto-matching, verified professional workers, and instant secure bookings.
         </p>
       </div>
@@ -651,7 +600,7 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
           }}
         />
 
-        {/* Location context banner */}
+        {/* Location context banner - Ultra Modern Glassmorphism AI Card */}
         {searchedLocation && (
           <div
             onClick={() => {
@@ -661,32 +610,55 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
               }, 100);
             }}
             style={{
-              margin: "0 20px 14px 20px",
-              padding: "20px 24px",
-              backgroundColor: "var(--ai-banner-bg)",
-              borderLeft: "5px solid var(--ai-banner-border)",
-              borderRadius: "12px",
+              margin: "0 20px 20px 20px",
+              padding: "24px 28px",
+              background: "var(--ai-banner-bg)",
+              border: "1.5px solid var(--ai-banner-border)",
+              borderRadius: "20px",
               fontSize: "14px",
               color: "#ffffff",
               display: "flex",
               flexDirection: "column",
-              gap: "8px",
+              gap: "12px",
               cursor: "pointer",
-              transition: "transform 0.15s ease",
+              transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
               minHeight: "auto",
-              boxShadow: "0 4px 14px rgba(222, 222, 215, 0.8)"
+              boxShadow: "0 16px 36px -10px rgba(0, 0, 0, 0.25), 0 0 20px rgba(16, 185, 129, 0.15)",
+              position: "relative",
+              overflow: "hidden"
             }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.01)"}
-            onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-3px)";
+              e.currentTarget.style.boxShadow = "0 20px 40px -10px rgba(0, 0, 0, 0.35), 0 0 25px rgba(16, 185, 129, 0.25)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "none";
+              e.currentTarget.style.boxShadow = "0 16px 36px -10px rgba(0, 0, 0, 0.25), 0 0 20px rgba(16, 185, 129, 0.15)";
+            }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <FaRobot size={18} style={{ color: "#ffffff" }} />
-              <span>
-                <strong>🤖 Zy AI — Nearby Search Active</strong>
-              </span>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)" }}>
+                  🤖
+                </div>
+                <div>
+                  <span style={{ fontSize: "15px", fontWeight: 800, color: "#ffffff", letterSpacing: "0.2px" }}>
+                    Zy AI — Nearby Search Active
+                  </span>
+                  <div style={{ fontSize: "11px", color: "#34d399", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
+                    <span style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#34d399", display: "inline-block", boxShadow: "0 0 8px #34d399" }}></span>
+                    LIVE REAL-TIME MATCHING
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ padding: "4px 12px", borderRadius: "20px", background: "rgba(255, 255, 255, 0.1)", border: "1px solid rgba(255, 255, 255, 0.15)", fontSize: "12px", color: "#e2e8f0", fontWeight: 600 }}>
+                📍 {getShortLocation(searchedLocation)}
+              </div>
             </div>
-            <div style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.9)", lineHeight: "1.5" }}>
-              {aiBannerText || (<>Hey {userName ? userName.split(' ')[0] : 'there'}! Based on your location <strong>{getShortLocation(searchedLocation)}</strong>, Zy found the best professionals, budget-friendly workers, and instant bookings in your area!</>)}
+
+            <div style={{ fontSize: "14px", color: "rgba(241, 245, 249, 0.95)", lineHeight: "1.6", fontWeight: 400 }}>
+              {aiBannerText || (<>Hey {userName ? userName.split(' ')[0] : 'there'}! Based on your location <strong>{getShortLocation(searchedLocation)}</strong>, Zy found top verified experts, budget-friendly workers, and instant bookings in your area!</>)}
             </div>
 
             {isAiLoading ? (
@@ -694,9 +666,9 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
                 <SkeletonLoader type="list" count={1} />
               </div>
             ) : aiSuggestedWorkers.length > 0 ? (
-              <div style={{ marginTop: "12px" }}>
-                <strong style={{ fontSize: "13px", color: "#ffffff" }}>{aiBannerExpertsTitle || "🔍 Zy's Top Picks For You:"}</strong>
-                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "8px" }}>
+              <div style={{ marginTop: "8px" }}>
+                <strong style={{ fontSize: "13px", color: "#ffffff", letterSpacing: "0.3px", textTransform: "uppercase" }}>{aiBannerExpertsTitle || "🔍 Zy's Top Picks For You:"}</strong>
+                <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "10px" }}>
                   {aiSuggestedWorkers.map((worker, idx) => (
                     <Link
                       key={idx}
@@ -704,39 +676,59 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
                       onClick={() => localStorage.setItem("selected_worker", JSON.stringify(worker))}
                       style={{ textDecoration: "none" }}
                     >
-                      <div style={{ backgroundColor: "var(--bg-card)", padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: "4px", minWidth: "140px", cursor: "pointer", transition: "transform 0.2s" }}
-                        onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.03)"}
-                        onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
+                      <div style={{
+                        backgroundColor: "rgba(255, 255, 255, 0.08)",
+                        backdropFilter: "blur(12px)",
+                        padding: "12px 16px",
+                        borderRadius: "14px",
+                        border: "1px solid rgba(255, 255, 255, 0.15)",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "4px",
+                        minWidth: "160px",
+                        cursor: "pointer",
+                        transition: "all 0.2s ease"
+                      }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.16)";
+                          e.currentTarget.style.transform = "translateY(-2px)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.08)";
+                          e.currentTarget.style.transform = "none";
+                        }}
                       >
-                        <span style={{ fontWeight: 800, fontSize: "14px", color: "var(--text-primary)" }}>{worker.name}</span>
-                        <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{worker.service}</span>
-                        <span style={{ fontSize: "12px", color: "var(--warning)", fontWeight: "bold" }}>⭐ {worker.rating}</span>
+                        <span style={{ fontWeight: 800, fontSize: "14px", color: "#ffffff" }}>{worker.name}</span>
+                        <span style={{ fontSize: "12px", color: "#94a3b8", fontWeight: 500 }}>{worker.service}</span>
+                        <span style={{ fontSize: "12px", color: "#fbbf24", fontWeight: 800, display: "flex", alignItems: "center", gap: "4px", marginTop: "2px" }}>⭐ {worker.rating}</span>
                       </div>
                     </Link>
                   ))}
                 </div>
               </div>
             ) : (
-              <div style={{ marginTop: "8px", fontSize: "12px", color: "rgba(255, 255, 255, 0.8)" }}>
+              <div style={{ marginTop: "8px", fontSize: "13px", color: "rgba(226, 232, 240, 0.8)" }}>
                 No specific experts matched locally. Explore all options below!
               </div>
             )}
 
             {!isAiLoading && (availableOffersCount > 0 || availablePlansCount > 0) && (
-              <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid rgba(255, 255, 255, 0.2)" }}>
-                <strong style={{ fontSize: "13px", color: "#ffffff", display: "flex", alignItems: "center", gap: "6px" }}>
-                  🎁 Location Bonuses Unlocked!
-                </strong>
-                <div style={{ fontSize: "12px", color: "rgba(255, 255, 255, 0.9)", marginTop: "4px" }}>
-                  {aiBannerBonusText || (<>Zy analyzed {availablePlansCount > 0 && <strong>{availablePlansCount} Service Plan{availablePlansCount !== 1 ? 's' : ''}</strong>}
-                  {availablePlansCount > 0 && availableOffersCount > 0 && " and "}
-                  {availableOffersCount > 0 && <strong>{availableOffersCount} Active Promo Offer{availableOffersCount !== 1 ? 's' : ''}</strong>} for your area!</>)}
+              <div style={{ marginTop: "8px", paddingTop: "14px", borderTop: "1px solid rgba(255, 255, 255, 0.12)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+                <div>
+                  <strong style={{ fontSize: "13px", color: "#ffffff", display: "flex", alignItems: "center", gap: "6px" }}>
+                    🎁 Location Bonuses Unlocked!
+                  </strong>
+                  <div style={{ fontSize: "12px", color: "rgba(203, 213, 225, 0.9)", marginTop: "2px" }}>
+                    {aiBannerBonusText || (<>Zy analyzed {availablePlansCount > 0 && <strong>{availablePlansCount} Service Plan{availablePlansCount !== 1 ? 's' : ''}</strong>}
+                    {availablePlansCount > 0 && availableOffersCount > 0 && " and "}
+                    {availableOffersCount > 0 && <strong>{availableOffersCount} Active Promo Offer{availableOffersCount !== 1 ? 's' : ''}</strong>} for your area!</>)}
+                  </div>
                 </div>
                 <Link 
                   to="/plans-offers" 
                   onClick={(e) => e.stopPropagation()}
-                  style={{ display: "inline-block", marginTop: "10px", padding: "8px 14px", backgroundColor: "var(--bg-card)", color: "#6b17e1ff", borderRadius: "8px", fontSize: "12px", fontWeight: "bold", textDecoration: "none", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", transition: "transform 0.1s" }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+                  style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "10px 18px", background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", color: "#ffffff", borderRadius: "12px", fontSize: "13px", fontWeight: 800, textDecoration: "none", boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)", transition: "all 0.2s ease" }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.04)"}
                   onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
                 >
                   View Plans & Offers →
