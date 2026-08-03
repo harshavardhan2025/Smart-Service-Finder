@@ -6,7 +6,7 @@ import { deductFromWallet } from "../utils/wallet";
 
 const BASE_URL = "";
 
-const today = new Date().toISOString().split("T")[0];
+
 
 function PlansOffers() {
   const navigate = useNavigate();
@@ -416,40 +416,51 @@ function PlansOffers() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 30, marginBottom: 56, alignItems: "stretch" }}>
           {loading && plans.length === 0
             ? [1, 2, 3].map(i => <SkeletonPlanCard key={i} />)
-            : (plans.length > 0 ? plans : [
-                {
-                  title: "Basic Care Package",
-                  price: "₹999",
-                  period: "month",
-                  popular: false,
-                  desc: "Essential maintenance package for apartments & small homes",
-                  features: ["✅ 2 free service visits/month", "✅ Plumbing, Electrical & Carpentry", "✅ Free diagnostic inspection", "✅ Email & In-App support"]
-                },
-                {
-                  title: "Home Pro Annual",
-                  price: "₹2,499",
-                  period: "month",
-                  popular: true,
-                  desc: "Complete coverage for all home appliances, repairs & cleaning",
-                  features: ["✅ 6 free service visits/month", "✅ All Home Services & Appliance Repair", "✅ Priority 2-hr emergency arrival", "✅ 0% Platform booking fees", "✅ 10% Cashbacks on all bookings"]
-                },
-                {
-                  title: "Elite Master VIP",
-                  price: "₹19,999",
-                  period: "year",
-                  popular: false,
-                  desc: "VIP unlimited service plan for luxury villas, residences & families",
-                  features: ["✅ Unlimited free service visits", "✅ Full coverage across ALL 30+ service categories", "✅ 30-min guaranteed rapid emergency dispatch", "✅ Dedicated personal home manager & expert"]
-                }
-              ])
-                .filter(plan => {
-                  if (plan.endDate && plan.endDate < today) return false;
-                  if (!plan.city || plan.city.trim() === "" || plan.city.toLowerCase() === "all") return true;
-                  if (!userCity) return true;
-                  const targetCities = plan.city.toLowerCase().split(",").map(c => c.trim());
-                  const uCity = userCity.toLowerCase().trim();
-                  return targetCities.some(c => uCity.includes(c) || c.includes(uCity)) || true;
-                })
+            : (() => {
+                const defaultPlans = [
+                  {
+                    title: "Basic Care Package",
+                    price: "₹999",
+                    period: "month",
+                    popular: false,
+                    desc: "Essential maintenance package for apartments & small homes",
+                    features: ["✅ 2 free service visits/month", "✅ Plumbing, Electrical & Carpentry", "✅ Free diagnostic inspection", "✅ Email & In-App support"]
+                  },
+                  {
+                    title: "Home Pro Annual",
+                    price: "₹2,499",
+                    period: "month",
+                    popular: true,
+                    desc: "Complete coverage for all home appliances, repairs & cleaning",
+                    features: ["✅ 6 free service visits/month", "✅ All Home Services & Appliance Repair", "✅ Priority 2-hr emergency arrival", "✅ 0% Platform booking fees", "✅ 10% Cashbacks on all bookings"]
+                  },
+                  {
+                    title: "Elite Master VIP",
+                    price: "₹19,999",
+                    period: "year",
+                    popular: false,
+                    desc: "VIP unlimited service plan for luxury villas, residences & families",
+                    features: ["✅ Unlimited free service visits", "✅ Full coverage across ALL 30+ service categories", "✅ 30-min guaranteed rapid emergency dispatch", "✅ Dedicated personal home manager & expert"]
+                  },
+                  {
+                    title: "Commercial Property Plan",
+                    price: "₹39,999",
+                    period: "year",
+                    popular: false,
+                    desc: "Complete maintenance management for offices, shops & clinics",
+                    features: ["✅ Unlimited commercial maintenance visits", "✅ Electrical, HVAC, Plumbing & Cleaning", "✅ Dedicated technician team assigned"]
+                  }
+                ];
+
+                const merged = [...plans];
+                defaultPlans.forEach(dp => {
+                  if (!merged.some(p => p.title && p.title.toLowerCase().trim() === dp.title.toLowerCase().trim())) {
+                    merged.push(dp);
+                  }
+                });
+
+                return merged;
+              })()
                 .map((plan, i) => {
               // Custom premium color tones for plans
               const bgTone = plan.popular 
@@ -661,15 +672,67 @@ function PlansOffers() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
           {loading && offers.length === 0
             ? [1, 2, 3, 4].map(i => <SkeletonOfferCard key={i} />)
-            : offers
-                .filter(offer => {
-                  if (offer.endDate && offer.endDate < today) return false;
-                  if (!offer.city || offer.city.trim() === "" || offer.city.toLowerCase() === "all") return true;
-                  if (!userCity) return true;
-                  const targetCities = offer.city.toLowerCase().split(",").map(c => c.trim());
-                  const uCity = userCity.toLowerCase().trim();
-                  return targetCities.some(c => uCity.includes(c) || c.includes(uCity)) || true;
-                })
+            : (() => {
+                const defaultOffers = [
+                  {
+                    code: "WELCOME100",
+                    discount: "Flat ₹100 Off",
+                    desc: "Valid on all service bookings for new clients",
+                    expiry: "Valid till Dec 31, 2028",
+                    minPrice: 200,
+                    validServices: "All"
+                  },
+                  {
+                    code: "WORKZY20",
+                    discount: "20% Off",
+                    desc: "Get 20% off on Plumbing, Electrical & Carpentry repairs",
+                    expiry: "Valid till Dec 31, 2028",
+                    minPrice: 250,
+                    validServices: "Plumbing, Electrical, Carpentry"
+                  },
+                  {
+                    code: "FESTIVE25",
+                    discount: "25% Off",
+                    desc: "Festive season special discount across all plans and services",
+                    expiry: "Valid till Dec 31, 2028",
+                    minPrice: 300,
+                    validServices: "All"
+                  },
+                  {
+                    code: "COOLAC150",
+                    discount: "Flat ₹150 Off",
+                    desc: "Flat ₹150 off on AC Repair & Servicing",
+                    expiry: "Valid till Dec 31, 2028",
+                    minPrice: 400,
+                    validServices: "AC Repair"
+                  },
+                  {
+                    code: "CLEANPRO",
+                    discount: "15% Off",
+                    desc: "15% off on Deep House Cleaning & Floor Cleaning",
+                    expiry: "Valid till Dec 31, 2028",
+                    minPrice: 500,
+                    validServices: "House Cleaning, Floor cleaning"
+                  },
+                  {
+                    code: "DOCFREE",
+                    discount: "Flat ₹150 Off",
+                    desc: "Flat ₹150 off on Doctors & Medical consult bookings",
+                    expiry: "Valid till Dec 31, 2028",
+                    minPrice: 300,
+                    validServices: "Doctors & Medical"
+                  }
+                ];
+
+                const merged = [...offers];
+                defaultOffers.forEach(doff => {
+                  if (!merged.some(o => o.code && o.code.toUpperCase().trim() === doff.code.toUpperCase().trim())) {
+                    merged.push(doff);
+                  }
+                });
+
+                return merged;
+              })()
                 .map((offer, i) => {
               // Tone-on-tone green background for promo codes
               const couponBg = "linear-gradient(135deg, rgba(52, 211, 153, 0.08) 0%, rgba(52, 211, 153, 0.02) 100%)";
