@@ -18,7 +18,9 @@ export const updateUser = async (req, res) => {
     if (req.user.role !== "admin" && req.user._id.toString() !== req.params.id) {
       return res.status(403).json({ error: "Access denied. You can only update your own profile." });
     }
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
+    // Prevent direct password updates (would bypass hashing middleware)
+    const { password, ...updateData } = req.body;
+    const user = await User.findByIdAndUpdate(req.params.id, updateData, { returnDocument: 'after' });
     res.status(200).json({ success: true, user });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -27,7 +29,10 @@ export const updateUser = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
   try {
-    await User.findByIdAndDelete(req.params.id);
+    const deleted = await User.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ error: "User not found." });
+    }
     res.status(200).json({ success: true, message: "User account deleted" });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -87,19 +92,14 @@ export const getUserProfile = async (req, res) => {
 
 export const subscribeToPlan = async (req, res) => {
   try {
-    const fs = await import('fs');
-    fs.appendFileSync('debug.log', `[SUBSCRIBE] HIT! req.body: ${JSON.stringify(req.body)}\n`);
     const { planTitle, period, paymentMethod, amount } = req.body;
     const user = await User.findById(req.user._id);
     if (!user) {
-      fs.appendFileSync('debug.log', `[SUBSCRIBE] User not found for id ${req.user._id}\n`);
       return res.status(404).json({ error: "User not found" });
     }
 
     if (paymentMethod === "Wallet") {
       if ((user.walletBalance || 0) < amount) {
-        fs.appendFileSync('debug.log', `[SUBSCRIBE] Insufficient wallet: ${user.walletBalance} < ${amount}\n`);
-
         return res.status(400).json({ error: "Insufficient wallet balance" });
       }
       user.walletBalance -= amount;

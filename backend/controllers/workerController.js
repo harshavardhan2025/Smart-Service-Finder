@@ -356,7 +356,10 @@ export const updateWorker = async (req, res) => {
 
 export const deleteWorker = async (req, res) => {
   try {
-    await Worker.findByIdAndDelete(req.params.id);
+    const deleted = await Worker.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ error: "Worker not found." });
+    }
 
     // Invalidate Redis cache
     await invalidateVersion("workers");

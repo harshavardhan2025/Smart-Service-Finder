@@ -8,7 +8,7 @@ router.get("/geocode", geocodeLocation);   // Proxy geosearch to bypass adblocke
 router.get("/ip-location", getIpLocation); // Resolve IP location as fallback
 router.get("/nearby", getNearbyWorkers);   // Radius-based geo search
 router.get("/", getWorkers);               // Public access to discover talent!
-router.post("/", createWorker);            // Register new worker
+router.post("/", protect, adminOnly, createWorker);            // Register new worker (admin only)
 router.patch("/:id", protect, updateWorker);
 router.delete("/:id", protect, adminOnly, deleteWorker);
 router.post("/:id/send-money", protect, adminOnly, sendMoneyToWorker);

@@ -10,6 +10,8 @@ import {
 import Home from "./pages/Home";
 import GlobalCallManager from "./components/GlobalCallManager";
 import CustomAlert from "./components/CustomAlert";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 
 // Lazy load secondary routes so initial bundle download is fast & lightweight
 const SearchResults = lazy(() => import("./pages/SearchResults"));
@@ -19,8 +21,6 @@ const PaymentPage = lazy(() => import("./pages/PaymentPage"));
 const UserDashboard = lazy(() => import("./pages/UserDashboard"));
 const WorkerDashboard = lazy(() => import("./pages/WorkerDashboard"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
-const Login = lazy(() => import("./pages/Login"));
-const Signup = lazy(() => import("./pages/Signup"));
 const SupportPage = lazy(() => import("./pages/SupportPage"));
 const MyBookings = lazy(() => import("./pages/MyBookings"));
 const ReviewsRewards = lazy(() => import("./pages/ReviewsRewards"));
@@ -87,7 +87,7 @@ function App() {
           <Route path="/worker" element={<WorkerProfile />} />
           <Route path="/booking" element={<PrivateRoute><BookingPage /></PrivateRoute>} />
           <Route path="/payment" element={<PrivateRoute><PaymentPage /></PrivateRoute>} />
-          <Route path="/user-dashboard" element={<UserDashboard />} />
+          <Route path="/user-dashboard" element={<PrivateRoute><UserDashboard /></PrivateRoute>} />
           <Route path="/worker-dashboard" element={<PrivateRoute><WorkerDashboard /></PrivateRoute>} />
           <Route path="/admin-dashboard" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
           <Route path="/login" element={<Login />} />

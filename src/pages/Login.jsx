@@ -24,7 +24,7 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(window.location.hash.includes("access_token"));
   const [loginStatus, setLoginStatus] = useState(null); // { type: 'success'|'error', message: '' }
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const navigate = useNavigate();
@@ -148,11 +148,11 @@ function Login() {
       sessionStorage.setItem("loggedInWorkerId", user.id);
       setLoginStatus({ type: "success", message: `Welcome ${user.name}! Redirecting to dashboard... 🛠️` });
       console.log("🚀 Redirecting worker to /worker-dashboard...");
-      setTimeout(() => navigate("/worker-dashboard"), 600);
+      setTimeout(() => navigate("/worker-dashboard"), 800);
     } else if (user.role === "admin") {
       setLoginStatus({ type: "success", message: "Welcome Administrator! Redirecting... 👑" });
       console.log("🚀 Redirecting admin to /admin-dashboard...");
-      setTimeout(() => navigate("/admin-dashboard"), 600);
+      setTimeout(() => navigate("/admin-dashboard"), 800);
     } else {
       setLoginStatus({ type: "success", message: `Welcome ${user.name}! Redirecting... 🎉` });
 
@@ -164,7 +164,7 @@ function Login() {
       const targetCity = user.city || "Mumbai";
 
       console.log("🚀 Redirecting customer to /...");
-      setTimeout(() => navigate("/"), 600);
+      setTimeout(() => navigate("/"), 800);
 
       // Trigger background geocoding request to refresh coordinates in case of changes
       fetch(`/api/workers/geocode?q=${encodeURIComponent(targetCity)}`)

@@ -249,6 +249,13 @@ export const updateBookingStatus = async (req, res) => {
       }
     }
 
+    if (req.body.status === "Rejected") {
+      const timeCheck = validateCancellationTime(booking);
+      if (!timeCheck.allowed) {
+        return res.status(400).json({ error: timeCheck.error });
+      }
+    }
+
     booking.status = req.body.status;
     if (req.body.status === "Rejected") {
       booking.rejectReason = req.body.reason || "Schedule Conflict";
@@ -479,6 +486,12 @@ export const cancelBooking = async (req, res) => {
 
     if (booking.status === "Cancellation Pending") {
       return res.status(400).json({ error: "Booking cancellation request is already pending review" });
+    }
+
+    // Time-based validation before allowing cancellation request
+    const timeCheck = validateCancellationTime(booking);
+    if (!timeCheck.allowed) {
+      return res.status(400).json({ error: timeCheck.error });
     }
 
     // Set cancellation pending status and save user reason

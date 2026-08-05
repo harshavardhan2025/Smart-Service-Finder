@@ -20,6 +20,9 @@ const truncateLocation = (loc) => {
 };
 
 function Home() {
+  const [isGoogleAuthProcessing] = useState(
+    window.location.hash.includes("access_token")
+  );
   const navigate = useNavigate();
   const role = sessionStorage.getItem("userRole") || "user";
   const userName = sessionStorage.getItem("userName") || "";
@@ -556,6 +559,19 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
     return lower;
   };
   const normServiceQ = getNormalizedServiceQuery(serviceQuery);
+
+  if (isGoogleAuthProcessing) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", backgroundColor: "var(--bg-main)" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ width: "40px", height: "40px", border: "4px solid var(--border)", borderTopColor: "var(--primary)", borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 16px" }}></div>
+          <h3 style={{ color: "var(--text-main)", margin: 0 }}>Verifying Authentication...</h3>
+          <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>Please wait while we log you in.</p>
+        </div>
+        <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>

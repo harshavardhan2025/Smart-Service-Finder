@@ -65,7 +65,8 @@ const generateToken = (id) => {
 
 export const registerUser = async (req, res) => {
   try {
-    const { email, password, name, role, profession, city, phone } = req.body;
+    let { email, password, name, role, profession, city, phone } = req.body;
+    if (email) email = email.toLowerCase().trim();
 
     // ✅ Validate role – only 'user', 'worker', or 'admin' allowed
     const allowedRoles = ['user', 'worker', 'admin'];
@@ -139,7 +140,8 @@ export const registerUser = async (req, res) => {
 
 export const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
+    if (email) email = email.toLowerCase().trim();
 
     const user = await User.findOne({ email });
 
@@ -186,7 +188,7 @@ export const loginUser = async (req, res) => {
 export const googleAuth = async (req, res) => {
   console.log("📡 [googleAuth] Request received. Body:", req.body);
   try {
-    const { accessToken, role, profession, city, phone, name: customName } = req.body;
+    let { accessToken, role, profession, city, phone, name: customName } = req.body;
     
     // ✅ Validate role – only 'user' or 'worker' allowed for Google signup
     if (role && !['user', 'worker'].includes(role)) {
@@ -213,7 +215,8 @@ export const googleAuth = async (req, res) => {
 
     const googleUser = await googleRes.json();
     console.log("📡 [googleAuth] Google UserInfo returned user:", googleUser);
-    const { email, name } = googleUser;
+    let { email, name } = googleUser;
+    if (email) email = email.toLowerCase().trim();
 
     if (!email) {
       console.warn("⚠️ [googleAuth] Google account returned no verified email address");
@@ -344,7 +347,8 @@ export const googleAuth = async (req, res) => {
 
 export const googleMockAuth = async (req, res) => {
   try {
-    const { email, name, role, profession, city, phone } = req.body;
+    let { email, name, role, profession, city, phone } = req.body;
+    if (email) email = email.toLowerCase().trim();
     
     // ✅ Validate role – only 'user' or 'worker' allowed for mock Google signup
     if (role && !['user', 'worker'].includes(role)) {

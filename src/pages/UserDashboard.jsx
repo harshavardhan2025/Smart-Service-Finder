@@ -214,18 +214,20 @@ function UserDashboard() {
 
       try {
         const currentUserId = sessionStorage.getItem("userId");
+        const currentUserName = sessionStorage.getItem("userName") || "Verified User";
         if (!currentUserId) return;
 
-        // A. Fetch Real Bookings
-        const bookingResp = await fetch(`/api/bookings?customer_id=${currentUserId}`);
+        // A & B: Fetch Bookings and Transactions concurrently (Fast DB queries)
+        const [bookingResp, txnResp] = await Promise.all([
+          fetch(`/api/bookings?customer_id=${currentUserId}`),
+          fetch(`/api/transactions?customer=${encodeURIComponent(currentUserName)}`)
+        ]);
+
         if (bookingResp.ok) {
           const bookingsData = await bookingResp.json();
           setBookings(bookingsData.slice(0, 5)); // Top 5 recent
         }
 
-        // B. Fetch Real Transactions via Authoritative Username String
-        const currentUserName = sessionStorage.getItem("userName") || "Verified User";
-        const txnResp = await fetch(`/api/transactions?customer=${encodeURIComponent(currentUserName)}`);
         if (txnResp.ok) {
           const txnData = await txnResp.json();
           // Deduplicate transactions by creating a composite key (to prevent simulation loops from flooding the UI)
@@ -278,17 +280,22 @@ function UserDashboard() {
           setWallet(total > 0 ? total : 650); // Fallback placeholder
         }
 
-        // C. Fetch AI-Powered Recommendations
-        const recResp = await fetch(`/api/ai/recommendations?user_id=${currentUserId}`);
-        if (recResp.ok) {
-          const recData = await recResp.json();
-          setRecommendations(recData.recommendations || []);
-          setRecBasis(recData.basis || "");
-        }
+        // Unblock the UI immediately after core data is loaded!
+        setLoading(false);
+
+        // C. Fetch AI-Powered Recommendations in the background (Slow AI API call)
+        fetch(`/api/ai/recommendations?user_id=${currentUserId}`)
+          .then(async (recResp) => {
+            if (recResp.ok) {
+              const recData = await recResp.json();
+              setRecommendations(recData.recommendations || []);
+              setRecBasis(recData.basis || "");
+            }
+          })
+          .catch(err => console.error("AI Recommendation fetch failed:", err));
         
       } catch (err) {
         console.error("❌ Dashboard Hydration Error:", err);
-      } finally {
         setLoading(false);
       }
     };

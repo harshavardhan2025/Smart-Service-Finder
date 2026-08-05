@@ -190,7 +190,10 @@ function WorkerDashboard() {
       const workerResp = await fetch(`/api/workers?adminView=true`);
       if (workerResp.ok) {
         const allWorkers = await workerResp.json();
-        const match = allWorkers.find(w => w.email === userEmail || w._id === currentUserId);
+        const match = allWorkers.find(w => 
+          (w.email && userEmail && w.email.toLowerCase() === userEmail.toLowerCase()) || 
+          w._id === currentUserId
+        );
         if (match) {
           // 🛑 CRITICAL SECURITY FIREWALL: Eject instantly if admin has issued a block verdict!
           if (match.status === "Blocked") {

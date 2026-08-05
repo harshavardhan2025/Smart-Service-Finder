@@ -35,7 +35,7 @@ function ResultPopup({ result, onClose, navigate }) {
       if (role) {
         targetPath = role === "worker" ? "/worker-dashboard" : "/";
       }
-      const timer = setTimeout(() => navigate(targetPath), 2500);
+      const timer = setTimeout(() => navigate(targetPath), 800);
       return () => clearTimeout(timer);
     }
   }, [result, navigate]);
@@ -185,7 +185,7 @@ function Signup() {
   const [profession, setProfession] = useState("Carpentry");
   const [city, setCity]         = useState("");
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(window.location.hash.includes("access_token"));
   const [popupResult, setPopupResult] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
