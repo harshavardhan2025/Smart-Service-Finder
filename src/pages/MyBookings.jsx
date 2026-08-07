@@ -384,6 +384,26 @@ function MyBookings() {
     }
   };
 
+  // Human-readable booking status labels
+  const statusHumanLabel = (status) => {
+    const map = {
+      "Pending":              "⏳ Waiting for worker to accept",
+      "Accepted":             "✅ Confirmed — Worker is coming",
+      "Confirmed":            "✅ Confirmed — Worker is coming",
+      "Upcoming":             "📌 Scheduled — Awaiting service day",
+      "On the Way":           "🚧 Worker is on the way!",
+      "Started":              "🔧 Service in progress",
+      "Completed":            "🎉 Service completed",
+      "Paid Out":             "🎉 Service completed & paid",
+      "Cancelled":            "❌ Cancelled",
+      "Cancellation Pending": "⏳ Cancellation under review",
+      "Rejected":             "⚠️ Worker declined this booking",
+      "Refund Declined":      "⚠️ Refund request declined",
+      "Escrow Declined":      "⚠️ Payment declined",
+    };
+    return map[status] || status;
+  };
+
   return (
     <div
       style={{
@@ -433,33 +453,16 @@ function MyBookings() {
         }}
       >
         {/* Summary Pills */}
-        <div
-          style={{
-            display: "flex",
-            gap: "12px",
-            marginBottom: "28px",
-            flexWrap: "wrap"
-          }}
-        >
+        <div style={{ display: "flex", gap: "10px", marginBottom: "24px", flexWrap: "wrap" }}>
           {[
-            { label: "Total", count: liveBookings.length, color: "var(--text-main)", bg: "var(--bg-card-hover)" },
-            { label: "Confirmed/Accepted", count: liveBookings.filter(b => b.status === "Confirmed" || b.status === "Accepted").length, color: "var(--success)", bg: "var(--success-light)" },
-            { label: "Upcoming/Pending", count: liveBookings.filter(b => b.status === "Upcoming").length, color: "var(--warning)", bg: "var(--warning-light)" },
-            { label: "Completed", count: liveBookings.filter(b => b.status === "Completed" || b.status === "Paid Out").length, color: "var(--primary)", bg: "var(--info-light)" },
-            { label: "Cancelled/Rejected", count: liveBookings.filter(b => b.status === "Cancelled" || b.status === "Cancellation Pending" || b.status === "Rejected").length, color: "var(--danger)", bg: "var(--danger-light)" }
+            { label: "All",       count: liveBookings.length,                                                                                                            color: "var(--text-main)",      bg: "var(--bg-card-hover)" },
+            { label: "✅ Confirmed", count: liveBookings.filter(b => b.status === "Confirmed" || b.status === "Accepted").length,                                          color: "var(--success)",        bg: "var(--success-light)" },
+            { label: "⏳ Pending",   count: liveBookings.filter(b => b.status === "Pending" || b.status === "Upcoming").length,                                            color: "var(--warning)",        bg: "var(--warning-light)" },
+            { label: "🎉 Done",      count: liveBookings.filter(b => b.status === "Completed" || b.status === "Paid Out").length,                                          color: "var(--primary)",        bg: "var(--info-light)" },
+            { label: "❌ Cancelled", count: liveBookings.filter(b => b.status === "Cancelled" || b.status === "Cancellation Pending" || b.status === "Rejected").length, color: "var(--danger)",         bg: "var(--danger-light)" }
           ].map(({ label, count, color, bg }) => (
-            <div
-              key={label}
-              style={{
-                backgroundColor: bg,
-                color,
-                padding: "8px 16px",
-                borderRadius: "20px",
-                fontSize: "13px",
-                fontWeight: 600
-              }}
-            >
-              {label}: {count}
+            <div key={label} style={{ backgroundColor: bg, color, padding: "6px 14px", borderRadius: "20px", fontSize: "13px", fontWeight: 600 }}>
+              {label}: <strong>{count}</strong>
             </div>
           ))}
         </div>
@@ -467,18 +470,11 @@ function MyBookings() {
         {/* Booking Cards */}
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           {liveBookings.length === 0 ? (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "40px",
-                backgroundColor: "var(--bg-card)",
-                borderRadius: "16px",
-                border: "1.5px dashed #cbd5e1"
-              }}
-            >
-              <p style={{ fontSize: "36px", margin: "0 0 12px 0" }}>🔍</p>
-              <h4 style={{ margin: "0 0 4px 0", color: "var(--text-secondary)", fontWeight: 700 }}>No bookings found</h4>
-              <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>You haven't booked any services yet.</p>
+            <div className="empty-state">
+              <span className="empty-state-icon">📋</span>
+              <h3>No bookings yet</h3>
+              <p>You haven't booked any service yet. Find a worker and book your first service!</p>
+              <Link to="/">Book a Service →</Link>
             </div>
           ) : (
             liveBookings.map((booking) => {
@@ -526,19 +522,21 @@ function MyBookings() {
                       </div>
                     </div>
 
-                    {/* Status Badge */}
+                    {/* Status Badge - human readable */}
                     <span
                       style={{
                         backgroundColor: bg,
                         color,
-                        padding: "4px 12px",
+                        padding: "5px 12px",
                         borderRadius: "20px",
                         fontSize: "12px",
                         fontWeight: 700,
-                        whiteSpace: "nowrap"
+                        whiteSpace: "nowrap",
+                        maxWidth: "200px",
+                        textAlign: "center"
                       }}
                     >
-                      {booking.status}
+                      {statusHumanLabel(booking.status)}
                     </span>
                   </div>
 

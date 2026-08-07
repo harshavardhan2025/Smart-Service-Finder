@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
-import { FaMicrophone, FaSearch } from "react-icons/fa";
+import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+import { FaMicrophone, FaSearch, FaMap } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import MapPicker from "./MapPicker";
 
 const SERVICE_SUGGESTIONS = [
   "Plumber", "Electrician", "Carpenter", "Painter", "Doctor",
@@ -9,12 +11,14 @@ const SERVICE_SUGGESTIONS = [
   "Tutor", "Cook", "Driver", "Mechanic", "Yoga Trainer",
 ];
 
-function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocationClick }) {
+function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocationClick, onCoordsChange, onLocationUpdate }) {
   const navigate = useNavigate();
   const [suggestions, setSuggestions] = useState([]);
   const [focused, setFocused] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [recognition, setRecognition] = useState(null);
+  const [showMap, setShowMap] = useState(false);
+  const containerRef = useRef(null);
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -129,37 +133,120 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
   };
 
   return (
-    <div className="service-search-container" style={{ padding: "22px 28px", margin: "16px 20px 20px 20px", background: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "20px", boxShadow: "var(--card-shadow)", backdropFilter: "blur(16px)" }}>
+    <div className="service-search-container" ref={containerRef} style={{ padding: "22px 28px", margin: "16px 20px 20px 20px", background: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "20px", boxShadow: "var(--card-shadow)", backdropFilter: "blur(16px)" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", flexWrap: "wrap", gap: "8px" }}>
         <p style={{ margin: 0, fontSize: "14px", color: "var(--text-main)", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px", letterSpacing: "0.2px" }}>
           <FaSearch size={15} style={{ color: "#0284c7" }} /> Search Services or Workers
         </p>
-        {detectedLocation && (
-          <div 
-            onClick={onLocationClick}
-            style={{ 
-              display: "inline-flex", 
-              alignItems: "center", 
-              gap: "6px", 
-              backgroundColor: "rgba(14, 165, 233, 0.12)", 
-              color: "#0284c7", 
-              padding: "5px 14px", 
-              borderRadius: "20px", 
-              fontSize: "12.5px", 
-              fontWeight: 700,
-              border: "1px solid rgba(14, 165, 233, 0.3)",
-              cursor: onLocationClick ? "pointer" : "default",
-              transition: "transform 0.15s ease"
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.03)"}
-            onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
-          >
-            <span style={{ fontSize: "13px" }}>📍</span>
-            {detectedLocation.split(",").slice(0, 2).join(",").trim()}
-          </div>
-        )}
+        <button 
+          type="button"
+          onClick={() => setShowMap(true)}
+          style={{ 
+            display: "inline-flex", 
+            alignItems: "center", 
+            gap: "6px", 
+            backgroundColor: "rgba(14, 165, 233, 0.12)", 
+            color: "#0284c7", 
+            padding: "5px 14px", 
+            borderRadius: "20px", 
+            fontSize: "12.5px", 
+            fontWeight: 700,
+            border: "1px solid rgba(14, 165, 233, 0.3)",
+            cursor: "pointer",
+            transition: "transform 0.15s ease",
+            outline: "none"
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.03)"}
+          onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
+        >
+          <span style={{ fontSize: "13px" }}>📍</span>
+          {detectedLocation ? detectedLocation.split(",").slice(0, 2).join(",").trim() : "Set Location on Map"}
+        </button>
       </div>
-      <div style={{ display: "flex", alignItems: "center", width: "100%", gap: "12px", flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "center", width: "100%", gap: "12px", flexWrap: "wrap", position: "relative" }}>
+        
+        {/* Map Modal */}
+        {showMap && createPortal(
+          <div 
+            onClick={() => setShowMap(false)}
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 999999,
+              backgroundColor: "rgba(15, 23, 42, 0.65)",
+              backdropFilter: "blur(6px)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: "16px"
+            }}
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                backgroundColor: "var(--bg-card, #ffffff)",
+                borderRadius: "18px",
+                boxShadow: "0 25px 60px -15px rgba(0, 0, 0, 0.4)",
+                border: "1.5px solid var(--border-color, #e2e8f0)",
+                overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
+                animation: "fadeIn 0.2s ease-out",
+                width: "100%",
+                maxWidth: "620px",
+                maxHeight: "92vh"
+              }}
+            >
+              <div style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "16px 20px",
+                borderBottom: "1px solid var(--border-color, #e2e8f0)",
+                backgroundColor: "var(--primary-light, #f8fafc)"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <FaMap size={16} style={{ color: "#0284c7" }} />
+                  <h3 style={{ margin: 0, fontSize: "15px", fontWeight: 700, color: "var(--text-main, #0f172a)" }}>
+                    Select Your Service Location
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setShowMap(false)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    fontSize: "22px",
+                    lineHeight: "1",
+                    cursor: "pointer",
+                    color: "var(--text-secondary, #64748b)",
+                    padding: "4px 8px",
+                    borderRadius: "6px"
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = "#ef4444"}
+                  onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-secondary, #64748b)"}
+                >
+                  &times;
+                </button>
+              </div>
+              <div style={{ overflowY: "auto", flex: 1 }}>
+                <MapPicker
+                  onLocationChange={(loc) => { 
+                    if(onLocationUpdate) onLocationUpdate(loc); 
+                    setShowMap(false); 
+                  }}
+                  onCoordsChange={(coords) => {
+                    if (onCoordsChange) onCoordsChange(coords);
+                  }}
+                />
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
         <div style={{ position: "relative", flex: 1, maxWidth: "420px", width: "100%" }}>
           <input
             id="service-search-input"

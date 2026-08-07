@@ -407,8 +407,7 @@ function WorkerDashboard() {
   };
 
   const handleMarkNotificationsRead = () => {
-    // Placeholder
-    alert("Marked all read locally.");
+    // Handled inline — no alert needed
   };
 
   useEffect(() => {
@@ -474,15 +473,16 @@ function WorkerDashboard() {
   const complaintsRatingDeduction = complaints.filter(c => c.adminVerdict === "Valid").reduce((sum, c) => sum + (c.ratingDeducted || 0.2), 0);
   const finalRating = Math.max(1, (profile.rating - complaintsRatingDeduction)).toFixed(1);
 
+  const pendingBookingsCount = bookings.filter(b => b.status === "Pending").length;
   const sidebarTabs = [
-    { id: "status", label: "My Status", icon: "🟢" },
-    { id: "bookings", label: "All Bookings", icon: "📋" },
-    { id: "reviews", label: "Reviews & Feedback", icon: "⭐" },
-    { id: "notifications", label: `Alerts (${unreadCount})`, icon: "🔔" },
-    { id: "earnings", label: "My Earnings", icon: "💰" },
-    { id: "profile", label: "My Profile", icon: "👤" },
-    { id: "security-logs", label: "Security Logs", icon: "🛡️" },
-    { id: "sos", label: "SOS Emergency", icon: "🚨" },
+    { id: "status",        label: "My Status",          icon: "🟢" },
+    { id: "bookings",      label: "My Bookings",         icon: "📋", badge: pendingBookingsCount },
+    { id: "reviews",       label: "Reviews & Feedback",  icon: "⭐" },
+    { id: "notifications", label: `Alerts`,              icon: "🔔", badge: unreadCount },
+    { id: "earnings",      label: "My Earnings",         icon: "💰" },
+    { id: "profile",       label: "My Profile",          icon: "👤" },
+    { id: "security-logs", label: "Security Logs",       icon: "🛡️" },
+    { id: "sos",           label: "SOS Emergency",        icon: "🚨" },
   ];
 
   const statusStyle = (s) => ({
@@ -544,7 +544,11 @@ function WorkerDashboard() {
                   } 
                 }}
               >
-                <span style={{ fontSize: 18 }}>{tab.icon}</span>{tab.label}
+              <span style={{ fontSize: 18 }}>{tab.icon}</span>
+                {tab.label}
+                {tab.badge > 0 && (
+                  <span className="tab-count-badge">{tab.badge}</span>
+                )}
               </button>
             );
           })}
@@ -577,17 +581,52 @@ function WorkerDashboard() {
               </button>
             )}
 
+          {/* ONLINE STATUS BANNER — shown on all tabs so worker always knows their visibility */}
+          <div className={`worker-status-banner ${isActive ? "worker-status-online" : "worker-status-offline"}`}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <span className={`status-dot ${isActive ? "status-dot-online" : "status-dot-offline"}`} />
+              <span>{isActive ? "🟢 You are ONLINE — Customers can find and book you" : "🔴 You are OFFLINE — You are hidden from customer searches"}</span>
+            </div>
+            <button
+              onClick={async () => {
+                const newStatus = !isActive ? "Active" : "Inactive";
+                if (profile.mongoId) {
+                  try {
+                    await fetch(`/api/workers/${profile.mongoId}`, {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${sessionStorage.getItem("authToken")}` },
+                      body: JSON.stringify({ status: newStatus })
+                    });
+                    setIsActive(!isActive);
+                  } catch (e) { console.error("Status toggle failed"); }
+                } else { setIsActive(!isActive); }
+              }}
+              style={{
+                padding: "7px 16px", borderRadius: "8px", border: "none", fontWeight: 700,
+                fontSize: "12px", cursor: "pointer",
+                background: isActive ? "rgba(220,38,38,0.1)" : "rgba(16,185,129,0.1)",
+                color: isActive ? "#dc2626" : "#059669"
+              }}
+            >
+              {isActive ? "Go Offline" : "Go Online"}
+            </button>
+          </div>
+
           {/* STATUS TAB */}
           {activeTab === "status" && (
             <div className="fade-in">
-              <h2 style={{ margin: "0 0 24px", fontWeight: 800, color: "var(--text-primary)" }}>My Availability Status</h2>
+              <div className="section-header">
+                <h2>🟢 My Availability Status</h2>
+                <p>Control whether customers can see and book your services</p>
+              </div>
               <div className="premium-card" style={{ maxWidth: 480 }}>
                 <div style={{ textAlign: "center", marginBottom: 28 }}>
                   <div style={{ fontSize: 72, textShadow: "0 10px 20px rgba(0,0,0,0.1)" }}>{isActive ? "🟢" : "🔴"}</div>
-                  <h2 style={{ margin: "12px 0 6px", color: "var(--text-primary)" }}>{isActive ? "You are Active" : "You are Inactive"}</h2>
-                  <p style={{ color: "var(--text-secondary)", margin: 0 }}>
-                    {isActive ? "Customers can see and book your services right now." : "You are currently not accepting new bookings."}
+                  <h2 style={{ margin: "12px 0 6px", color: "var(--text-primary)" }}>{isActive ? "You are ONLINE" : "You are OFFLINE"}</h2>
+                  <p style={{ color: "var(--text-secondary)", margin: "0 0 6px 0", fontSize: "14px" }}>
+                    {isActive ? "Customers can see and book your services right now." : "You are currently hidden from customer search results."}
                   </p>
+                  {isActive && <p style={{ fontSize: "12px", color: "#059669", fontWeight: 600 }}>✅ Showing up in Home, Search & Nearby Results</p>}
                 </div>
                 <button 
                   onClick={async () => {

@@ -10,12 +10,15 @@ function Navbar() {
   const isAuthPage = location.pathname === "/login" || location.pathname === "/signup";
   const isLoggedIn = !!sessionStorage.getItem("userId") && !isAuthPage;
   const userRole = sessionStorage.getItem("userRole") || "user";
+  const userName = sessionStorage.getItem("userName") || "";
+  const displayName = userName.split(" ")[0]; // First name only
 
   // Sync state with localStorage and document body attribute
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [logoutToast, setLogoutToast] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -55,7 +58,7 @@ function Navbar() {
     sessionStorage.clear();
     localStorage.removeItem("manualLocationSet");
     localStorage.removeItem("authSession");
-    
+
     // Purge cached AI greetings
     Object.keys(localStorage).forEach(k => {
       if (k.startsWith("aiBanner_")) {
@@ -63,9 +66,12 @@ function Navbar() {
       }
     });
 
-    alert("Logged out successfully! 👋");
-    navigate("/");
-    window.location.reload();
+    // Show brief toast then redirect (no browser alert)
+    setLogoutToast(true);
+    setTimeout(() => {
+      navigate("/");
+      window.location.reload();
+    }, 1200);
   };
 
   const isDark = theme === "dark";
@@ -74,6 +80,20 @@ function Navbar() {
   return (
     <>
       <Sidebar />
+
+      {/* Logout toast — shown briefly after logout, no browser alert */}
+      {logoutToast && (
+        <div style={{
+          position: "fixed", top: "20px", left: "50%", transform: "translateX(-50%)",
+          background: "#1e293b", color: "white", padding: "12px 24px",
+          borderRadius: "12px", zIndex: 99999, fontWeight: 700, fontSize: "14px",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.3)", display: "flex", alignItems: "center", gap: "8px",
+          animation: "fadeIn 0.2s ease"
+        }}>
+          👋 Logged out successfully! Redirecting...
+        </div>
+      )}
+
       <div
         className="navbar"
         style={{
@@ -92,13 +112,13 @@ function Navbar() {
           backdropFilter: "blur(12px)",
         }}
       >
-        <Link 
-          to="/" 
-          style={{ 
-            textDecoration: "none", 
-            color: "inherit", 
-            paddingLeft: isMobile ? "32px" : "48px", 
-            transition: "padding-left 0.25s ease-in-out" 
+        <Link
+          to="/"
+          style={{
+            textDecoration: "none",
+            color: "inherit",
+            paddingLeft: isMobile ? "32px" : "48px",
+            transition: "padding-left 0.25s ease-in-out"
           }}
         >
           <h2 style={{ margin: 0, fontWeight: 800, fontSize: "22px", letterSpacing: "-0.5px", display: "flex", alignItems: "center", gap: "8px", whiteSpace: "nowrap" }}>
@@ -290,112 +310,90 @@ function Navbar() {
               </button>
 
               {isLoggedIn ? (
-                <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                   {/* Worker Dashboard Quick Link */}
-                   {sessionStorage.getItem("userRole") === "worker" && (
-                     <Link to="/worker-dashboard" state={{ resetTab: "status" }} style={{ textDecoration: "none" }}>
-                        <button
-                          style={{
-                            background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
-                            color: "white",
-                            border: "none",
-                            padding: "9px 16px",
-                            cursor: "pointer",
-                            borderRadius: "10px",
-                            fontWeight: 700,
-                            fontSize: "13.5px",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            boxShadow: "0 4px 12px rgba(79, 70, 229, 0.3)",
-                            transition: "all 0.15s ease"
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.03)"}
-                          onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
-                        >
-                          <FaTools size={13} /> Worker Panel
-                        </button>
-                     </Link>
-                   )}
+                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
 
-                   {/* User Dashboard Quick Link */}
-                   {sessionStorage.getItem("userRole") === "user" && (
-                     <Link to="/user-dashboard" style={{ textDecoration: "none" }}>
-                        <button
-                          style={{
-                            background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
-                            color: "white",
-                            border: "none",
-                            padding: "9px 16px",
-                            cursor: "pointer",
-                            borderRadius: "10px",
-                            fontWeight: 700,
-                            fontSize: "13.5px",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            boxShadow: "0 4px 12px rgba(79, 70, 229, 0.3)",
-                            transition: "all 0.15s ease"
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.03)"}
-                          onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
-                        >
-                          <FaUser size={13} /> My Dashboard
-                        </button>
-                     </Link>
-                   )}
+                  {/* Logged-in user greeting chip */}
+                  {displayName && (
+                    <span style={{
+                      fontSize: "12.5px", fontWeight: 700, color: "rgba(255,255,255,0.75)",
+                      background: "rgba(255,255,255,0.08)", padding: "5px 12px",
+                      borderRadius: "20px", border: "1px solid rgba(255,255,255,0.12)",
+                      whiteSpace: "nowrap"
+                    }}>
+                      Hi, {displayName} 👋
+                    </span>
+                  )}
 
-                   {/* Admin Dashboard Quick Link */}
-                   {sessionStorage.getItem("userRole") === "admin" && (
-                     <Link to="/admin-dashboard" state={{ resetTab: "overview" }} style={{ textDecoration: "none" }}>
-                        <button
-                          style={{
-                            background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
-                            color: "white",
-                            border: "none",
-                            padding: "9px 16px",
-                            cursor: "pointer",
-                            borderRadius: "10px",
-                            fontWeight: 700,
-                            fontSize: "13.5px",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            boxShadow: "0 4px 12px rgba(79, 70, 229, 0.3)",
-                            transition: "all 0.15s ease"
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.03)"}
-                          onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
-                        >
-                          <FaCrown size={13} /> Admin Panel
-                        </button>
-                     </Link>
-                   )}
+                  {/* Worker Dashboard Quick Link */}
+                  {sessionStorage.getItem("userRole") === "worker" && (
+                    <Link to="/worker-dashboard" state={{ resetTab: "status" }} style={{ textDecoration: "none" }}>
+                      <button
+                        style={{
+                          background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
+                          color: "white", border: "none", padding: "9px 16px", cursor: "pointer",
+                          borderRadius: "10px", fontWeight: 700, fontSize: "13.5px",
+                          display: "inline-flex", alignItems: "center", gap: "6px",
+                          boxShadow: "0 4px 12px rgba(5,150,105,0.3)", transition: "all 0.15s ease"
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.03)"}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
+                      >
+                        <FaTools size={13} /> My Panel
+                      </button>
+                    </Link>
+                  )}
+
+                  {/* User Dashboard Quick Link */}
+                  {sessionStorage.getItem("userRole") === "user" && (
+                    <Link to="/user-dashboard" style={{ textDecoration: "none" }}>
+                      <button
+                        style={{
+                          background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
+                          color: "white", border: "none", padding: "9px 16px", cursor: "pointer",
+                          borderRadius: "10px", fontWeight: 700, fontSize: "13.5px",
+                          display: "inline-flex", alignItems: "center", gap: "6px",
+                          boxShadow: "0 4px 12px rgba(79,70,229,0.3)", transition: "all 0.15s ease"
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.03)"}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
+                      >
+                        <FaUser size={13} /> My Dashboard
+                      </button>
+                    </Link>
+                  )}
+
+                  {/* Admin Dashboard Quick Link */}
+                  {sessionStorage.getItem("userRole") === "admin" && (
+                    <Link to="/admin-dashboard" state={{ resetTab: "overview" }} style={{ textDecoration: "none" }}>
+                      <button
+                        style={{
+                          background: "linear-gradient(135deg, #d97706 0%, #b45309 100%)",
+                          color: "white", border: "none", padding: "9px 16px", cursor: "pointer",
+                          borderRadius: "10px", fontWeight: 700, fontSize: "13.5px",
+                          display: "inline-flex", alignItems: "center", gap: "6px",
+                          boxShadow: "0 4px 12px rgba(217,119,6,0.3)", transition: "all 0.15s ease"
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.03)"}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
+                      >
+                        <FaCrown size={13} /> Admin Panel
+                      </button>
+                    </Link>
+                  )}
+
                   <button
                     onClick={handleLogout}
                     style={{
                       background: "linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)",
-                      color: "#ffffff",
-                      border: "1px solid rgba(255, 255, 255, 0.2)",
-                      padding: "9px 16px",
-                      cursor: "pointer",
-                      borderRadius: "10px",
-                      fontWeight: 800,
-                      fontSize: "13.5px",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      boxShadow: "0 4px 14px rgba(225, 29, 72, 0.35)",
-                      transition: "all 0.15s ease"
+                      color: "#ffffff", border: "1px solid rgba(255,255,255,0.2)",
+                      padding: "9px 14px", cursor: "pointer", borderRadius: "10px",
+                      fontWeight: 800, fontSize: "13px",
+                      display: "inline-flex", alignItems: "center", gap: "6px",
+                      boxShadow: "0 4px 14px rgba(225,29,72,0.35)", transition: "all 0.15s ease"
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "scale(1.04)";
-                      e.currentTarget.style.boxShadow = "0 6px 18px rgba(225, 29, 72, 0.45)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = "none";
-                      e.currentTarget.style.boxShadow = "0 4px 14px rgba(225, 29, 72, 0.35)";
-                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.04)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}
+                    title="Logout"
                   >
                     <FaSignOutAlt size={14} /> Logout
                   </button>

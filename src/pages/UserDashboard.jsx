@@ -10,6 +10,7 @@ import MapPicker from "../components/MapPicker";
 
 // ── Photon-powered location card shown inside User Dashboard ────────────────
 function UserLocationMap({ isLoggedIn }) {
+  const navigate = useNavigate();
   const [location, setLocation] = useState(
     localStorage.getItem("userLocation") || "Kadapa, Andhra Pradesh, India"
   );
@@ -17,7 +18,7 @@ function UserLocationMap({ isLoggedIn }) {
 
   const handleToggle = () => {
     if (!isLoggedIn) {
-      alert("🔑 Customer Sign-in Required!\n\nPlease login first to set or customize your service location address.");
+      navigate("/login");
       return;
     }
     setOpen(o => !o);
@@ -110,7 +111,6 @@ function UserDashboard() {
 
   const startSosCountdown = () => {
     if (!isLoggedIn) {
-      alert("🔑 Customer Sign-in Required!\n\nYou must be logged in as a registered customer to broadcast real-time emergency SOS telemetry signals to police and platform dispatch.");
       navigate("/login");
       return;
     }
@@ -192,9 +192,11 @@ function UserDashboard() {
   };
 
   useEffect(() => {
-    // 1. Check Authorization only if they are logged in but have the wrong role
-    const role = sessionStorage.getItem("userRole");
-    if (role && role !== "user") {
+    // 🔐 SECURITY GATE: Redirect unauthorized sessions
+    const userId = sessionStorage.getItem("userId");
+    const userRole = sessionStorage.getItem("userRole");
+
+    if (!userId || userRole !== "user") {
       navigate("/login");
       return;
     }
@@ -303,22 +305,61 @@ function UserDashboard() {
     fetchLiveDashboardData();
   }, [navigate, isLoggedIn]);
 
+  const userName = sessionStorage.getItem("userName") || "there";
+  const displayFirstName = userName.split(" ")[0];
   const activeBookings = bookings.filter(b => b.status === "Pending" || b.status === "Confirmed" || b.status === "On the way");
+
+  // Map DB status to human-friendly label
+  const statusLabel = (status) => {
+    const map = {
+      "Pending":   { text: "⏳ Waiting for worker",       cls: "status-pending" },
+      "Accepted":  { text: "✅ Confirmed — worker coming",  cls: "status-accepted" },
+      "Completed": { text: "🎉 Service done",              cls: "status-completed" },
+      "Cancelled": { text: "❌ Cancelled",                  cls: "status-cancelled" },
+      "Rejected":  { text: "⚠️ Worker declined",           cls: "status-rejected" },
+    };
+    return map[status] || { text: status, cls: "status-pending" };
+  };
 
   return (
     <div style={{ minHeight: "100vh" }}>
       <Navbar />
-      
-      <div className="dashboard-content" style={{ maxWidth: "1200px", margin: "0 auto", padding: "40px 20px" }}>
-        <div className="dashboard-header-container">
+
+      <div className="dashboard-content" style={{ maxWidth: "1200px", margin: "0 auto", padding: "32px 20px" }}>
+
+        {/* Greeting Banner */}
+        <div className="greeting-banner">
           <div>
-            <h1 style={{ margin: "0 0 8px 0", fontSize: "28px", color: "var(--text-main)" }}>User Dashboard</h1>
-            <p style={{ margin: 0, color: "var(--text-muted)" }}>Manage your bookings, wallet, and history.</p>
+            <h2>Welcome back, {displayFirstName} 👋</h2>
+            <p>Here's your service overview — bookings, wallet & recommendations</p>
           </div>
-          <Link to="/">
-            <button className="btn-primary" style={{ padding: "10px 20px", borderRadius: "8px", border: "none", cursor: "pointer", fontWeight: "600" }}>
-              Book New Service
-            </button>
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <span className="greeting-badge">👤 Customer Account</span>
+            <span className="greeting-badge">💰 Wallet: ₹{isLoggedIn ? wallet : "0"}</span>
+          </div>
+        </div>
+
+        {/* Quick Action Tiles */}
+        <div className="quick-actions-row">
+          <Link to="/" className="quick-action-tile" id="qa-book">
+            <span className="tile-icon">🔧</span>
+            <span style={{ fontWeight: 700 }}>Book a Service</span>
+            <span className="tile-label">Find workers near you</span>
+          </Link>
+          <Link to="/my-bookings" className="quick-action-tile" id="qa-bookings">
+            <span className="tile-icon">📋</span>
+            <span style={{ fontWeight: 700 }}>My Bookings</span>
+            <span className="tile-label">View & manage bookings</span>
+          </Link>
+          <Link to="/plans-offers" className="quick-action-tile" id="qa-plans">
+            <span className="tile-icon">🏷️</span>
+            <span style={{ fontWeight: 700 }}>Plans & Offers</span>
+            <span className="tile-label">Save with subscriptions</span>
+          </Link>
+          <Link to="/payment" className="quick-action-tile" id="qa-wallet">
+            <span className="tile-icon">💳</span>
+            <span style={{ fontWeight: 700 }}>Add Money</span>
+            <span className="tile-label">Top up your wallet</span>
           </Link>
         </div>
 
@@ -398,34 +439,37 @@ function UserDashboard() {
           </div>
         )}
  
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "24px", marginBottom: "40px" }}>
-          <div className="premium-card metric-card" ref={walletCardRef} style={{ padding: "24px", display: "flex", alignItems: "center", gap: "20px" }}>
-            <div style={{ width: "60px", height: "60px", borderRadius: "12px", backgroundColor: "var(--border)", display: "flex", justifyContent: "center", alignItems: "center", color: "var(--primary)", fontSize: "24px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "20px", marginBottom: "32px" }}>
+          <div className="premium-card metric-card" ref={walletCardRef} style={{ padding: "22px", display: "flex", alignItems: "center", gap: "18px" }}>
+            <div style={{ width: "52px", height: "52px", borderRadius: "12px", background: "linear-gradient(135deg, #6366f1, #4f46e5)", display: "flex", justifyContent: "center", alignItems: "center", color: "white", fontSize: "22px", flexShrink: 0 }}>
               <FaWallet />
             </div>
             <div>
-              <p style={{ margin: "0 0 4px 0", color: "var(--text-muted)", fontSize: "14px" }}>Wallet Balance</p>
-              <h2 style={{ margin: 0, color: "var(--text-main)", fontSize: "24px" }}>₹{isLoggedIn ? wallet : "0 (Guest Preview)"}</h2>
-            </div>
-          </div>
-          
-          <div className="premium-card metric-card" ref={activeCardRef} style={{ padding: "24px", display: "flex", alignItems: "center", gap: "20px" }}>
-            <div style={{ width: "60px", height: "60px", borderRadius: "12px", backgroundColor: "var(--border)", display: "flex", justifyContent: "center", alignItems: "center", color: "var(--success)", fontSize: "24px" }}>
-              <FaCalendarCheck />
-            </div>
-            <div>
-              <p style={{ margin: "0 0 4px 0", color: "var(--text-muted)", fontSize: "14px" }}>Active Bookings</p>
-              <h2 style={{ margin: 0, color: "var(--text-main)", fontSize: "24px" }}>{isLoggedIn ? activeBookings.length : "0 (Locked)"}</h2>
+              <p style={{ margin: "0 0 2px 0", color: "var(--text-muted)", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Wallet Balance</p>
+              <h2 style={{ margin: "0 0 2px 0", color: "var(--text-main)", fontSize: "24px", fontWeight: 800 }}>₹{isLoggedIn ? wallet.toLocaleString() : "0"}</h2>
+              <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)" }}>Available for booking payments</p>
             </div>
           </div>
 
-          <div className="premium-card metric-card" ref={totalCardRef} style={{ padding: "24px", display: "flex", alignItems: "center", gap: "20px" }}>
-            <div style={{ width: "60px", height: "60px", borderRadius: "12px", backgroundColor: "var(--border)", display: "flex", justifyContent: "center", alignItems: "center", color: "var(--warning)", fontSize: "24px" }}>
+          <div className="premium-card metric-card" ref={activeCardRef} style={{ padding: "22px", display: "flex", alignItems: "center", gap: "18px" }}>
+            <div style={{ width: "52px", height: "52px", borderRadius: "12px", background: "linear-gradient(135deg, #10b981, #059669)", display: "flex", justifyContent: "center", alignItems: "center", color: "white", fontSize: "22px", flexShrink: 0 }}>
+              <FaCalendarCheck />
+            </div>
+            <div>
+              <p style={{ margin: "0 0 2px 0", color: "var(--text-muted)", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Active Bookings</p>
+              <h2 style={{ margin: "0 0 2px 0", color: "var(--text-main)", fontSize: "24px", fontWeight: 800 }}>{isLoggedIn ? activeBookings.length : "0"}</h2>
+              <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)" }}>In progress or confirmed</p>
+            </div>
+          </div>
+
+          <div className="premium-card metric-card" ref={totalCardRef} style={{ padding: "22px", display: "flex", alignItems: "center", gap: "18px" }}>
+            <div style={{ width: "52px", height: "52px", borderRadius: "12px", background: "linear-gradient(135deg, #f59e0b, #d97706)", display: "flex", justifyContent: "center", alignItems: "center", color: "white", fontSize: "22px", flexShrink: 0 }}>
               <FaRegClock />
             </div>
             <div>
-              <p style={{ margin: "0 0 4px 0", color: "var(--text-muted)", fontSize: "14px" }}>Total Bookings</p>
-              <h2 style={{ margin: 0, color: "var(--text-main)", fontSize: "24px" }}>{isLoggedIn ? bookings.length : "0 (Locked)"}</h2>
+              <p style={{ margin: "0 0 2px 0", color: "var(--text-muted)", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Total Bookings</p>
+              <h2 style={{ margin: "0 0 2px 0", color: "var(--text-main)", fontSize: "24px", fontWeight: 800 }}>{isLoggedIn ? bookings.length : "0"}</h2>
+              <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)" }}>All-time service requests</p>
             </div>
           </div>
         </div>
@@ -507,35 +551,41 @@ function UserDashboard() {
  
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "30px" }}>
           <div className="premium-card" style={{ padding: "24px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-              <h3 style={{ margin: 0, fontSize: "18px", color: "var(--text-main)" }}>Recent Bookings</h3>
-              {isLoggedIn && <Link to="/my-bookings" style={{ color: "var(--primary)", fontSize: "14px", fontWeight: "500", textDecoration: "none" }}>View All</Link>}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
+              <h3 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "var(--text-main)", display: "flex", alignItems: "center", gap: "8px" }}>📋 Recent Bookings</h3>
+              {isLoggedIn && <Link to="/my-bookings" style={{ color: "var(--primary)", fontSize: "13px", fontWeight: 600, textDecoration: "none" }}>View All →</Link>}
             </div>
             {!isLoggedIn ? (
-              <div style={{ textAlign: "center", padding: "30px 10px", color: "var(--text-muted)" }}>
-                <span style={{ fontSize: "28px" }}>📋</span>
-                <h4 style={{ margin: "12px 0 6px 0", color: "var(--text-main)", fontWeight: 700 }}>Bookings Locked</h4>
-                <p style={{ fontSize: "12px", margin: "0 0 16px 0", lineHeight: "1.4" }}>Sign in with a customer account to schedule new jobs and monitor active providers.</p>
-                <button onClick={() => navigate("/login")} className="btn-secondary" style={{ padding: "8px 16px", fontSize: "12px", cursor: "pointer", fontWeight: 700 }}>Login Now</button>
+              <div className="empty-state">
+                <span className="empty-state-icon">🔒</span>
+                <h3>Login to see your bookings</h3>
+                <p>Sign in as a customer to schedule and manage service bookings.</p>
+                <button onClick={() => navigate("/login")}>Login Now</button>
               </div>
             ) : loading ? (
               <SkeletonLoader type="list" count={2} />
             ) : bookings.length > 0 ? (
-              <div className="custom-scrollbar" style={{ display: "flex", flexDirection: "column", gap: "16px", maxHeight: "300px", overflowY: "auto", paddingRight: "8px" }}>
-                {bookings.map(b => (
-                  <div key={b._id || b.id} className="dashboard-list-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "16px", borderBottom: "1px solid var(--border)" }}>
-                    <div>
-                      <p style={{ margin: "0 0 4px 0", fontWeight: "600", color: "var(--text-main)" }}>{b.service}</p>
-                      <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)" }}>{b.date || "Scheduled"} • {b.workerName || "Pending Worker"}</p>
+              <div className="custom-scrollbar" style={{ display: "flex", flexDirection: "column", gap: "14px", maxHeight: "280px", overflowY: "auto", paddingRight: "6px" }}>
+                {bookings.map(b => {
+                  const sl = statusLabel(b.status);
+                  return (
+                    <div key={b._id || b.id} className="dashboard-list-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "14px", borderBottom: "1px solid var(--border-color)" }}>
+                      <div>
+                        <p style={{ margin: "0 0 3px 0", fontWeight: 700, color: "var(--text-main)", fontSize: "14px" }}>{b.service}</p>
+                        <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)" }}>{b.date || "Scheduled"} • {b.workerName || "Worker assigned soon"}</p>
+                      </div>
+                      <span className={`booking-status-pill ${sl.cls}`}>{sl.text}</span>
                     </div>
-                    <span style={{ padding: "6px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: "600", backgroundColor: b.status === "Completed" ? "#dcfce7" : b.status === "Cancelled" ? "#fee2e2" : "#fef3c7", color: b.status === "Completed" ? "#16a34a" : b.status === "Cancelled" ? "#dc2626" : "#d97706" }}>
-                      {b.status}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
-              <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>No recent bookings.</p>
+              <div className="empty-state">
+                <span className="empty-state-icon">📋</span>
+                <h3>No bookings yet</h3>
+                <p>Book your first service to see it here.</p>
+                <Link to="/">Book a Service →</Link>
+              </div>
             )}
           </div>
 

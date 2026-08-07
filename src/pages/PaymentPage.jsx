@@ -9,6 +9,8 @@ function PaymentPage() {
   const [amount, setAmount] = useState(queryParams.get("amount") || "500");
   const [method, setMethod] = useState("UPI");
   const [processing, setProcessing] = useState(false);
+  const [paySuccess, setPaySuccess] = useState(false);
+  const [payError, setPayError] = useState("");
 
   const currentUsr = sessionStorage.getItem("userName") || "Verified Client";
 
@@ -21,18 +23,17 @@ function PaymentPage() {
 
   const handleConfirmTopup = async () => {
     const numericAmt = parseInt(amount);
+    setPayError("");
     if (isNaN(numericAmt) || numericAmt <= 0) {
-       alert("⚠️ Invalid input. Please enter a valid load amount.");
+       setPayError("Please enter a valid amount greater than ₹0.");
        return;
     }
 
     setProcessing(true);
     
     try {
-       // Simulate brief secure bank gateway confirmation lag for realism
        await new Promise(resolve => setTimeout(resolve, 1800));
 
-       // 🚀 Authoritative Cloud Anchor Injection: Secure permanent digital custody of incoming assets!
        const resp = await fetch("/api/transactions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -49,10 +50,10 @@ function PaymentPage() {
 
        if (!resp.ok) throw new Error("Gateway Rejection");
 
-       alert(`🎉 Payment of ₹${numericAmt} Successful!\n\nYour digital vault has been topped up via ${method}. Relocating to dashboard.`);
-       navigate("/user-dashboard");
+       setPaySuccess(true);
+       setTimeout(() => navigate("/user-dashboard"), 2500);
     } catch(e) {
-       alert("🛑 Transaction Halt: Critical network disruption at payment node.");
+       setPayError("🛑 Payment failed. Please check your connection and try again.");
        setProcessing(false);
     }
   };
@@ -77,9 +78,20 @@ function PaymentPage() {
       }}>
          {/* Heading Ribbon */}
          <div style={{ background: "linear-gradient(135deg, #1e293b, #0f172a)", color: "white", padding: "30px 24px", textAlign: "center" }}>
-            <h2 style={{ margin: "0 0 4px 0", fontSize: "22px", fontWeight: 800 }}>💳 Secure Payment Gateway</h2>
-            <p style={{ margin: 0, fontSize: "14px", opacity: 0.8 }}>128-bit End-to-End SSL Enforced</p>
+            <h2 style={{ margin: "0 0 4px 0", fontSize: "22px", fontWeight: 800 }}>💳 Add Money to Wallet</h2>
+            <p style={{ margin: 0, fontSize: "14px", opacity: 0.8 }}>Secure SSL encrypted payment</p>
          </div>
+
+         {paySuccess && (
+           <div className="inline-alert inline-alert-success" style={{ margin: "20px 24px 0", justifyContent: "center", fontWeight: 700 }}>
+             🎉 ₹{amount} added successfully! Redirecting to dashboard...
+           </div>
+         )}
+         {payError && (
+           <div className="inline-alert inline-alert-error" style={{ margin: "20px 24px 0" }}>
+             {payError}
+           </div>
+         )}
 
          <div style={{ padding: "30px 24px" }}>
             {/* Amount Field */}
@@ -102,7 +114,7 @@ function PaymentPage() {
 
             {/* Selector Grid */}
             <label style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", marginBottom: "12px", display: "block" }}>
-               Select Settlement Instrument
+               Choose Payment Method
             </label>
             
             <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "28px" }}>

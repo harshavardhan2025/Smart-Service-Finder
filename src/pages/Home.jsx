@@ -2,13 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import LocationSearch from "../components/LocationSearch";
-import MapPicker from "../components/MapPicker";
 import TopWorkers from "../components/TopWorkers";
 import CheapWorkers from "../components/CheapWorkers";
 import NearbyWorkers from "../components/NearbyWorkers";
 import { filterWorkersClientSide } from "../utils/workerService";
 import SkeletonLoader from "../components/SkeletonLoader";
-import { FaMapMarkerAlt, FaLocationArrow, FaMap, FaBolt, FaCircle, FaUser, FaStethoscope, FaPercent, FaStar } from "react-icons/fa";
+import { FaMapMarkerAlt, FaBolt, FaCircle, FaUser, FaStethoscope, FaPercent, FaStar } from "react-icons/fa";
 
 const truncateLocation = (loc) => {
   if (!loc) return "";
@@ -20,8 +19,8 @@ const truncateLocation = (loc) => {
 };
 
 function Home() {
-  const [isGoogleAuthProcessing] = useState(
-    window.location.hash.includes("access_token")
+  const [isGoogleAuthProcessing, setIsGoogleAuthProcessing] = useState(
+    () => window.location.hash.includes("access_token")
   );
   const navigate = useNavigate();
   const role = sessionStorage.getItem("userRole") || "user";
@@ -70,176 +69,25 @@ function Home() {
   }).length;
 
   const [aiSuggestedAreas, setAiSuggestedAreas] = useState([]);
-  const [showMap, setShowMap] = useState(false);
-  const [locationError, setLocationError] = useState(null);
-  const [locationSearchInput, setLocationSearchInput] = useState(
-    localStorage.getItem("userLocation") || "Kadapa, Andhra Pradesh, India"
-  );
 
+  // Handle Google OAuth callback & auto-recovery timeout
   useEffect(() => {
     const hash = window.location.hash;
-    if (hash) {
-      const params = new URLSearchParams(hash.substring(1));
-      const accessToken = params.get("access_token");
-      if (accessToken) {
-        const flow = sessionStorage.getItem("google_auth_flow");
-        if (flow === "login") {
-          navigate(`/login#access_token=${accessToken}`);
-        } else if (flow === "signup") {
-          navigate(`/signup#access_token=${accessToken}`);
-        }
-      }
-    }
-  }, [navigate]);
-
-  useEffect(() => {
-    if (searchedLocation) {
-      setLocationSearchInput(searchedLocation);
-    }
-  }, [searchedLocation]);
-
-  const detectIpLocation = async () => {
-    try {
-      const res = await fetch("/api/workers/ip-location");
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.lat && data.lon) {
-          setUserCoords({ lat: data.lat, lng: data.lon });
-          setSearchedLocation(data.label);
-          localStorage.setItem("userLocation", data.label);
-          localStorage.setItem("userCity", data.city);
-          localStorage.setItem("userCoordsLat", data.lat.toString());
-          localStorage.setItem("userCoordsLng", data.lon.toString());
-          localStorage.setItem("manualLocationSet", "true");
-          return true;
-        }
-      }
-    } catch (e) {
-      console.error("IP fallback location fetch failed:", e);
-    }
-    return false;
-  };
-
-  const handleAutoDetectLocation = async () => {
-    setLocationError(null);
-    if (!navigator.geolocation) {
-      const success = await detectIpLocation();
-      if (!success) {
-        setLocationError("Failed to auto-detect location. Please search manually.");
-      }
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude, longitude } = pos.coords;
-        setUserCoords({ lat: latitude, lng: longitude });
-        localStorage.setItem("userCoordsLat", latitude.toString());
-        localStorage.setItem("userCoordsLng", longitude.toString());
-        localStorage.setItem("manualLocationSet", "true");
-
-        try {
-          const url = `https://photon.komoot.io/reverse?lon=${longitude}&lat=${latitude}`;
-          const res = await fetch(url);
-          if (res.ok) {
-            const data = await res.json();
-            const f = data?.features?.[0];
-            if (f) {
-              const p = f.properties;
-              const city = p.city || p.town || p.village || p.county || p.name || "";
-              const label = [p.name, p.housenumber, p.street, p.city || p.town || p.village, p.state, p.country]
-                .filter(Boolean).join(", ");
-
-              setSearchedLocation(label);
-              localStorage.setItem("userLocation", label);
-              localStorage.setItem("userCity", city || "Mumbai");
-            } else {
-              const fallback = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
-              setSearchedLocation(fallback);
-              localStorage.setItem("userLocation", fallback);
-              localStorage.setItem("userCity", "Mumbai");
-            }
-          } else {
-            const fallback = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
-            setSearchedLocation(fallback);
-            localStorage.setItem("userLocation", fallback);
-            localStorage.setItem("userCity", "Mumbai");
-          }
-        } catch (err) {
-          const fallback = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
-          setSearchedLocation(fallback);
-          localStorage.setItem("userLocation", fallback);
-          localStorage.setItem("userCity", "Mumbai");
-        }
-      },
-      async (err) => {
-        console.warn("Home browser geolocation failed:", err);
-        if (err.code === 1) {
-          setLocationError("Location permission denied. Please allow location access in your browser/device settings.");
-        } else if (err.code === 2) {
-          setLocationError("Location is turned off or unavailable. Please turn on your device's GPS/Location services.");
-        } else if (err.code === 3) {
-          setLocationError("Location request timed out. Please check your signal or try again.");
-        } else {
-          setLocationError("Failed to auto-detect location. Please search manually.");
-        }
-      },
-      { enableHighAccuracy: false, timeout: 5000 }
-    );
-  };
-
-  const handleSearchLocationSubmit = async () => {
-    if (!locationSearchInput.trim()) return;
-    try {
-      const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(locationSearchInput.trim())}&limit=1`;
-      const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json();
-        const f = data?.features?.[0];
-        if (f) {
-          const [lon, lat] = f.geometry.coordinates;
-          const p = f.properties;
-          const city = p.city || p.town || p.village || p.county || p.name || locationSearchInput;
-          const label = [p.name, p.city || p.town || p.village, p.state, p.country]
-            .filter(Boolean).join(", ");
-
-          setUserCoords({ lat, lng: lon });
-          setSearchedLocation(label);
-          localStorage.setItem("userLocation", label);
-          localStorage.setItem("userCity", city);
-          localStorage.setItem("userCoordsLat", lat.toString());
-          localStorage.setItem("userCoordsLng", lon.toString());
-          localStorage.setItem("manualLocationSet", "true");
-          return;
-        }
-      }
-    } catch (e) {
-      console.warn("Photon search failed, trying proxy:", e.message);
+    if (hash && hash.includes("access_token")) {
+      const flow = sessionStorage.getItem("google_auth_flow");
+      const targetRoute = flow === "signup" ? `/signup${hash}` : `/login${hash}`;
+      navigate(targetRoute, { replace: true });
+    } else if (isGoogleAuthProcessing) {
+      setIsGoogleAuthProcessing(false);
     }
 
-    // Fallback: proxy
-    try {
-      const res = await fetch(`/api/workers/geocode?q=${encodeURIComponent(locationSearchInput.trim())}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data?.lat && data?.lon) {
-          const lat = parseFloat(data.lat);
-          const lon = parseFloat(data.lon);
-          setUserCoords({ lat, lng: lon });
-          setSearchedLocation(data.label || locationSearchInput);
-          localStorage.setItem("userLocation", data.label || locationSearchInput);
-          localStorage.setItem("userCity", data.city || "");
-          localStorage.setItem("userCoordsLat", lat.toString());
-          localStorage.setItem("userCoordsLng", lon.toString());
-          localStorage.setItem("manualLocationSet", "true");
-        } else {
-          alert("Location not found. Please try a different search.");
-        }
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Location not found.");
-    }
-  };
+    // Safety timeout: Never stay stuck on Verifying Authentication
+    const timer = setTimeout(() => {
+      setIsGoogleAuthProcessing(false);
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, [navigate, isGoogleAuthProcessing]);
 
   // Automatic redirect if Admin or Worker tries to visit the general home page directly
   useEffect(() => {
@@ -648,29 +496,21 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
 
       <div style={{ flex: 1, width: "100%", margin: "0 auto", padding: "0px", boxSizing: "border-box" }}>
 
-        <LocationSearch
-          value={locationText}
-          onChange={setLocationText}
-          onSearch={(query) => setServiceQuery(query)}
-          detectedLocation={searchedLocation}
-          onLocationClick={() => {
-            setShowMap(true);
-            setTimeout(() => {
-              document.querySelector(".home-map-wrapper")?.scrollIntoView({ behavior: "smooth" });
-            }, 100);
-          }}
-        />
+        <div style={{ position: "relative", zIndex: 100 }}>
+          <LocationSearch
+            value={locationText}
+            onChange={setLocationText}
+            onSearch={(query) => setServiceQuery(query)}
+            detectedLocation={searchedLocation}
+            onLocationUpdate={(loc) => setSearchedLocation(loc)}
+            onCoordsChange={(coords) => setUserCoords(coords)}
+          />
+        </div>
 
         {/* Location context banner - Ultra Modern Glassmorphism AI Card */}
         {searchedLocation && (
           <div
             className="ai-banner-card"
-            onClick={() => {
-              setShowMap(true);
-              setTimeout(() => {
-                document.querySelector(".home-map-wrapper")?.scrollIntoView({ behavior: "smooth" });
-              }, 100);
-            }}
             style={{
               margin: "0 20px 20px 20px",
               padding: "24px 28px",
@@ -729,8 +569,20 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
               </div>
             ) : aiSuggestedWorkers.length > 0 ? (
               <div style={{ marginTop: "8px" }}>
+                <style>{`
+                  @media (max-width: 768px) {
+                    .zy-ai-grid {
+                      display: grid !important;
+                      grid-template-columns: repeat(2, 1fr) !important;
+                      gap: 12px !important;
+                    }
+                    .zy-ai-grid > a {
+                      min-width: 0 !important;
+                    }
+                  }
+                `}</style>
                 <strong style={{ fontSize: "13px", color: "#ffffff", letterSpacing: "0.3px", textTransform: "uppercase" }}>{aiBannerExpertsTitle || "🔍 Zy's Top Picks For You:"}</strong>
-                <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "10px" }}>
+                <div className="zy-ai-grid" style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "10px" }}>
                   {aiSuggestedWorkers.map((worker, idx) => (
                     <Link
                       key={idx}
@@ -800,118 +652,11 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
           </div>
         )}
 
-        {/* Premium Location Search & Auto-Detect Bar */}
-        <div
-          className="premium-card homepage-location-bar"
-          style={{
-            margin: "14px 0px",
-            padding: "20px 24px",
-            background: "linear-gradient(135deg, rgba(2, 132, 199, 0.05) 0%, rgba(2, 132, 199, 0.01) 100%)",
-            borderTop: "1.5px solid rgba(2, 132, 199, 0.12)",
-            borderBottom: "1.5px solid rgba(2, 132, 199, 0.12)",
-            borderRadius: "0px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "10px"
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "4px" }}>
-              <FaMapMarkerAlt size={12} /> Set Service Location
-            </span>
-            {searchedLocation && (
-              <span style={{ fontSize: "11px", color: "var(--success)", fontWeight: "bold" }}>
-                Active Address Resolved
-              </span>
-            )}
-          </div>
-
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
-            <input
-              type="text"
-              placeholder="Search city, town, street, village..."
-              value={locationSearchInput}
-              onChange={(e) => setLocationSearchInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") handleSearchLocationSubmit(); }}
-              style={{
-                flex: 1,
-                minWidth: "200px",
-                padding: "10px 12px",
-                fontSize: "13.5px",
-                borderRadius: "8px"
-              }}
-            />
-            <div style={{ display: "flex", gap: "8px", width: "100%", maxWidth: "260px" }} className="location-action-buttons">
-              <button
-                onClick={handleSearchLocationSubmit}
-                className="btn-primary"
-                style={{
-                  flex: 1,
-                  padding: "10px",
-                  fontSize: "13px",
-                  borderRadius: "8px",
-                  whiteSpace: "nowrap"
-                }}
-              >
-                Search
-              </button>
-              <button
-                onClick={handleAutoDetectLocation}
-                className="btn-secondary"
-                style={{
-                  flex: 1,
-                  padding: "10px",
-                  fontSize: "13px",
-                  borderRadius: "8px",
-                  backgroundColor: "#0284c7",
-                  color: "white",
-                  whiteSpace: "nowrap",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "6px"
-                }}
-              >
-                <FaLocationArrow size={12} /> Auto Detect
-              </button>
-            </div>
-          </div>
+        <div className="home-section" style={{ marginBottom: "0" }}>
+          <NearbyWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
         </div>
 
-        {/* Map collapse toggle option - visible on all screen sizes */}
-        <div className="map-toggle-container" style={{ padding: "0 0px 14px 0px" }}>
-          <button
-            onClick={() => setShowMap(!showMap)}
-            style={{
-              width: "100%",
-              padding: "12px",
-              borderRadius: "0px",
-              fontWeight: "bold",
-              fontSize: "14px",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-              backgroundColor: showMap ? "var(--bg-card-hover)" : "var(--primary-light)",
-              color: showMap ? "var(--text-primary)" : "var(--primary-dark)",
-              borderTop: "1.5px solid var(--border-color)",
-              borderBottom: "1.5px solid var(--border-color)",
-              borderLeft: "none",
-              borderRight: "none",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
-            }}
-          >
-            <FaMap size={14} /> {showMap ? "Hide Interactive Map ▲" : "Show Interactive Map ▼"}
-          </button>
-        </div>
 
-        <div className={`home-map-wrapper ${showMap ? "map-visible" : "map-hidden"}`}>
-          <MapPicker
-            onLocationChange={(loc) => setSearchedLocation(loc)}
-            onCoordsChange={(coords) => setUserCoords(coords)}
-          />
-        </div>
 
         {/* 🚨 Instant Booking Services (Active Online Workers) */}
         <div className="fade-in home-section" style={{ padding: "20px 24px", margin: "14px 0px", background: "linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(239, 68, 68, 0.01) 100%)", borderRadius: "0px", borderTop: "1.5px solid rgba(239, 68, 68, 0.12)", borderBottom: "1.5px solid rgba(239, 68, 68, 0.12)", borderLeft: "none", borderRight: "none" }}>
@@ -995,9 +740,6 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
         </div>
         <div className="home-section" style={{ marginBottom: "0" }}>
           <CheapWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
-        </div>
-        <div className="home-section" style={{ marginBottom: "0" }}>
-          <NearbyWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
         </div>
 
         {/* 🏷️ Service Plans & Seasonal Offers Preview */}
@@ -1084,47 +826,6 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
       >
         © 2026 Workzy Inc. All rights reserved. Made with ❤️ by PS-152 Team.
       </footer>
-
-      {/* Location Error Modal */}
-      {locationError && (
-        <div style={{
-          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: "rgba(0,0,0,0.5)", zIndex: 99999,
-          display: "flex", justifyContent: "center", alignItems: "center", padding: "20px"
-        }}>
-          <div style={{
-            backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "12px",
-            boxShadow: "0 10px 25px rgba(0,0,0,0.2)", maxWidth: "400px", width: "100%",
-            textAlign: "center"
-          }}>
-            <div style={{ fontSize: "36px", marginBottom: "16px" }}>📍</div>
-            <h3 style={{ margin: "0 0 12px 0", color: "var(--text-main)", fontFamily: "'Outfit', sans-serif" }}>Location Access Needed</h3>
-            <p style={{ margin: "0 0 24px 0", color: "var(--text-secondary)", lineHeight: "1.5" }}>{locationError}</p>
-            <div style={{ display: "flex", gap: "12px" }}>
-              <button
-                onClick={() => setLocationError(null)}
-                style={{
-                  backgroundColor: "var(--primary-light)", color: "var(--text-secondary)", border: "none",
-                  padding: "12px 16px", borderRadius: "8px", fontWeight: "600",
-                  cursor: "pointer", flex: 1, fontSize: "16px"
-                }}
-              >
-                Close
-              </button>
-              <button
-                onClick={handleAutoDetectLocation}
-                style={{
-                  backgroundColor: "#4f46e5", color: "white", border: "none",
-                  padding: "12px 16px", borderRadius: "8px", fontWeight: "600",
-                  cursor: "pointer", flex: 1, fontSize: "16px"
-                }}
-              >
-                Try Again
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

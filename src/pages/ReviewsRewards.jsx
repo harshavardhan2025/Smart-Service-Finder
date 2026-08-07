@@ -208,7 +208,7 @@ function ReviewsRewards() {
             position: "fixed",
             top: "20px",
             right: "20px",
-            backgroundcolor: "var(--text-main)",
+            backgroundColor: "var(--text-main)",
             color: "white",
             padding: "14px 20px",
             borderRadius: "10px",
@@ -441,53 +441,39 @@ function ReviewsRewards() {
                     border: `2px solid ${redeemed ? "#16a34a" : canRedeem ? reward.color : "#e2e8f0"}`,
                     borderRadius: "14px",
                     padding: "18px",
-                    opacity: !canRedeem && !redeemed ? 0.6 : 1,
-                    transition: "transform 0.2s",
-                    cursor: canRedeem && !redeemed ? "pointer" : "default"
+                    display: "flex",
+                    flexDirection: "column",
+                    opacity: !canRedeem && !redeemed ? 0.8 : 1,
+                    transition: "transform 0.2s"
                   }}
-                  onMouseEnter={(e) => { if (canRedeem && !redeemed) e.currentTarget.style.transform = "translateY(-3px)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
                 >
-                  <div style={{ fontSize: "30px", marginBottom: "8px" }}>{reward.icon}</div>
-                  <h3 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "var(--text-main)" }}>
-                    {reward.title}
-                  </h3>
-                  <p style={{ margin: "0 0 10px 0", fontSize: "12px", color: "var(--text-secondary)" }}>{reward.desc}</p>
-                  <p style={{ margin: "0 0 12px 0", fontWeight: 700, color: reward.color, fontSize: "13px" }}>
-                    {reward.points} pts required
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+                    <span style={{ fontSize: "28px" }}>{reward.icon}</span>
+                    <h3 style={{ margin: 0, fontSize: "15px", fontWeight: 800, color: "var(--text-main)" }}>
+                      {reward.title}
+                    </h3>
+                  </div>
+                  <p style={{ margin: "0 0 12px 0", fontSize: "12px", color: "var(--text-secondary)", flex: 1 }}>
+                    {reward.desc}
                   </p>
-                  {redeemed ? (
-                    <span
-                      style={{
-                        display: "inline-block",
-                        backgroundColor: "var(--success-light)",
-                        color: "var(--success)",
-                        padding: "6px 14px",
-                        borderRadius: "20px",
-                        fontSize: "12px",
-                        fontWeight: 700
-                      }}
-                    >
-                      ✅ Redeemed
-                    </span>
-                  ) : (
-                    <button
-                      onClick={() => redeemReward(reward)}
-                      style={{
-                        width: "100%",
-                        padding: "8px",
-                        backgroundColor: canRedeem ? reward.color : "#94a3b8",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "8px",
-                        fontWeight: 700,
-                        fontSize: "13px",
-                        cursor: canRedeem ? "pointer" : "not-allowed"
-                      }}
-                    >
-                      {canRedeem ? "Redeem Now" : `Need ${reward.points - availablePoints} more pts`}
-                    </button>
-                  )}
+                  <button
+                    onClick={() => redeemReward(reward)}
+                    disabled={redeemed || !canRedeem}
+                    style={{
+                      width: "100%",
+                      padding: "8px 12px",
+                      borderRadius: "8px",
+                      fontWeight: 700,
+                      fontSize: "13px",
+                      cursor: (redeemed || !canRedeem) ? "not-allowed" : "pointer",
+                      border: "none",
+                      backgroundColor: redeemed ? "#16a34a" : canRedeem ? reward.color : "#e2e8f0",
+                      color: redeemed ? "white" : canRedeem ? "white" : "var(--text-muted)",
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    {redeemed ? "✅ Redeemed" : canRedeem ? `Redeem for ${reward.points} pts` : `Need ${reward.points - availablePoints} more pts`}
+                  </button>
                 </div>
               );
             })}

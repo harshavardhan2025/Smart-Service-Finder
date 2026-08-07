@@ -256,11 +256,12 @@ function Login() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          padding: isMobile ? "20px 12px" : "40px 20px",
+          padding: isMobile ? "24px 14px" : "48px 24px",
           backgroundImage: `url(${isMobile ? authMobileBg : authBg})`, 
-          backgroundSize: "cover", 
-          backgroundPosition: "center", 
-          backgroundRepeat: "no-repeat" 
+          backgroundSize: "100% 100%", 
+          backgroundPosition: "center center", 
+          backgroundRepeat: "no-repeat",
+          backgroundColor: "#b4d5fa"
         }}
       >
         <div

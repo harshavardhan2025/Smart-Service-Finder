@@ -150,6 +150,12 @@ function AdminDashboard() {
   const [sendMoneyCustomerAmount, setSendMoneyCustomerAmount] = useState("");
   const [sendMoneyCustomerReason, setSendMoneyCustomerReason] = useState("");
 
+  const [adminMessage, setAdminMessage] = useState(null);
+  const showAdminMessage = (msg, type = "success") => {
+    setAdminMessage({ msg, type });
+    setTimeout(() => setAdminMessage(null), 5000);
+  };
+
   const filteredWorkers = workers.filter((w) => {
     const matchesSearch = w.name.toLowerCase().includes(workerSearch.toLowerCase()) ||
                           w.service.toLowerCase().includes(workerSearch.toLowerCase()) ||
@@ -694,9 +700,23 @@ function AdminDashboard() {
 
   const peakStats = getPeakStats();
 
+
+
+  const adminName = sessionStorage.getItem("userName") || "Admin";
+
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Navbar />
+
+      {adminMessage && (
+        <div style={{
+          backgroundColor: adminMessage.type === "error" ? "var(--danger)" : "var(--success)",
+          color: "white", padding: "12px 20px", textAlign: "center", fontWeight: 700, fontSize: "14px",
+          position: "sticky", top: 0, zIndex: 9999, animation: "fadeInDown 0.3s"
+        }}>
+          {adminMessage.msg}
+        </div>
+      )}
 
       <div style={{ display: "flex", flex: 1 }}>
         {/* Left Sidebar */}
@@ -765,7 +785,19 @@ function AdminDashboard() {
         </div>
 
         {/* Right Main Dashboard Area */}
-        <div style={{ flex: 1, padding: "40px" }}>
+        <div style={{ flex: 1, padding: "32px 40px" }}>
+
+          {/* Admin Control Panel Banner */}
+          <div className="greeting-banner" style={{ marginBottom: "24px" }}>
+            <div>
+              <h2>👑 Admin Control Panel</h2>
+              <p>Monitor and manage all platform operations across users, workers, and finances</p>
+            </div>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              <span className="greeting-badge">👤 {adminName}</span>
+              <span className="greeting-badge">🟢 System Active</span>
+            </div>
+          </div>
           
           {hasActiveSos && (
             <div style={{
@@ -820,27 +852,32 @@ function AdminDashboard() {
           {/* TAB 1: OVERVIEW & REVENUE */}
           {activeTab === "overview" && (
             <div>
-              <h2 style={{ margin: "0 0 24px 0", fontSize: "28px", fontWeight: 800, color: "var(--text-main)" }}>
-                System Overview & Revenue
-              </h2>
+              <div className="section-header">
+                <h2>📊 System Overview & Revenue</h2>
+                <p>Live metrics across all bookings, workers, customers and payments</p>
+              </div>
 
               {/* Stats Card Grid */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "20px", marginBottom: "40px" }}>
-                <div ref={revenueCardRef} style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
-                  <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Total Payments Volume</span>
-                  <h2 style={{ margin: "10px 0 0 0", fontSize: "32px", fontWeight: 800, color: "var(--primary)" }}>₹{Number(totalRevenue).toFixed(2)}</h2>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "20px", marginBottom: "36px" }}>
+                <div ref={revenueCardRef} style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "14px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)", borderLeft: "4px solid #6366f1" }}>
+                  <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Revenue</span>
+                  <h2 style={{ margin: "8px 0 2px 0", fontSize: "30px", fontWeight: 800, color: "#6366f1" }}>₹{Number(totalRevenue).toFixed(0)}</h2>
+                  <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)" }}>All payment transactions processed</p>
                 </div>
-                <div ref={averageCardRef} style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
-                  <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Average Booking Value</span>
-                  <h2 style={{ margin: "10px 0 0 0", fontSize: "32px", fontWeight: 800, color: "var(--primary)" }}>₹{averageBookingValue.toFixed(0)}</h2>
+                <div ref={averageCardRef} style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "14px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)", borderLeft: "4px solid #10b981" }}>
+                  <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Avg Booking Value</span>
+                  <h2 style={{ margin: "8px 0 2px 0", fontSize: "30px", fontWeight: 800, color: "#10b981" }}>₹{averageBookingValue.toFixed(0)}</h2>
+                  <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)" }}>Average revenue per service booking</p>
                 </div>
-                <div ref={workersCardRef} style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
-                  <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Total Registered Workers</span>
-                  <h2 style={{ margin: "10px 0 0 0", fontSize: "32px", fontWeight: 800, color: "var(--text-main)" }}>{workers.length}</h2>
+                <div ref={workersCardRef} style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "14px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)", borderLeft: "4px solid #f59e0b" }}>
+                  <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Registered Workers</span>
+                  <h2 style={{ margin: "8px 0 2px 0", fontSize: "30px", fontWeight: 800, color: "var(--text-main)" }}>{workers.length}</h2>
+                  <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)" }}>{workers.filter(w => w.status === "Active").length} currently active / online</p>
                 </div>
-                <div ref={customersCardRef} style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
-                  <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Total Registered Customers</span>
-                  <h2 style={{ margin: "10px 0 0 0", fontSize: "32px", fontWeight: 800, color: "var(--text-main)" }}>{customers.length}</h2>
+                <div ref={customersCardRef} style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "14px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)", borderLeft: "4px solid #ef4444" }}>
+                  <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Registered Customers</span>
+                  <h2 style={{ margin: "8px 0 2px 0", fontSize: "30px", fontWeight: 800, color: "var(--text-main)" }}>{customers.length}</h2>
+                  <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)" }}>Total user accounts on platform</p>
                 </div>
               </div>
 
@@ -2797,7 +2834,7 @@ function AdminDashboard() {
                                                 const errorData = await respAction.json();
                                                 throw new Error(errorData.error || "Server Rejected Release");
                                              }
-                                             alert(`💸 FUNDS RELEASED SUCCESSFUL!\n₹${b.price} has been deposited into the Worker wallet system.`);
+                                             showAdminMessage(`💸 FUNDS RELEASED SUCCESSFUL! ₹${b.price} deposited into the Worker wallet.`);
                                              
                                              // Force IMMEDIATE Local Visual Update Flawlessly
                                              setLiveRealTimeBookings(prev => prev.map(item => item._id === b._id ? { ...item, status: "Paid Out" } : item));
@@ -2805,7 +2842,7 @@ function AdminDashboard() {
                                              // Verify with central registry refresh
                                              const resp = await fetch("/api/bookings");
                                              if (resp.ok) setLiveRealTimeBookings(await resp.json());
-                                           } catch(err) { alert(`🛑 Release Failed: ${err.message}`); }
+                                           } catch(err) { showAdminMessage(`🛑 Release Failed: ${err.message}`, "error"); }
                                         }
                                       }}
                                       style={{ backgroundColor: "#4338ca", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer", flex: 1 }}
@@ -2827,16 +2864,16 @@ function AdminDashboard() {
                                                 const errorData = await respAction.json();
                                                 throw new Error(errorData.error || "Server Rejected Escrow Decline");
                                              }
-                                             alert(`🛑 ESCROW DECLINED!\n₹${b.price} has been fully refunded to the Customer's wallet.`);
+                                             showAdminMessage(`🛑 ESCROW DECLINED! ₹${b.price} has been fully refunded to the Customer's wallet.`);
                                              
                                              setLiveRealTimeBookings(prev => prev.map(item => item._id === b._id ? { ...item, status: "Escrow Declined" } : item));
                                              
                                              const resp = await fetch("/api/bookings");
                                              if (resp.ok) setLiveRealTimeBookings(await resp.json());
-                                           } catch(err) { alert(`🛑 Decline Failed: ${err.message}`); }
+                                           } catch(err) { showAdminMessage(`🛑 Decline Failed: ${err.message}`, "error"); }
                                         }
                                       }}
-                                      style={{ backgroundcolor: "var(--danger)", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer", flex: 1 }}
+                                      style={{ backgroundColor: "var(--danger)", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer", flex: 1 }}
                                     >
                                       ❌ Decline & Refund
                                     </button>
@@ -2915,13 +2952,13 @@ function AdminDashboard() {
                                           const errorData = await respAction.json();
                                           throw new Error(errorData.error || "Server Rejected Approval");
                                        }
-                                       alert(`🟢 REFUND APPROVED!\n₹${b.price} has been successfully credited back to ${b.customer_name}'s secure wallet.`);
+                                       showAdminMessage(`🟢 REFUND APPROVED! ₹${b.price} has been successfully credited back to ${b.customer_name}'s secure wallet.`);
                                        
                                        setLiveRealTimeBookings(prev => prev.map(item => item._id === b._id ? { ...item, status: "Cancelled" } : item));
                                        
                                        const resp = await fetch("/api/bookings");
                                        if (resp.ok) setLiveRealTimeBookings(await resp.json());
-                                     } catch(err) { alert(`🛑 Approval Failed: ${err.message}`); }
+                                     } catch(err) { showAdminMessage(`🛑 Approval Failed: ${err.message}`, "error"); }
                                   }
                                 }}
                                 style={{ backgroundColor: "#10b981", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer" }}
@@ -2943,13 +2980,13 @@ function AdminDashboard() {
                                           const errorData = await respAction.json();
                                           throw new Error(errorData.error || "Server Rejected Decline");
                                        }
-                                       alert(`🔴 REFUND DECLINED!\nRefund request has been officially declined. Booking status updated.`);
+                                       showAdminMessage(`🔴 REFUND DECLINED! Refund request has been officially declined.`);
                                        
                                        setLiveRealTimeBookings(prev => prev.map(item => item._id === b._id ? { ...item, status: "Refund Declined" } : item));
                                        
                                        const resp = await fetch("/api/bookings");
                                        if (resp.ok) setLiveRealTimeBookings(await resp.json());
-                                     } catch(err) { alert(`🛑 Decline Failed: ${err.message}`); }
+                                     } catch(err) { showAdminMessage(`🛑 Decline Failed: ${err.message}`, "error"); }
                                   }
                                 }}
                                 style={{ backgroundcolor: "var(--danger)", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer" }}
@@ -3272,8 +3309,8 @@ function AdminDashboard() {
                                            body: JSON.stringify({ is_read: true })
                                          });
                                          setAdminNotifications(prev => prev.map(n => n._id === alertItem._id ? { ...n, is_read: true } : n));
-                                         alert("Incident marked as resolved in Cloud Registry.");
-                                       } catch(e) { alert("Failed to update database status."); }
+                                         showAdminMessage("Incident marked as resolved in Cloud Registry.");
+                                       } catch(e) { showAdminMessage("Failed to update database status.", "error"); }
                                     }
                                   }}
                                   style={{ backgroundcolor: "var(--text-main)", color: "white", border: "none", padding: "12px 24px", borderRadius: "10px", fontWeight: 800, fontSize: 13, cursor: "pointer", boxShadow: "0 4px 8px rgba(30,41,59,0.2)" }}
@@ -3391,7 +3428,7 @@ function AdminDashboard() {
                                       const data = await resp.json();
                                       if (!resp.ok) throw new Error(data.error || "Force-cancel failed");
                                       
-                                      alert(`✅ FORCE-CANCEL SUCCESSFUL!\n\n${data.message}`);
+                                      showAdminMessage(`✅ FORCE-CANCEL SUCCESSFUL!\n\n${data.message}`);
                                       
                                       // Remove from local overdue list immediately
                                       setOverdueBookings(prev => prev.filter(item => item._id !== b._id));
@@ -3399,12 +3436,12 @@ function AdminDashboard() {
                                       // Refresh all data
                                       syncAdminStore();
                                     } catch(err) {
-                                      alert(`🛑 Force-Cancel Failed: ${err.message}`);
+                                      showAdminMessage(`🛑 Force-Cancel Failed: ${err.message}`, "error");
                                     }
                                   }
                                 }}
                                 style={{ 
-                                  backgroundcolor: "var(--danger)", 
+                                  backgroundColor: "var(--danger)", 
                                   color: "white", 
                                   border: "none", 
                                   padding: "8px 16px", 

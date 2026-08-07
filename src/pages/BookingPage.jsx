@@ -31,12 +31,12 @@ function BookingPage() {
   const [busyBookings, setBusyBookings] = useState([]);
 
   useEffect(() => {
-    // 🔐 SECURITY GATE: Hard Lockdown! Deny access to unauthorized sessions instantly!
-    const currentUsr = sessionStorage.getItem("userName") || "Verified Client";
+    // 🔐 SECURITY GATE: Redirect unauthorized sessions
     const userId = sessionStorage.getItem("userId");
     const userRole = sessionStorage.getItem("userRole");
+    const currentUsr = sessionStorage.getItem("userName") || "Verified Client";
+
     if (!userId || userRole !== "user") {
-       alert("⚠️ Access Denied! Only registered customers (User role) can book service slots.");
        if (userRole === "admin") {
          navigate("/admin-dashboard");
        } else if (userRole === "worker") {
@@ -402,48 +402,40 @@ function BookingPage() {
       fontFamily: "'Inter', sans-serif" 
     }}>
       <div style={{ maxWidth: 720, margin: "0 auto" }}>
-        
-        {/* Top Executive Header */}
-        <div style={{ 
-          background: "var(--bg-card)",
-          borderRadius: 20,
-          padding: "24px 28px",
-          marginBottom: 24,
-          border: "1.5px solid var(--border-color)",
-          boxShadow: "var(--card-shadow)",
-          display: "flex", 
-          alignItems: "center", 
-          justifyContent: "space-between", 
-          flexWrap: "wrap", 
-          gap: 16 
-        }}>
-          <div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(2, 132, 199, 0.1)", color: "#0284c7", padding: "4px 12px", borderRadius: 20, fontSize: 11.5, fontWeight: 800, marginBottom: 8, letterSpacing: "0.5px" }}>
-              🔒 SECURE CHECKOUT GATEWAY
-            </div>
-            <h1 style={{ color: "var(--text-main)", fontSize: 26, fontWeight: 900, margin: 0, letterSpacing: "-0.5px" }}>
-              📅 Service Booking & Checkout
-            </h1>
-            <p style={{ color: "var(--text-secondary)", fontSize: 14, fontWeight: 500, margin: "6px 0 0 0" }}>
-              Booking <strong>{selectedWorker.service}</strong> with expert <strong>{selectedWorker.name}</strong>
-            </p>
-          </div>
 
-          <button
-            onClick={() => navigate(-1)}
-            style={{
-              padding: "10px 18px",
-              borderRadius: 12,
-              backgroundColor: "var(--bg-card-hover)",
-              color: "var(--text-main)",
-              border: "1.5px solid var(--border-color)",
-              fontWeight: 700,
-              fontSize: 13,
-              cursor: "pointer",
-              transition: "all 0.2s"
-            }}
-          >
-            ← Back
+        {/* Step Progress Bar */}
+        <div className="step-bar" style={{ marginBottom: 28 }}>
+          <div className="step-item">
+            <div className="step-circle done">✓</div>
+            <span className="step-label done">Worker Selected</span>
+          </div>
+          <div className="step-connector done" />
+          <div className="step-item">
+            <div className="step-circle active">2</div>
+            <span className="step-label active">Confirm Details</span>
+          </div>
+          <div className="step-connector" />
+          <div className="step-item">
+            <div className="step-circle">3</div>
+            <span className="step-label">Pay & Book</span>
+          </div>
+        </div>
+
+        {/* Booking Confirmation Banner */}
+        <div className="booking-confirm-banner">
+          <div className="worker-avatar">
+            {selectedWorker.service?.includes("Plumb") ? "🔧" :
+             selectedWorker.service?.includes("Electric") ? "⚡" :
+             selectedWorker.service?.includes("Doctor") ? "🩺" :
+             selectedWorker.service?.includes("Cleaning") ? "🧹" :
+             selectedWorker.service?.includes("AC") ? "❄️" : "🛠️"}
+          </div>
+          <div style={{ flex: 1 }}>
+            <h3>Booking {selectedWorker.service} with {selectedWorker.name}</h3>
+            <p>📍 {selectedWorker.city} • ⭐ {selectedWorker.rating} rated • 💰 Base: ₹{selectedWorker.price || basePrice}</p>
+          </div>
+          <button onClick={() => navigate(-1)} style={{ padding: "8px 16px", borderRadius: 10, backgroundColor: "var(--bg-card-hover)", border: "1.5px solid var(--border-color)", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+            ← Change
           </button>
         </div>
 

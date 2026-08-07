@@ -409,10 +409,11 @@ function Signup() {
         style={{
           flex: 1,
           display: "flex", justifyContent: "center", alignItems: "center",
-        padding: "40px 20px",
-        backgroundImage: `url(${isMobile ? authMobileBg : authBg})`,
-        backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat"
-      }}>
+          padding: isMobile ? "24px 14px" : "48px 24px",
+          backgroundImage: `url(${isMobile ? authMobileBg : authBg})`,
+          backgroundSize: "100% 100%", backgroundPosition: "center center", backgroundRepeat: "no-repeat",
+          backgroundColor: "#b4d5fa"
+        }}>
         <div
           className="premium-card"
           ref={signupCardRef}

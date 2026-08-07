@@ -182,68 +182,15 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
     );
   };
 
-  // On mount, sync persisted coords → parent and auto-detect geolocation automatically
+  // On mount, load initial position
   useEffect(() => {
     const savedLat = parseFloat(localStorage.getItem("userCoordsLat")) || 14.471306;
     const savedLng = parseFloat(localStorage.getItem("userCoordsLng")) || 78.824165;
     const savedLocation = localStorage.getItem("userLocation") || "Kadapa, Andhra Pradesh, India";
-    const savedCity = localStorage.getItem("userCity") || "Kadapa";
-
-    if (!localStorage.getItem("userLocation")) {
-      // If saved location is stale (older than 1 hour), ignore it
-      const savedTimestamp = parseInt(localStorage.getItem("userLocationTimestamp"), 10) || 0;
-      const now = Date.now();
-      const oneHour = 3600000;
-      const isStale = now - savedTimestamp > oneHour;
-      if (isStale) {
-        localStorage.removeItem("userLocation");
-        localStorage.removeItem("userCity");
-        localStorage.removeItem("userCoordsLat");
-        localStorage.removeItem("userCoordsLng");
-        localStorage.removeItem("manualLocationSet");
-        localStorage.removeItem("userLocationTimestamp");
-      } else {
-        localStorage.setItem("userLocation", savedLocation);
-        localStorage.setItem("userCity", savedCity);
-        localStorage.setItem("userCoordsLat", savedLat.toString());
-        localStorage.setItem("userCoordsLng", savedLng.toString());
-      }
-    }
 
     setPosition([savedLat, savedLng]);
     setSearch(savedLocation);
     setDetectedLabel(savedLocation);
-    if (onLocationChange) onLocationChange(savedLocation);
-    if (onCoordsChange) onCoordsChange({ lat: savedLat, lng: savedLng });
-
-    // Automatically detect location on mount ONLY if not manually set before
-    if (localStorage.getItem("manualLocationSet") !== "true") {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          async (pos) => {
-            const { latitude, longitude } = pos.coords;
-            try {
-              const result = await photonReverse(latitude, longitude);
-              if (result) {
-                applyLocation(latitude, longitude, result.label, result.city);
-              } else {
-                applyLocation(latitude, longitude, `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`, "");
-              }
-            } catch (err) {
-              applyLocation(latitude, longitude, `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`, "");
-            }
-          },
-          async (err) => {
-            console.warn("Automatic geolocation auto-detect failed on mount, trying IP location:", err);
-            await detectIpFallback();
-          },
-          { enableHighAccuracy: true, timeout: 8000 }
-        );
-      } else {
-        detectIpFallback();
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Helpers ────────────────────────────────────────────────────────────────
@@ -312,87 +259,116 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
   };
 
   return (
-    <div style={{ marginTop: "12px", padding: "0 20px 20px 20px" }}>
-
-      <div style={{ marginBottom: "14px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
-        <input
-          id="location-search-input"
-          type="text"
-          placeholder="Search any location, street, village, colony..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onKeyDown={handleKeyDown}
-          style={{ flex: 1, minWidth: "200px" }}
-        />
+    <div style={{ padding: "16px 20px 20px 20px", display: "flex", flexDirection: "column", gap: "14px" }}>
+      {/* Search & Auto-Detect Bar */}
+      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+        <div style={{ position: "relative", flex: "1 1 200px" }}>
+          <input
+            id="location-search-input"
+            type="text"
+            placeholder="Search street, area, or landmark..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={handleKeyDown}
+            style={{
+              width: "100%",
+              padding: "10px 14px",
+              borderRadius: "10px",
+              border: "1.5px solid var(--border-color, #e2e8f0)",
+              backgroundColor: "var(--bg-card-hover, #ffffff)",
+              color: "var(--text-main, #0f172a)",
+              fontSize: "13.5px",
+              outline: "none",
+              boxSizing: "border-box"
+            }}
+          />
+        </div>
         <button
           id="location-search-btn"
           onClick={searchLocation}
           disabled={isSearching}
-          style={{ backgroundColor: "var(--primary)", color: "white", opacity: isSearching ? 0.7 : 1 }}
+          style={{
+            padding: "10px 16px",
+            borderRadius: "10px",
+            border: "none",
+            backgroundColor: "#0284c7",
+            color: "white",
+            fontWeight: 600,
+            fontSize: "13px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            whiteSpace: "nowrap"
+          }}
         >
-          {isSearching ? "Searching..." : "Search Location 🔍"}
+          {isSearching ? "Searching..." : "Search 🔍"}
         </button>
         <button
           id="location-autodetect-btn"
           onClick={autoDetectLocation}
           disabled={isSearching}
-          style={{ backgroundColor: "#0284c7", color: "white", opacity: isSearching ? 0.7 : 1 }}
+          style={{
+            padding: "10px 16px",
+            borderRadius: "10px",
+            border: "1.5px solid rgba(2, 132, 199, 0.3)",
+            backgroundColor: "rgba(2, 132, 199, 0.08)",
+            color: "#0284c7",
+            fontWeight: 600,
+            fontSize: "13px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            whiteSpace: "nowrap"
+          }}
         >
           Auto Detect 📍
         </button>
-        <button
-          onClick={() => {
-            localStorage.removeItem("manualLocationSet");
-            window.location.reload();
-          }}
-          style={{ backgroundColor: "#ef4444", color: "white" }}
-        >
-          Reset Location 🔄
-        </button>
-
       </div>
 
-      {/* Detected label badge */}
-      {detectedLabel && (
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "6px",
-            backgroundColor: "var(--success-light)",
-            border: "1px solid #86efac",
-            borderRadius: "20px",
-            padding: "4px 12px",
-            fontSize: "12px",
-            color: "var(--success)",
-            marginBottom: "10px",
-            fontWeight: 600,
-          }}
-        >
-          <span>✅</span>
-          <span>Location detected</span>
+      {/* Selected Location Pill */}
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        backgroundColor: "var(--primary-light, #f0fdf4)",
+        border: "1px solid rgba(34, 197, 94, 0.25)",
+        borderRadius: "10px",
+        padding: "8px 14px",
+        fontSize: "12.5px",
+        color: "var(--text-main, #0f172a)",
+        fontWeight: 500
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "6px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <span style={{ color: "#16a34a", fontWeight: "bold" }}>📍 Selected:</span>
+          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {detectedLabel || search || "Click map to choose location"}
+          </span>
         </div>
-      )}
+      </div>
 
-      {/* Map */}
-
+      {/* Interactive Map */}
       <div
         style={{
           borderRadius: "12px",
           overflow: "hidden",
-          border: "1px solid #cbd5e1",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.07)",
+          border: "1.5px solid var(--border-color, #cbd5e1)",
+          boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
+          height: "320px",
+          width: "100%",
+          position: "relative"
         }}
       >
         <MapContainer
           center={position}
           zoom={13}
-          style={{ height: "360px", width: "100%" }}
+          style={{ height: "100%", width: "100%" }}
         >
           <ChangeMapView center={position} />
           <MapEventsHandler />
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             maxZoom={19}
           />
@@ -412,48 +388,29 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
         </MapContainer>
       </div>
 
+      {/* Error Alert if any */}
       {locationError && (
         <div style={{
-          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: "rgba(0,0,0,0.5)", zIndex: 99999,
-          display: "flex", justifyContent: "center", alignItems: "center", padding: "20px"
+          padding: "10px 14px",
+          backgroundColor: "#fee2e2",
+          color: "#b91c1c",
+          borderRadius: "8px",
+          fontSize: "12px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
         }}>
-          <div style={{
-            backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "12px",
-            boxShadow: "0 10px 25px rgba(0,0,0,0.2)", maxWidth: "400px", width: "100%",
-            textAlign: "center"
-          }}>
-            <div style={{ fontSize: "36px", marginBottom: "16px" }}>📍</div>
-            <h3 style={{ margin: "0 0 12px 0", color: "var(--text-main)", fontFamily: "'Outfit', sans-serif" }}>Location Access Needed</h3>
-            <p style={{ margin: "0 0 24px 0", color: "var(--text-secondary)", lineHeight: "1.5" }}>{locationError}</p>
-            <div style={{ display: "flex", gap: "12px" }}>
-              <button
-                onClick={() => setLocationError(null)}
-                style={{
-                  backgroundColor: "var(--primary-light)", color: "var(--text-secondary)", border: "none",
-                  padding: "12px 16px", borderRadius: "8px", fontWeight: "600",
-                  cursor: "pointer", flex: 1, fontSize: "16px"
-                }}
-              >
-                Close
-              </button>
-              <button
-                onClick={autoDetectLocation}
-                style={{
-                  backgroundColor: "#4f46e5", color: "white", border: "none",
-                  padding: "12px 16px", borderRadius: "8px", fontWeight: "600",
-                  cursor: "pointer", flex: 1, fontSize: "16px"
-                }}
-              >
-                Try Again
-              </button>
-            </div>
-          </div>
+          <span>{locationError}</span>
+          <button
+            onClick={() => setLocationError(null)}
+            style={{ background: "none", border: "none", color: "#b91c1c", cursor: "pointer", fontWeight: "bold" }}
+          >
+            &times;
+          </button>
         </div>
       )}
-
-  </div>
-);
+    </div>
+  );
 }
 
 export default MapPicker;

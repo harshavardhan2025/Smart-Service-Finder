@@ -17,6 +17,7 @@ function SupportPage() {
   const [activeFaq, setActiveFaq] = useState(null);
 
   const [history, setHistory] = useState([]);
+  const [formError, setFormError] = useState("");
   const userName = sessionStorage.getItem("userName");
 
   const fetchHistory = async () => {
@@ -53,13 +54,13 @@ function SupportPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError("");
     if (!issue.trim() || !email.trim() || !phone.trim()) {
-      alert("Please fill out all fields before submitting your support ticket!");
+      setFormError("Please fill out all fields (issue, email, and phone) before submitting.");
       return;
     }
 
     try {
-      // 🚀 PHYSICAL CLOUD WRITE: Commit support ticket directly to MongoDB grievance node!
       const resp = await fetch("/api/complaints", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -73,14 +74,14 @@ function SupportPage() {
       if (!resp.ok) throw new Error("Cloud post rejection.");
 
       setSuccess(true);
-      fetchHistory(); // Live sync newly posted ticket immediately!
+      fetchHistory();
       setTimeout(() => {
         setSuccess(false);
         setIssue("");
         setEmail("");
         setPhone("");
-      }, 4000);
-    } catch (err) { alert("🛑 Submission Fail: Database synchronization issue. Please try again later."); }
+      }, 5000);
+    } catch (err) { setFormError("🚨 Submission failed. Please try again or contact us directly."); }
   };
 
   return (
@@ -150,11 +151,19 @@ function SupportPage() {
                 <div style={{ fontSize: "56px", marginBottom: "16px" }}>🎉</div>
                 <h3 style={{ fontSize: "20px", fontWeight: 800, color: "var(--primary)", marginBottom: "8px" }}>Ticket Submitted!</h3>
                 <p style={{ color: "var(--text-muted)", fontSize: "14px", lineHeight: "1.6" }}>
-                  Your inquiry has been successfully logged. Our dedicated support team will contact you via email within 24 hours.
+                  Your support request has been logged. We'll contact you at <strong>{email}</strong> within 24 hours.
                 </p>
+                <div className="inline-alert inline-alert-success" style={{ marginTop: 16, justifyContent: "center" }}>
+                  ✅ Ticket ID: #{Math.random().toString(36).slice(2,8).toUpperCase()} — Keep this for reference
+                </div>
               </div>
             ) : (
               <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                {formError && (
+                  <div className="inline-alert inline-alert-error">
+                    ⚠️ {formError}
+                  </div>
+                )}
                 <div>
                   <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "var(--text-muted)", marginBottom: "8px" }}>Select Issue Category</label>
                   <select
