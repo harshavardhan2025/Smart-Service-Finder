@@ -20,14 +20,13 @@ const connectDB = async () => {
 
   _connectionPromise = mongoose
     .connect(process.env.MONGO_URI || "mongodb://localhost:27017/workzy", {
-      maxPoolSize: 20,
-      minPoolSize: 2,
+      maxPoolSize: 5, // Lowered for clustering compatibility
       waitQueueTimeoutMS: 10000,
       socketTimeoutMS: 45000,
       serverSelectionTimeoutMS: 8000, // Fail fast on Vercel cold start
     })
     .then((conn) => {
-      console.log(`MongoDB Connected: ${conn.connection.host} (Pool: 20)`);
+      console.log(`MongoDB Connected: ${conn.connection.host} (Pool: 5)`);
       _connectionPromise = null;
     })
     .catch((error) => {

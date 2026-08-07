@@ -1,12 +1,12 @@
 import express from "express";
 import path from "path";
-import cluster from "cluster";
-import os from "os";
+
 import { fileURLToPath } from "url";
 import cors from "cors";
 import dotenv from "dotenv";
 import compression from "compression";
 import rateLimit from "express-rate-limit";
+import mongoose from "mongoose";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import workerRoutes from "./routes/workerRoutes.js";
@@ -31,17 +31,10 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config({ override: true });
 
-// Connect Database — wrapped in try/catch so a MongoDB error never
-// calls process.exit() and kills the Vercel serverless function.
-(async () => {
-  try {
-    await connectDB();
-    console.log("🚀 Workzy API Server is LIVE & ACTIVE on http://localhost:5000");
-    console.log("🟢 Ready to process incoming frontend requests!");
-  } catch (err) {
-    console.error("⚠️  DB startup connection failed (will retry per request):", err.message);
-  }
-})();
+// Database connection is deferred to worker processes to prevent primary process from holding idle connections.
+if (process.env.VERCEL) {
+  connectDB().catch(console.error);
+}
 
 const app = express();
 
@@ -71,6 +64,21 @@ app.use(compression());
 app.use(limiter);
 app.use(cors());
 app.use(express.json());
+
+// ── ROBUST DATABASE RECONNECTION MIDDLEWARE ──
+// If the database failed to connect at startup (e.g., due to IP whitelist delay),
+// this middleware will automatically attempt to reconnect on the next HTTP request.
+app.use(async (req, res, next) => {
+  if (mongoose.connection.readyState !== 1 && mongoose.connection.readyState !== 2) {
+    try {
+      await connectDB();
+      console.log("🔄 Database auto-reconnected successfully!");
+    } catch (err) {
+      console.error("⚠️ Auto-reconnect failed:", err.message);
+    }
+  }
+  next();
+});
 
 // ── SERVERLESS LAZY CRON ──
 // Runs globally on Vercel and Locally by piggybacking on web traffic
@@ -141,23 +149,16 @@ const PORT = process.env.PORT || 5000;
 
 // Only start listening when running as a standalone server (not on Vercel serverless)
 if (!process.env.VERCEL) {
-  if (cluster.isPrimary) {
-    const numCPUs = os.cpus().length;
-    console.log(`🚀 Primary cluster (PID: ${process.pid}) setting up ${numCPUs} workers...`);
-
-    for (let i = 0; i < numCPUs; i++) {
-      cluster.fork();
-    }
-
-    cluster.on("exit", (worker, code, signal) => {
-      console.log(`⚠️ Worker ${worker.process.pid} died. Restarting...`);
-      cluster.fork();
-    });
-  } else {
+  connectDB().then(() => {
     app.listen(PORT, () => {
-      console.log(`✅ Worker ${process.pid} running on ${PORT}`);
+      console.log(`✅ Server running on ${PORT}`);
     });
-  }
+  }).catch(err => {
+    console.error(`⚠️ DB Connection Error:`, err.message);
+    app.listen(PORT, () => {
+      console.log(`✅ Server running (DB Offline)`);
+    });
+  });
 } else {
   console.log("Running on Vercel serverless — skipping app.listen() and setInterval");
 }
