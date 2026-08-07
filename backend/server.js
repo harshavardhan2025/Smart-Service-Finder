@@ -1,5 +1,7 @@
 import express from "express";
 import path from "path";
+import cluster from "cluster";
+import os from "os";
 import { fileURLToPath } from "url";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -139,9 +141,23 @@ const PORT = process.env.PORT || 5000;
 
 // Only start listening when running as a standalone server (not on Vercel serverless)
 if (!process.env.VERCEL) {
-  app.listen(PORT, () => {
-    console.log(`Server running on ${PORT}`);
-  });
+  if (cluster.isPrimary) {
+    const numCPUs = os.cpus().length;
+    console.log(`🚀 Primary cluster (PID: ${process.pid}) setting up ${numCPUs} workers...`);
+
+    for (let i = 0; i < numCPUs; i++) {
+      cluster.fork();
+    }
+
+    cluster.on("exit", (worker, code, signal) => {
+      console.log(`⚠️ Worker ${worker.process.pid} died. Restarting...`);
+      cluster.fork();
+    });
+  } else {
+    app.listen(PORT, () => {
+      console.log(`✅ Worker ${process.pid} running on ${PORT}`);
+    });
+  }
 } else {
   console.log("Running on Vercel serverless — skipping app.listen() and setInterval");
 }

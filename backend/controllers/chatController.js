@@ -6,6 +6,7 @@ import Booking from "../models/Booking.js";
 import User from "../models/User.js";
 import Offer from "../models/Offer.js";
 import Plan from "../models/Plan.js";
+import { haversineKm } from "../utils/geoUtils.js";
 
 // Levenshtein distance algorithm for robust character-level spelling correction
 const levenshtein = (a, b) => {
@@ -406,7 +407,7 @@ const localAIEngine = (userQuery, userLocation) => {
 
 export const proxyChat = async (req, res) => {
   try {
-    const { messages } = req.body;
+    const { messages, lat, lng } = req.body;
     const apiKey = process.env.AI_API_KEY || "";
 
     // Extract user query and detected location from system context
@@ -610,18 +611,33 @@ Do not include any markdown formatting, no \`\`\`json wrappers. Respond with ONL
         filter.city = new RegExp(searchCity, "i");
       }
 
-      workers = await Worker.find(filter).sort({ rating: -1 }).limit(3).lean();
+      let allWorkers = await Worker.find(filter).lean();
+      
+      if (lat && lng) {
+        const userLat = parseFloat(lat);
+        const userLng = parseFloat(lng);
+        if (!isNaN(userLat) && !isNaN(userLng)) {
+          allWorkers = allWorkers.filter(w => {
+            if (w.lat === undefined || w.lon === undefined || w.lat === null || w.lon === null) {
+              return false; // Skip if no coords
+            }
+            const distanceKm = haversineKm(userLat, userLng, w.lat, w.lon);
+            w.distanceKm = distanceKm;
+            return distanceKm <= 40;
+          }).sort((a, b) => a.distanceKm - b.distanceKm);
+        } else {
+          allWorkers = allWorkers.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        }
+      } else {
+        allWorkers = allWorkers.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      }
+      
+      workers = allWorkers.slice(0, 3);
 
-      // 🌍 Cross-location Fallback: If 0 workers found in specified city, search across all locations!
+      // No workers found in the target city
       if (workers.length === 0) {
-        workers = await Worker.find({
-          service: new RegExp(matchedCategory, "i"),
-          status: "Active"
-        }).sort({ rating: -1 }).limit(3).lean();
-
-        if (workers.length > 0 && parsedResult.aiResponse) {
-          const citiesFound = [...new Set(workers.map(w => w.city).filter(Boolean))].join(", ");
-          parsedResult.aiResponse = `I couldn't find experts directly in ${searchCity}, but here are top-rated professionals for **${matchedCategory}** in nearby locations (${citiesFound}):`;
+        if (parsedResult.aiResponse) {
+          parsedResult.aiResponse = `I couldn't find any experts directly in ${searchCity} for **${matchedCategory}** at the moment. Please try searching in a different nearby city!`;
         }
       }
     }

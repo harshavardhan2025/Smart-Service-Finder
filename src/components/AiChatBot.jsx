@@ -802,20 +802,19 @@ function AiChatBot() {
         }
 
         let url = `/api/workers?service=${encodeURIComponent(category)}`;
-        if (targetCity && !targetCity.toLowerCase().includes("unknown")) {
+        const lat = localStorage.getItem("userCoordsLat");
+        const lng = localStorage.getItem("userCoordsLng");
+        
+        if (lat && lng) {
+          url = `/api/workers/nearby?lat=${lat}&lng=${lng}&radius=40&service=${encodeURIComponent(category)}`;
+        } else if (targetCity && !targetCity.toLowerCase().includes("unknown")) {
           url += `&city=${encodeURIComponent(targetCity)}`;
         }
 
         let resp = await fetch(url);
         let matches = resp.ok ? await resp.json() : [];
 
-        // 🌍 Cross-location Fallback: If 0 workers found in target city, query across all locations!
-        if (!matches || matches.length === 0) {
-          const fallbackResp = await fetch(`/api/workers?service=${encodeURIComponent(category)}`);
-          if (fallbackResp.ok) {
-            matches = await fallbackResp.json();
-          }
-        }
+        // Removed Cross-location Fallback to ensure we only suggest workers from the user's location
 
         return (matches || []).sort((a, b) => (b.rating || 0) - (a.rating || 0));
       } catch (e) {
@@ -828,6 +827,9 @@ function AiChatBot() {
     const offersText = activeOffers.map(o => `${o.code} (${o.discount})`).join("; ");
 
     try {
+      const lat = localStorage.getItem("userCoordsLat");
+      const lng = localStorage.getItem("userCoordsLng");
+
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
@@ -849,7 +851,9 @@ function AiChatBot() {
               role: "user",
               content: textToSend
             }
-          ]
+          ],
+          lat,
+          lng
         })
       });
 
