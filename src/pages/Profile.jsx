@@ -34,6 +34,31 @@ function Profile() {
 
   const currentUsr = sessionStorage.getItem("userName") || "Verified User";
 
+  const fetchUserProfile = async () => {
+    try {
+      const token = sessionStorage.getItem("authToken");
+      if (!token) return;
+      const resp = await fetch("/api/users/me", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        const user = await resp.json();
+        const p = {
+          name: user.name || sessionStorage.getItem("userName") || "Verified User",
+          email: user.email || sessionStorage.getItem("userEmail") || "user@example.com",
+          phone: user.phone || "Not Provided",
+          role: user.role || "Customer",
+          location: user.city || "Mumbai",
+          memberSince: "Joined 2026"
+        };
+        setProfile(p);
+        setDraft(p);
+      }
+    } catch (err) {
+      console.error("Failed to load user profile", err);
+    }
+  };
+
   const fetchUserData = async () => {
     try {
        const currentBal = getWalletBalance();
@@ -49,6 +74,7 @@ function Profile() {
   };
 
   useEffect(() => {
+    fetchUserProfile();
     fetchUserData();
     const handleWalletUpdate = () => {
       setWalletBal(getWalletBalance());
@@ -84,14 +110,57 @@ function Profile() {
     setTimeout(() => setToast(""), 3000);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!draft.name.trim() || !draft.email.trim()) {
       showToast("⚠️ Name and Email are required!");
       return;
     }
-    setProfile(draft);
-    setEditing(false);
-    showToast("✅ Profile updated successfully!");
+    try {
+      const token = sessionStorage.getItem("authToken");
+      const userId = sessionStorage.getItem("userId");
+      if (token && userId) {
+        const resp = await fetch(`/api/users/${userId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            name: draft.name,
+            email: draft.email,
+            phone: draft.phone,
+            city: draft.location
+          })
+        });
+        if (resp.ok) {
+          setProfile(draft);
+          setEditing(false);
+          showToast("✅ Profile updated successfully!");
+          
+          // Sync sessions
+          sessionStorage.setItem("userName", draft.name);
+          sessionStorage.setItem("userEmail", draft.email);
+          sessionStorage.setItem("userCity", draft.location);
+          const authSession = JSON.parse(localStorage.getItem("authSession") || "{}");
+          authSession.userName = draft.name;
+          authSession.userEmail = draft.email;
+          authSession.userCity = draft.location;
+          localStorage.setItem("authSession", JSON.stringify(authSession));
+          
+          // Dispatch event to refresh Navbar instantly
+          window.dispatchEvent(new Event("storage"));
+        } else {
+          const errData = await resp.json();
+          showToast(`🛑 Update failed: ${errData.error || "Please try again."}`);
+        }
+      } else {
+        setProfile(draft);
+        setEditing(false);
+        showToast("✅ Profile updated locally!");
+      }
+    } catch (err) {
+      showToast("🛑 Network error updating profile.");
+    }
   };
 
   const handleCancel = () => {

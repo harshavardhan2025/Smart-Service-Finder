@@ -185,8 +185,18 @@ function WorkerDashboard() {
 
     try {
       let targetWorkerMongoId = null;
+      let userPhone = "Not Provided";
 
-      // 1. DISCOVER AUTHENTIC WORKER ID VIA EMAIL INDEXING FIRST
+      // 1. FETCH USER PROFILE FOR ACTUAL PHONE NUMBER
+      const userProfileResp = await fetch("/api/users/me", {
+        headers: { "Authorization": `Bearer ${sessionStorage.getItem("authToken")}` }
+      });
+      if (userProfileResp.ok) {
+        const uData = await userProfileResp.json();
+        userPhone = uData.phone || "Not Provided";
+      }
+
+      // 2. DISCOVER AUTHENTIC WORKER ID VIA EMAIL INDEXING
       const workerResp = await fetch(`/api/workers?adminView=true`);
       if (workerResp.ok) {
         const allWorkers = await workerResp.json();
@@ -204,10 +214,10 @@ function WorkerDashboard() {
           }
 
           targetWorkerMongoId = match._id; // Authentic Primary Key established
-          setProfile({
+          const p = {
             name: match.name,
             profession: match.service,
-            phone: "9876543210",
+            phone: userPhone,
             email: match.email,
             city: match.city,
             rating: match.rating || 5.0,
@@ -216,6 +226,11 @@ function WorkerDashboard() {
             joinedDate: "May 2026",
             mongoId: match._id,
             photo: match.service && match.service.includes("Doctors") ? "🩺" : "👷"
+          };
+          setProfile(p);
+          setEditProfile(prev => {
+            // Only update editProfile draft if they are not actively editing
+            return editMode ? prev : p;
           });
           setIsActive(match.status === "Active");
         }
@@ -490,6 +505,78 @@ function WorkerDashboard() {
     backgroundColor: s === "Completed" ? "var(--primary-light)" : s === "Upcoming" ? "#fff3e0" : s === "Accepted" ? "var(--primary-light)" : "#fee2e2",
     color: s === "Completed" ? "var(--primary-dark)" : s === "Upcoming" ? "#e65100" : s === "Accepted" ? "#16a34a" : "#ef4444"
   });
+
+  const handleSaveProfile = async () => {
+    if (!editProfile.name.trim() || !editProfile.profession.trim() || !editProfile.city.trim()) {
+      alert("Name, Profession, and City are required!");
+      return;
+    }
+    try {
+      const token = sessionStorage.getItem("authToken");
+      const userId = sessionStorage.getItem("userId");
+      if (token && profile.mongoId) {
+        // 1. Update Worker profile in DB
+        const workerResp = await fetch(`/api/workers/${profile.mongoId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            name: editProfile.name,
+            service: editProfile.profession,
+            city: editProfile.city
+          })
+        });
+
+        // 2. Update User profile in DB
+        let userOk = true;
+        if (userId) {
+          const userResp = await fetch(`/api/users/${userId}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              name: editProfile.name,
+              city: editProfile.city,
+              phone: editProfile.phone
+            })
+          });
+          userOk = userResp.ok;
+        }
+
+        if (workerResp.ok && userOk) {
+          setProfile({ ...editProfile });
+          setEditMode(false);
+          alert("Profile updated successfully!");
+
+          // Update storage sessions
+          sessionStorage.setItem("userName", editProfile.name);
+          sessionStorage.setItem("userCity", editProfile.city);
+          const authSession = JSON.parse(localStorage.getItem("authSession") || "{}");
+          authSession.userName = editProfile.name;
+          authSession.userCity = editProfile.city;
+          localStorage.setItem("authSession", JSON.stringify(authSession));
+
+          // Dispatch event to refresh Navbar instantly
+          window.dispatchEvent(new Event("storage"));
+          
+          syncStore(); // Refresh
+        } else {
+          alert("Failed to update profile details on the server.");
+        }
+      } else {
+        setProfile({ ...editProfile });
+        setEditMode(false);
+        alert("Profile updated locally!");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Network error updating profile.");
+    }
+  };
 
   return (
     <div className="dashboard-container" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -996,7 +1083,6 @@ function WorkerDashboard() {
               </div>
             </div>
           )}
-
           {/* PROFILE TAB */}
           {activeTab === "profile" && (
             <div className="fade-in">
@@ -1037,7 +1123,7 @@ function WorkerDashboard() {
                       <input value={editProfile.city} onChange={e => setEditProfile({ ...editProfile, city: e.target.value })} placeholder="City" style={{ width: "100%", boxSizing: "border-box", padding: "8px 12px", borderRadius: "6px", border: "1px solid #cbd5e1" }} />
                       <input value={editProfile.phone} onChange={e => setEditProfile({ ...editProfile, phone: e.target.value })} placeholder="Phone" style={{ width: "100%", boxSizing: "border-box", padding: "8px 12px", borderRadius: "6px", border: "1px solid #cbd5e1" }} />
                       <div style={{ display: "flex", gap: 10 }}>
-                        <button onClick={() => { setProfile({ ...editProfile }); setEditMode(false); alert("Profile updated!"); }} style={{ flex: 1, padding: "10px", backgroundColor: "var(--primary)", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer" }}>Save</button>
+                        <button onClick={handleSaveProfile} style={{ flex: 1, padding: "10px", backgroundColor: "var(--primary)", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer" }}>Save</button>
                         <button onClick={() => setEditMode(false)} style={{ flex: 1, padding: "10px", backgroundColor: "#e2e8f0", color: "var(--text-secondary)", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer" }}>Cancel</button>
                       </div>
                     </div>

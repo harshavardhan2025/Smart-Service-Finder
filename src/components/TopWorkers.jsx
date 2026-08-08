@@ -21,7 +21,7 @@ const truncateLocation = (loc) => {
   return loc;
 };
 
-function TopWorkers({ searchedLocation, userCoords }) {
+function TopWorkers({ searchedLocation, userCoords, flat = false }) {
   const [cloudWorkers, setCloudWorkers] = useState([]);
   const [loading, setLoading] = useState(() => {
     return !!(searchedLocation || userCoords);
@@ -58,22 +58,29 @@ function TopWorkers({ searchedLocation, userCoords }) {
     .slice(0, 20);
 
   return (
-    <div className="fade-in" style={{ padding: "20px 24px", margin: "14px 0px", background: "linear-gradient(135deg, rgba(234, 179, 8, 0.05) 0%, rgba(234, 179, 8, 0.01) 100%)", borderRadius: "0px", borderTop: "1.5px solid rgba(234, 179, 8, 0.12)", borderBottom: "1.5px solid rgba(234, 179, 8, 0.12)", borderLeft: "none", borderRight: "none" }}>
-      <h2 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 4px 0", color: "var(--text-primary)" }}>
-        🔥 Top-Rated Professionals
-      </h2>
-      {searchedLocation && (
-        <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: "0 0 8px 0" }}>
-          Near <strong style={{ color: "var(--primary)" }}>{searchedLocation.split(",")[0]}</strong>
-        </p>
+    <div 
+      className="fade-in" 
+      style={flat ? { padding: 0 } : { padding: "20px 24px", margin: "14px 0px", background: "linear-gradient(135deg, rgba(234, 179, 8, 0.05) 0%, rgba(234, 179, 8, 0.01) 100%)", borderRadius: "0px", borderTop: "1.5px solid rgba(234, 179, 8, 0.12)", borderBottom: "1.5px solid rgba(234, 179, 8, 0.12)", borderLeft: "none", borderRight: "none" }}
+    >
+      {!flat && (
+        <>
+          <h2 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 4px 0", color: "var(--text-primary)" }}>
+            🔥 Top-Rated Professionals
+          </h2>
+          {searchedLocation && (
+            <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: "0 0 8px 0" }}>
+              Near <strong style={{ color: "var(--primary)" }}>{searchedLocation.split(",")[0]}</strong>
+            </p>
+          )}
+        </>
       )}
 
       {loading ? (
-        <div className="horizontal-scroll-container" style={{ display: "flex", overflowX: "auto", gap: "15px", paddingBottom: "10px" }}>
+        <div className="horizontal-scroll-container custom-scrollbar" style={{ display: "flex", overflowX: "auto", gap: "15px", paddingBottom: "10px" }}>
           <SkeletonLoader type="card" count={4} />
         </div>
       ) : topWorkers.length === 0 ? (
-        <div className="horizontal-scroll-container" style={{ display: "flex", overflowX: "auto", gap: "15px", paddingBottom: "10px" }}>
+        <div className="horizontal-scroll-container custom-scrollbar" style={{ display: "flex", overflowX: "auto", gap: "15px", paddingBottom: "10px" }}>
           <div className="premium-card" style={{ minWidth: "220px", height: "215px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "20px", color: "var(--text-secondary)" }}>
             <span style={{ fontSize: "24px", marginBottom: "8px" }}>🔍</span>
             <p style={{ margin: 0, fontSize: "13px", fontWeight: "bold" }}>No top-rated professionals</p>
@@ -81,7 +88,7 @@ function TopWorkers({ searchedLocation, userCoords }) {
           </div>
         </div>
       ) : (
-        <div className="horizontal-scroll-container" style={{ display: "flex", overflowX: "auto", gap: "15px", paddingBottom: "10px" }}>
+        <div className="horizontal-scroll-container custom-scrollbar" style={{ display: "flex", overflowX: "auto", gap: "15px", paddingBottom: "10px" }}>
           {topWorkers.map((worker) => (
             <div
               key={worker._id}

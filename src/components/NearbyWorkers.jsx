@@ -258,9 +258,9 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
             overflow-x: auto !important;
             scroll-snap-type: x mandatory;
             gap: 12px !important;
-            margin-left: 0px !important;
-            margin-right: 0px !important;
-            padding: 4px 0px 12px 0px !important;
+            margin-left: -12px !important;
+            margin-right: -12px !important;
+            padding: 4px 12px 12px 12px !important;
             margin-bottom: 16px !important;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none; /* Hide scrollbar for Firefox */

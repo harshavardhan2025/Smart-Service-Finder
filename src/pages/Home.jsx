@@ -1,445 +1,907 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import LocationSearch from "../components/LocationSearch";
+import AISmartSearchHub from "../components/AISmartSearchHub";
 import TopWorkers from "../components/TopWorkers";
 import CheapWorkers from "../components/CheapWorkers";
 import NearbyWorkers from "../components/NearbyWorkers";
 import { filterWorkersClientSide } from "../utils/workerService";
 import SkeletonLoader from "../components/SkeletonLoader";
-import { FaMapMarkerAlt, FaBolt, FaCircle, FaUser, FaStethoscope, FaPercent, FaStar } from "react-icons/fa";
+
+import {
+  FaMapMarkerAlt,
+  FaBolt,
+  FaCircle,
+  FaUser,
+  FaStethoscope,
+  FaPercent,
+  FaStar,
+  FaTools,
+} from "react-icons/fa";
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+const DEFAULT_LOCATION = "Kadapa, Andhra Pradesh, India";
+
+const DEFAULT_COORDS = {
+  lat: 14.471306,
+  lng: 78.824165,
+};
 
 const truncateLocation = (loc) => {
   if (!loc) return "";
-  const parts = loc.split(",");
+  const parts = String(loc)
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
   if (parts.length > 2) {
-    return parts.slice(0, 2).join(",").trim();
+    return parts.slice(0, 2).join(", ");
   }
-  return loc;
+  return parts.join(", ");
 };
 
+const getShortLocation = (location) => {
+  if (!location) return "";
+  const parts = String(location)
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return parts.slice(0, 2).join(", ");
+};
+
+const safeJsonParse = (value, fallback = null) => {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+};
+
+const normalize = (value = "") => String(value).toLowerCase().trim();
+
+const getStoredCoords = () => {
+  const lat = parseFloat(localStorage.getItem("userCoordsLat"));
+  const lng = parseFloat(localStorage.getItem("userCoordsLng"));
+  if (Number.isFinite(lat) && Number.isFinite(lng)) {
+    return { lat, lng };
+  }
+  return DEFAULT_COORDS;
+};
+
+/* =========================================================
+   SERVICE MATCHING
+========================================================= */
+
+const SERVICE_ALIASES = {
+  plumbing: [
+    "plumber",
+    "plumbing",
+    "plumb",
+    "pipe",
+    "tap",
+    "leak",
+    "leakage",
+    "drain",
+    "toilet",
+    "faucet",
+    "sink",
+  ],
+  electrical: [
+    "electrician",
+    "electric",
+    "electrical",
+    "electrican",
+    "wiring",
+    "wire",
+    "switch",
+    "fuse",
+    "fan",
+    "light",
+    "socket",
+    "mcb",
+    "breaker",
+    "power",
+  ],
+  carpentry: [
+    "carpenter",
+    "carpentry",
+    "wood",
+    "woodwork",
+    "furniture",
+    "door",
+    "chair",
+    "table",
+    "wardrobe",
+    "cabinet",
+  ],
+  "ac repair": [
+    "ac",
+    "ac repair",
+    "ac service",
+    "air conditioner",
+    "air conditioning",
+    "cooling",
+    "coolng",
+    "compressor",
+    "condenser",
+    "hvac",
+    "split ac",
+    "window ac",
+  ],
+  "washing machine": [
+    "washing machine",
+    "washer",
+    "dryer",
+    "laundry",
+    "washing",
+  ],
+  geyser: [
+    "geyser",
+    "heater",
+    "water heater",
+    "hot water",
+    "boiler",
+  ],
+  refrigerator: [
+    "fridge",
+    "refrigerator",
+    "freezer",
+    "fridge cooling",
+  ],
+  "water purifier": [
+    "purifier",
+    "water purifier",
+    "ro",
+    "ro service",
+    "aquaguard",
+    "kent",
+  ],
+  cleaning: [
+    "cleaning",
+    "clean",
+    "house cleaning",
+    "home cleaning",
+    "deep cleaning",
+    "maid",
+    "vacuum",
+    "sweep",
+    "mop",
+  ],
+  painting: [
+    "painting",
+    "paint",
+    "painter",
+    "wall paint",
+    "home painting",
+    "interior painting",
+    "exterior painting",
+  ],
+  mechanic: [
+    "mechanic",
+    "repair",
+    "automobile",
+    "garage",
+    "vehicle repair",
+  ],
+  "two-wheeler": [
+    "bike",
+    "bike repair",
+    "bike service",
+    "motorcycle",
+    "scooter",
+    "scooty",
+    "activa",
+    "pulsar",
+    "two wheeler",
+  ],
+  "four-wheeler": [
+    "car",
+    "car repair",
+    "car service",
+    "automobile",
+    "four wheeler",
+    "car mechanic",
+  ],
+  "bike wash": [
+    "bike wash",
+    "scooter wash",
+    "bike cleaning",
+    "bike detailing",
+  ],
+  "car wash": [
+    "car wash",
+    "car cleaning",
+    "car detailing",
+    "car spa",
+    "car polish",
+  ],
+  photography: [
+    "photography",
+    "photographer",
+    "photoshoot",
+    "photo shoot",
+    "videographer",
+    "video shoot",
+    "wedding photography",
+  ],
+  purohit: [
+    "purohit",
+    "pandit",
+    "priest",
+    "pooja",
+    "puja",
+    "havan",
+    "homam",
+    "griha pravesh",
+  ],
+  decor: [
+    "decor",
+    "decoration",
+    "balloon",
+    "stage decoration",
+    "party decorator",
+    "wedding decor",
+  ],
+  mehandi: [
+    "mehandi",
+    "mehndi",
+    "mehendi",
+    "henna",
+  ],
+  makeup: [
+    "makeup",
+    "make up",
+    "bridal makeup",
+    "makeup artist",
+    "beauty artist",
+  ],
+  "beauty salon spa": [
+    "salon",
+    "parlor",
+    "parlour",
+    "beauty",
+    "haircut",
+    "facial",
+    "spa",
+    "nail",
+    "grooming",
+    "massage",
+    "waxing",
+    "threading",
+    "pedicure",
+    "manicure",
+  ],
+  doctors: [
+    "doctor",
+    "doctr",
+    "medical",
+    "consultation",
+    "physician",
+    "clinic",
+    "hospital",
+    "medicine",
+    "health",
+    "checkup",
+    "fever",
+    "cough",
+    "cold",
+    "headache",
+  ],
+};
+
+const getNormalizedServiceQuery = (query = "") => {
+  const q = normalize(query);
+  if (!q) return "";
+  for (const [service, keywords] of Object.entries(SERVICE_ALIASES)) {
+    if (keywords.some((keyword) => q.includes(keyword))) {
+      return service;
+    }
+  }
+  return q;
+};
+
+const workerMatchesService = (worker, serviceQuery) => {
+  if (!serviceQuery) return true;
+  const normalizedQuery = getNormalizedServiceQuery(serviceQuery);
+  const workerService = normalize(worker?.service);
+  if (!workerService) return false;
+  if (workerService.includes(normalizedQuery) || normalizedQuery.includes(workerService)) {
+    return true;
+  }
+  const aliases = SERVICE_ALIASES[normalizedQuery] || [];
+  return aliases.some((alias) => workerService.includes(normalize(alias)));
+};
+
+/* =========================================================
+   MAIN COMPONENT
+========================================================= */
+
 function Home() {
-  const [isGoogleAuthProcessing, setIsGoogleAuthProcessing] = useState(
-    () => window.location.hash.includes("access_token")
-  );
   const navigate = useNavigate();
   const role = sessionStorage.getItem("userRole") || "user";
   const userName = sessionStorage.getItem("userName") || "";
 
+  /* =======================================================
+     AUTH
+  ======================================================= */
+  const [isGoogleAuthProcessing, setIsGoogleAuthProcessing] = useState(() =>
+    typeof window !== "undefined" ? window.location.hash.includes("access_token") : false
+  );
+
+  /* =======================================================
+     SEARCH / LOCATION
+  ======================================================= */
   const [locationText, setLocationText] = useState("");
+  const [searchedLocation, setSearchedLocation] = useState(
+    () => localStorage.getItem("userLocation") || DEFAULT_LOCATION
+  );
+  const [userCoords, setUserCoords] = useState(getStoredCoords);
+  const [userCity, setUserCity] = useState(() => localStorage.getItem("userCity") || "");
+  const [serviceQuery, setServiceQuery] = useState("");
+
+  /* =======================================================
+     DATA
+  ======================================================= */
   const [plans, setPlans] = useState([]);
   const [offers, setOffers] = useState([]);
-  const [searchedLocation, setSearchedLocation] = useState(
-    () => localStorage.getItem("userLocation") || "Kadapa, Andhra Pradesh, India"
-  );
-  const [userCoords, setUserCoords] = useState(() => {
-    const savedLat = localStorage.getItem("userCoordsLat");
-    const savedLng = localStorage.getItem("userCoordsLng");
-    if (savedLat && savedLng) {
-      return { lat: parseFloat(savedLat), lng: parseFloat(savedLng) };
-    }
-    return { lat: 14.471306, lng: 78.824165 };
-  }); // { lat, lng }
-  const [serviceQuery, setServiceQuery] = useState("");
   const [onlineWorkers, setOnlineWorkers] = useState([]);
-  const [isOnlineLoading, setIsOnlineLoading] = useState(true);
   const [aiSuggestedWorkers, setAiSuggestedWorkers] = useState([]);
+  const [aiSuggestedAreas, setAiSuggestedAreas] = useState([]);
+
+  /* =======================================================
+     LOADING
+  ======================================================= */
+  const [isOnlineLoading, setIsOnlineLoading] = useState(true);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [isBannerLoading, setIsBannerLoading] = useState(false);
+
+  /* =======================================================
+     UI
+  ======================================================= */
+  const [activeTab, setActiveTab] = useState("categories");
   const [aiBannerText, setAiBannerText] = useState("");
   const [aiBannerExpertsTitle, setAiBannerExpertsTitle] = useState("");
   const [aiBannerBonusText, setAiBannerBonusText] = useState("");
 
-  // Compute available plans and offers for the user's selected location
-  const uCity = (localStorage.getItem("userCity") || "").toLowerCase().trim();
-  const today = new Date().toISOString().split("T")[0];
-  const availableOffersCount = offers.filter(offer => {
-    if (offer.endDate && offer.endDate < today) return false;
-    if (!offer.city || offer.city.trim() === "" || offer.city.toLowerCase() === "all") return true;
-    if (!uCity) return false;
-    const targetCities = offer.city.toLowerCase().split(",").map(c => c.trim());
-    return targetCities.some(c => uCity.includes(c) || c.includes(uCity));
-  }).length;
-
-  const availablePlansCount = plans.filter(plan => {
-    if (plan.endDate && plan.endDate < today) return false;
-    if (!plan.city || plan.city.trim() === "" || plan.city.toLowerCase() === "all") return true;
-    if (!uCity) return false;
-    const targetCities = plan.city.toLowerCase().split(",").map(c => c.trim());
-    return targetCities.some(c => uCity.includes(c) || c.includes(uCity));
-  }).length;
-
-  const [aiSuggestedAreas, setAiSuggestedAreas] = useState([]);
-
-  // Handle Google OAuth callback & auto-recovery timeout
+  /* =======================================================
+     GOOGLE AUTH CALLBACK
+  ======================================================= */
   useEffect(() => {
     const hash = window.location.hash;
     if (hash && hash.includes("access_token")) {
       const flow = sessionStorage.getItem("google_auth_flow");
       const targetRoute = flow === "signup" ? `/signup${hash}` : `/login${hash}`;
       navigate(targetRoute, { replace: true });
-    } else if (isGoogleAuthProcessing) {
-      setIsGoogleAuthProcessing(false);
+      return;
     }
+    setIsGoogleAuthProcessing(false);
+  }, [navigate]);
 
-    // Safety timeout: Never stay stuck on Verifying Authentication
+  /* =======================================================
+     AUTH SAFETY TIMEOUT
+  ======================================================= */
+  useEffect(() => {
+    if (!isGoogleAuthProcessing) return;
     const timer = setTimeout(() => {
       setIsGoogleAuthProcessing(false);
-    }, 1200);
-
+    }, 1500);
     return () => clearTimeout(timer);
-  }, [navigate, isGoogleAuthProcessing]);
+  }, [isGoogleAuthProcessing]);
 
-  // Automatic redirect if Admin or Worker tries to visit the general home page directly
+  /* =======================================================
+     ROLE REDIRECT
+  ======================================================= */
   useEffect(() => {
     if (role === "admin") {
-      navigate("/admin-dashboard");
-    } else if (role === "worker") {
-      navigate("/worker-dashboard");
+      navigate("/admin-dashboard", { replace: true });
+      return;
+    }
+    if (role === "worker") {
+      navigate("/worker-dashboard", { replace: true });
     }
   }, [role, navigate]);
 
-  // Automatically trigger location detection on mount for logged-in user using their registered profile location
+  /* =======================================================
+     REGISTERED LOCATION
+  ======================================================= */
   useEffect(() => {
-    if (role === "user") {
+    if (role !== "user") return;
+    let cancelled = false;
+
+    const resolveRegisteredLocation = async () => {
       const savedLat = localStorage.getItem("userCoordsLat");
       const savedLng = localStorage.getItem("userCoordsLng");
       const savedLoc = localStorage.getItem("userLocation");
       const registeredCity = sessionStorage.getItem("userCity") || localStorage.getItem("userCity");
       const isManualLocation = localStorage.getItem("manualLocationSet") === "true";
 
-      // Always use the registered city as the source of truth if not manually set
-      const needsGeocode = !isManualLocation && (!savedLat || !savedLng || !savedLoc ||
-        (registeredCity && !savedLoc.toLowerCase().includes(registeredCity.toLowerCase())));
-
-      if (needsGeocode) {
-        const targetCity = registeredCity || "Mumbai";
-
-        const geocodeProfileCity = async () => {
-          try {
-            const url = `/api/workers/geocode?q=${encodeURIComponent(targetCity)}`;
-            const res = await fetch(url);
-            if (res.ok) {
-              const data = await res.json();
-              if (data?.lat && data?.lon) {
-                const lat = parseFloat(data.lat);
-                const lon = parseFloat(data.lon);
-                const finalLabel = data.label || targetCity;
-
-                localStorage.setItem("userLocation", finalLabel);
-                localStorage.setItem("userCity", targetCity);
-                localStorage.setItem("userCoordsLat", lat.toString());
-                localStorage.setItem("userCoordsLng", lon.toString());
-
-                setSearchedLocation(finalLabel);
-                setUserCoords({ lat, lng: lon });
-              } else {
-                localStorage.setItem("userLocation", targetCity);
-                setSearchedLocation(targetCity);
-              }
-            }
-          } catch (err) {
-            console.error("Home geocode registered profile city failed:", err);
-            localStorage.setItem("userLocation", targetCity);
-            setSearchedLocation(targetCity);
-          }
-        };
-
-        geocodeProfileCity();
-      } else {
-        // Coords already match the registered city or manual location is set — use them instantly!
-        if (savedLoc && savedLat && savedLng) {
+      if (isManualLocation && savedLoc && savedLat && savedLng) {
+        if (!cancelled) {
           setSearchedLocation(savedLoc);
-          setUserCoords({ lat: parseFloat(savedLat), lng: parseFloat(savedLng) });
+          setUserCoords({
+            lat: parseFloat(savedLat),
+            lng: parseFloat(savedLng),
+          });
+          if (registeredCity) {
+            setUserCity(registeredCity);
+          }
+        }
+        return;
+      }
+
+      if (savedLoc && savedLat && savedLng && (!registeredCity || normalize(savedLoc).includes(normalize(registeredCity)))) {
+        if (!cancelled) {
+          setSearchedLocation(savedLoc);
+          setUserCoords({
+            lat: parseFloat(savedLat),
+            lng: parseFloat(savedLng),
+          });
+          if (registeredCity) {
+            setUserCity(registeredCity);
+          }
+        }
+        return;
+      }
+
+      const targetCity = registeredCity || "Kadapa";
+      try {
+        const response = await fetch(`/api/workers/geocode?q=${encodeURIComponent(targetCity)}`);
+        if (!response.ok) throw new Error(`Geocode failed: ${response.status}`);
+        const data = await response.json();
+        const lat = parseFloat(data?.lat);
+        const lng = parseFloat(data?.lon);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+          throw new Error("Invalid geocoding coordinates");
+        }
+        const finalLabel = data?.label || targetCity;
+        if (cancelled) return;
+
+        localStorage.setItem("userLocation", finalLabel);
+        localStorage.setItem("userCity", targetCity);
+        localStorage.setItem("userCoordsLat", String(lat));
+        localStorage.setItem("userCoordsLng", String(lng));
+        setSearchedLocation(finalLabel);
+        setUserCoords({ lat, lng });
+        setUserCity(targetCity);
+      } catch (error) {
+        console.error("Profile location geocoding failed:", error);
+        if (!cancelled) {
+          localStorage.setItem("userLocation", targetCity);
+          localStorage.setItem("userCity", targetCity);
+          setSearchedLocation(targetCity);
+          setUserCity(targetCity);
         }
       }
-    }
+    };
+
+    resolveRegisteredLocation();
+    return () => {
+      cancelled = true;
+    };
   }, [role]);
 
-  // Deep-linking AI recommended service bridge
+  /* =======================================================
+     VOICE / AI DEEP LINK
+  ======================================================= */
   useEffect(() => {
     const savedQuery = localStorage.getItem("voice_query");
-    if (savedQuery) {
-      setServiceQuery(savedQuery);
-      setLocationText(savedQuery);
-      localStorage.removeItem("voice_query");
-    }
+    if (!savedQuery) return;
+    setServiceQuery(savedQuery);
+    setLocationText(savedQuery);
+    localStorage.removeItem("voice_query");
   }, []);
 
+  /* =======================================================
+     LOCATION STORAGE
+  ======================================================= */
   useEffect(() => {
     if (!searchedLocation) {
       setAiSuggestedWorkers([]);
-      localStorage.removeItem("userLocation");
-      localStorage.removeItem("userCity");
-      return;
-    }
-
-    localStorage.setItem("userLocation", searchedLocation);
-
-    // 🔍 ADAPTIVE LOCALIZER: Ensure userCity is properly resolved for downstream payment and scheduling components!
-    let resolvedCity = localStorage.getItem("userCity");
-
-    if (!resolvedCity && searchedLocation) {
-      // Check if searchedLocation is raw coordinates
-      const coordParts = searchedLocation.split(",").map(p => parseFloat(p.trim()));
-      const isCoords = coordParts.length === 2 && !isNaN(coordParts[0]) && !isNaN(coordParts[1]);
-
-      if (!isCoords) {
-        const parts = searchedLocation.split(",");
-        resolvedCity = parts[0].trim();
-      } else {
-        resolvedCity = "Mumbai";
-      }
-    }
-
-    localStorage.setItem("userCity", resolvedCity || "Mumbai");
-
-
-    const fetchAILocationsAndSuggestWorkers = async () => {
-      setIsAiLoading(true);
-
-      try {
-        // CRA prefers process.env over import.meta.env. Standard fallback inserted.
-        // 🔐 ENFORCED ARCHITECTURE LOCKDOWN: Redirect to internal proxy endpoint instantly!
-        const response = await fetch("/api/chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            messages: [
-              {
-                role: "user",
-                content: `You are a geolocation AI. The user is at "${searchedLocation}". List exactly 3 nearby famous local areas or neighborhoods. Reply with ONLY a comma-separated list, no other words.`
-              }
-            ]
-          })
-        });
-        const data = await response.json();
-        if (data.choices && data.choices.length > 0) {
-          const result = data.choices[0].message.content;
-          if (result && typeof result === "string") {
-            const parsedAreas = result.split(",").map(a => a.trim().toLowerCase());
-            setAiSuggestedAreas(parsedAreas);
-          }
-        } else {
-          throw new Error("No choices returned");
-        }
-      } catch (err) {
-        console.error("AI Fetch Failed, using fallback", err);
-        // If API fails, just stick to the base location
-      } finally {
-        setIsAiLoading(false);
-
-        // Note: Physical dynamic cloud sync is active below! 
-      }
-    };
-
-    fetchAILocationsAndSuggestWorkers();
-  }, [searchedLocation]);
-
-  useEffect(() => {
-    if (!searchedLocation && !userCoords) {
       setOnlineWorkers([]);
-      setAiSuggestedWorkers([]);
       return;
     }
-
-    // Immediately clear previous lists to prevent showing wrong or stale data while loading new location
-    setOnlineWorkers([]);
-    setAiSuggestedWorkers([]);
-
-    const syncOnline = async () => {
-      try {
-        let extractedKey = "";
-        if (searchedLocation) {
-          const storedCity = localStorage.getItem("userCity");
-          if (storedCity) {
-            extractedKey = storedCity.toLowerCase().trim();
-          } else {
-            const parts = searchedLocation.split(",");
-            extractedKey = parts[0].trim().toLowerCase();
-          }
-        }
-
-        // Instant client-side filtering under 0.1ms!
-        const matchingWorkers = await filterWorkersClientSide(userCoords, extractedKey);
-
-        setOnlineWorkers(matchingWorkers);
-
-        // Prioritize matching workers residing or operating in AI suggested neighborhoods
-        if (aiSuggestedAreas.length > 0) {
-          const suggested = matchingWorkers.filter(worker => {
-            const wLoc = (worker.location || "").toLowerCase();
-            const wCity = (worker.city || "").toLowerCase();
-            return aiSuggestedAreas.some(area => wLoc.includes(area) || wCity.includes(area) || area.includes(wLoc) || area.includes(wCity));
-          });
-
-          if (suggested.length > 0) {
-            setAiSuggestedWorkers(suggested.slice(0, 5));
-          } else {
-            setAiSuggestedWorkers(matchingWorkers.slice(0, 5));
-          }
-        } else {
-          setAiSuggestedWorkers(matchingWorkers.slice(0, 5));
-        }
-      } catch (e) {
-        console.error("Home cloud workers fail", e);
-      } finally {
-        setIsOnlineLoading(false);
-      }
-    };
-    syncOnline();
-    const interval = setInterval(syncOnline, 10000); // Keep synced periodically in case database changes
-    return () => clearInterval(interval);
-  }, [searchedLocation, userCoords, aiSuggestedAreas]);
-
-  useEffect(() => {
-    const fetchPlansAndOffers = async () => {
-      try {
-        const [pResp, oResp] = await Promise.all([
-          fetch("/api/plans"),
-          fetch("/api/offers")
-        ]);
-        if (pResp.ok) setPlans(await pResp.json());
-        if (oResp.ok) setOffers(await oResp.json());
-      } catch (err) {
-        console.error("Failed to load plans/offers for Home page", err);
-      }
-    };
-    fetchPlansAndOffers();
-  }, []);
-
-  // 🤖 Zy AI: Generate dynamic, personalized banner text
-  useEffect(() => {
-    if (isAiLoading || !searchedLocation) return;
-
-    // Check cache — only regenerate when location or user changes
-    const userName = sessionStorage.getItem("userName") || "";
-    const cacheKey = `aiBanner_${searchedLocation}_${userName || "guest"}`;
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached);
-        if (parsed.ts && Date.now() - parsed.ts < 30 * 60 * 1000) { // Cache for 30 mins
-          setAiBannerText(parsed.bannerText || "");
-          setAiBannerExpertsTitle(parsed.expertsTitle || "");
-          setAiBannerBonusText(parsed.bonusText || "");
-          return;
-        }
-      } catch (e) { /* ignore bad cache */ }
+    localStorage.setItem("userLocation", searchedLocation);
+    let city = userCity;
+    if (!city) {
+      const parts = searchedLocation.split(",").map((p) => p.trim()).filter(Boolean);
+      if (parts.length > 0) city = parts[0];
     }
+    if (city) {
+      localStorage.setItem("userCity", city);
+      setUserCity(city);
+    }
+  }, [searchedLocation, userCity]);
 
-    const workerNames = aiSuggestedWorkers.slice(0, 3).map(w => w.name).join(", ");
-    const workerServices = [...new Set(aiSuggestedWorkers.map(w => w.service))].join(", ");
-    const shortLoc = getShortLocation(searchedLocation);
-
-    const generateBannerText = async () => {
+  /* =======================================================
+     AI SUGGESTED AREAS
+  ======================================================= */
+  useEffect(() => {
+    if (!searchedLocation) {
+      setAiSuggestedAreas([]);
+      return;
+    }
+    let cancelled = false;
+    const fetchSuggestedAreas = async () => {
+      setIsAiLoading(true);
       try {
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            messages: [{
-              role: "user",
-              content: `You are Zy, the Workzy AI assistant. Generate a short, engaging, personalized banner paragraph (2-3 sentences max) for the home page.
-Context:
-- User name: "${userName || "there"}"
-- User location: "${shortLoc}"
-- ${aiSuggestedWorkers.length} experts found nearby (names: ${workerNames || "none"}, services: ${workerServices || "various"})
-- ${availablePlansCount} service plans available
-- ${availableOffersCount} promo offers active
-
-Reply with ONLY a JSON object with these 3 keys:
-1. "bannerText": The main greeting paragraph (personalized, friendly, use 1-2 emojis). Example: "Hey Ravi! 🎯 I found 3 top-rated experts near Kakinada ready to help you today."
-2. "expertsTitle": A short title for the experts section (creative, max 6 words). Example: "🔥 Top Picks Near You"
-3. "bonusText": A short promo line about available plans/offers (max 1 sentence). Example: "🎁 Unlock 3 exclusive plans and 1 promo code for your area!"
-
-No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
-            }]
-          })
+            messages: [
+              {
+                role: "user",
+                content: `You are a geolocation assistant. The user is at "${searchedLocation}". List exactly 3 nearby famous local areas or neighborhoods. Reply ONLY with a comma-separated list.`,
+              },
+            ],
+          }),
         });
 
+        if (!response.ok) throw new Error(`AI location request failed: ${response.status}`);
         const data = await response.json();
-        if (data.choices && data.choices.length > 0) {
-          let raw = data.choices[0].message.content;
-          // Clean markdown wrappers if AI adds them
-          raw = raw.replace(/```json\s*/gi, "").replace(/```\s*/gi, "").trim();
-          const parsed = JSON.parse(raw);
-          setAiBannerText(parsed.bannerText || "");
-          setAiBannerExpertsTitle(parsed.expertsTitle || "");
-          setAiBannerBonusText(parsed.bonusText || "");
+        const content = data?.choices?.[0]?.message?.content;
+        if (typeof content !== "string") throw new Error("Invalid AI location response");
 
-          // Cache the result
-          localStorage.setItem(cacheKey, JSON.stringify({
-            ...parsed,
-            ts: Date.now()
-          }));
+        const areas = content
+          .split(",")
+          .map((area) => area.replace(/^[\d.\-\s]+/, "").trim().toLowerCase())
+          .filter(Boolean)
+          .slice(0, 3);
+
+        if (!cancelled) {
+          setAiSuggestedAreas(areas);
         }
-      } catch (err) {
-        console.error("AI banner text generation failed:", err);
-        // Fallback — keep empty, the JSX below has default text as fallback
+      } catch (error) {
+        console.error("AI area suggestion failed:", error);
+        if (!cancelled) {
+          setAiSuggestedAreas([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsAiLoading(false);
+        }
       }
     };
 
-    generateBannerText();
-  }, [isAiLoading, searchedLocation, aiSuggestedWorkers, availablePlansCount, availableOffersCount]);
+    fetchSuggestedAreas();
+    return () => {
+      cancelled = true;
+    };
+  }, [searchedLocation]);
 
-  // Extract a short readable city/area name from the full address string
-  const getShortLocation = (fullAddress) => {
-    if (!fullAddress) return "";
-    const parts = fullAddress.split(",");
-    // Return first 2 meaningful parts (city/area level)
-    return parts.slice(0, 2).join(",").trim();
-  };
+  /* =======================================================
+     LOAD WORKERS
+  ======================================================= */
+  useEffect(() => {
+    if (!searchedLocation || !userCoords) {
+      setOnlineWorkers([]);
+      setAiSuggestedWorkers([]);
+      setIsOnlineLoading(false);
+      return;
+    }
+    let cancelled = false;
+    const loadWorkers = async () => {
+      setIsOnlineLoading(true);
+      try {
+        const city = localStorage.getItem("userCity") || getShortLocation(searchedLocation);
+        const workers = await filterWorkersClientSide(userCoords, normalize(city));
+        if (cancelled) return;
 
-  const getNormalizedServiceQuery = (q) => {
-    if (!q) return "";
-    const lower = q.toLowerCase().trim();
-    if (lower.includes("plumb")) return "plumbing";
-    if (lower.includes("electr")) return "electrical";
-    if (lower.includes("carpent")) return "carpentry";
-    if (lower.includes("paint")) return "painting";
-    if (lower.includes("clean")) return "cleaning";
-    if (lower.includes("doc") || lower.includes("med")) return "doctor";
-    if (lower.includes("ac ") || lower === "ac" || lower.includes("air cond")) return "ac repair";
-    if (lower.includes("pack") || lower.includes("mov")) return "packers";
-    if (lower.includes("mechanic")) return "mechanic";
-    return lower;
-  };
-  const normServiceQ = getNormalizedServiceQuery(serviceQuery);
+        const safeWorkers = Array.isArray(workers) ? workers.filter(Boolean) : [];
+        setOnlineWorkers(safeWorkers);
 
-  if (isGoogleAuthProcessing) {
+        if (aiSuggestedAreas.length === 0) {
+          setAiSuggestedWorkers(safeWorkers.slice(0, 5));
+          return;
+        }
+
+        const suggested = safeWorkers.filter((worker) => {
+          const workerLocation = normalize(worker?.location);
+          const workerCity = normalize(worker?.city);
+          return aiSuggestedAreas.some(
+            (area) =>
+              workerLocation.includes(area) ||
+              workerCity.includes(area) ||
+              area.includes(workerLocation) ||
+              area.includes(workerCity)
+          );
+        });
+
+        setAiSuggestedWorkers((suggested.length > 0 ? suggested : safeWorkers).slice(0, 5));
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Worker loading failed:", error);
+          setOnlineWorkers([]);
+          setAiSuggestedWorkers([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsOnlineLoading(false);
+        }
+      }
+    };
+
+    loadWorkers();
+    return () => {
+      cancelled = true;
+    };
+  }, [searchedLocation, userCoords, aiSuggestedAreas]);
+
+  /* =======================================================
+     PLANS + OFFERS
+  ======================================================= */
+  useEffect(() => {
+    let cancelled = false;
+    const loadPlansAndOffers = async () => {
+      try {
+        const [plansResponse, offersResponse] = await Promise.all([
+          fetch("/api/plans"),
+          fetch("/api/offers"),
+        ]);
+        if (!cancelled && plansResponse.ok) {
+          const data = await plansResponse.json();
+          setPlans(Array.isArray(data) ? data : []);
+        }
+        if (!cancelled && offersResponse.ok) {
+          const data = await offersResponse.json();
+          setOffers(Array.isArray(data) ? data : []);
+        }
+      } catch (error) {
+        console.error("Failed to load plans/offers:", error);
+      }
+    };
+
+    loadPlansAndOffers();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /* =======================================================
+     CURRENT DATE
+  ======================================================= */
+  const today = new Date().toISOString().split("T")[0];
+
+  /* =======================================================
+     LOCATION-SPECIFIC PLANS
+  ======================================================= */
+  const isAvailableInCity = useCallback(
+    (item) => {
+      if (!item) return false;
+      if (item.endDate && item.endDate < today) return false;
+      const configuredCity = normalize(item.city);
+      if (!configuredCity || configuredCity === "all") return true;
+      if (!userCity) return false;
+      const targetCities = configuredCity.split(",").map((c) => c.trim()).filter(Boolean);
+      const currentCity = normalize(userCity);
+      return targetCities.some((c) => currentCity.includes(c) || c.includes(currentCity));
+    },
+    [today, userCity]
+  );
+
+  const availableOffers = useMemo(() => offers.filter(isAvailableInCity), [offers, isAvailableInCity]);
+  const availablePlans = useMemo(() => plans.filter(isAvailableInCity), [plans, isAvailableInCity]);
+  const availableOffersCount = availableOffers.length;
+  const availablePlansCount = availablePlans.length;
+
+  /* =======================================================
+     AI BANNER
+  ======================================================= */
+  useEffect(() => {
+    if (isAiLoading || isOnlineLoading || !searchedLocation) return;
+    let cancelled = false;
+    const name = sessionStorage.getItem("userName") || "there";
+    const shortLocation = getShortLocation(searchedLocation);
+    const cacheKey = `aiBanner_${shortLocation}_${name}_${aiSuggestedWorkers.length}_${availablePlansCount}_${availableOffersCount}`;
+    const cached = localStorage.getItem(cacheKey);
+
+    if (cached) {
+      const parsed = safeJsonParse(cached);
+      if (parsed?.ts && Date.now() - parsed.ts < 30 * 60 * 1000) {
+        setAiBannerText(parsed.bannerText || "");
+        setAiBannerExpertsTitle(parsed.expertsTitle || "");
+        setAiBannerBonusText(parsed.bonusText || "");
+        return;
+      }
+    }
+
+    const generateBanner = async () => {
+      setIsBannerLoading(true);
+      try {
+        const workerNames = aiSuggestedWorkers
+          .slice(0, 3)
+          .map((w) => w?.name)
+          .filter(Boolean)
+          .join(", ");
+
+        const workerServices = [
+          ...new Set(aiSuggestedWorkers.map((w) => w?.service).filter(Boolean)),
+        ].join(", ");
+
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: [
+              {
+                role: "user",
+                content: `You are Zy, the Workzy AI assistant.
+Generate a short personalized home-page banner.
+User name: "${name}"
+Location: "${shortLocation}"
+Nearby experts: ${aiSuggestedWorkers.length}
+Worker names: ${workerNames || "none"}
+Worker services: ${workerServices || "various"}
+Available plans: ${availablePlansCount}
+Available offers: ${availableOffersCount}
+
+Return ONLY valid JSON:
+{
+  "bannerText": "...",
+  "expertsTitle": "...",
+  "bonusText": "..."
+}
+
+bannerText must be 1-2 short sentences.
+expertsTitle must be maximum 6 words.
+bonusText must be one short sentence.
+Do not use markdown.`,
+              },
+            ],
+          }),
+        });
+
+        if (!response.ok) throw new Error(`Banner API failed: ${response.status}`);
+        const data = await response.json();
+        const raw = data?.choices?.[0]?.message?.content;
+        if (typeof raw !== "string") throw new Error("Invalid banner response");
+
+        const cleaned = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
+        const firstBrace = cleaned.indexOf("{");
+        const lastBrace = cleaned.lastIndexOf("}");
+        if (firstBrace === -1 || lastBrace === -1) throw new Error("Banner JSON not found");
+
+        const parsed = JSON.parse(cleaned.substring(firstBrace, lastBrace + 1));
+        const result = {
+          bannerText: parsed.bannerText || `Hey ${name}! 🎯 We found ${aiSuggestedWorkers.length} experts near ${shortLocation}.`,
+          expertsTitle: parsed.expertsTitle || "🔥 Top Picks Near You",
+          bonusText: parsed.bonusText || `🎁 ${availablePlansCount} plans and ${availableOffersCount} offers are available in your area.`,
+        };
+
+        if (cancelled) return;
+        setAiBannerText(result.bannerText);
+        setAiBannerExpertsTitle(result.expertsTitle);
+        setAiBannerBonusText(result.bonusText);
+
+        localStorage.setItem(cacheKey, JSON.stringify({ ...result, ts: Date.now() }));
+      } catch (error) {
+        console.error("AI banner generation failed:", error);
+        if (!cancelled) {
+          setAiBannerText(`Hey ${name}! 🎯 We found ${aiSuggestedWorkers.length} experts near ${shortLocation}.`);
+          setAiBannerExpertsTitle("🔥 Top Picks Near You");
+          setAiBannerBonusText(`🎁 ${availablePlansCount} plans and ${availableOffersCount} offers are available in your area.`);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsBannerLoading(false);
+        }
+      }
+    };
+
+    generateBanner();
+    return () => {
+      cancelled = true;
+    };
+  }, [isAiLoading, isOnlineLoading, searchedLocation, aiSuggestedWorkers, availablePlansCount, availableOffersCount]);
+
+  /* =======================================================
+     FILTERED EMERGENCY WORKERS
+  ======================================================= */
+  const emergencyWorkers = useMemo(() => {
+    if (!serviceQuery) return onlineWorkers;
+    return onlineWorkers.filter((w) => workerMatchesService(w, serviceQuery));
+  }, [onlineWorkers, serviceQuery]);
+
+  /* =======================================================
+     WORKER CARD
+  ======================================================= */
+  const WorkerCard = ({ worker, compact = false }) => {
+    const isDoctor = normalize(worker?.service).includes("doctor");
+    const workerId = worker?._id || worker?.id || worker?.name;
+    const openWorker = () => {
+      localStorage.setItem("selected_worker", JSON.stringify(worker));
+      navigate("/worker");
+    };
+
     return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", backgroundColor: "var(--bg-main)" }}>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ width: "40px", height: "40px", border: "4px solid var(--border)", borderTopColor: "var(--primary)", borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 16px" }}></div>
-          <h3 style={{ color: "var(--text-main)", margin: 0 }}>Verifying Authentication...</h3>
-          <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>Please wait while we log you in.</p>
+      <div
+        key={workerId}
+        className="premium-card worker-card"
+        onClick={openWorker}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openWorker();
+          }
+        }}
+        style={{
+          minWidth: compact ? "220px" : "250px",
+          padding: compact ? "16px" : "20px",
+          cursor: "pointer",
+          position: "relative",
+        }}
+      >
+        <span
+          style={{
+            position: "absolute",
+            top: compact ? "12px" : "15px",
+            right: compact ? "12px" : "15px",
+            backgroundColor: "var(--primary-light)",
+            color: "var(--primary-dark)",
+            padding: compact ? "3px 6px" : "4px 8px",
+            borderRadius: "12px",
+            fontSize: compact ? "9.5px" : "10px",
+            fontWeight: 700,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "4px",
+          }}
+        >
+          <FaCircle size={compact ? 6 : 8} style={{ color: "var(--success)" }} />
+          ONLINE
+        </span>
+
+        <div style={{ marginBottom: compact ? "10px" : "12px" }}>
+          {isDoctor ? (
+            <FaStethoscope size={compact ? 24 : 32} style={{ color: "var(--primary)" }} />
+          ) : (
+            <FaUser size={compact ? 24 : 32} style={{ color: "var(--primary)" }} />
+          )}
         </div>
-        <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+
+        <h3 style={{ margin: compact ? "0 0 2px 0" : "0 0 4px 0", fontSize: compact ? "16px" : "18px", fontWeight: "bold", color: "var(--text-primary)" }}>
+          {worker?.name || "Service Professional"}
+        </h3>
+        <p style={{ margin: compact ? "0 0 6px 0" : "0 0 8px 0", fontSize: compact ? "12px" : "13px", color: "var(--text-secondary)", fontWeight: 500 }}>
+          {worker?.service || "Professional Service"}
+        </p>
+
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: compact ? "12px" : "16px", borderTop: "1px solid var(--border-color)", paddingTop: compact ? "8px" : "12px", gap: "8px" }}>
+          <span style={{ fontSize: compact ? "11px" : "12px", color: "var(--text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            📍 {truncateLocation(worker?.city || worker?.location)}
+          </span>
+          <span className="price-badge" style={{ fontSize: compact ? "11px" : undefined, padding: compact ? "2px 6px" : undefined, flexShrink: 0 }}>
+            ₹{worker?.price || 399}
+          </span>
+        </div>
       </div>
     );
-  }
+  };
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Navbar />
 
-      {/* Hero Welcome Banner - Golden Orange with Floating Clouds */}
+      {/* ===================================================
+          HERO
+      =================================================== */}
       <div
         className="hero-welcome-banner"
         style={{
           background: "var(--hero-bg)",
           borderBottom: "2px solid var(--hero-border)",
           color: "var(--hero-text)",
-          padding: "12px 16px 14px 16px",
+          padding: "12px 16px 14px",
           textAlign: "center",
           boxShadow: "0 8px 24px -6px rgba(223, 180, 83, 0.4)",
           position: "relative",
-          overflow: "hidden"
+          overflow: "hidden",
         }}
       >
-        {/* Floating clouds on both sides */}
         <svg
           viewBox="0 0 24 24"
           style={{
@@ -451,7 +913,7 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
             opacity: 0.25,
             fill: "white",
             pointerEvents: "none",
-            animation: "drift 25s linear infinite"
+            animation: "homeDrift 25s linear infinite",
           }}
         >
           <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
@@ -467,24 +929,26 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
             opacity: 0.22,
             fill: "white",
             pointerEvents: "none",
-            animation: "driftReverse 30s linear infinite"
+            animation: "homeDriftReverse 30s linear infinite",
           }}
         >
           <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
         </svg>
 
-        <style>{`
-          @keyframes drift {
-            0% { transform: translateX(0px) translateY(0px); }
-            50% { transform: translateX(15px) translateY(-5px); }
-            100% { transform: translateX(0px) translateY(0px); }
-          }
-          @keyframes driftReverse {
-            0% { transform: translateX(0px) translateY(0px); }
-            50% { transform: translateX(-20px) translateY(5px); }
-            100% { transform: translateX(0px) translateY(0px); }
-          }
-        `}</style>
+        <style>
+          {`
+            @keyframes homeDrift {
+              0% { transform: translateX(0) translateY(0); }
+              50% { transform: translateX(15px) translateY(-5px); }
+              100% { transform: translateX(0) translateY(0); }
+            }
+            @keyframes homeDriftReverse {
+              0% { transform: translateX(0) translateY(0); }
+              50% { transform: translateX(-20px) translateY(5px); }
+              100% { transform: translateX(0) translateY(0); }
+            }
+          `}
+        </style>
 
         <h1 style={{ margin: "0 0 4px 0", fontSize: "22px", fontWeight: 900, color: "var(--hero-text)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", letterSpacing: "-0.3px" }}>
           Find Reliable Service Experts Near You <FaMapMarkerAlt size={20} style={{ color: "#dc2626" }} />
@@ -494,291 +958,380 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
         </p>
       </div>
 
-      <div style={{ flex: 1, width: "100%", margin: "0 auto", padding: "0px", boxSizing: "border-box" }}>
-
+      {/* ===================================================
+          MAIN CONTENT
+      =================================================== */}
+      <div style={{ flex: 1, width: "100%", margin: "0 auto", padding: 0, boxSizing: "border-box" }}>
         <div style={{ position: "relative", zIndex: 100 }}>
-          <LocationSearch
+          <AISmartSearchHub
             value={locationText}
             onChange={setLocationText}
             onSearch={(query) => setServiceQuery(query)}
             detectedLocation={searchedLocation}
-            onLocationUpdate={(loc) => setSearchedLocation(loc)}
-            onCoordsChange={(coords) => setUserCoords(coords)}
+            onLocationUpdate={(location) => {
+              if (!location) return;
+              localStorage.setItem("manualLocationSet", "true");
+              setSearchedLocation(location);
+            }}
+            onCoordsChange={(coords) => {
+              if (!coords || !Number.isFinite(Number(coords.lat)) || !Number.isFinite(Number(coords.lng))) return;
+              const nextCoords = { lat: Number(coords.lat), lng: Number(coords.lng) };
+              localStorage.setItem("userCoordsLat", String(nextCoords.lat));
+              localStorage.setItem("userCoordsLng", String(nextCoords.lng));
+              setUserCoords(nextCoords);
+            }}
+            aiBannerText={aiBannerText}
+            aiBannerExpertsTitle={aiBannerExpertsTitle}
+            aiBannerBonusText={aiBannerBonusText}
+            isAiLoading={isBannerLoading || isAiLoading}
+            aiSuggestedWorkers={aiSuggestedWorkers}
+            availableOffersCount={availableOffersCount}
+            availablePlansCount={availablePlansCount}
+            userName={userName}
           />
         </div>
 
-        {/* Location context banner - Ultra Modern Glassmorphism AI Card */}
-        {searchedLocation && (
+        {/* Unified Services Workspace Card */}
+        <div
+          className="services-workspace-card fade-in"
+          style={{
+            margin: "0 20px 20px 20px",
+            padding: "24px 28px",
+            background: "var(--bg-card)",
+            border: "1.5px solid var(--border-color)",
+            borderRadius: "24px",
+            boxShadow: "var(--shadow-3d)",
+            backdropFilter: "var(--blur)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "20px",
+          }}
+        >
+          {/* Custom Modern Tab Bar */}
           <div
-            className="ai-banner-card"
             style={{
-              margin: "0 20px 20px 20px",
-              padding: "24px 28px",
-              background: "var(--ai-banner-bg)",
-              border: "1.5px solid var(--ai-banner-border)",
-              borderRadius: "20px",
-              fontSize: "14px",
-              color: "#ffffff",
               display: "flex",
-              flexDirection: "column",
-              gap: "12px",
-              cursor: "pointer",
-              transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-              minHeight: "auto",
-              boxShadow: "0 16px 36px -10px rgba(0, 0, 0, 0.25), 0 0 20px rgba(16, 185, 129, 0.15)",
-              position: "relative",
-              overflow: "hidden"
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-3px)";
-              e.currentTarget.style.boxShadow = "0 20px 40px -10px rgba(0, 0, 0, 0.35), 0 0 25px rgba(16, 185, 129, 0.25)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "none";
-              e.currentTarget.style.boxShadow = "0 16px 36px -10px rgba(0, 0, 0, 0.25), 0 0 20px rgba(16, 185, 129, 0.15)";
+              gap: "8px",
+              overflowX: "auto",
+              paddingBottom: "12px",
+              borderBottom: "1px solid var(--border-color)",
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)" }}>
-                  🤖
-                </div>
-                <div>
-                  <span style={{ fontSize: "15px", fontWeight: 800, color: "#ffffff", letterSpacing: "0.2px" }}>
-                    Zy AI — Nearby Search Active
+            <style>
+              {`
+                .workspace-tab-btn {
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 8px;
+                  padding: 10px 20px;
+                  border: 1px solid var(--border-color);
+                  border-radius: 14px;
+                  font-size: 13.5px;
+                  font-weight: 700;
+                  cursor: pointer;
+                  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                  background-color: var(--bg-card-hover);
+                  color: var(--text-secondary);
+                  box-shadow: none;
+                }
+                .workspace-tab-btn:hover {
+                  transform: translateY(-1px);
+                  background-color: var(--primary-light);
+                  color: var(--primary-dark);
+                  border-color: var(--primary);
+                }
+                .workspace-tab-btn.active {
+                  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+                  color: #ffffff;
+                  border-color: var(--primary);
+                  box-shadow: 0 4px 12px var(--primary-glow);
+                  border-bottom: 4px solid var(--primary-dark);
+                }
+                .workspace-tab-btn.active:hover {
+                  transform: none;
+                  color: #ffffff;
+                }
+              `}
+            </style>
+
+            <button
+              type="button"
+              className={`workspace-tab-btn ${activeTab === "categories" ? "active" : ""}`}
+              onClick={() => setActiveTab("categories")}
+            >
+              <FaTools size={14} /> Service Categories
+            </button>
+
+            <button
+              type="button"
+              className={`workspace-tab-btn ${activeTab === "emergency" ? "active" : ""}`}
+              onClick={() => setActiveTab("emergency")}
+            >
+              <FaBolt size={14} /> Emergency Dispatch
+            </button>
+
+            <button
+              type="button"
+              className={`workspace-tab-btn ${activeTab === "collections" ? "active" : ""}`}
+              onClick={() => setActiveTab("collections")}
+            >
+              <FaStar size={14} /> Curated Collections
+            </button>
+
+            <button
+              type="button"
+              className={`workspace-tab-btn ${activeTab === "benefits" ? "active" : ""}`}
+              onClick={() => setActiveTab("benefits")}
+            >
+              <FaPercent size={14} /> Memberships & Deals
+            </button>
+          </div>
+
+          {/* Active Tab Panel Content */}
+          <div className="workspace-tab-panel" style={{ minHeight: "300px" }}>
+            {activeTab === "categories" && (
+              <div className="fade-in" style={{ border: "none", padding: 0 }}>
+                <NearbyWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
+              </div>
+            )}
+
+            {activeTab === "emergency" && (
+              <div className="fade-in" style={{ padding: "8px 0px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
+                  <h2 style={{ fontSize: "20px", fontWeight: 800, color: "var(--text-primary)", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
+                    <FaBolt style={{ color: "var(--warning)" }} /> Instant Booking Services
+                  </h2>
+                  <span style={{ backgroundColor: "var(--danger-light)", color: "var(--danger)", padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
+                    <span className="pulse-dot" style={{ width: "6px", height: "6px", backgroundColor: "var(--danger)", borderRadius: "50%", display: "inline-block" }} />
+                    10-20 MINS ARRIVAL
                   </span>
-                  <div style={{ fontSize: "11px", color: "#34d399", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
-                    <span style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#34d399", display: "inline-block", boxShadow: "0 0 8px #34d399" }}></span>
-                    LIVE REAL-TIME MATCHING
+                </div>
+                <p style={{ margin: "0 0 16px 0", fontSize: "14px", color: "var(--text-secondary)" }}>
+                  The following certified professionals are online, active, and dispatched instantly for emergency assistance.
+                </p>
+
+                {isOnlineLoading ? (
+                  <div className="horizontal-scroll-container custom-scrollbar" style={{ display: "flex", overflowX: "auto", gap: "16px", paddingBottom: "10px" }}>
+                    <SkeletonLoader type="card" count={4} />
                   </div>
+                ) : emergencyWorkers.length === 0 ? (
+                  <div className="premium-card" style={{ padding: "30px", textAlign: "center", color: "var(--text-secondary)" }}>
+                    <span style={{ fontSize: "28px", display: "block", marginBottom: "8px", filter: "grayscale(1)" }}>💤</span>
+                    <p style={{ margin: 0, fontSize: "14px", fontWeight: "bold" }}>No emergency professionals are online right now.</p>
+                    <p style={{ margin: "4px 0 0 0", fontSize: "12px" }}>You can still reserve any provider using standard time slots in Service Categories!</p>
+                  </div>
+                ) : (
+                  <div className="horizontal-scroll-container custom-scrollbar" style={{ display: "flex", overflowX: "auto", gap: "16px", paddingBottom: "10px" }}>
+                    {emergencyWorkers.map((worker) => (
+                      <WorkerCard key={worker._id || worker.id} worker={worker} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === "collections" && (
+              <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                <div>
+                  <h3 style={{ fontSize: "18px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 4px 0", display: "flex", alignItems: "center", gap: "6px" }}>
+                    🏆 Top Rated Professionals
+                  </h3>
+                  <p style={{ margin: "0 0 12px 0", fontSize: "13px", color: "var(--text-secondary)" }}>
+                    Highly recommended, certified experts boasting the highest feedback scores in your location.
+                  </p>
+                  <TopWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
+                </div>
+                <div style={{ borderTop: "1px solid var(--border-color)", paddingTop: "20px", marginTop: "10px" }}>
+                  <h3 style={{ fontSize: "18px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 4px 0", display: "flex", alignItems: "center", gap: "6px" }}>
+                    💸 Budget-Friendly Workers
+                  </h3>
+                  <p style={{ margin: "0 0 12px 0", fontSize: "13px", color: "var(--text-secondary)" }}>
+                    Value-oriented professional helpers operating at competitive flat rates.
+                  </p>
+                  <CheapWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
                 </div>
               </div>
+            )}
 
-              <div style={{ padding: "4px 12px", borderRadius: "20px", background: "rgba(255, 255, 255, 0.1)", border: "1px solid rgba(255, 255, 255, 0.15)", fontSize: "12px", color: "#e2e8f0", fontWeight: 600 }}>
-                📍 {getShortLocation(searchedLocation)}
+            {activeTab === "benefits" && (
+              <div className="fade-in">
+                {availablePlans.length > 0 ? (
+                  <div>
+                    <h2 style={{ fontSize: "20px", fontWeight: 800, color: "var(--text-primary)", marginBottom: "6px", display: "flex", alignItems: "center", gap: "8px" }}>
+                      <FaPercent style={{ color: "#34d399" }} /> Service Plans & Seasonal Offers
+                    </h2>
+                    <p style={{ margin: "0 0 16px 0", fontSize: "14px", color: "var(--text-secondary)" }}>
+                      Save big on recurring home maintenance with our service plans, or copy a promo code below.
+                    </p>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
+                      {availablePlans.map((plan, idx) => {
+                        const features = Array.isArray(plan?.features) ? plan.features : [];
+                        const price = String(plan?.price || "").replace("₹", "");
+                        return (
+                          <div key={idx} className="premium-card" style={{ padding: "20px", border: plan.popular ? "2px solid #eab308" : "1px solid var(--border-color)", display: "flex", flexDirection: "column", justifyComponnet: "space-between", transform: plan.popular ? "scale(1.02)" : "none", boxShadow: plan.popular ? "0 10px 25px rgba(234, 179, 8, 0.15)" : "var(--shadow-3d)" }}>
+                            <div>
+                              {plan.popular && (
+                                <span style={{ backgroundColor: "var(--warning)", color: "#000000", padding: "3px 10px", borderRadius: 12, fontSize: 10, fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "2px", marginBottom: "10px" }}>
+                                  POPULAR <FaStar size={8} />
+                                </span>
+                              )}
+                              <h4 style={{ margin: "0 0 6px 0", fontSize: "15px", color: plan.popular ? "#eab308" : "var(--text-main)", fontWeight: 700 }}>{plan.title}</h4>
+                              <p style={{ margin: "0 0 10px 0", fontSize: "20px", fontWeight: 800, color: "var(--text-primary)" }}>
+                                ₹{price}
+                                <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 500 }}>/{plan.period}</span>
+                              </p>
+                              <ul style={{ paddingLeft: "16px", margin: "0 0 16px 0", fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.5 }}>
+                                {features.slice(0, 3).map((f, i) => <li key={i}>{f}</li>)}
+                              </ul>
+                            </div>
+                            <Link to="/plans-offers" style={{ textDecoration: "none" }}>
+                              <button className="btn-secondary" style={{ width: "100%", padding: "10px", fontSize: "12.5px", borderRadius: "8px", cursor: "pointer" }}>
+                                View Plan Details →
+                              </button>
+                            </Link>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="premium-card" style={{ padding: "30px", textAlign: "center", color: "var(--text-secondary)" }}>
+                    <span style={{ fontSize: "28px", display: "block", marginBottom: "8px", filter: "grayscale(1)" }}>🎁</span>
+                    <p style={{ margin: 0, fontSize: "14px", fontWeight: "bold" }}>No seasonal plans active in your area.</p>
+                    <p style={{ margin: "4px 0 0 0", fontSize: "12px" }}>Check back soon for upcoming holiday promotions and subscriptions!</p>
+                  </div>
+                )}
               </div>
-            </div>
+            )}
+          </div>
+        </div>
 
-            <div style={{ fontSize: "14px", color: "rgba(241, 245, 249, 0.95)", lineHeight: "1.6", fontWeight: 400 }}>
-              {aiBannerText || (<>Hey {userName ? userName.split(' ')[0] : 'there'}! Based on your location <strong>{getShortLocation(searchedLocation)}</strong>, Zy found top verified experts, budget-friendly workers, and instant bookings in your area!</>)}
+        {/* Consolidated Recommendations Feed */}
+        <div
+          className="recommendations-feed-card fade-in"
+          style={{
+            margin: "0 20px 20px 20px",
+            padding: "24px 28px",
+            background: "var(--bg-card)",
+            border: "1.5px solid var(--border-color)",
+            borderRadius: "24px",
+            boxShadow: "var(--shadow-3d)",
+            backdropFilter: "var(--blur)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "28px",
+          }}
+        >
+          {/* Emergency Dispatch Row */}
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
+              <h2 style={{ fontSize: "20px", fontWeight: 800, color: "var(--text-primary)", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
+                <FaBolt style={{ color: "var(--warning)" }} /> Emergency Dispatch
+              </h2>
+              <span style={{ backgroundColor: "var(--danger-light)", color: "var(--danger)", padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
+                <span className="pulse-dot" style={{ width: "6px", height: "6px", backgroundColor: "var(--danger)", borderRadius: "50%", display: "inline-block" }} />
+                10-20 MINS ARRIVAL
+              </span>
             </div>
+            <p style={{ margin: "0 0 16px 0", fontSize: "13.5px", color: "var(--text-secondary)" }}>
+              Certified professionals active right now for emergency callouts.
+            </p>
 
-            {isAiLoading ? (
-              <div style={{ marginTop: "12px" }}>
-                <SkeletonLoader type="list" count={1} />
+            {isOnlineLoading ? (
+              <div className="horizontal-scroll-container custom-scrollbar" style={{ display: "flex", overflowX: "auto", gap: "16px", paddingBottom: "10px" }}>
+                <SkeletonLoader type="card" count={4} />
               </div>
-            ) : aiSuggestedWorkers.length > 0 ? (
-              <div style={{ marginTop: "8px" }}>
-                <style>{`
-                  @media (max-width: 768px) {
-                    .zy-ai-grid {
-                      display: grid !important;
-                      grid-template-columns: repeat(2, 1fr) !important;
-                      gap: 12px !important;
-                    }
-                    .zy-ai-grid > a {
-                      min-width: 0 !important;
-                    }
-                  }
-                `}</style>
-                <strong style={{ fontSize: "13px", color: "#ffffff", letterSpacing: "0.3px", textTransform: "uppercase" }}>{aiBannerExpertsTitle || "🔍 Zy's Top Picks For You:"}</strong>
-                <div className="zy-ai-grid" style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "10px" }}>
-                  {aiSuggestedWorkers.map((worker, idx) => (
-                    <Link
-                      key={idx}
-                      to="/worker"
-                      onClick={() => localStorage.setItem("selected_worker", JSON.stringify(worker))}
-                      style={{ textDecoration: "none" }}
-                    >
-                      <div style={{
-                        backgroundColor: "rgba(255, 255, 255, 0.08)",
-                        backdropFilter: "blur(12px)",
-                        padding: "12px 16px",
-                        borderRadius: "14px",
-                        border: "1px solid rgba(255, 255, 255, 0.15)",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "4px",
-                        minWidth: "160px",
-                        cursor: "pointer",
-                        transition: "all 0.2s ease"
-                      }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.16)";
-                          e.currentTarget.style.transform = "translateY(-2px)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.08)";
-                          e.currentTarget.style.transform = "none";
-                        }}
-                      >
-                        <span style={{ fontWeight: 800, fontSize: "14px", color: "#ffffff" }}>{worker.name}</span>
-                        <span style={{ fontSize: "12px", color: "#94a3b8", fontWeight: 500 }}>{worker.service}</span>
-                        <span style={{ fontSize: "12px", color: "#fbbf24", fontWeight: 800, display: "flex", alignItems: "center", gap: "4px", marginTop: "2px" }}>⭐ {worker.rating}</span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+            ) : emergencyWorkers.length === 0 ? (
+              <div className="premium-card" style={{ padding: "20px", textAlign: "center", color: "var(--text-secondary)", backgroundColor: "rgba(0,0,0,0.02)" }}>
+                <p style={{ margin: 0, fontSize: "13.5px", fontWeight: "bold" }}>No emergency professionals are online right now.</p>
               </div>
             ) : (
-              <div style={{ marginTop: "8px", fontSize: "13px", color: "rgba(226, 232, 240, 0.8)" }}>
-                No specific experts matched locally. Explore all options below!
-              </div>
-            )}
-
-            {!isAiLoading && (availableOffersCount > 0 || availablePlansCount > 0) && (
-              <div style={{ marginTop: "8px", paddingTop: "14px", borderTop: "1px solid rgba(255, 255, 255, 0.12)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
-                <div>
-                  <strong style={{ fontSize: "13px", color: "#ffffff", display: "flex", alignItems: "center", gap: "6px" }}>
-                    🎁 Location Bonuses Unlocked!
-                  </strong>
-                  <div style={{ fontSize: "12px", color: "rgba(203, 213, 225, 0.9)", marginTop: "2px" }}>
-                    {aiBannerBonusText || (<>Zy analyzed {availablePlansCount > 0 && <strong>{availablePlansCount} Service Plan{availablePlansCount !== 1 ? 's' : ''}</strong>}
-                    {availablePlansCount > 0 && availableOffersCount > 0 && " and "}
-                    {availableOffersCount > 0 && <strong>{availableOffersCount} Active Promo Offer{availableOffersCount !== 1 ? 's' : ''}</strong>} for your area!</>)}
-                  </div>
-                </div>
-                <Link 
-                  to="/plans-offers" 
-                  onClick={(e) => e.stopPropagation()}
-                  style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "10px 18px", background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", color: "#ffffff", borderRadius: "12px", fontSize: "13px", fontWeight: 800, textDecoration: "none", boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)", transition: "all 0.2s ease" }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.04)"}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
-                >
-                  View Plans & Offers →
-                </Link>
+              <div className="horizontal-scroll-container custom-scrollbar" style={{ display: "flex", overflowX: "auto", gap: "16px", paddingBottom: "10px" }}>
+                {emergencyWorkers.map((worker) => (
+                  <WorkerCard key={worker._id || worker.id} worker={worker} compact={true} />
+                ))}
               </div>
             )}
           </div>
-        )}
 
-        <div className="home-section" style={{ marginBottom: "0" }}>
-          <NearbyWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
-        </div>
+          <div style={{ borderTop: "1px solid var(--border-color)", opacity: 0.4 }} />
 
-
-
-        {/* 🚨 Instant Booking Services (Active Online Workers) */}
-        <div className="fade-in home-section" style={{ padding: "20px 24px", margin: "14px 0px", background: "linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(239, 68, 68, 0.01) 100%)", borderRadius: "0px", borderTop: "1.5px solid rgba(239, 68, 68, 0.12)", borderBottom: "1.5px solid rgba(239, 68, 68, 0.12)", borderLeft: "none", borderRight: "none" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
-            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-primary)", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
-              <FaBolt style={{ color: "var(--warning)" }} /> Instant Booking Services
+          {/* Curated Collections Row */}
+          <div>
+            <h2 style={{ fontSize: "20px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 4px 0", display: "flex", alignItems: "center", gap: "6px" }}>
+              <FaStar style={{ color: "var(--warning)" }} /> Curated Collections
             </h2>
-            <span style={{ backgroundColor: "var(--danger-light)", color: "var(--danger)", padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
-              <span className="pulse-dot" style={{ width: "6px", height: "6px", backgroundcolor: "var(--danger)", borderRadius: "50%", display: "inline-block" }} />
-              10-20 MINS ARRIVAL
-            </span>
+            <p style={{ margin: "0 0 16px 0", fontSize: "13.5px", color: "var(--text-secondary)" }}>
+              Hand-picked local experts selected for high performance and best rates.
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+              <div>
+                <h3 style={{ fontSize: "16px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 10px 0" }}>
+                  🏆 Top Rated Near You
+                </h3>
+                <TopWorkers flat={true} searchedLocation={searchedLocation} userCoords={userCoords} />
+              </div>
+              <div style={{ borderTop: "1px solid var(--border-color)", paddingTop: "18px", marginTop: "6px" }}>
+                <h3 style={{ fontSize: "16px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 10px 0" }}>
+                  💸 Best Value Picks
+                </h3>
+                <CheapWorkers flat={true} searchedLocation={searchedLocation} userCoords={userCoords} />
+              </div>
+            </div>
           </div>
-          <p style={{ margin: "0 0 10px 0", fontSize: "14px", color: "var(--text-secondary)" }}>
-            The following certified professionals are currently online, active, and dispatched instantly for emergency assistance.
-          </p>
 
-          {isOnlineLoading ? (
-            <div className="horizontal-scroll-container" style={{ display: "flex", overflowX: "auto", gap: "16px", paddingBottom: "10px" }}>
-              <SkeletonLoader type="card" count={4} />
-            </div>
-          ) : (serviceQuery
-            ? onlineWorkers.filter((w) => {
-              if (!w.service) return false;
-              const ws = w.service.toLowerCase();
-              const q = serviceQuery.toLowerCase().trim();
-              return ws.includes(q) || ws.includes(normServiceQ) || normServiceQ.includes(ws);
-            })
-            : onlineWorkers
-          ).length === 0 ? (
-            <div className="premium-card" style={{ padding: "30px", textAlign: "center", color: "var(--text-secondary)" }}>
-              <span style={{ fontSize: "28px", display: "block", marginBottom: "8px", filter: "grayscale(1)" }}>💤</span>
-              <p style={{ margin: 0, fontSize: "14px", fontWeight: "bold" }}>No emergency professionals are online right now.</p>
-              <p style={{ margin: "4px 0 0 0", fontSize: "12px" }}>You can still reserve any provider using standard time slots below!</p>
-            </div>
-          ) : (
-            <div className="horizontal-scroll-container" style={{ display: "flex", overflowX: "auto", gap: "16px", paddingBottom: "10px" }}>
-              {(serviceQuery
-                ? onlineWorkers.filter((w) => {
-                  if (!w.service) return false;
-                  const ws = w.service.toLowerCase();
-                  const q = serviceQuery.toLowerCase().trim();
-                  return ws.includes(q) || ws.includes(normServiceQ) || normServiceQ.includes(ws);
-                })
-                : onlineWorkers
-              ).map((worker) => (
-                <div
-                  key={worker._id || worker.id}
-                  className="premium-card worker-card"
-                  onClick={() => {
-                    localStorage.setItem("selected_worker", JSON.stringify(worker));
-                    navigate("/worker");
-                  }}
-                  style={{
-                    minWidth: "250px",
-                    padding: "20px",
-                    cursor: "pointer",
-                    position: "relative"
-                  }}
-                >
-                  <span style={{ position: "absolute", top: "15px", right: "15px", backgroundColor: "var(--primary-light)", color: "var(--primary-dark)", padding: "4px 8px", borderRadius: "12px", fontSize: "10px", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                    <FaCircle size={8} style={{ color: "var(--success)" }} /> ONLINE
-                  </span>
-                  <div style={{ marginBottom: "12px" }}>
-                    {worker.service.includes("Doctors") ? <FaStethoscope size={32} style={{ color: "var(--primary)" }} /> : <FaUser size={32} style={{ color: "var(--primary)" }} />}
-                  </div>
-                  <h3 style={{ margin: "0 0 4px 0", fontSize: "18px", fontWeight: "bold", color: "var(--text-primary)" }}>{worker.name}</h3>
-                  <p style={{ margin: "0 0 8px 0", fontSize: "13px", color: "var(--text-secondary)", fontWeight: 500 }}>{worker.service}</p>
+          <div style={{ borderTop: "1px solid var(--border-color)", opacity: 0.4 }} />
 
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "16px", borderTop: "1px solid var(--border-color)", paddingTop: "12px" }}>
-                    <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>📍 {truncateLocation(worker.city)}</span>
-                    <span className="price-badge">₹{worker.price || 399}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="home-section" style={{ marginBottom: "0" }}>
-          <TopWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
-        </div>
-        <div className="home-section" style={{ marginBottom: "0" }}>
-          <CheapWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
-        </div>
-
-        {/* 🏷️ Service Plans & Seasonal Offers Preview */}
-        {plans.length > 0 && (
-          <div className="home-section" style={{ padding: "30px 24px", borderTop: "1.5px solid var(--border-color)", borderBottom: "1.5px solid var(--border-color)" }}>
-            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-primary)", marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
-              <FaPercent style={{ color: "#34d399" }} /> Service Plans & Seasonal Offers
+          {/* Memberships & Deals Row */}
+          <div>
+            <h2 style={{ fontSize: "20px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 4px 0", display: "flex", alignItems: "center", gap: "6px" }}>
+              <FaPercent style={{ color: "#34d399" }} /> Memberships & Deals
             </h2>
-            <p style={{ margin: "0 0 20px 0", fontSize: "14px", color: "var(--text-secondary)" }}>
+            <p style={{ margin: "0 0 16px 0", fontSize: "13.5px", color: "var(--text-secondary)" }}>
               Save big on recurring home maintenance with our service plans, or copy a promo code below.
             </p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px", marginBottom: "20px" }}>
-              {plans.filter(p => !p.endDate || p.endDate >= today).slice(0, 3).map((plan, idx) => (
-                <div key={idx} className="premium-card" style={{ padding: "24px", border: plan.popular ? "2px solid #eab308" : "1px solid var(--border-color)", display: "flex", flexDirection: "column", justifyContent: "space-between", transform: plan.popular ? "scale(1.02)" : "none", boxShadow: plan.popular ? "0 10px 25px rgba(234, 179, 8, 0.15)" : "var(--shadow-3d)" }}>
-                  <div>
-                    {plan.popular && (
-                      <span style={{ backgroundColor: "var(--warning)", color: "#000000", padding: "3px 10px", borderRadius: 12, fontSize: 10, fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "2px", marginBottom: "10px" }}>
-                        POPULAR <FaStar size={8} />
-                      </span>
-                    )}
-                    <h4 style={{ margin: "0 0 6px 0", fontSize: "16px", color: plan.popular ? "#eab308" : "var(--text-main)", fontWeight: 700 }}>{plan.title}</h4>
-                    <p style={{ margin: "0 0 12px 0", fontSize: "22px", fontWeight: 800, color: "var(--text-primary)" }}>
-                      ₹{(plan.price || "").replace("₹", "")}
-                      <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 500 }}>/{plan.period}</span>
-                    </p>
-                    <ul style={{ paddingLeft: "16px", margin: "0 0 16px 0", fontSize: "12.5px", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                      {plan.features.slice(0, 3).map((f, i) => <li key={i}>{f}</li>)}
-                    </ul>
-                  </div>
-                  <Link to="/plans-offers" style={{ textDecoration: "none" }}>
-                    <button className="btn-secondary" style={{ width: "100%", padding: "10px", fontSize: "13px", borderRadius: "8px", cursor: "pointer" }}>
-                      View Plan Details →
-                    </button>
-                  </Link>
-                </div>
-              ))}
-            </div>
+
+            {availablePlans.length > 0 ? (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
+                {availablePlans.slice(0, 3).map((plan, idx) => {
+                  const features = Array.isArray(plan?.features) ? plan.features : [];
+                  const price = String(plan?.price || "").replace("₹", "");
+                  return (
+                    <div key={idx} className="premium-card" style={{ padding: "20px", border: plan.popular ? "2px solid #eab308" : "1px solid var(--border-color)", display: "flex", flexDirection: "column", justifyContent: "space-between", transform: plan.popular ? "scale(1.02)" : "none", boxShadow: plan.popular ? "0 10px 25px rgba(234, 179, 8, 0.15)" : "var(--shadow-3d)" }}>
+                      <div>
+                        {plan.popular && (
+                          <span style={{ backgroundColor: "var(--warning)", color: "#000000", padding: "3px 10px", borderRadius: 12, fontSize: 10, fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "2px", marginBottom: "10px" }}>
+                            POPULAR <FaStar size={8} />
+                          </span>
+                        )}
+                        <h4 style={{ margin: "0 0 6px 0", fontSize: "15px", color: plan.popular ? "#eab308" : "var(--text-main)", fontWeight: 700 }}>{plan.title}</h4>
+                        <p style={{ margin: "0 0 10px 0", fontSize: "20px", fontWeight: 800, color: "var(--text-primary)" }}>
+                          ₹{price}
+                          <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 500 }}>/{plan.period}</span>
+                        </p>
+                        <ul style={{ paddingLeft: "16px", margin: "0 0 16px 0", fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.5 }}>
+                          {features.slice(0, 3).map((f, i) => <li key={i}>{f}</li>)}
+                        </ul>
+                      </div>
+                      <Link to="/plans-offers" style={{ textDecoration: "none" }}>
+                        <button className="btn-secondary" style={{ width: "100%", padding: "10px", fontSize: "12.5px", borderRadius: "8px", cursor: "pointer" }}>
+                          View Plan Details →
+                        </button>
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="premium-card" style={{ padding: "24px", textAlign: "center", color: "var(--text-secondary)", backgroundColor: "rgba(0,0,0,0.02)" }}>
+                <p style={{ margin: 0, fontSize: "13.5px", fontWeight: "bold" }}>No seasonal plans active in your area.</p>
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
         {/* 🛡️ Trust Signals Section */}
         <div style={{
@@ -791,7 +1344,7 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
           borderRadius: "20px",
           border: "1.5px solid var(--border-color)",
           backdropFilter: "blur(12px)",
-          textAlign: "center"
+          textAlign: "center",
         }}>
           <div>
             <div style={{ color: "var(--warning)", fontSize: "20px", marginBottom: "8px" }}>⭐ ⭐ ⭐ ⭐ ⭐</div>
@@ -821,7 +1374,7 @@ No markdown, no \`\`\`json wrappers. Reply with ONLY the raw JSON.`
           backgroundColor: "var(--bg-card)",
           borderTop: "1px solid var(--border-color)",
           marginTop: "40px",
-          fontWeight: 500
+          fontWeight: 500,
         }}
       >
         © 2026 Workzy Inc. All rights reserved. Made with ❤️ by PS-152 Team.

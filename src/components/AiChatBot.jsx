@@ -543,12 +543,38 @@ function AiChatBot() {
       { name: "Doctors", keywords: ["doctor", "doctr", "medical", "consultation", "physician", "clinic", "sick", "health", "ill", "fever", "pain", "injury", "medicine", "cough", "cold", "flu", "hospital", "patient", "pediatrician", "cardiologist", "dermatologist", "orthopedic", "gynecologist", "fever consultation", "prescription", "general practitioner", "medical specialist", "stomach pain", "headache", "checkup", "fever", "blood clot", "emergency", "poision", "sick", "body pains"] }
     ];
 
-    // Fast-path: Check direct substring occurrence of any keyword
-    
+    // Priority 1: Specific multi-word phrase matching (e.g. "washing machine", "ac repair", "floor clean", "car wash", "bike wash")
     for (const service of servicesList) {
       for (const keyword of service.keywords) {
-        if (qLower.includes(keyword)) {
-          return service.name;
+        if (keyword.includes(" ")) {
+          if (qLower.includes(keyword)) {
+            return service.name;
+          }
+        }
+      }
+    }
+
+    // Priority 2: Exact single-word keyword match (allowing short codes like "ac", "ro")
+    const words = qLower.split(/[\s,./?#@!$%^&*()_+={}[\]|\\:;"'-]+/);
+    for (const word of words) {
+      for (const service of servicesList) {
+        for (const keyword of service.keywords) {
+          if (word === keyword) {
+            return service.name;
+          }
+        }
+      }
+    }
+
+    // Priority 3: Substring matches for longer words (avoiding short/generic substring hits like "cool", "clean", "paint")
+    for (const word of words) {
+      if (word.length < 4) continue;
+      for (const service of servicesList) {
+        for (const keyword of service.keywords) {
+          if (keyword.length > 3 && (word.includes(keyword) || keyword.includes(word))) {
+            if (keyword === "cool" || keyword === "clean" || keyword === "paint") continue;
+            return service.name;
+          }
         }
       }
     }
@@ -560,7 +586,6 @@ function AiChatBot() {
       "safety", "verified", "time", "hours", "location", "cities", "help", "complaint"
     ]);
 
-    const words = qLower.split(/[\s,./?#@!$%^&*()_+={}[\]|\\:;"'-]+/);
     let bestService = null;
     let minDistance = Infinity;
 
@@ -961,6 +986,32 @@ function AiChatBot() {
     }
   };
 
+  const isMobile = window.innerWidth <= 600;
+
+  const renderBoldText = (text) => {
+    if (!text) return "";
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, index) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return <strong key={index}>{part.slice(2, -2)}</strong>;
+      }
+      return part;
+    });
+  };
+
+  const clearChat = () => {
+    setMessages([{
+      sender: "ai",
+      text: "Hey there! I'm Zy, your smart service assistant. 🤖✨\n\nDescribe any issue or service you need — like 'AC not cooling', 'bridal makeup', or 'house cleaning' — and I'll instantly match you with the best local experts!"
+    }]);
+  };
+
+  const handleInputKeyDown = (e) => {
+    if (e.key === "Enter" && !isTyping) {
+      handleSendMessage();
+    }
+  };
+
   if (
     role === "admin" ||
     role === "worker" ||
@@ -1000,97 +1051,158 @@ function AiChatBot() {
             userSelect: isDragging || isResizing ? "none" : "auto"
           }}
         >
-          {/* ── Header ── */}
+          {/* =================================================
+              HEADER
+          ================================================= */}
+
           <div
             className="zy-header"
-            onMouseDown={handleHeaderMouseDown}
+            onMouseDown={
+              isMobile
+                ? undefined
+                : handleHeaderMouseDown
+            }
             style={{
               padding: "16px 18px",
               display: "flex",
-              justifyContent: "space-between",
+              justifyContent:
+                "space-between",
               alignItems: "center",
-              cursor: "move",
+              cursor: isMobile
+                ? "default"
+                : "move",
               userSelect: "none",
-              position: "relative"
+              position: "relative",
+              flexShrink: 0,
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative", zIndex: 1 }}>
-              <div style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "12px",
-                background: "linear-gradient(135deg, rgba(179, 222, 229, 0.3) 0%, rgba(255,255,255,0.1) 100%)",
+            {/* BRAND */}
+            <div
+              style={{
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                fontSize: "22px",
-                border: "1px solid rgba(179, 222, 229, 0.2)"
-              }}>
+                gap: "12px",
+                position: "relative",
+                zIndex: 1,
+              }}
+            >
+              <div
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  borderRadius: "12px",
+                  background:
+                    "linear-gradient(135deg, rgba(179,222,229,0.3) 0%, rgba(255,255,255,0.1) 100%)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent:
+                    "center",
+                  fontSize: "22px",
+                  border:
+                    "1px solid rgba(179,222,229,0.2)",
+                }}
+              >
                 🤖
               </div>
+
               <div>
-                <div style={{ fontSize: "15px", fontWeight: 700, color: "white", letterSpacing: "0.3px" }}>
+                <div
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: 700,
+                    color: "white",
+                    letterSpacing:
+                      "0.3px",
+                  }}
+                >
                   Zy
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                  }}
+                >
                   <div className="zy-status-dot" />
-                  <span style={{ fontSize: "11px", fontWeight: 500, color: "rgba(179, 222, 229, 0.9)", letterSpacing: "0.2px" }}>
+
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      color:
+                        "rgba(179,222,229,0.9)",
+                    }}
+                  >
                     AI Service Assistant
                   </span>
                 </div>
               </div>
             </div>
-            <div style={{ display: "flex", gap: "8px", position: "relative", zIndex: 1 }}>
+
+            {/* HEADER BUTTONS */}
+
+            <div
+              style={{
+                display: "flex",
+                gap: "8px",
+                position: "relative",
+                zIndex: 2,
+              }}
+            >
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMessages([{
-                    sender: "ai",
-                    text: "Hey there! I'm Zy, your smart service assistant. 🤖✨\n\nDescribe any issue or service you need — like 'AC not cooling', 'bridal makeup', or 'house cleaning' — and I'll instantly match you with the best local experts!"
-                  }]);
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  clearChat();
                 }}
+                aria-label="Clear chat"
+                title="Clear chat"
                 style={{
                   background: "rgba(255,255,255,0.1)",
                   border: "1px solid rgba(255,255,255,0.15)",
+                  borderBottom: "none",
+                  boxShadow: "none",
+                  padding: 0,
                   borderRadius: "8px",
                   color: "white",
                   width: "30px",
                   height: "30px",
+                  cursor: "pointer",
+                  fontSize: "14px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  cursor: "pointer",
-                  fontSize: "14px",
-                  padding: 0,
-                  boxShadow: "none",
-                  borderBottom: "none",
-                  transition: "background 0.2s"
+                  transform: "none"
                 }}
-                title="Clear chat"
               >
                 🗑️
               </button>
+
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
                   setIsOpen(false);
                 }}
+                aria-label="Close chat"
+                title="Close"
                 style={{
                   background: "rgba(255,255,255,0.1)",
                   border: "1px solid rgba(255,255,255,0.15)",
+                  borderBottom: "none",
+                  boxShadow: "none",
+                  padding: 0,
                   borderRadius: "8px",
                   color: "white",
                   width: "30px",
                   height: "30px",
+                  cursor: "pointer",
+                  fontSize: "16px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  cursor: "pointer",
-                  fontSize: "16px",
-                  padding: 0,
-                  boxShadow: "none",
-                  borderBottom: "none",
-                  transition: "background 0.2s"
+                  transform: "none"
                 }}
               >
                 ×
@@ -1098,276 +1210,667 @@ function AiChatBot() {
             </div>
           </div>
 
-          {/* ── Messages ── */}
+          {/* =================================================
+              MESSAGES
+          ================================================= */}
+
           <div
             className="zy-messages"
             style={{
               flex: 1,
+              minHeight: 0,
               padding: "16px",
               overflowY: "auto",
               display: "flex",
               flexDirection: "column",
               gap: "14px",
-              background: "linear-gradient(180deg, rgba(248,250,252,0.5) 0%, rgba(255,255,255,0.3) 100%)"
+              background:
+                "linear-gradient(180deg, rgba(248,250,252,0.5) 0%, rgba(255,255,255,0.3) 100%)",
             }}
           >
-            {messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className="zy-msg"
-                style={{
-                  alignSelf: msg.sender === "user" ? "flex-end" : "flex-start",
-                  maxWidth: "88%",
-                  display: "flex",
-                  flexDirection: "column"
-                }}
-              >
-                {/* Sender label */}
-                <div style={{
-                  fontSize: "10.5px",
-                  fontWeight: 600,
-                  color: msg.sender === "user" ? "var(--text-secondary)" : "var(--primary)",
-                  marginBottom: "4px",
-                  paddingLeft: msg.sender === "user" ? "0" : "2px",
-                  paddingRight: msg.sender === "user" ? "2px" : "0",
-                  textAlign: msg.sender === "user" ? "right" : "left",
-                  letterSpacing: "0.5px",
-                  textTransform: "uppercase"
-                }}>
-                  {msg.sender === "user" ? "You" : "Zy"}
-                </div>
-
+            {messages.map(
+              (message, index) => (
                 <div
-                  className={msg.sender === "user" ? "zy-msg-user" : "zy-msg-ai"}
+                  key={`${message.sender}-${index}`}
+                  className="zy-msg"
                   style={{
-                    padding: "12px 16px",
-                    fontSize: "13.5px",
-                    lineHeight: "1.55",
-                    whiteSpace: "pre-line",
-                    letterSpacing: "0.1px"
+                    alignSelf:
+                      message.sender ===
+                      "user"
+                        ? "flex-end"
+                        : "flex-start",
+                    maxWidth: "88%",
+                    display: "flex",
+                    flexDirection:
+                      "column",
                   }}
                 >
-                  {msg.text}
+                  {/* SENDER */}
 
-                  {!msg.bonusText && msg.link && (
-                    <div style={{ marginTop: "12px" }}>
-                      <Link
-                        to={msg.link}
-                        onClick={() => setIsOpen(false)}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "6px",
-                          padding: "8px 14px",
-                          background: "#E5F6F8",
-                          color: "#1F353B",
-                          borderRadius: "8px",
-                          textDecoration: "none",
-                          fontWeight: 700,
-                          fontSize: "13px",
-                          border: "1px solid #B3DEE5",
-                          transition: "all 0.2s"
-                        }}
-                      >
-                        {msg.linkText} →
-                      </Link>
-                    </div>
-                  )}
-                </div>
-
-                {/* Worker Match Cards */}
-                {msg.workersList && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "10px" }}>
-                    {msg.workersList.map((worker, wIdx) => (
-                      <div key={wIdx} className="zy-worker-card">
-                        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
-                          <div style={{
-                            width: "38px",
-                            height: "38px",
-                            borderRadius: "10px",
-                            background: "linear-gradient(135deg, #31525B 0%, #B3DEE5 100%)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: "white",
-                            fontWeight: 700,
-                            fontSize: "15px",
-                            flexShrink: 0
-                          }}>
-                            {worker.name ? worker.name.charAt(0).toUpperCase() : "W"}
-                          </div>
-                          <div style={{ flex: 1 }}>
-                            <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: "#1F353B" }}>
-                              {worker.name}
-                            </h4>
-                            <div style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "2px", display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-                              <span>{worker.service || msg.category}</span>
-                              {worker.city && <span style={{ color: "#31525B", fontWeight: 700, background: "rgba(49,82,91,0.08)", padding: "1px 6px", borderRadius: "4px", fontSize: "10.5px" }}>📍 {worker.city}</span>}
-                            </div>
-                          </div>
-                        </div>
-                        <div style={{
-                          display: "flex",
-                          gap: "12px",
-                          fontSize: "12px",
-                          color: "var(--text-secondary)",
-                          padding: "8px 10px",
-                          background: "rgba(49, 82, 91, 0.04)",
-                          borderRadius: "8px",
-                          marginBottom: "10px"
-                        }}>
-                          <span>⭐ {worker.rating || "N/A"}</span>
-                          <span>🛠️ {worker.experience || "Exp."}</span>
-                          <span style={{ color: "#31525B", fontWeight: 700 }}>💰 ₹{worker.price || 350}</span>
-                        </div>
-                        <Link
-                          to="/worker"
-                          onClick={() => {
-                            localStorage.setItem("selected_worker", JSON.stringify(worker));
-                            setIsOpen(false);
-                          }}
-                          style={{ textDecoration: "none" }}
-                        >
-                          <button className="zy-book-btn">
-                            View Profile & Book →
-                          </button>
-                        </Link>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Bonus Text Block */}
-                {msg.bonusText && (
                   <div
-                    className="zy-msg-ai"
                     style={{
-                      padding: "12px 16px",
-                      fontSize: "13.5px",
-                      lineHeight: "1.55",
-                      whiteSpace: "pre-line",
-                      letterSpacing: "0.1px",
-                      marginTop: "10px"
+                      fontSize: "10.5px",
+                      fontWeight: 600,
+                      color:
+                        message.sender ===
+                        "user"
+                          ? "var(--text-secondary)"
+                          : "var(--primary)",
+                      marginBottom: "4px",
+                      textAlign:
+                        message.sender ===
+                        "user"
+                          ? "right"
+                          : "left",
+                      letterSpacing:
+                        "0.5px",
+                      textTransform:
+                        "uppercase",
                     }}
                   >
-                    {msg.bonusText}
-                    {msg.link && (
-                      <div style={{ marginTop: "12px" }}>
+                    {message.sender ===
+                    "user"
+                      ? "You"
+                      : "Zy"}
+                  </div>
+
+                  {/* MESSAGE BODY */}
+
+                  <div
+                    className={
+                      message.sender ===
+                      "user"
+                        ? "zy-msg-user"
+                        : "zy-msg-ai"
+                    }
+                    style={{
+                      padding:
+                        "12px 16px",
+                      fontSize:
+                        "13.5px",
+                      lineHeight: 1.55,
+                      whiteSpace:
+                        "pre-line",
+                    }}
+                  >
+                    {renderBoldText(
+                      message.text
+                    )}
+
+                    {/* ACTION LINK */}
+
+                    {message.link && (
+                      <div
+                        style={{
+                          marginTop:
+                            "12px",
+                        }}
+                      >
                         <Link
-                          to={msg.link}
-                          onClick={() => setIsOpen(false)}
+                          to={
+                            message.link
+                          }
+                          onClick={() =>
+                            setIsOpen(
+                              false
+                            )
+                          }
                           style={{
-                            display: "inline-flex",
-                            alignItems: "center",
+                            display:
+                              "inline-flex",
+                            alignItems:
+                              "center",
                             gap: "6px",
-                            padding: "8px 14px",
-                            background: "#E5F6F8",
-                            color: "#1F353B",
-                            borderRadius: "8px",
-                            textDecoration: "none",
-                            fontWeight: 700,
-                            fontSize: "13px",
-                            border: "1px solid #B3DEE5",
-                            transition: "all 0.2s"
+                            padding:
+                              "8px 14px",
+                            background:
+                              "#E5F6F8",
+                            color:
+                              "#1F353B",
+                            borderRadius:
+                              "8px",
+                            textDecoration:
+                              "none",
+                            fontWeight:
+                              700,
+                            fontSize:
+                              "13px",
+                            border:
+                              "1px solid #B3DEE5",
                           }}
                         >
-                          {msg.linkText} →
+                          {message.linkText ||
+                            "Open"}{" "}
+                          →
                         </Link>
                       </div>
                     )}
                   </div>
-                )}
-              </div>
-            ))}
 
-            {/* Typing indicator */}
+                  {/* =================================================
+                      WORKER CARDS
+                  ================================================= */}
+
+                  {Array.isArray(
+                    message.workersList
+                  ) &&
+                    message.workersList
+                      .length >
+                      0 && (
+                      <div
+                        style={{
+                          display:
+                            "flex",
+                          flexDirection:
+                            "column",
+                          gap: "10px",
+                          marginTop:
+                            "10px",
+                        }}
+                      >
+                        {message.workersList.map(
+                          (
+                            worker,
+                            workerIndex
+                          ) => {
+                            const workerId =
+                              worker.id ||
+                              worker._id ||
+                              `${worker.name}-${workerIndex}`;
+
+                            const initial =
+                              worker.name
+                                ? worker.name
+                                    .charAt(
+                                      0
+                                    )
+                                    .toUpperCase()
+                                : "W";
+
+                            return (
+                              <div
+                                key={
+                                  workerId
+                                }
+                                className="zy-worker-card"
+                              >
+                                {/* WORKER HEADER */}
+
+                                <div
+                                  style={{
+                                    display:
+                                      "flex",
+                                    alignItems:
+                                      "center",
+                                    gap: "10px",
+                                    marginBottom:
+                                      "8px",
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      width:
+                                        "38px",
+                                      height:
+                                        "38px",
+                                      borderRadius:
+                                        "10px",
+                                      background:
+                                        "linear-gradient(135deg, #31525B 0%, #B3DEE5 100%)",
+                                      display:
+                                        "flex",
+                                      alignItems:
+                                        "center",
+                                      justifyContent:
+                                        "center",
+                                      color:
+                                        "white",
+                                      fontWeight:
+                                        700,
+                                      fontSize:
+                                        "15px",
+                                      flexShrink:
+                                        0,
+                                    }}
+                                  >
+                                    {
+                                      initial
+                                    }
+                                  </div>
+
+                                  <div
+                                    style={{
+                                      flex: 1,
+                                      minWidth: 0,
+                                    }}
+                                  >
+                                    <h4
+                                      style={{
+                                        margin: 0,
+                                        fontSize:
+                                          "14px",
+                                        fontWeight:
+                                          700,
+                                        color:
+                                          "#1F353B",
+                                        overflow:
+                                          "hidden",
+                                        textOverflow:
+                                          "ellipsis",
+                                        whiteSpace:
+                                          "nowrap",
+                                      }}
+                                    >
+                                      {worker.name ||
+                                        "Service Professional"}
+                                    </h4>
+
+                                    <div
+                                      style={{
+                                        fontSize:
+                                          "11px",
+                                        color:
+                                          "var(--text-secondary)",
+                                        marginTop:
+                                          "2px",
+                                        display:
+                                          "flex",
+                                        alignItems:
+                                          "center",
+                                        gap: "6px",
+                                        flexWrap:
+                                          "wrap",
+                                      }}
+                                    >
+                                      <span>
+                                        {worker.service ||
+                                          message.category ||
+                                          "Professional"}
+                                      </span>
+
+                                      {worker.city && (
+                                        <span
+                                          style={{
+                                            color:
+                                              "#31525B",
+                                            fontWeight:
+                                              700,
+                                            background:
+                                              "rgba(49,82,91,0.08)",
+                                            padding:
+                                              "1px 6px",
+                                            borderRadius:
+                                              "4px",
+                                            fontSize:
+                                              "10.5px",
+                                          }}
+                                        >
+                                          📍{" "}
+                                          {
+                                            worker.city
+                                          }
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* WORKER DETAILS */}
+
+                                <div
+                                  style={{
+                                    display:
+                                      "flex",
+                                    gap: "12px",
+                                    flexWrap:
+                                      "wrap",
+                                    fontSize:
+                                      "12px",
+                                    color:
+                                      "var(--text-secondary)",
+                                    padding:
+                                      "8px 10px",
+                                    background:
+                                      "rgba(49,82,91,0.04)",
+                                    borderRadius:
+                                      "8px",
+                                    marginBottom:
+                                      "10px",
+                                  }}
+                                >
+                                  <span>
+                                    ⭐{" "}
+                                    {worker.rating ||
+                                      "N/A"}
+                                  </span>
+
+                                  <span>
+                                    🛠️{" "}
+                                    {worker.experience ||
+                                      "Exp."}
+                                  </span>
+
+                                  <span
+                                    style={{
+                                      color:
+                                        "#31525B",
+                                      fontWeight:
+                                        700,
+                                    }}
+                                  >
+                                    💰 ₹
+                                    {worker.price ||
+                                      350}
+                                  </span>
+                                </div>
+
+                                {/* VIEW PROFILE */}
+
+                                <Link
+                                  to="/worker"
+                                  onClick={() => {
+                                    localStorage.setItem(
+                                      "selected_worker",
+                                      JSON.stringify(
+                                        worker
+                                      )
+                                    );
+
+                                    setIsOpen(
+                                      false
+                                    );
+                                  }}
+                                  style={{
+                                    textDecoration:
+                                      "none",
+                                  }}
+                                >
+                                  <span
+                                    className="zy-book-btn"
+                                    style={{
+                                      display:
+                                        "block",
+                                      textAlign:
+                                        "center",
+                                      boxSizing:
+                                        "border-box",
+                                    }}
+                                  >
+                                    View Profile &
+                                    Book →
+                                  </span>
+                                </Link>
+                              </div>
+                            );
+                          }
+                        )}
+                      </div>
+                    )}
+
+                  {/* =================================================
+                      BONUS
+                  ================================================= */}
+
+                  {message.bonusText && (
+                    <div
+                      className="zy-msg-ai"
+                      style={{
+                        padding:
+                          "12px 16px",
+                        marginTop:
+                          "10px",
+                        fontSize:
+                          "13.5px",
+                        lineHeight:
+                          1.55,
+                        whiteSpace:
+                          "pre-line",
+                      }}
+                    >
+                      {renderBoldText(
+                        message.bonusText
+                      )}
+
+                      {message.link && (
+                        <div
+                          style={{
+                            marginTop:
+                              "12px",
+                          }}
+                        >
+                          <Link
+                            to={
+                              message.link
+                            }
+                            onClick={() =>
+                              setIsOpen(
+                                false
+                              )
+                            }
+                            style={{
+                              display:
+                                "inline-flex",
+                              padding:
+                                "8px 14px",
+                              background:
+                                "#E5F6F8",
+                              color:
+                                "#1F353B",
+                              borderRadius:
+                                "8px",
+                              textDecoration:
+                                "none",
+                              fontWeight:
+                                700,
+                              fontSize:
+                                "13px",
+                            }}
+                          >
+                            {message.linkText ||
+                              "View"}{" "}
+                            →
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            )}
+
+            {/* =================================================
+                TYPING INDICATOR
+            ================================================= */}
+
             {isTyping && (
-              <div className="zy-msg" style={{ alignSelf: "flex-start", maxWidth: "88%" }}>
-                <div style={{
-                  fontSize: "10.5px",
-                  fontWeight: 600,
-                  color: "#31525B",
-                  marginBottom: "4px",
-                  paddingLeft: "2px",
-                  letterSpacing: "0.5px",
-                  textTransform: "uppercase"
-                }}>
+              <div
+                className="zy-msg"
+                style={{
+                  alignSelf:
+                    "flex-start",
+                  maxWidth: "88%",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize:
+                      "10.5px",
+                    fontWeight: 600,
+                    color:
+                      "#31525B",
+                    marginBottom:
+                      "4px",
+                  }}
+                >
                   Zy
                 </div>
-                <div className="zy-msg-ai" style={{
-                  padding: "14px 20px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px"
-                }}>
-                  <span className="zy-typing-dot" style={{ animationDelay: "0s" }} />
-                  <span className="zy-typing-dot" style={{ animationDelay: "0.15s" }} />
-                  <span className="zy-typing-dot" style={{ animationDelay: "0.3s" }} />
+
+                <div
+                  className="zy-msg-ai"
+                  style={{
+                    padding:
+                      "14px 20px",
+                    display:
+                      "flex",
+                    alignItems:
+                      "center",
+                    gap: "5px",
+                  }}
+                >
+                  <span
+                    className="zy-typing-dot"
+                  />
+
+                  <span
+                    className="zy-typing-dot"
+                    style={{
+                      animationDelay:
+                        "0.15s",
+                    }}
+                  />
+
+                  <span
+                    className="zy-typing-dot"
+                    style={{
+                      animationDelay:
+                        "0.3s",
+                    }}
+                  />
                 </div>
               </div>
             )}
+
             <div ref={chatEndRef} />
           </div>
 
-          {/* ── Suggested Prompts ── */}
-          <div style={{
-            display: "flex",
-            gap: "6px",
-            padding: "8px 14px",
-            borderTop: "1px solid rgba(49, 82, 91, 0.08)",
-            overflowX: "auto",
-            whiteSpace: "nowrap",
-            background: "rgba(248, 250, 252, 0.5)"
-          }}>
-            {SUGGESTED_PROMPTS.map((prompt, pIdx) => (
-              <button
-                key={pIdx}
-                className="zy-chip"
-                disabled={isTyping}
-                onClick={() => handleSendMessage(prompt.query)}
-              >
-                {prompt.text}
-              </button>
-            ))}
+          {/* =================================================
+              SUGGESTED PROMPTS
+          ================================================= */}
+
+          <div
+            style={{
+              display: "flex",
+              gap: "6px",
+              padding: "8px 14px",
+              borderTop:
+                "1px solid rgba(49,82,91,0.08)",
+              overflowX: "auto",
+              whiteSpace:
+                "nowrap",
+              background:
+                "rgba(248,250,252,0.5)",
+              flexShrink: 0,
+            }}
+          >
+            {SUGGESTED_PROMPTS.map(
+              (prompt) => (
+                <button
+                  key={prompt.query}
+                  type="button"
+                  className="zy-chip"
+                  disabled={
+                    isTyping
+                  }
+                  onClick={() =>
+                    handleSendMessage(
+                      prompt.query
+                    )
+                  }
+                >
+                  {prompt.text}
+                </button>
+              )
+            )}
           </div>
 
-          {/* ── Input Area ── */}
-          <div style={{
-            padding: "12px 14px",
-            borderTop: "1px solid rgba(49, 82, 91, 0.08)",
-            display: "flex",
-            gap: "8px",
-            alignItems: "center",
-            background: "rgba(255,255,255,0.6)"
-          }}>
+          {/* =================================================
+              INPUT
+          ================================================= */}
+
+          <div
+            style={{
+              padding:
+                "12px 14px",
+              borderTop:
+                "1px solid rgba(49,82,91,0.08)",
+              display: "flex",
+              gap: "8px",
+              alignItems:
+                "center",
+              background:
+                "rgba(255,255,255,0.6)",
+              flexShrink: 0,
+            }}
+          >
             <input
               className="zy-input"
               type="text"
-              placeholder={isTyping ? "Zy is thinking..." : "Ask Zy anything..."}
-              disabled={isTyping}
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && !isTyping && handleSendMessage()}
+              placeholder={
+                isTyping
+                  ? "Zy is thinking..."
+                  : "Ask Zy anything..."
+              }
+              disabled={
+                isTyping
+              }
+              value={
+                inputText
+              }
+              onChange={(event) =>
+                setInputText(
+                  event.target.value
+                )
+              }
+              onKeyDown={
+                handleInputKeyDown
+              }
+              aria-label="Ask Zy AI"
             />
+
             <button
+              type="button"
               className="zy-send-btn"
-              onClick={handleSendMessage}
-              disabled={isTyping}
+              onClick={() =>
+                handleSendMessage()
+              }
+              disabled={
+                isTyping ||
+                !inputText.trim()
+              }
               title="Send message"
+              aria-label="Send message"
             >
               ➤
             </button>
           </div>
 
-          {/* ── Resize Grip ── */}
-          <div
-            className="zy-resize-grip"
-            onMouseDown={handleResizeMouseDown}
-          >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M14 4L4 14M14 8L8 14M14 12L12 14" stroke="#31525B" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          </div>
+          {/* =================================================
+              RESIZE GRIP
+          ================================================= */}
+
+          {!isMobile && (
+            <div
+              className="zy-resize-grip"
+              onMouseDown={
+                handleResizeMouseDown
+              }
+              aria-hidden="true"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill="none"
+              >
+                <path
+                  d="M14 4L4 14M14 8L8 14M14 12L12 14"
+                  stroke="#31525B"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+          )}
         </div>
       )}
     </div>
