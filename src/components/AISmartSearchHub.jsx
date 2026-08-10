@@ -23,6 +23,18 @@ const SERVICE_SUGGESTIONS = [
   "Driver",
   "Mechanic",
   "Yoga Trainer",
+  "Beauty",
+  "Salon",
+  "Spa",
+  "Haircut",
+  "Makeup",
+  "Mehandi",
+  "Decor",
+  "Photography",
+  "Purohit",
+  "Car Wash",
+  "Bike Wash",
+  "Packers & Movers",
 ];
 
 const QUICK_CHIPS = [
@@ -172,6 +184,7 @@ function AISmartSearchHub({
   availableOffersCount,
   availablePlansCount,
   userName,
+  onlineWorkers = [],
 }) {
   const navigate = useNavigate();
 
@@ -267,10 +280,14 @@ function AISmartSearchHub({
       setSuggestions([]);
       return;
     }
-    const filtered = SERVICE_SUGGESTIONS.filter((service) =>
+    const filteredServices = SERVICE_SUGGESTIONS.filter((service) =>
       service.toLowerCase().includes(searchValue)
     );
-    setSuggestions(filtered);
+    const filteredWorkers = (onlineWorkers || [])
+      .filter((w) => w?.name?.toLowerCase().includes(searchValue))
+      .map((w) => w.name);
+    
+    setSuggestions([...new Set([...filteredServices, ...filteredWorkers])].slice(0, 8));
   };
 
   const handleKeyDown = (event) => {

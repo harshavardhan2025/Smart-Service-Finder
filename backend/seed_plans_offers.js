@@ -7,79 +7,79 @@ dotenv.config();
 
 const PLANS = [
   {
-    title: "Basic Care Package",
+    title: "Starter Plan",
     price: "₹999",
     period: "month",
     popular: false,
     color: "#3b82f6",
     btnText: "Get Started",
-    desc: "Essential maintenance package for apartments & small homes",
+    desc: "Good for small houses and basic needs.",
     features: [
-      "✅ 2 free service visits/month",
-      "✅ Plumbing, Electrical & Carpentry",
-      "✅ Free diagnostic inspection",
-      "✅ Email & In-App support",
-      "❌ 0% Platform booking fees",
-      "❌ Dedicated home expert"
+      "✅ 2 free visits a month",
+      "✅ Basic repairs (Plumbing, Electrical, Carpentry)",
+      "✅ Free check-up",
+      "✅ Basic chat support",
+      "❌ Extra booking fees apply",
+      "❌ No personal helper"
     ],
     city: "All",
     expiryDate: new Date("2030-12-31"),
     endDate: "2030-12-31"
   },
   {
-    title: "Home Pro Annual",
+    title: "Pro Plan",
     price: "₹2,499",
     period: "month",
     popular: true,
     color: "#eab308",
     btnText: "⭐ Choose Pro",
-    desc: "Complete coverage for all home appliances, repairs & cleaning",
+    desc: "Our most popular plan for regular home care.",
     features: [
-      "✅ 6 free service visits/month",
-      "✅ All Home Services & Appliance Repair",
-      "✅ Priority 2-hr emergency arrival",
-      "✅ 0% Platform booking fees",
-      "✅ Phone, WhatsApp & Chat support",
-      "✅ 10% Cashbacks on all bookings"
+      "✅ 6 free visits a month",
+      "✅ All repairs and appliance fixing included",
+      "✅ Fast 2-hour emergency help",
+      "✅ No extra booking fees",
+      "✅ Priority phone support",
+      "✅ Get 10% cashback on all bookings"
     ],
     city: "All",
     expiryDate: new Date("2030-12-31"),
     endDate: "2030-12-31"
   },
   {
-    title: "Elite Master VIP",
+    title: "VIP Plan",
     price: "₹19,999",
     period: "year",
     popular: false,
     color: "#8b5cf6",
-    btnText: "🚀 Go Elite",
-    desc: "VIP unlimited service plan for luxury villas, residences & families",
+    btnText: "🚀 Go VIP",
+    desc: "The ultimate plan for big houses and total peace of mind.",
     features: [
-      "✅ Unlimited free service visits",
-      "✅ Full coverage across ALL 30+ service categories",
-      "✅ 30-min guaranteed rapid emergency dispatch",
-      "✅ Dedicated personal home manager & expert",
-      "✅ Free annual deep house cleaning & AC overhaul",
-      "✅ 24/7 Priority hotline & SOS response"
+      "✅ Unlimited free visits",
+      "✅ Everything is covered (30+ services)",
+      "✅ Super fast 30-minute emergency help",
+      "✅ Your own personal home manager",
+      "✅ Free deep house cleaning & AC service yearly",
+      "✅ 24/7 VIP hotline"
     ],
     city: "All",
     expiryDate: new Date("2030-12-31"),
     endDate: "2030-12-31"
   },
   {
-    title: "Commercial Property Plan",
+    title: "Office Plan",
     price: "₹39,999",
     period: "year",
     popular: false,
     color: "#10b981",
-    btnText: "🏢 Commercial Plan",
-    desc: "Complete maintenance management for offices, shops & clinics",
+    btnText: "🏢 Choose Office Plan",
+    desc: "Complete care for your office or shop.",
     features: [
-      "✅ Unlimited commercial maintenance visits",
-      "✅ Electrical, HVAC, Plumbing & Cleaning",
-      "✅ Dedicated technician team assigned",
-      "✅ Monthly safety & audit reports",
-      "✅ GST Invoice & Corporate Billing"
+      "✅ Unlimited office visits",
+      "✅ All office maintenance covered",
+      "✅ Dedicated team for your office",
+      "✅ Monthly safety reports",
+      "✅ Business billing with GST"
     ],
     city: "All",
     expiryDate: new Date("2030-12-31"),

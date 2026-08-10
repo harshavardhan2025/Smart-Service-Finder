@@ -93,13 +93,13 @@ function SupportPage() {
         {/* Support Header */}
         <div style={{ textAlign: "center", marginBottom: "50px" }}>
           <span style={{ backgroundColor: "var(--border)", color: "var(--primary)", padding: "6px 16px", borderRadius: "20px", fontSize: "12px", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>
-            24/7 Customer Help Center
+            We're Here to Help 24/7
           </span>
           <h1 style={{ fontSize: "42px", fontWeight: 800, margin: "16px 0 8px 0", background: "linear-gradient(to right, var(--text-main), var(--text-muted))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-            How Can We Assist You Today?
+            Hi! How can we help you today?
           </h1>
           <p style={{ color: "var(--text-muted)", fontSize: "16px", maxWidth: "600px", margin: "0 auto" }}>
-            Submit a billing inquiry, report an issue with a professional, or browse our frequently asked questions below.
+            Have a question or need help? Browse our quick answers below or send us a message!
           </p>
         </div>
 
@@ -143,7 +143,7 @@ function SupportPage() {
           {/* RIGHT COLUMN: SUBMIT TICKET FORM */}
           <div className="premium-card" style={{ padding: "40px" }}>
             <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-main)", marginBottom: "24px", display: "flex", alignItems: "center", gap: "10px" }}>
-              <span>✉️</span> Submit a Support Ticket
+              <span>✉️</span> Send us a Message
             </h2>
 
             {success ? (
@@ -165,7 +165,7 @@ function SupportPage() {
                   </div>
                 )}
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "var(--text-muted)", marginBottom: "8px" }}>Select Issue Category</label>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "var(--text-muted)", marginBottom: "8px" }}>What do you need help with?</label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
@@ -233,7 +233,7 @@ function SupportPage() {
                 </div>
 
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "var(--text-muted)", marginBottom: "8px" }}>Describe Your Issue</label>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 700, color: "var(--text-muted)", marginBottom: "8px" }}>Tell us more about it</label>
                   <textarea
                     rows="4"
                     required
@@ -268,7 +268,7 @@ function SupportPage() {
                     width: "100%"
                   }}
                 >
-                  Submit Support Ticket
+                  Send Message
                 </button>
               </form>
             )}
@@ -280,7 +280,7 @@ function SupportPage() {
         {userName && (
           <div className="premium-card" style={{ marginTop: "60px", padding: "35px" }}>
             <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-main)", marginBottom: "20px", display: "flex", alignItems: "center", gap: "10px" }}>
-              <span>📜</span> Your Complaint & Ticket History
+              <span>📜</span> Your Past Messages
             </h2>
             {history.length === 0 ? (
               <p style={{ color: "var(--text-muted)", fontStyle: "italic" }}>No previously submitted support tickets found under your account name.</p>

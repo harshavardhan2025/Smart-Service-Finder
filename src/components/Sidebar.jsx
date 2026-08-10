@@ -321,8 +321,8 @@ function Sidebar() {
 
   const getLinkStyle = ({ isActive }) => ({
     color: isActive
-      ? "#ffffff"
-      : "#cbd5e1",
+      ? "var(--primary-dark)"
+      : "var(--text-secondary)",
 
     textDecoration: "none",
 
@@ -342,16 +342,16 @@ function Sidebar() {
       : 600,
 
     background: isActive
-      ? "linear-gradient(135deg, rgba(49,82,91,0.95), rgba(31,53,59,0.95))"
+      ? "var(--primary-light)"
       : "transparent",
 
     border:
       isActive
-        ? "1px solid rgba(179,222,229,0.18)"
+        ? "1px solid var(--primary)"
         : "1px solid transparent",
 
     boxShadow: isActive
-      ? "0 5px 14px rgba(0,0,0,0.18)"
+      ? "0 4px 10px rgba(0,0,0,0.05)"
       : "none",
 
     transition:
@@ -370,18 +370,18 @@ function Sidebar() {
 
       <style>{`
         .workzy-sidebar-link:hover {
-          background: rgba(255,255,255,0.08) !important;
-          color: #ffffff !important;
+          background: var(--bg-card-hover) !important;
+          color: var(--primary) !important;
           transform: translateX(4px);
         }
 
         .workzy-sidebar-link:focus-visible {
-          outline: 2px solid #B3DEE5;
+          outline: 2px solid var(--primary);
           outline-offset: 2px;
         }
 
         .workzy-sidebar-action:hover {
-          background: rgba(255,255,255,0.12) !important;
+          background: var(--bg-card-hover) !important;
         }
 
         .workzy-sidebar-scroll::-webkit-scrollbar {
@@ -446,17 +446,17 @@ function Sidebar() {
           justifyContent: "center",
 
           background:
-            "rgba(255,255,255,0.12)",
+            "var(--bg-card-hover)",
 
-          color: "#ffffff",
+          color: "var(--text-main)",
 
           border:
-            "1px solid rgba(255,255,255,0.22)",
+            "1.5px solid var(--border-color)",
 
           borderBottom:
-            "1px solid rgba(255,255,255,0.22)",
+            "1.5px solid var(--border-color)",
 
-          borderRadius: "9px",
+          borderRadius: "12px",
 
           cursor: "pointer",
 
@@ -517,9 +517,9 @@ function Sidebar() {
           height: "100dvh",
 
           background:
-            "linear-gradient(180deg, #0f172a 0%, #111827 55%, #0b1220 100%)",
+            "var(--bg-card)",
 
-          color: "#ffffff",
+          color: "var(--text-main)",
 
           position: "fixed",
 
@@ -564,7 +564,7 @@ function Sidebar() {
             paddingBottom: "18px",
 
             borderBottom:
-              "1px solid rgba(255,255,255,0.08)",
+              "1.5px solid var(--border-color)",
           }}
         >
           <div
@@ -632,7 +632,7 @@ function Sidebar() {
 
               fontSize: "11.5px",
 
-              color: "#94a3b8",
+              color: "var(--text-secondary)",
 
               fontWeight: 500,
             }}
@@ -712,7 +712,7 @@ function Sidebar() {
               paddingTop: "14px",
 
               borderTop:
-                "1px solid rgba(255,255,255,0.08)",
+                "1.5px solid var(--border-color)",
             }}
           >
             <button
@@ -726,15 +726,15 @@ function Sidebar() {
                   "11px 13px",
 
                 background:
-                  "rgba(255,255,255,0.06)",
+                  "var(--bg-card-hover)",
 
-                color: "#ffffff",
+                color: "var(--text-main)",
 
                 border:
-                  "1px solid rgba(255,255,255,0.12)",
+                  "1.5px solid var(--border-color)",
 
                 borderBottom:
-                  "1px solid rgba(255,255,255,0.12)",
+                  "1.5px solid var(--border-color)",
 
                 borderRadius: "11px",
 

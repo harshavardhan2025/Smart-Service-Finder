@@ -10,7 +10,7 @@ const BASE_URL = "";
 
 function PlansOffers() {
   const navigate = useNavigate();
-  const CACHE_VERSION = "v3";
+  const CACHE_VERSION = "v4";
   const [copiedCode, setCopiedCode] = useState(null);
   // 🚀 Initialize from cache for instant display
   const [plans, setPlans] = useState(() => {
@@ -551,12 +551,13 @@ function PlansOffers() {
                     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                       <div 
                         style={{
-                          width: "100%", padding: "12px", borderRadius: 10, fontSize: 14, fontWeight: 700,
-                          backgroundColor: "rgba(52, 211, 153, 0.15)", color: "#34d399", border: "1px solid rgba(52, 211, 153, 0.3)",
-                          display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px"
+                          width: "100%", padding: "14px", borderRadius: 12, fontSize: 15, fontWeight: 800,
+                          backgroundColor: "#10b981", color: "#ffffff", border: "none",
+                          display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px",
+                          boxShadow: "0 6px 16px rgba(16, 185, 129, 0.3)"
                         }}
                       >
-                        Active Subscription <FaCheckCircle size={14} />
+                        <FaCheckCircle size={18} /> Active Subscription
                       </div>
                     </div>
                   ) : isLoggedIn && sessionStorage.getItem("userRole") === "user" ? (
@@ -735,8 +736,8 @@ function PlansOffers() {
               })()
                 .map((offer, i) => {
               // Tone-on-tone green background for promo codes
-              const couponBg = "linear-gradient(135deg, rgba(52, 211, 153, 0.08) 0%, rgba(52, 211, 153, 0.02) 100%)";
-              const couponBorder = "1.5px dashed rgba(52, 211, 153, 0.4)";
+              const couponBg = "var(--bg-card)";
+              const couponBorder = "1.5px dashed rgba(52, 211, 153, 0.6)";
               return (
                 <div 
                   key={i}
@@ -746,9 +747,11 @@ function PlansOffers() {
                     borderRadius: 14,
                     padding: 24,
                     border: couponBorder,
+                    borderLeft: "8px solid #34d399",
                     display: "flex",
                     justifyContent: "space-between",
-                    alignItems: "center"
+                    alignItems: "center",
+                    boxShadow: "0 6px 12px rgba(0,0,0,0.04)"
                   }}
                 >
               <div style={{ flex: 1, paddingRight: "10px" }}>
@@ -846,19 +849,22 @@ function PlansOffers() {
               </button>
 
               <div style={{ textAlign: "center", marginBottom: "28px" }}>
-                <div style={{ display: "inline-flex", padding: "14px", backgroundColor: "rgba(37, 99, 235, 0.08)", borderRadius: "50%", marginBottom: "16px", border: "1px solid rgba(37, 99, 235, 0.15)" }}>
+                <div style={{ display: "inline-flex", padding: "14px", backgroundColor: "rgba(37, 99, 235, 0.08)", borderRadius: "50%", marginBottom: "12px", border: "1px solid rgba(37, 99, 235, 0.15)" }}>
                   <FaCreditCard size={28} style={{ color: "var(--primary)" }} />
                 </div>
-                <h3 style={{ margin: "0 0 6px 0", fontSize: "22px", fontWeight: 800, color: "var(--text-main)", letterSpacing: "-0.5px" }}>Confirm Subscription</h3>
-                <p style={{ margin: 0, fontSize: "15px", color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
+                <h3 style={{ margin: "0 0 6px 0", fontSize: "24px", fontWeight: 900, color: "var(--text-main)", letterSpacing: "-0.5px" }}>Secure Checkout</h3>
+                <p style={{ margin: 0, fontSize: "16px", color: "var(--primary)", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
                   <span style={{ fontSize: "18px" }}>📦</span> {payingPlan.title}
                 </p>
               </div>
 
-              <form onSubmit={handlePayment} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                {/* Promo Code Fields */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Apply Promo Code</label>
+              <form onSubmit={handlePayment} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+                {/* 1. Promo Code Section */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px", padding: "16px", backgroundColor: "var(--bg-main)", borderRadius: "14px", border: "1px solid var(--border)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ backgroundColor: "var(--primary)", color: "white", borderRadius: "50%", width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: "bold" }}>1</span>
+                    <label style={{ fontSize: "14px", fontWeight: 800, color: "var(--text-main)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Apply Promo Code</label>
+                  </div>
                   <div style={{ display: "flex", gap: "8px" }}>
                     <input 
                       type="text" 
@@ -883,9 +889,12 @@ function PlansOffers() {
                   {couponSuccess && <span style={{ fontSize: "12px", color: "#10b981", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px" }}>✅ {couponSuccess}</span>}
                 </div>
 
-                {/* Payment Selector */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Payment Method</label>
+                {/* 2. Payment Method Section */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px", padding: "16px", backgroundColor: "var(--bg-main)", borderRadius: "14px", border: "1px solid var(--border)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ backgroundColor: "var(--primary)", color: "white", borderRadius: "50%", width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: "bold" }}>2</span>
+                    <label style={{ fontSize: "14px", fontWeight: 800, color: "var(--text-main)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Payment Method</label>
+                  </div>
                   <select 
                     value={paymentMethod} 
                     onChange={(e) => setPaymentMethod(e.target.value)}
@@ -898,7 +907,6 @@ function PlansOffers() {
                     <option value="Card">🏦 Credit / Debit Card</option>
                     <option value="Net Banking">🌐 Net Banking</option>
                   </select>
-                </div>
 
                 {/* Conditional Fields */}
                 {paymentMethod === "UPI" && (
@@ -994,11 +1002,13 @@ function PlansOffers() {
                   </div>
                 )}
 
-                {/* Pricing Summary */}
-                <div style={{ backgroundColor: "var(--bg-main)", borderRadius: "12px", padding: "16px", fontSize: "14px", border: "1px dashed var(--border)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)", fontWeight: "500" }}>
+                </div>
+
+                {/* 3. Pricing Summary & Terms Section */}
+                <div style={{ backgroundColor: "rgba(16, 185, 129, 0.05)", borderRadius: "14px", padding: "16px", fontSize: "14px", border: "1.5px solid rgba(16, 185, 129, 0.2)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)", fontWeight: "600" }}>
                     <span>Base Price</span>
-                    <span>{payingPlan.price}</span>
+                    <span style={{ color: "var(--text-main)" }}>{payingPlan.price}</span>
                   </div>
                   {discountAmount > 0 && (
                     <div style={{ display: "flex", justifyContent: "space-between", color: "#10b981", marginTop: "8px", fontWeight: "700" }}>
@@ -1011,10 +1021,12 @@ function PlansOffers() {
                     <span>Total Amount</span>
                     <span>₹{Math.max(0, (parseInt(payingPlan.price.replace(/[^\d]/g, ""), 10) || 0) - discountAmount)}</span>
                   </div>
-                </div>
 
-                {/* Terms and Conditions Acceptance Checkbox */}
-                {payingPlan.terms && (
+                  <div style={{ height: "1.5px", backgroundColor: "rgba(16, 185, 129, 0.2)", margin: "14px 0" }}></div>
+                  
+                  <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                    {/* Terms and Conditions Acceptance Checkbox */}
+                    {payingPlan.terms && (
                   <button 
                     type="button"
                     onClick={() => setSelectedTermsItem(payingPlan)}
@@ -1061,6 +1073,8 @@ function PlansOffers() {
                 >
                   {paymentProcessing ? "Verifying Payment Details... ⚡" : `Confirm & Pay ₹${Math.max(0, (parseInt(payingPlan.price.replace(/[^\d]/g, ""), 10) || 0) - discountAmount)} Now`}
                 </button>
+                  </div>
+                </div>
               </form>
             </div>
           </div>

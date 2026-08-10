@@ -101,10 +101,10 @@ function Navbar() {
           justifyContent: "space-between",
           alignItems: "center",
           padding: "14px 24px",
-          background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
-          color: "#ffffff",
-          borderBottom: "1.5px solid rgba(255, 255, 255, 0.12)",
-          boxShadow: "0 4px 20px rgba(15, 23, 42, 0.25)",
+          background: "var(--bg-card)",
+          color: "var(--text-main)",
+          borderBottom: "1.5px solid var(--border-color)",
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.05)",
           position: "sticky",
           top: 0,
           zIndex: 100,
@@ -122,8 +122,8 @@ function Navbar() {
           }}
         >
           <h2 style={{ margin: 0, fontWeight: 800, fontSize: "22px", letterSpacing: "-0.5px", display: "flex", alignItems: "center", gap: "8px", whiteSpace: "nowrap" }}>
-            <FaTools style={{ color: "#38bdf8" }} />
-            <span><span style={{ color: "#ffffff" }}>Work</span><span style={{ color: "#f1a829" }}>zy</span></span>
+            <FaTools style={{ color: "var(--primary)" }} />
+            <span><span style={{ color: "var(--text-main)" }}>Work</span><span style={{ color: "var(--warning)" }}>zy</span></span>
           </h2>
         </Link>
 
@@ -135,7 +135,7 @@ function Navbar() {
               to="/plans-offers"
               style={{ 
                 textDecoration: "none", 
-                color: "#f8fafc", 
+                color: "var(--text-main)", 
                 fontWeight: 700, 
                 fontSize: isMobile ? "13px" : "14px", 
                 display: "flex", 
@@ -145,10 +145,10 @@ function Navbar() {
                 cursor: "pointer",
                 transition: "color 0.2s"
               }}
-              onMouseEnter={(e) => e.currentTarget.style.color = "#38bdf8"}
-              onMouseLeave={(e) => e.currentTarget.style.color = "#f8fafc"}
+              onMouseEnter={(e) => e.currentTarget.style.color = "var(--primary)"}
+              onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-main)"}
             >
-              <FaTag size={13} style={{ color: "#f1a829" }} /> Plans & Offers
+              <FaTag size={13} style={{ color: "var(--warning)" }} /> Plans & Offers
             </Link>
           )}
 
@@ -159,7 +159,7 @@ function Navbar() {
                 onClick={() => setShowNotifications(!showNotifications)}
                 style={{
                   background: "none",
-                  border: "1px solid rgba(255, 255, 255, 0.15)",
+                  border: "1.5px solid var(--border-color)",
                   padding: "8px",
                   fontSize: "18px",
                   cursor: "pointer",
@@ -167,8 +167,8 @@ function Navbar() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  backgroundColor: "rgba(255, 255, 255, 0.12)",
-                  color: "#ffffff",
+                  backgroundColor: "var(--bg-card-hover)",
+                  color: "var(--text-main)",
                   transition: "all 0.2s",
                   position: "relative"
                 }}
@@ -298,15 +298,15 @@ function Navbar() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  backgroundColor: "rgba(255, 255, 255, 0.12)",
-                  color: "#ffffff",
+                  backgroundColor: "var(--bg-card-hover)",
+                  color: "var(--text-main)",
                   transition: "all 0.2s",
-                  border: "1px solid rgba(255, 255, 255, 0.15)",
+                  border: "1.5px solid var(--border-color)",
                   boxShadow: "none"
                 }}
                 title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
               >
-                {isDark ? <FaSun size={18} style={{ color: "#f1a829" }} /> : <FaMoon size={18} style={{ color: "#38bdf8" }} />}
+                {isDark ? <FaSun size={18} style={{ color: "var(--warning)" }} /> : <FaMoon size={18} style={{ color: "var(--primary)" }} />}
               </button>
 
               {isLoggedIn ? (
@@ -315,9 +315,9 @@ function Navbar() {
                   {/* Logged-in user greeting chip */}
                   {displayName && (
                     <span style={{
-                      fontSize: "12.5px", fontWeight: 700, color: "rgba(255,255,255,0.75)",
-                      background: "rgba(255,255,255,0.08)", padding: "5px 12px",
-                      borderRadius: "20px", border: "1px solid rgba(255,255,255,0.12)",
+                      fontSize: "12.5px", fontWeight: 700, color: "var(--text-main)",
+                      background: "var(--bg-card)", padding: "5px 12px",
+                      borderRadius: "20px", border: "1.5px solid var(--border-color)",
                       whiteSpace: "nowrap"
                     }}>
                       Hi, {displayName} 👋
@@ -404,8 +404,8 @@ function Navbar() {
                     <button
                       style={{
                         backgroundColor: "transparent",
-                        color: "var(--primary)",
-                        border: "1.5px solid var(--primary)",
+                        color: "var(--text-main)",
+                        border: "1.5px solid var(--border-color)",
                         borderRadius: "20px",
                         padding: "8px 20px",
                         fontSize: "14px",
@@ -421,14 +421,14 @@ function Navbar() {
                   <Link to="/signup" style={{ textDecoration: "none" }}>
                     <button
                       style={{
-                        backgroundColor: "var(--primary)",
-                        color: "white",
+                        backgroundColor: "var(--text-main)",
+                        color: "var(--bg-card)",
                         border: "none",
                         borderRadius: "20px",
                         padding: "8px 20px",
                         fontSize: "14px",
                         fontWeight: 700,
-                        boxShadow: "0 4px 10px rgba(49, 82, 91, 0.2)",
+                        boxShadow: "0 4px 10px rgba(0, 0, 0, 0.15)",
                         cursor: "pointer",
                         transition: "all 0.2s"
                       }}

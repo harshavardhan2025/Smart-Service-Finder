@@ -951,10 +951,10 @@ Do not use markdown.`,
         </style>
 
         <h1 style={{ margin: "0 0 4px 0", fontSize: "22px", fontWeight: 900, color: "var(--hero-text)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", letterSpacing: "-0.3px" }}>
-          Find Reliable Service Experts Near You <FaMapMarkerAlt size={20} style={{ color: "#dc2626" }} />
+          Find the Best Services Near You <FaMapMarkerAlt size={20} style={{ color: "#dc2626" }} />
         </h1>
         <p style={{ margin: 0, fontSize: "13.5px", color: "var(--hero-subtext)", fontWeight: 700, maxWidth: "650px", marginLeft: "auto", marginRight: "auto" }}>
-          Auto-matching, verified professional workers, and instant secure bookings.
+          We match you with trusted professionals for quick and safe home services.
         </p>
       </div>
 
@@ -988,224 +988,13 @@ Do not use markdown.`,
             availableOffersCount={availableOffersCount}
             availablePlansCount={availablePlansCount}
             userName={userName}
+            onlineWorkers={onlineWorkers}
           />
         </div>
 
-        {/* Unified Services Workspace Card */}
-        <div
-          className="services-workspace-card fade-in"
-          style={{
-            margin: "0 20px 20px 20px",
-            padding: "24px 28px",
-            background: "var(--bg-card)",
-            border: "1.5px solid var(--border-color)",
-            borderRadius: "24px",
-            boxShadow: "var(--shadow-3d)",
-            backdropFilter: "var(--blur)",
-            display: "flex",
-            flexDirection: "column",
-            gap: "20px",
-          }}
-        >
-          {/* Custom Modern Tab Bar */}
-          <div
-            style={{
-              display: "flex",
-              gap: "8px",
-              overflowX: "auto",
-              paddingBottom: "12px",
-              borderBottom: "1px solid var(--border-color)",
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
-            }}
-          >
-            <style>
-              {`
-                .workspace-tab-btn {
-                  display: inline-flex;
-                  align-items: center;
-                  gap: 8px;
-                  padding: 10px 20px;
-                  border: 1px solid var(--border-color);
-                  border-radius: 14px;
-                  font-size: 13.5px;
-                  font-weight: 700;
-                  cursor: pointer;
-                  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-                  background-color: var(--bg-card-hover);
-                  color: var(--text-secondary);
-                  box-shadow: none;
-                }
-                .workspace-tab-btn:hover {
-                  transform: translateY(-1px);
-                  background-color: var(--primary-light);
-                  color: var(--primary-dark);
-                  border-color: var(--primary);
-                }
-                .workspace-tab-btn.active {
-                  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
-                  color: #ffffff;
-                  border-color: var(--primary);
-                  box-shadow: 0 4px 12px var(--primary-glow);
-                  border-bottom: 4px solid var(--primary-dark);
-                }
-                .workspace-tab-btn.active:hover {
-                  transform: none;
-                  color: #ffffff;
-                }
-              `}
-            </style>
-
-            <button
-              type="button"
-              className={`workspace-tab-btn ${activeTab === "categories" ? "active" : ""}`}
-              onClick={() => setActiveTab("categories")}
-            >
-              <FaTools size={14} /> Service Categories
-            </button>
-
-            <button
-              type="button"
-              className={`workspace-tab-btn ${activeTab === "emergency" ? "active" : ""}`}
-              onClick={() => setActiveTab("emergency")}
-            >
-              <FaBolt size={14} /> Emergency Dispatch
-            </button>
-
-            <button
-              type="button"
-              className={`workspace-tab-btn ${activeTab === "collections" ? "active" : ""}`}
-              onClick={() => setActiveTab("collections")}
-            >
-              <FaStar size={14} /> Curated Collections
-            </button>
-
-            <button
-              type="button"
-              className={`workspace-tab-btn ${activeTab === "benefits" ? "active" : ""}`}
-              onClick={() => setActiveTab("benefits")}
-            >
-              <FaPercent size={14} /> Memberships & Deals
-            </button>
-          </div>
-
-          {/* Active Tab Panel Content */}
-          <div className="workspace-tab-panel" style={{ minHeight: "300px" }}>
-            {activeTab === "categories" && (
-              <div className="fade-in" style={{ border: "none", padding: 0 }}>
-                <NearbyWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
-              </div>
-            )}
-
-            {activeTab === "emergency" && (
-              <div className="fade-in" style={{ padding: "8px 0px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
-                  <h2 style={{ fontSize: "20px", fontWeight: 800, color: "var(--text-primary)", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
-                    <FaBolt style={{ color: "var(--warning)" }} /> Instant Booking Services
-                  </h2>
-                  <span style={{ backgroundColor: "var(--danger-light)", color: "var(--danger)", padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
-                    <span className="pulse-dot" style={{ width: "6px", height: "6px", backgroundColor: "var(--danger)", borderRadius: "50%", display: "inline-block" }} />
-                    10-20 MINS ARRIVAL
-                  </span>
-                </div>
-                <p style={{ margin: "0 0 16px 0", fontSize: "14px", color: "var(--text-secondary)" }}>
-                  The following certified professionals are online, active, and dispatched instantly for emergency assistance.
-                </p>
-
-                {isOnlineLoading ? (
-                  <div className="horizontal-scroll-container custom-scrollbar" style={{ display: "flex", overflowX: "auto", gap: "16px", paddingBottom: "10px" }}>
-                    <SkeletonLoader type="card" count={4} />
-                  </div>
-                ) : emergencyWorkers.length === 0 ? (
-                  <div className="premium-card" style={{ padding: "30px", textAlign: "center", color: "var(--text-secondary)" }}>
-                    <span style={{ fontSize: "28px", display: "block", marginBottom: "8px", filter: "grayscale(1)" }}>💤</span>
-                    <p style={{ margin: 0, fontSize: "14px", fontWeight: "bold" }}>No emergency professionals are online right now.</p>
-                    <p style={{ margin: "4px 0 0 0", fontSize: "12px" }}>You can still reserve any provider using standard time slots in Service Categories!</p>
-                  </div>
-                ) : (
-                  <div className="horizontal-scroll-container custom-scrollbar" style={{ display: "flex", overflowX: "auto", gap: "16px", paddingBottom: "10px" }}>
-                    {emergencyWorkers.map((worker) => (
-                      <WorkerCard key={worker._id || worker.id} worker={worker} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === "collections" && (
-              <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                <div>
-                  <h3 style={{ fontSize: "18px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 4px 0", display: "flex", alignItems: "center", gap: "6px" }}>
-                    🏆 Top Rated Professionals
-                  </h3>
-                  <p style={{ margin: "0 0 12px 0", fontSize: "13px", color: "var(--text-secondary)" }}>
-                    Highly recommended, certified experts boasting the highest feedback scores in your location.
-                  </p>
-                  <TopWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
-                </div>
-                <div style={{ borderTop: "1px solid var(--border-color)", paddingTop: "20px", marginTop: "10px" }}>
-                  <h3 style={{ fontSize: "18px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 4px 0", display: "flex", alignItems: "center", gap: "6px" }}>
-                    💸 Budget-Friendly Workers
-                  </h3>
-                  <p style={{ margin: "0 0 12px 0", fontSize: "13px", color: "var(--text-secondary)" }}>
-                    Value-oriented professional helpers operating at competitive flat rates.
-                  </p>
-                  <CheapWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
-                </div>
-              </div>
-            )}
-
-            {activeTab === "benefits" && (
-              <div className="fade-in">
-                {availablePlans.length > 0 ? (
-                  <div>
-                    <h2 style={{ fontSize: "20px", fontWeight: 800, color: "var(--text-primary)", marginBottom: "6px", display: "flex", alignItems: "center", gap: "8px" }}>
-                      <FaPercent style={{ color: "#34d399" }} /> Service Plans & Seasonal Offers
-                    </h2>
-                    <p style={{ margin: "0 0 16px 0", fontSize: "14px", color: "var(--text-secondary)" }}>
-                      Save big on recurring home maintenance with our service plans, or copy a promo code below.
-                    </p>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
-                      {availablePlans.map((plan, idx) => {
-                        const features = Array.isArray(plan?.features) ? plan.features : [];
-                        const price = String(plan?.price || "").replace("₹", "");
-                        return (
-                          <div key={idx} className="premium-card" style={{ padding: "20px", border: plan.popular ? "2px solid #eab308" : "1px solid var(--border-color)", display: "flex", flexDirection: "column", justifyComponnet: "space-between", transform: plan.popular ? "scale(1.02)" : "none", boxShadow: plan.popular ? "0 10px 25px rgba(234, 179, 8, 0.15)" : "var(--shadow-3d)" }}>
-                            <div>
-                              {plan.popular && (
-                                <span style={{ backgroundColor: "var(--warning)", color: "#000000", padding: "3px 10px", borderRadius: 12, fontSize: 10, fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "2px", marginBottom: "10px" }}>
-                                  POPULAR <FaStar size={8} />
-                                </span>
-                              )}
-                              <h4 style={{ margin: "0 0 6px 0", fontSize: "15px", color: plan.popular ? "#eab308" : "var(--text-main)", fontWeight: 700 }}>{plan.title}</h4>
-                              <p style={{ margin: "0 0 10px 0", fontSize: "20px", fontWeight: 800, color: "var(--text-primary)" }}>
-                                ₹{price}
-                                <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 500 }}>/{plan.period}</span>
-                              </p>
-                              <ul style={{ paddingLeft: "16px", margin: "0 0 16px 0", fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.5 }}>
-                                {features.slice(0, 3).map((f, i) => <li key={i}>{f}</li>)}
-                              </ul>
-                            </div>
-                            <Link to="/plans-offers" style={{ textDecoration: "none" }}>
-                              <button className="btn-secondary" style={{ width: "100%", padding: "10px", fontSize: "12.5px", borderRadius: "8px", cursor: "pointer" }}>
-                                View Plan Details →
-                              </button>
-                            </Link>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="premium-card" style={{ padding: "30px", textAlign: "center", color: "var(--text-secondary)" }}>
-                    <span style={{ fontSize: "28px", display: "block", marginBottom: "8px", filter: "grayscale(1)" }}>🎁</span>
-                    <p style={{ margin: 0, fontSize: "14px", fontWeight: "bold" }}>No seasonal plans active in your area.</p>
-                    <p style={{ margin: "4px 0 0 0", fontSize: "12px" }}>Check back soon for upcoming holiday promotions and subscriptions!</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+        {/* Service Categories */}
+        <div className="fade-in" style={{ padding: "0" }}>
+          <NearbyWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
         </div>
 
         {/* Consolidated Recommendations Feed */}
@@ -1228,7 +1017,7 @@ Do not use markdown.`,
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
               <h2 style={{ fontSize: "20px", fontWeight: 800, color: "var(--text-primary)", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
-                <FaBolt style={{ color: "var(--warning)" }} /> Emergency Dispatch
+                <FaBolt style={{ color: "var(--warning)" }} /> Quick Emergency Help
               </h2>
               <span style={{ backgroundColor: "var(--danger-light)", color: "var(--danger)", padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
                 <span className="pulse-dot" style={{ width: "6px", height: "6px", backgroundColor: "var(--danger)", borderRadius: "50%", display: "inline-block" }} />
@@ -1236,7 +1025,7 @@ Do not use markdown.`,
               </span>
             </div>
             <p style={{ margin: "0 0 16px 0", fontSize: "13.5px", color: "var(--text-secondary)" }}>
-              Certified professionals active right now for emergency callouts.
+              Available professionals ready to help you right now.
             </p>
 
             {isOnlineLoading ? (
@@ -1261,10 +1050,10 @@ Do not use markdown.`,
           {/* Curated Collections Row */}
           <div>
             <h2 style={{ fontSize: "20px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 4px 0", display: "flex", alignItems: "center", gap: "6px" }}>
-              <FaStar style={{ color: "var(--warning)" }} /> Curated Collections
+              <FaStar style={{ color: "var(--warning)" }} /> Top Recommended
             </h2>
             <p style={{ margin: "0 0 16px 0", fontSize: "13.5px", color: "var(--text-secondary)" }}>
-              Hand-picked local experts selected for high performance and best rates.
+              The best local experts with great reviews and affordable prices.
             </p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
@@ -1288,10 +1077,10 @@ Do not use markdown.`,
           {/* Memberships & Deals Row */}
           <div>
             <h2 style={{ fontSize: "20px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 4px 0", display: "flex", alignItems: "center", gap: "6px" }}>
-              <FaPercent style={{ color: "#34d399" }} /> Memberships & Deals
+              <FaPercent style={{ color: "#34d399" }} /> Offers & Plans
             </h2>
             <p style={{ margin: "0 0 16px 0", fontSize: "13.5px", color: "var(--text-secondary)" }}>
-              Save big on recurring home maintenance with our service plans, or copy a promo code below.
+              Save money with our monthly plans or use a promo code below.
             </p>
 
             {availablePlans.length > 0 ? (
@@ -1333,6 +1122,82 @@ Do not use markdown.`,
           </div>
         </div>
 
+        {/* How It Works Section */}
+        <div className="fade-in" style={{
+          margin: "10px 20px 30px 20px",
+          padding: "32px",
+          background: "var(--bg-card)",
+          borderRadius: "24px",
+          border: "1.5px solid var(--border-color)",
+          boxShadow: "var(--shadow-3d)",
+        }}>
+          <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-primary)", textAlign: "center", marginBottom: "24px" }}>
+            How Workzy Works
+          </h2>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "24px", textAlign: "center" }}>
+            <div>
+              <div style={{ fontSize: "24px", marginBottom: "12px", background: "var(--primary-light)", width: "56px", height: "56px", lineHeight: "56px", borderRadius: "50%", margin: "0 auto 12px", color: "var(--primary-dark)", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                <FaMapMarkerAlt />
+              </div>
+              <h4 style={{ fontWeight: 700, color: "var(--text-main)", marginBottom: "8px" }}>1. Search Services</h4>
+              <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>Find trusted professionals near your exact location.</p>
+            </div>
+            <div>
+              <div style={{ fontSize: "24px", marginBottom: "12px", background: "var(--warning)", width: "56px", height: "56px", lineHeight: "56px", borderRadius: "50%", margin: "0 auto 12px", color: "#000", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                <FaUser />
+              </div>
+              <h4 style={{ fontWeight: 700, color: "var(--text-main)", marginBottom: "8px" }}>2. Compare & Book</h4>
+              <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>Review profiles, ratings, and prices before booking instantly.</p>
+            </div>
+            <div>
+              <div style={{ fontSize: "24px", marginBottom: "12px", background: "var(--success-light)", width: "56px", height: "56px", lineHeight: "56px", borderRadius: "50%", margin: "0 auto 12px", color: "var(--success)", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                <FaStar />
+              </div>
+              <h4 style={{ fontWeight: 700, color: "var(--text-main)", marginBottom: "8px" }}>3. Get It Done</h4>
+              <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>Professionals arrive on time and get the job done right.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Call to Action Banner */}
+        <div className="fade-in" style={{
+          margin: "0 20px 40px 20px",
+          padding: "36px",
+          background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)",
+          borderRadius: "24px",
+          color: "#fff",
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "20px",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.15)"
+        }}>
+          <div style={{ flex: "1 1 300px" }}>
+            <h2 style={{ fontSize: "24px", fontWeight: 800, margin: "0 0 10px 0", color: "#fff" }}>Are you a Service Professional?</h2>
+            <p style={{ fontSize: "15px", margin: 0, opacity: 0.9, fontWeight: 500, color: "#fff" }}>Join Workzy today to get more customers, manage your bookings, and grow your business.</p>
+          </div>
+          <Link to="/signup" style={{ textDecoration: "none" }}>
+            <button style={{
+              background: "#fff",
+              color: "var(--primary-dark)",
+              border: "none",
+              padding: "14px 28px",
+              borderRadius: "12px",
+              fontSize: "15px",
+              fontWeight: 800,
+              cursor: "pointer",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              transition: "transform 0.2s"
+            }}
+            onMouseOver={(e) => e.currentTarget.style.transform = "translateY(-2px)"}
+            onMouseOut={(e) => e.currentTarget.style.transform = "translateY(0)"}
+            >
+              Join as Professional
+            </button>
+          </Link>
+        </div>
+
         {/* 🛡️ Trust Signals Section */}
         <div style={{
           display: "grid",
@@ -1368,13 +1233,14 @@ Do not use markdown.`,
       <footer
         style={{
           textAlign: "center",
-          padding: "24px",
-          color: "var(--text-secondary)",
-          fontSize: "14px",
+          padding: "32px 24px",
+          color: "var(--text-main)",
+          fontSize: "15px",
           backgroundColor: "var(--bg-card)",
-          borderTop: "1px solid var(--border-color)",
+          borderTop: "1.5px solid var(--border-color)",
           marginTop: "40px",
-          fontWeight: 500,
+          fontWeight: 600,
+          boxShadow: "0 -4px 20px rgba(0,0,0,0.03)"
         }}
       >
         © 2026 Workzy Inc. All rights reserved. Made with ❤️ by PS-152 Team.
