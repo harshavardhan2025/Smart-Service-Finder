@@ -764,6 +764,7 @@ function QuickSearchChips({ value, onChipClick }) {
   const isPausedRef = useRef(false);
   const resumeTimerRef = useRef(null);
   const currentIndexRef = useRef(0);
+  const [attractedIndex, setAttractedIndex] = useState(0);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -775,18 +776,21 @@ function QuickSearchChips({ value, onChipClick }) {
       const buttons = el.querySelectorAll("button");
       if (!buttons || buttons.length <= 1) return;
 
-      // Advance sequentially: 0 -> 1 -> 2 -> 3 ... -> end -> 0
+      // Advance sequentially one by one
       currentIndexRef.current = (currentIndexRef.current + 1) % buttons.length;
-      const targetBtn = buttons[currentIndexRef.current];
+      setAttractedIndex(currentIndexRef.current);
 
+      const targetBtn = buttons[currentIndexRef.current];
       if (targetBtn) {
         if (currentIndexRef.current === 0) {
           el.scrollTo({ left: 0, behavior: "smooth" });
         } else {
-          el.scrollTo({ left: targetBtn.offsetLeft, behavior: "smooth" });
+          // Attractively center the active chip into view
+          const targetLeft = targetBtn.offsetLeft - (el.clientWidth - targetBtn.offsetWidth) / 2;
+          el.scrollTo({ left: Math.max(0, targetLeft), behavior: "smooth" });
         }
       }
-    }, 1800); // Normal, clean, readable pace (1.8s per chip)
+    }, 1600); // 1.6s attractive step per chip
 
     return () => clearInterval(interval);
   }, []);
@@ -812,6 +816,7 @@ function QuickSearchChips({ value, onChipClick }) {
           }
         });
         currentIndexRef.current = closestIdx;
+        setAttractedIndex(closestIdx);
       }
       isPausedRef.current = false;
     }, delay);
@@ -848,7 +853,7 @@ function QuickSearchChips({ value, onChipClick }) {
         onMouseEnter={handlePause}
         onMouseLeave={() => handleResume(600)}
         onTouchStart={handlePause}
-        onTouchEnd={() => handleResume(1800)}
+        onTouchEnd={() => handleResume(2000)}
         onMouseDown={handlePause}
         onMouseUp={() => handleResume(1500)}
         style={{
@@ -856,7 +861,7 @@ function QuickSearchChips({ value, onChipClick }) {
           gap: "8px",
           overflowX: "auto",
           flex: 1,
-          padding: "3px 0",
+          padding: "4px 0",
           scrollBehavior: "smooth",
           scrollbarWidth: "none",
           msOverflowStyle: "none",
@@ -865,8 +870,9 @@ function QuickSearchChips({ value, onChipClick }) {
           userSelect: "none",
         }}
       >
-        {QUICK_CHIPS.map((chip) => {
+        {QUICK_CHIPS.map((chip, idx) => {
           const isSelected = value === chip.query;
+          const isAttracted = attractedIndex === idx && !value;
           return (
             <button
               key={chip.query}
@@ -874,20 +880,29 @@ function QuickSearchChips({ value, onChipClick }) {
               onClick={() => onChipClick(chip.query)}
               aria-label={`Search for ${chip.query}`}
               style={{
-                padding: "5px 13px",
+                padding: "6px 14px",
                 borderRadius: "20px",
-                border: isSelected ? "1.5px solid var(--primary)" : "1px solid var(--border-color)",
+                border: isSelected
+                  ? "1.5px solid var(--primary)"
+                  : isAttracted
+                  ? "1.5px solid var(--primary)"
+                  : "1px solid var(--border-color)",
                 background: isSelected
                   ? "var(--primary)"
+                  : isAttracted
+                  ? "linear-gradient(135deg, rgba(49, 82, 91, 0.12) 0%, rgba(179, 222, 229, 0.25) 100%)"
                   : "linear-gradient(135deg, rgba(49, 82, 91, 0.05) 0%, rgba(179, 222, 229, 0.1) 100%)",
-                color: isSelected ? "#ffffff" : "var(--text-main)",
+                color: isSelected ? "#ffffff" : isAttracted ? "var(--primary-dark)" : "var(--text-main)",
                 fontSize: "12px",
-                fontWeight: 700,
-                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.04)",
+                fontWeight: isSelected || isAttracted ? 800 : 600,
+                transform: isAttracted ? "scale(1.04)" : "none",
+                boxShadow: isSelected || isAttracted
+                  ? "0 3px 10px rgba(49, 82, 91, 0.15)"
+                  : "0 2px 5px rgba(0, 0, 0, 0.03)",
                 cursor: "pointer",
                 whiteSpace: "nowrap",
                 flexShrink: 0,
-                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
               }}
             >
               {chip.label}
