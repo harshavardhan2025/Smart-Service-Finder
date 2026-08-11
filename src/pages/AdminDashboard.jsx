@@ -157,9 +157,9 @@ function AdminDashboard() {
   };
 
   const filteredWorkers = workers.filter((w) => {
-    const matchesSearch = w.name.toLowerCase().includes(workerSearch.toLowerCase()) ||
-                          w.service.toLowerCase().includes(workerSearch.toLowerCase()) ||
-                          w.city.toLowerCase().includes(workerSearch.toLowerCase());
+    const matchesSearch = (w.name || "").toLowerCase().includes(workerSearch.toLowerCase()) ||
+                          (w.service || "").toLowerCase().includes(workerSearch.toLowerCase()) ||
+                          (w.city || "").toLowerCase().includes(workerSearch.toLowerCase());
     const matchesStatus = workerFilterStatus === "All" || w.status === workerFilterStatus;
     return matchesSearch && matchesStatus;
   });
@@ -168,9 +168,9 @@ function AdminDashboard() {
   const paginatedWorkers = filteredWorkers.slice((workerPage - 1) * workersPerPage, workerPage * workersPerPage);
 
   const filteredCustomers = customers.filter((c) => {
-    return c.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
-           c.email.toLowerCase().includes(customerSearch.toLowerCase()) ||
-           c.phone.toLowerCase().includes(customerSearch.toLowerCase());
+    return (c.name || "").toLowerCase().includes(customerSearch.toLowerCase()) ||
+           (c.email || "").toLowerCase().includes(customerSearch.toLowerCase()) ||
+           (c.phone || "").toLowerCase().includes(customerSearch.toLowerCase());
   });
 
   const syncAdminStore = async () => {

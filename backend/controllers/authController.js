@@ -285,25 +285,7 @@ export const googleAuth = async (req, res) => {
     // ── LOGIN FLOW: no role passed ───────────────────────────
     } else {
       if (!user) {
-        // No account found — auto-create a user account for seamless Google Sign-In with retry
-        user = await executeWithRetry(() => User.create({
-          name: name || email.split("@")[0],
-          email,
-          password: `GoogleOAuth_${Date.now()}`,
-          role: "user",
-          city: "Mumbai",
-          phone: ""
-        }));
-
-        await executeWithRetry(() => ActivityLog.create({
-          user_id: user._id,
-          email: user.email,
-          role: user.role,
-          action: "SIGNUP",
-          device: req.headers["user-agent"] || "Google OAuth",
-          ip: req.ip || "127.0.0.1",
-          city: "Mumbai"
-        }));
+        return res.status(404).json({ error: "No account found with this Google email. Please sign up first." });
       } else {
         // Existing user — block check for workers
         if (user.role === "worker") {
@@ -414,25 +396,7 @@ export const googleMockAuth = async (req, res) => {
     } else {
       // Login flow
       if (!user) {
-        // Auto-create user for seamless sign-in
-        user = await executeWithRetry(() => User.create({
-          name,
-          email,
-          password: `GoogleMockAuth_${Date.now()}`,
-          role: "user",
-          city: "Mumbai",
-          phone: ""
-        }));
-
-        await executeWithRetry(() => ActivityLog.create({
-          user_id: user._id,
-          email: user.email,
-          role: user.role,
-          action: "SIGNUP",
-          device: req.headers["user-agent"] || "Google Mock Auth",
-          ip: req.ip || "127.0.0.1",
-          city: "Mumbai"
-        }));
+        return res.status(404).json({ error: "No account found with this Google email. Please sign up first." });
       } else {
         if (user.role === "worker") {
           const associatedWorker = await executeWithRetry(() => Worker.findOne({ email: user.email }));
