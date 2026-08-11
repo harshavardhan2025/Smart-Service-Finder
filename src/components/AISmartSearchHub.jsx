@@ -33,35 +33,50 @@ const SERVICE_SUGGESTIONS = [
 ];
 
 const QUICK_CHIPS = [
-  { label: "💧 Plumber", query: "Plumber" },
-  { label: "🚰 Tap Leak Repair", query: "Tap Repair" },
-  { label: "⚡ Electrician", query: "Electrician" },
-  { label: "💡 Fan & Light Fitting", query: "Light Fitting" },
-  { label: "❄️ AC Repair", query: "AC Repair" },
-  { label: "🧊 AC Gas Refill", query: "AC Gas Refill" },
-  { label: "🧹 House Cleaning", query: "House Cleaning" },
-  { label: "🛋️ Sofa & Carpet Clean", query: "Sofa Cleaning" },
-  { label: "🩺 Doctor", query: "Doctor" },
-  { label: "💉 Nurse Home Visit", query: "Nurse" },
-  { label: "🪚 Carpenter", query: "Carpenter" },
-  { label: "🚪 Door & Furniture Fix", query: "Furniture Repair" },
-  { label: "🎨 Painter", query: "Painter" },
-  { label: "🖌️ Full Home Painting", query: "Home Painting" },
-  { label: "💅 Beauty & Salon", query: "Beauty" },
-  { label: "💇‍♂️ Haircut & Grooming", query: "Haircut" },
-  { label: "💄 Bridal Makeup & Spa", query: "Makeup" },
-  { label: "🏍️ Mechanic", query: "Mechanic" },
-  { label: "🛵 Bike Service & Puncture", query: "Bike Service" },
-  { label: "🐜 Pest Control", query: "Pest Control" },
+  // Primary Categories
+  { label: "🪚 Carpentry", query: "Carpentry" },
+  { label: "🔧 Plumbing", query: "Plumbing" },
+  { label: "⚡ Electrical", query: "Electrical" },
+  { label: "💅 Beauty, Salon & Spa", query: "Beauty, Salon & Spa" },
+  { label: "🩺 Doctors", query: "Doctor" },
 
-  { label: "📦 Packers & Movers", query: "Packers & Movers" },
-  { label: "🚚 House Shifting", query: "House Shifting" },
-  { label: "🚗 Car Wash", query: "Car Wash" },
-  { label: "✨ Doorstep Foam Wash", query: "Foam Wash" },
-  { label: "📺 Appliance Repair", query: "Appliance Repair" },
-  { label: "📹 CCTV Installation", query: "CCTV Installation" },
-  { label: "👨‍🍳 Home Cook & Chef", query: "Cook" },
-  { label: "🌱 Gardener & Lawn Care", query: "Gardener" },
+  // Cleaning Sub-Categories
+  { label: "🧹 Floor Cleaning", query: "Floor cleaning" },
+  { label: "🍽️ Utensils Cleaning", query: "Utensils Cleaning" },
+  { label: "🏠 House Cleaning", query: "House Cleaning" },
+
+  // Painting Sub-Categories
+  { label: "🧱 Wall Putty Coating", query: "Wall Putty Coating" },
+  { label: "🏠 Interior Painting", query: "Interior Painting" },
+  { label: "🏢 Exterior Painting", query: "Exterior Painting" },
+  { label: "✨ Texture & Designer Finishers", query: "Texture & Designer Finishers" },
+  { label: "🖼️ Wallpaper Installation", query: "Wallpaper Installation" },
+  { label: "🪵 Wood Polishing", query: "Wood Polishing" },
+
+  // Mechanical Sub-Categories
+  { label: "🏍️ Two-Wheeler (Bikes)", query: "Two-Wheeler (Bikes)" },
+  { label: "🚗 Four-Wheeler (Cars)", query: "Four-Wheeler (Cars)" },
+  { label: "🚜 Others (Heavy)", query: "Others (Heavy)" },
+
+  // Automobile Cleaning Sub-Categories
+  { label: "🏍️ Bike Wash", query: "Bike Wash" },
+  { label: "🧼 Car Wash", query: "Car Wash" },
+
+  // Electrical Appliances Repair Sub-Categories
+  { label: "❄️ AC Repair", query: "AC Repair" },
+  { label: "🧺 Washing Machine", query: "Washing Machine" },
+  { label: "🔥 Geyser", query: "Geyser" },
+  { label: "🌀 Grinder", query: "Grinder" },
+  { label: "🌪️ Mixer", query: "Mixer" },
+  { label: "🧊 Refrigerator", query: "Refrigerator" },
+  { label: "💧 Water Purifier", query: "Water Purifier" },
+
+  // Events Sub-Categories
+  { label: "📸 Photography", query: "Photography" },
+  { label: "🪔 Purohit", query: "Purohit" },
+  { label: "🎈 Decor", query: "Decor" },
+  { label: "🌿 Mehandi", query: "Mehandi" },
+  { label: "💄 Makeup", query: "Makeup" },
 ];
 
 const SERVICE_KEYWORDS = {
