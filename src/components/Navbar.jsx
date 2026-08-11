@@ -100,7 +100,7 @@ function Navbar() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          padding: "14px 24px",
+          padding: isMobile ? "8px 14px" : "10px 20px",
           background: "var(--bg-card)",
           color: "var(--text-main)",
           borderBottom: "1.5px solid var(--border-color)",
@@ -117,11 +117,11 @@ function Navbar() {
           style={{
             textDecoration: "none",
             color: "inherit",
-            paddingLeft: isMobile ? "32px" : "48px",
+            paddingLeft: isMobile ? "30px" : "44px",
             transition: "padding-left 0.25s ease-in-out"
           }}
         >
-          <h2 style={{ margin: 0, fontWeight: 800, fontSize: "22px", letterSpacing: "-0.5px", display: "flex", alignItems: "center", gap: "8px", whiteSpace: "nowrap" }}>
+          <h2 style={{ margin: 0, fontWeight: 800, fontSize: isMobile ? "19px" : "21px", letterSpacing: "-0.5px", display: "flex", alignItems: "center", gap: "8px", whiteSpace: "nowrap" }}>
             <FaTools style={{ color: "var(--primary)" }} />
             <span><span style={{ color: "var(--text-main)" }}>Work</span><span style={{ color: "var(--warning)" }}>zy</span></span>
           </h2>

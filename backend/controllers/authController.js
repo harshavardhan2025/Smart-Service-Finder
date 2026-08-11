@@ -89,7 +89,8 @@ export const registerUser = async (req, res) => {
       password,
       role,
       city,
-      phone
+      phone,
+      isWorker: role === "worker",
     });
 
     if (role === "worker") {
@@ -97,7 +98,7 @@ export const registerUser = async (req, res) => {
       const multiplier = getPriceMultiplier(city || "");
       const locationPrice = Math.round(basePrice * multiplier);
 
-      await Worker.create({
+      const worker = await Worker.create({
         name,
         email,
         service: profession,
@@ -108,6 +109,9 @@ export const registerUser = async (req, res) => {
         price: locationPrice,
         status: "Active"
       });
+      user.isWorker = true;
+      user.workerProfileId = worker._id;
+      await user.save();
     }
 
     // Log the registration event
@@ -130,6 +134,8 @@ export const registerUser = async (req, res) => {
         email: user.email,
         role: user.role,
         city: user.city,
+        isWorker: user.isWorker || false,
+        workerProfileId: user.workerProfileId || null,
       },
       token: generateToken(user._id),
     });
@@ -140,55 +146,196 @@ export const registerUser = async (req, res) => {
 
 export const loginUser = async (req, res) => {
   try {
-    let { email, password } = req.body;
+    let { email, password, loginAs } = req.body;
     if (email) email = email.toLowerCase().trim();
 
     const user = await User.findOne({ email });
 
-    if (user && (await user.comparePassword(password))) {
-      // 🛑 SECURITY INTERCEPT: Instantly terminate authentication for Blocked Workers!
-      if (user.role === "worker") {
-        const associatedWorker = await Worker.findOne({ email: user.email });
-        if (associatedWorker && associatedWorker.status === "Blocked") {
-           return res.status(403).json({ error: "CRITICAL: Your worker account has been PERMANENTLY BLOCKED by admin control." });
-        }
-      }
-
-      // Log the login event
-      await ActivityLog.create({
-        user_id: user._id,
-        email: user.email,
-        role: user.role,
-        action: "LOGIN",
-        device: req.headers["user-agent"] || "Generic Web Client",
-        ip: req.ip || "127.0.0.1",
-        city: user.city || "Unknown"
-      });
-
-      res.json({
-        success: true,
-        message: "Login successful",
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          city: user.city,
-        },
-        token: generateToken(user._id),
-      });
-    } else {
-      res.status(401).json({ error: "Invalid email or password" });
+    if (!user || !(await user.comparePassword(password))) {
+      return res.status(401).json({ error: "Invalid email or password" });
     }
+
+    const associatedWorker = await Worker.findOne({ email: user.email });
+
+    // Keep user's isWorker & workerProfileId in sync if Worker record exists
+    if (associatedWorker && (!user.isWorker || !user.workerProfileId)) {
+      user.isWorker = true;
+      user.workerProfileId = associatedWorker._id;
+      await user.save();
+    }
+
+    let loginContext = "user";
+
+    // ── ADMIN ACCESS: Always permitted from any login tab ──
+    if (user.role === "admin") {
+      loginContext = "admin";
+    } else if (loginAs === "provider") {
+      // ── SERVICE PROVIDER TAB LOGIN ──
+      const hasWorkerAccount = !!associatedWorker || user.role === "worker" || user.isWorker === true;
+      if (!hasWorkerAccount) {
+        return res.status(404).json({
+          error: "No service provider profile found for this email. Please register as a service provider below or sign in under 'Login as User'."
+        });
+      }
+      if (associatedWorker && associatedWorker.status === "Blocked") {
+        return res.status(403).json({
+          error: "CRITICAL: Your worker account has been PERMANENTLY BLOCKED by admin control."
+        });
+      }
+      loginContext = "provider";
+    } else if (loginAs === "user") {
+      // ── USER / CUSTOMER TAB LOGIN ──
+      // Accounts registered primarily as workers must use the Service Provider tab
+      if (user.role === "worker") {
+        return res.status(403).json({
+          error: "This account is registered as a Service Provider only. Please switch to the Service Provider tab to sign in."
+        });
+      }
+      loginContext = "user";
+    } else {
+      // Fallback
+      if (user.role === "worker") {
+        if (associatedWorker && associatedWorker.status === "Blocked") {
+          return res.status(403).json({ error: "CRITICAL: Your worker account has been PERMANENTLY BLOCKED by admin control." });
+        }
+        loginContext = "provider";
+      } else {
+        loginContext = "user";
+      }
+    }
+
+    // Log the login event
+    await ActivityLog.create({
+      user_id: user._id,
+      email: user.email,
+      role: user.role,
+      action: loginContext === "provider" ? "LOGIN_PROVIDER" : "LOGIN",
+      device: req.headers["user-agent"] || "Generic Web Client",
+      ip: req.ip || "127.0.0.1",
+      city: user.city || "Unknown"
+    });
+
+    res.json({
+      success: true,
+      message: "Login successful",
+      loginContext,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: loginContext === "provider" ? "worker" : user.role,
+        actualRole: user.role,
+        city: user.city,
+        isWorker: user.isWorker || !!associatedWorker || false,
+        workerProfileId: user.workerProfileId || (associatedWorker ? associatedWorker._id : null),
+      },
+      worker: associatedWorker ? {
+        id: associatedWorker._id,
+        name: associatedWorker.name,
+        service: associatedWorker.service,
+        city: associatedWorker.city,
+        price: associatedWorker.price,
+        status: associatedWorker.status,
+      } : null,
+      token: generateToken(user._id),
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+// ── JOIN AS WORKER: existing user registers as a service provider ──────────
+export const joinAsWorker = async (req, res) => {
+  try {
+    let { email, password, profession, city } = req.body;
+    if (email) email = email.toLowerCase().trim();
+
+    if (!email || !password || !profession || !city) {
+      return res.status(400).json({ error: "Email, password, profession and city are required." });
+    }
+
+    // 1. Verify the user exists and credentials match
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: "No account found with this email. Please sign up first." });
+    }
+    const passwordValid = await user.comparePassword(password);
+    if (!passwordValid) {
+      return res.status(401).json({ error: "Invalid password. Please check your credentials." });
+    }
+
+    // 2. Check if a worker profile already exists for this email
+    const existingWorker = await Worker.findOne({ email });
+    if (existingWorker) {
+      return res.status(409).json({ error: "A service provider profile already exists for this email." });
+    }
+
+    // 3. Create the Worker record
+    const basePrice = SERVICE_BASE_PRICES[profession] || 350;
+    const multiplier = getPriceMultiplier(city || "");
+    const locationPrice = Math.round(basePrice * multiplier);
+
+    const worker = await Worker.create({
+      name: user.name,
+      email,
+      service: profession,
+      city,
+      rating: 2.7,
+      ratingSum: 0,
+      reviews: 0,
+      price: locationPrice,
+      status: "Active"
+    });
+
+    // 4. Update user: mark as worker, store reference
+    user.isWorker = true;
+    user.workerProfileId = worker._id;
+    await user.save();
+
+    // 5. Log the event
+    await ActivityLog.create({
+      user_id: user._id,
+      email: user.email,
+      role: user.role,
+      action: "JOIN_AS_WORKER",
+      device: req.headers["user-agent"] || "Generic Web Client",
+      ip: req.ip || "127.0.0.1",
+      city: city || "Unknown"
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Service provider profile created successfully!",
+      loginContext: "provider",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: "worker",
+        actualRole: user.role,
+        city: user.city,
+        isWorker: true,
+        workerProfileId: worker._id,
+      },
+      worker: {
+        id: worker._id,
+        name: worker.name,
+        service: worker.service,
+        city: worker.city,
+        price: worker.price,
+      },
+      token: generateToken(user._id),
+    });
+  } catch (error) {
+    console.error("[joinAsWorker] Error:", error.message);
+    res.status(500).json({ error: `Failed to create service provider profile: ${error.message}` });
   }
 };
 
 export const googleAuth = async (req, res) => {
   console.log("📡 [googleAuth] Request received. Body:", req.body);
   try {
-    let { accessToken, role, profession, city, phone, name: customName } = req.body;
+    let { accessToken, role, profession, city, phone, name: customName, loginAs } = req.body;
     
     // ✅ Validate role – only 'user' or 'worker' allowed for Google signup
     if (role && !['user', 'worker'].includes(role)) {
@@ -232,10 +379,12 @@ export const googleAuth = async (req, res) => {
     const placeholderPassword = `GoogleOAuthSecurePassword123!`;
     const isSignupFlow = !!role; // if role is passed, it's a signup attempt
 
+    let loginContext = "user";
+    let associatedWorker = null;
+
     // ── SIGNUP FLOW: role was provided ──────────────────────
     if (isSignupFlow) {
       if (user) {
-        // Email already registered — reject with clear message
         return res.status(409).json({
           error: `An account with this email (${email}) already exists. Please go to the login page and sign in instead.`
         });
@@ -243,14 +392,14 @@ export const googleAuth = async (req, res) => {
 
       const finalName = customName || name;
 
-      // Create new user with retry
       user = await executeWithRetry(() => User.create({
         name: finalName,
         email,
         password: placeholderPassword,
         role: role || "user",
         city: city || "Mumbai",
-        phone: phone || ""
+        phone: phone || "",
+        isWorker: role === "worker",
       }));
 
       if (user.role === "worker") {
@@ -258,7 +407,7 @@ export const googleAuth = async (req, res) => {
         const multiplier = getPriceMultiplier(city || "");
         const locationPrice = Math.round(basePrice * multiplier);
 
-        await executeWithRetry(() => Worker.create({
+        associatedWorker = await executeWithRetry(() => Worker.create({
           name: finalName,
           email,
           service: profession || "Carpentry",
@@ -269,9 +418,14 @@ export const googleAuth = async (req, res) => {
           price: locationPrice,
           status: "Active"
         }));
+        user.isWorker = true;
+        user.workerProfileId = associatedWorker._id;
+        await user.save();
+        loginContext = "provider";
+      } else {
+        loginContext = "user";
       }
 
-      // Log signup event with retry
       await executeWithRetry(() => ActivityLog.create({
         user_id: user._id,
         email: user.email,
@@ -286,38 +440,79 @@ export const googleAuth = async (req, res) => {
     } else {
       if (!user) {
         return res.status(404).json({ error: "No account found with this Google email. Please sign up first." });
-      } else {
-        // Existing user — block check for workers
+      }
+
+      associatedWorker = await executeWithRetry(() => Worker.findOne({ email: user.email }));
+      if (associatedWorker && (!user.isWorker || !user.workerProfileId)) {
+        user.isWorker = true;
+        user.workerProfileId = associatedWorker._id;
+        await user.save();
+      }
+
+      if (user.role === "admin") {
+        loginContext = "admin";
+      } else if (loginAs === "provider") {
+        const hasWorkerAccount = !!associatedWorker || user.role === "worker" || user.isWorker === true;
+        if (!hasWorkerAccount) {
+          return res.status(404).json({
+            error: "No service provider profile found for this Google account. Please register as a service provider first or sign in under 'Login as User'."
+          });
+        }
+        if (associatedWorker && associatedWorker.status === "Blocked") {
+          return res.status(403).json({ error: "Your worker account has been blocked by admin. Please contact support." });
+        }
+        loginContext = "provider";
+      } else if (loginAs === "user") {
         if (user.role === "worker") {
-          const associatedWorker = await executeWithRetry(() => Worker.findOne({ email: user.email }));
+          return res.status(403).json({
+            error: "This account is registered as a Service Provider only. Please switch to the Service Provider tab to sign in."
+          });
+        }
+        loginContext = "user";
+      } else {
+        if (user.role === "worker") {
           if (associatedWorker && associatedWorker.status === "Blocked") {
             return res.status(403).json({ error: "Your worker account has been blocked by admin. Please contact support." });
           }
+          loginContext = "provider";
+        } else {
+          loginContext = "user";
         }
-
-        // Log login event with retry
-        await executeWithRetry(() => ActivityLog.create({
-          user_id: user._id,
-          email: user.email,
-          role: user.role,
-          action: "LOGIN",
-          device: req.headers["user-agent"] || "Generic Web Client",
-          ip: req.ip || "127.0.0.1",
-          city: user.city || "Unknown"
-        }));
       }
+
+      await executeWithRetry(() => ActivityLog.create({
+        user_id: user._id,
+        email: user.email,
+        role: user.role,
+        action: loginContext === "provider" ? "LOGIN_PROVIDER" : "LOGIN",
+        device: req.headers["user-agent"] || "Generic Web Client",
+        ip: req.ip || "127.0.0.1",
+        city: user.city || "Unknown"
+      }));
     }
 
     res.status(200).json({
       success: true,
       message: "Authentication successful",
+      loginContext,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        role: loginContext === "provider" ? "worker" : user.role,
+        actualRole: user.role,
         city: user.city,
+        isWorker: user.isWorker || !!associatedWorker || false,
+        workerProfileId: user.workerProfileId || (associatedWorker ? associatedWorker._id : null),
       },
+      worker: associatedWorker ? {
+        id: associatedWorker._id,
+        name: associatedWorker.name,
+        service: associatedWorker.service,
+        city: associatedWorker.city,
+        price: associatedWorker.price,
+        status: associatedWorker.status,
+      } : null,
       token: generateToken(user._id),
     });
 
@@ -329,7 +524,7 @@ export const googleAuth = async (req, res) => {
 
 export const googleMockAuth = async (req, res) => {
   try {
-    let { email, name, role, profession, city, phone } = req.body;
+    let { email, name, role, profession, city, phone, loginAs } = req.body;
     if (email) email = email.toLowerCase().trim();
     
     // ✅ Validate role – only 'user' or 'worker' allowed for mock Google signup
@@ -347,6 +542,8 @@ export const googleMockAuth = async (req, res) => {
     // Find existing user or auto-create a regular user with retry
     let user = await executeWithRetry(() => User.findOne({ email }));
     const isSignupFlow = !!role;
+    let loginContext = "user";
+    let associatedWorker = null;
 
     if (isSignupFlow) {
       if (user) {
@@ -362,7 +559,8 @@ export const googleMockAuth = async (req, res) => {
         password: `GoogleMockAuth_${Date.now()}`,
         role: role || "user",
         city: city || "Mumbai",
-        phone: phone || ""
+        phone: phone || "",
+        isWorker: role === "worker",
       }));
 
       if (user.role === "worker") {
@@ -370,7 +568,7 @@ export const googleMockAuth = async (req, res) => {
         const multiplier = getPriceMultiplier(city || "");
         const locationPrice = Math.round(basePrice * multiplier);
 
-        await executeWithRetry(() => Worker.create({
+        associatedWorker = await executeWithRetry(() => Worker.create({
           name,
           email,
           service: profession || "Carpentry",
@@ -381,6 +579,12 @@ export const googleMockAuth = async (req, res) => {
           price: locationPrice,
           status: "Active"
         }));
+        user.isWorker = true;
+        user.workerProfileId = associatedWorker._id;
+        await user.save();
+        loginContext = "provider";
+      } else {
+        loginContext = "user";
       }
 
       await executeWithRetry(() => ActivityLog.create({
@@ -397,35 +601,79 @@ export const googleMockAuth = async (req, res) => {
       // Login flow
       if (!user) {
         return res.status(404).json({ error: "No account found with this Google email. Please sign up first." });
+      }
+
+      associatedWorker = await executeWithRetry(() => Worker.findOne({ email: user.email }));
+      if (associatedWorker && (!user.isWorker || !user.workerProfileId)) {
+        user.isWorker = true;
+        user.workerProfileId = associatedWorker._id;
+        await user.save();
+      }
+
+      if (user.role === "admin") {
+        loginContext = "admin";
+      } else if (loginAs === "provider") {
+        const hasWorkerAccount = !!associatedWorker || user.role === "worker" || user.isWorker === true;
+        if (!hasWorkerAccount) {
+          return res.status(404).json({
+            error: "No service provider profile found for this Google email. Please register as a service provider first or sign in under 'Login as User'."
+          });
+        }
+        if (associatedWorker && associatedWorker.status === "Blocked") {
+          return res.status(403).json({ error: "Your worker account has been blocked by admin." });
+        }
+        loginContext = "provider";
+      } else if (loginAs === "user") {
+        if (user.role === "worker") {
+          return res.status(403).json({
+            error: "This account is registered as a Service Provider only. Please switch to the Service Provider tab to sign in."
+          });
+        }
+        loginContext = "user";
       } else {
         if (user.role === "worker") {
-          const associatedWorker = await executeWithRetry(() => Worker.findOne({ email: user.email }));
           if (associatedWorker && associatedWorker.status === "Blocked") {
             return res.status(403).json({ error: "Your worker account has been blocked by admin." });
           }
+          loginContext = "provider";
+        } else {
+          loginContext = "user";
         }
-        await executeWithRetry(() => ActivityLog.create({
-          user_id: user._id,
-          email: user.email,
-          role: user.role,
-          action: "LOGIN",
-          device: req.headers["user-agent"] || "Google Mock Auth",
-          ip: req.ip || "127.0.0.1",
-          city: user.city || "Unknown"
-        }));
       }
+
+      await executeWithRetry(() => ActivityLog.create({
+        user_id: user._id,
+        email: user.email,
+        role: user.role,
+        action: loginContext === "provider" ? "LOGIN_PROVIDER" : "LOGIN",
+        device: req.headers["user-agent"] || "Google Mock Auth",
+        ip: req.ip || "127.0.0.1",
+        city: user.city || "Unknown"
+      }));
     }
 
     return res.status(200).json({
       success: true,
       message: "Google Mock Authentication successful",
+      loginContext,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        role: loginContext === "provider" ? "worker" : user.role,
+        actualRole: user.role,
         city: user.city,
+        isWorker: user.isWorker || !!associatedWorker || false,
+        workerProfileId: user.workerProfileId || (associatedWorker ? associatedWorker._id : null),
       },
+      worker: associatedWorker ? {
+        id: associatedWorker._id,
+        name: associatedWorker.name,
+        service: associatedWorker.service,
+        city: associatedWorker.city,
+        price: associatedWorker.price,
+        status: associatedWorker.status,
+      } : null,
       token: generateToken(user._id),
     });
   } catch (error) {

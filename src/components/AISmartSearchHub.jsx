@@ -41,8 +41,15 @@ const QUICK_CHIPS = [
   { label: "💧 Plumber", query: "Plumber" },
   { label: "⚡ Electrician", query: "Electrician" },
   { label: "❄️ AC Repair", query: "AC Repair" },
-  { label: "🧹 Cleaning", query: "House Cleaning" },
+  { label: "🧹 House Cleaning", query: "House Cleaning" },
   { label: "🩺 Doctor", query: "Doctor" },
+  { label: "🪚 Carpenter", query: "Carpenter" },
+  { label: "🎨 Painter", query: "Painter" },
+  { label: "🏍️ Mechanic", query: "Mechanic" },
+  { label: "🐜 Pest Control", query: "Pest Control" },
+  { label: "📦 Packers & Movers", query: "Packers & Movers" },
+  { label: "💅 Beauty & Salon", query: "Beauty" },
+  { label: "🚗 Car Wash", query: "Car Wash" },
 ];
 
 const SERVICE_KEYWORDS = {
@@ -324,10 +331,13 @@ function AISmartSearchHub({
             50% { transform: translateY(-50%) scale(1.25); box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
             100% { transform: translateY(-50%) scale(1); }
           }
-          @keyframes pulse-badge {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.3); opacity: 0.4; }
-            100% { transform: scale(1); opacity: 1; }
+          @keyframes quickChipsScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          .quick-chips-track:hover,
+          .quick-chips-track.is-paused {
+            animation-play-state: paused !important;
           }
           @media (max-width: 768px) {
             .zy-hub-grid {
@@ -341,9 +351,14 @@ function AISmartSearchHub({
           }
           @media (max-width: 600px) {
             .service-search-container {
-              padding: 18px !important;
-              margin: 10px !important;
-              border-radius: 20px !important;
+              padding: 14px 12px !important;
+              margin: 8px 8px 14px 8px !important;
+              border-radius: 18px !important;
+              gap: 12px !important;
+            }
+            .search-input-wrapper input {
+              padding: 12px 42px 12px 14px !important;
+              font-size: 14px !important;
             }
           }
         `}
@@ -517,6 +532,7 @@ function SearchInput({
   const hasSearchValue = Boolean(value?.trim());
   return (
     <div
+      className="search-input-wrapper"
       style={{
         display: "flex",
         alignItems: "center",
@@ -526,7 +542,7 @@ function SearchInput({
         position: "relative",
       }}
     >
-      <div style={{ position: "relative", flex: 1, minWidth: "280px" }}>
+      <div style={{ position: "relative", flex: 1, minWidth: "220px" }}>
         <input
           id="service-search-input"
           type="text"
@@ -672,59 +688,121 @@ function SearchInput({
 }
 
 function QuickSearchChips({ value, onChipClick }) {
+  const scrollRef = useRef(null);
+  const isPausedRef = useRef(false);
+  const resumeTimerRef = useRef(null);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    let animId;
+    const speed = 1.35; // Fast, continuous, readable auto-scrolling
+
+    const step = () => {
+      if (!isPausedRef.current && el) {
+        el.scrollLeft += speed;
+        // Loop back seamlessly once half the repeated track is scrolled
+        if (el.scrollLeft >= el.scrollWidth / 2) {
+          el.scrollLeft -= el.scrollWidth / 2;
+        }
+      }
+      animId = requestAnimationFrame(step);
+    };
+
+    animId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animId);
+  }, []);
+
+  const handlePause = () => {
+    isPausedRef.current = true;
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+  };
+
+  const handleResume = (delay = 600) => {
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+    resumeTimerRef.current = setTimeout(() => {
+      isPausedRef.current = false;
+    }, delay);
+  };
+
   return (
     <div
       style={{
         display: "flex",
         alignItems: "center",
-        gap: "8px",
-        flexWrap: "wrap",
+        gap: "10px",
+        width: "100%",
+        overflow: "hidden",
       }}
     >
-      <span style={{ fontSize: "12.5px", color: "var(--text-secondary)", fontWeight: 700 }}>
-        Quick Tasks:
+      <span
+        style={{
+          fontSize: "12px",
+          color: "var(--text-secondary)",
+          fontWeight: 800,
+          flexShrink: 0,
+          whiteSpace: "nowrap",
+          padding: "4px 8px",
+          borderRadius: "8px",
+          background: "rgba(49, 82, 91, 0.08)",
+        }}
+      >
+        ⚡ Quick Tasks:
       </span>
-      {QUICK_CHIPS.map((chip) => {
-        const isSelected = value === chip.query;
-        return (
-          <button
-            key={chip.query}
-            type="button"
-            onClick={() => onChipClick(chip.query)}
-            aria-label={`Search for ${chip.query}`}
-            style={{
-              padding: "6px 14px",
-              borderRadius: "20px",
-              border: "1.5px solid var(--border-color)",
-              background: isSelected
-                ? "var(--primary)"
-                : "linear-gradient(135deg, rgba(49, 82, 91, 0.05) 0%, rgba(179, 222, 229, 0.1) 100%)",
-              color: isSelected ? "#ffffff" : "var(--text-main)",
-              fontSize: "12px",
-              fontWeight: 700,
-              boxShadow: "0 2px 6px rgba(49, 82, 91, 0.03)",
-              cursor: "pointer",
-              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-            }}
-            onMouseEnter={(event) => {
-              event.currentTarget.style.transform = "translateY(-1px) scale(1.03)";
-              if (!isSelected) {
-                event.currentTarget.style.backgroundColor = "var(--primary-light)";
-                event.currentTarget.style.borderColor = "var(--primary)";
-              }
-            }}
-            onMouseLeave={(event) => {
-              event.currentTarget.style.transform = "none";
-              if (!isSelected) {
-                event.currentTarget.style.backgroundColor = "rgba(49, 82, 91, 0.05)";
-                event.currentTarget.style.borderColor = "var(--border-color)";
-              }
-            }}
-          >
-            {chip.label}
-          </button>
-        );
-      })}
+
+      <div
+        ref={scrollRef}
+        className="quick-chips-horizontal-track"
+        onMouseEnter={handlePause}
+        onMouseLeave={() => handleResume(300)}
+        onTouchStart={handlePause}
+        onTouchEnd={() => handleResume(800)}
+        onMouseDown={handlePause}
+        onMouseUp={() => handleResume(600)}
+        style={{
+          display: "flex",
+          gap: "8px",
+          overflowX: "auto",
+          flex: 1,
+          padding: "3px 0",
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+          WebkitOverflowScrolling: "touch",
+          cursor: "grab",
+          userSelect: "none",
+        }}
+      >
+        {[...QUICK_CHIPS, ...QUICK_CHIPS, ...QUICK_CHIPS, ...QUICK_CHIPS].map((chip, idx) => {
+          const isSelected = value === chip.query;
+          return (
+            <button
+              key={`${chip.query}-${idx}`}
+              type="button"
+              onClick={() => onChipClick(chip.query)}
+              aria-label={`Search for ${chip.query}`}
+              style={{
+                padding: "5px 13px",
+                borderRadius: "20px",
+                border: isSelected ? "1.5px solid var(--primary)" : "1px solid var(--border-color)",
+                background: isSelected
+                  ? "var(--primary)"
+                  : "linear-gradient(135deg, rgba(49, 82, 91, 0.05) 0%, rgba(179, 222, 229, 0.1) 100%)",
+                color: isSelected ? "#ffffff" : "var(--text-main)",
+                fontSize: "12px",
+                fontWeight: 700,
+                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.04)",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+              }}
+            >
+              {chip.label}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

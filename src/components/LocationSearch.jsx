@@ -11,7 +11,7 @@ const SERVICE_SUGGESTIONS = [
   "Tutor", "Cook", "Driver", "Mechanic", "Yoga Trainer",
 ];
 
-function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocationClick, onCoordsChange, onLocationUpdate }) {
+function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocationClick, onCoordsChange, onLocationUpdate, style = {} }) {
   const navigate = useNavigate();
   const [suggestions, setSuggestions] = useState([]);
   const [focused, setFocused] = useState(false);
@@ -133,7 +133,7 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
   };
 
   return (
-    <div className="service-search-container" ref={containerRef} style={{ padding: "22px 28px", margin: "16px 20px 20px 20px", background: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "20px", boxShadow: "var(--card-shadow)", backdropFilter: "blur(16px)" }}>
+    <div className="service-search-container" ref={containerRef} style={{ padding: "16px 18px", margin: "0", background: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "18px", boxShadow: "var(--card-shadow)", backdropFilter: "blur(16px)", width: "100%", boxSizing: "border-box", ...style }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", flexWrap: "wrap", gap: "8px" }}>
         <p style={{ margin: 0, fontSize: "14px", color: "var(--text-main)", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px", letterSpacing: "0.2px" }}>
           <FaSearch size={15} style={{ color: "#0284c7" }} /> Search Services or Workers
@@ -163,7 +163,7 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
           {detectedLocation ? detectedLocation.split(",").slice(0, 2).join(",").trim() : "Set Location on Map"}
         </button>
       </div>
-      <div style={{ display: "flex", alignItems: "center", width: "100%", gap: "12px", flexWrap: "wrap", position: "relative" }}>
+      <div style={{ display: "flex", alignItems: "center", width: "100%", gap: "10px", position: "relative" }}>
         
         {/* Map Modal */}
         {showMap && createPortal(
@@ -247,7 +247,7 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
           </div>,
           document.body
         )}
-        <div style={{ position: "relative", flex: 1, maxWidth: "420px", width: "100%" }}>
+        <div style={{ position: "relative", flex: 1, width: "100%" }}>
           <input
             id="service-search-input"
             type="text"

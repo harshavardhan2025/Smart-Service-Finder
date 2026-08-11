@@ -322,6 +322,8 @@ function Home() {
   const navigate = useNavigate();
   const role = sessionStorage.getItem("userRole") || "user";
   const userName = sessionStorage.getItem("userName") || "";
+  // Email of the logged-in user's worker profile (to filter self from listings)
+  const myWorkerEmail = sessionStorage.getItem("workerSession_email") || "";
 
   /* =======================================================
      AUTH
@@ -398,7 +400,9 @@ function Home() {
       navigate("/admin-dashboard", { replace: true });
       return;
     }
-    if (role === "worker") {
+    // Only redirect pure worker accounts (not dual-role users who kept role="user")
+    const isWorker = sessionStorage.getItem("isWorker") === "true";
+    if (role === "worker" && !isWorker) {
       navigate("/worker-dashboard", { replace: true });
     }
   }, [role, navigate]);
@@ -590,14 +594,18 @@ function Home() {
         if (cancelled) return;
 
         const safeWorkers = Array.isArray(workers) ? workers.filter(Boolean) : [];
-        setOnlineWorkers(safeWorkers);
+        // Self-booking prevention: hide the logged-in user's own worker card
+        const filtered = myWorkerEmail
+          ? safeWorkers.filter(w => (w.email || "").toLowerCase() !== myWorkerEmail.toLowerCase())
+          : safeWorkers;
+        setOnlineWorkers(filtered);
 
         if (aiSuggestedAreas.length === 0) {
-          setAiSuggestedWorkers(safeWorkers.slice(0, 5));
+          setAiSuggestedWorkers(filtered.slice(0, 5));
           return;
         }
 
-        const suggested = safeWorkers.filter((worker) => {
+        const suggested = filtered.filter((worker) => {
           const workerLocation = normalize(worker?.location);
           const workerCity = normalize(worker?.city);
           return aiSuggestedAreas.some(
@@ -609,7 +617,7 @@ function Home() {
           );
         });
 
-        setAiSuggestedWorkers((suggested.length > 0 ? suggested : safeWorkers).slice(0, 5));
+        setAiSuggestedWorkers((suggested.length > 0 ? suggested : filtered).slice(0, 5));
       } catch (error) {
         if (!cancelled) {
           console.error("Worker loading failed:", error);
@@ -893,24 +901,25 @@ Do not use markdown.`,
         className="hero-welcome-banner"
         style={{
           background: "var(--hero-bg)",
-          borderBottom: "2px solid var(--hero-border)",
+          borderBottom: "1.5px solid var(--hero-border)",
           color: "var(--hero-text)",
-          padding: "12px 16px 14px",
+          padding: "6px 14px 7px",
           textAlign: "center",
-          boxShadow: "0 8px 24px -6px rgba(223, 180, 83, 0.4)",
+          boxShadow: "0 4px 14px -4px rgba(223, 180, 83, 0.3)",
           position: "relative",
           overflow: "hidden",
         }}
       >
         <svg
+          className="hero-cloud-bg"
           viewBox="0 0 24 24"
           style={{
             position: "absolute",
             left: "4%",
-            bottom: "10%",
-            width: "65px",
-            height: "65px",
-            opacity: 0.25,
+            bottom: "8%",
+            width: "45px",
+            height: "45px",
+            opacity: 0.2,
             fill: "white",
             pointerEvents: "none",
             animation: "homeDrift 25s linear infinite",
@@ -919,14 +928,15 @@ Do not use markdown.`,
           <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
         </svg>
         <svg
+          className="hero-cloud-bg"
           viewBox="0 0 24 24"
           style={{
             position: "absolute",
             right: "5%",
-            top: "10%",
-            width: "80px",
-            height: "80px",
-            opacity: 0.22,
+            top: "8%",
+            width: "50px",
+            height: "50px",
+            opacity: 0.18,
             fill: "white",
             pointerEvents: "none",
             animation: "homeDriftReverse 30s linear infinite",
@@ -947,15 +957,60 @@ Do not use markdown.`,
               50% { transform: translateX(-20px) translateY(5px); }
               100% { transform: translateX(0) translateY(0); }
             }
+            @media (max-width: 768px) {
+              .recommendations-feed-card {
+                margin: 6px 8px 16px 8px !important;
+                padding: 14px 12px !important;
+                border-radius: 18px !important;
+                gap: 18px !important;
+              }
+              .recommendations-feed-card h2 {
+                font-size: 16px !important;
+              }
+              .recommendations-feed-card p {
+                font-size: 12px !important;
+                margin-bottom: 10px !important;
+              }
+              .recommendations-feed-card h3 {
+                font-size: 14px !important;
+              }
+              .horizontal-scroll-container {
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+              }
+              .horizontal-scroll-container::-webkit-scrollbar {
+                display: none;
+              }
+            }
           `}
         </style>
 
-        <h1 style={{ margin: "0 0 4px 0", fontSize: "22px", fontWeight: 900, color: "var(--hero-text)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", letterSpacing: "-0.3px" }}>
-          Find the Best Services Near You <FaMapMarkerAlt size={20} style={{ color: "#dc2626" }} />
+        <h1 style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "var(--hero-text)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", letterSpacing: "-0.2px" }}>
+          Find the Best Services Near You
+          <svg
+            className="hero-location-pin"
+            width="18"
+            height="23"
+            viewBox="0 0 100 130"
+            style={{
+              display: "inline-block",
+              verticalAlign: "middle",
+              flexShrink: 0,
+              filter: "drop-shadow(0 2px 5px rgba(220, 38, 38, 0.45))",
+            }}
+          >
+            {/* Left bright red side */}
+            <path d="M 50 125 C 45 110, 10 70, 10 45 A 40 40 0 0 1 50 5 L 50 125 Z" fill="#EF233C" />
+            {/* Right dark red shaded side */}
+            <path d="M 50 5 A 40 40 0 0 1 90 45 C 90 70, 55 110, 50 125 L 50 5 Z" fill="#B70921" />
+            {/* Left inner circle bevel */}
+            <path d="M 50 25 A 20 20 0 0 0 30 45 A 20 20 0 0 0 50 65 L 50 25 Z" fill="#900C19" />
+            {/* Right inner circle bevel */}
+            <path d="M 50 65 A 20 20 0 0 0 70 45 A 20 20 0 0 0 50 25 L 50 65 Z" fill="#64050A" />
+            {/* Center cutout hole */}
+            <circle cx="50" cy="45" r="17" fill="#FFFFFF" />
+          </svg>
         </h1>
-        <p style={{ margin: 0, fontSize: "13.5px", color: "var(--hero-subtext)", fontWeight: 700, maxWidth: "650px", marginLeft: "auto", marginRight: "auto" }}>
-          We match you with trusted professionals for quick and safe home services.
-        </p>
       </div>
 
       {/* ===================================================
@@ -994,7 +1049,7 @@ Do not use markdown.`,
 
         {/* Service Categories */}
         <div className="fade-in" style={{ padding: "0" }}>
-          <NearbyWorkers searchedLocation={searchedLocation} userCoords={userCoords} />
+          <NearbyWorkers searchedLocation={searchedLocation} userCoords={userCoords} excludeEmail={myWorkerEmail} />
         </div>
 
         {/* Consolidated Recommendations Feed */}
@@ -1061,13 +1116,13 @@ Do not use markdown.`,
                 <h3 style={{ fontSize: "16px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 10px 0" }}>
                   🏆 Top Rated Near You
                 </h3>
-                <TopWorkers flat={true} searchedLocation={searchedLocation} userCoords={userCoords} />
+                <TopWorkers flat={true} searchedLocation={searchedLocation} userCoords={userCoords} excludeEmail={myWorkerEmail} />
               </div>
               <div style={{ borderTop: "1px solid var(--border-color)", paddingTop: "18px", marginTop: "6px" }}>
                 <h3 style={{ fontSize: "16px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 10px 0" }}>
                   💸 Best Value Picks
                 </h3>
-                <CheapWorkers flat={true} searchedLocation={searchedLocation} userCoords={userCoords} />
+                <CheapWorkers flat={true} searchedLocation={searchedLocation} userCoords={userCoords} excludeEmail={myWorkerEmail} />
               </div>
             </div>
           </div>

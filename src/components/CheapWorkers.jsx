@@ -21,7 +21,7 @@ const truncateLocation = (loc) => {
   return loc;
 };
 
-function CheapWorkers({ searchedLocation, userCoords, flat = false }) {
+function CheapWorkers({ searchedLocation, userCoords, flat = false, excludeEmail = "" }) {
   const [cloudWorkers, setCloudWorkers] = useState([]);
   const [loading, setLoading] = useState(() => {
     return !!(searchedLocation || userCoords);
@@ -52,8 +52,9 @@ function CheapWorkers({ searchedLocation, userCoords, flat = false }) {
     fetchBudgetWorkers();
   }, [searchedLocation, userCoords]);
 
-  // Sort by price and take top 4
+  // Sort by price, filtering out the logged-in user's own worker card
   const cheapWorkers = [...cloudWorkers]
+    .filter(w => !excludeEmail || (w.email || "").toLowerCase() !== excludeEmail.toLowerCase())
     .sort((a, b) => (a.price || 0) - (b.price || 0))
     .slice(0, 20);
 

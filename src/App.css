@@ -1265,8 +1265,11 @@ button {
     font-size: 12px !important;
     line-height: 1.4 !important;
   }
-  .hero-welcome-banner svg {
+  .hero-welcome-banner .hero-cloud-bg {
     display: none !important; /* Hide background clouds on mobile to save vertical space & prevent clutter */
+  }
+  .hero-welcome-banner .hero-location-pin {
+    display: inline-block !important;
   }
 
   .ai-banner-card {
@@ -1834,13 +1837,23 @@ button {
     font-size: 22px !important;
   }
   .greeting-banner {
-    padding: 16px 20px !important;
+    padding: 14px 16px !important;
+    border-radius: 14px !important;
   }
-  .greeting-banner h2 { font-size: 18px !important; }
+  .greeting-banner h2 { font-size: 17px !important; }
   .step-bar { gap: 0 !important; }
-  .step-circle { width: 30px !important; height: 30px !important; font-size: 12px !important; }
-  .step-label { font-size: 10px !important; }
-  .booking-confirm-banner { flex-direction: column !important; gap: 10px !important; }
-  .worker-status-banner { padding: 10px 14px !important; }
-  .section-header h2 { font-size: 17px !important; }
+  .step-circle { width: 28px !important; height: 28px !important; font-size: 11px !important; }
+  .step-label { font-size: 9.5px !important; }
+  .booking-confirm-banner { flex-direction: column !important; gap: 10px !important; padding: 12px 14px !important; }
+  .worker-status-banner { padding: 8px 12px !important; }
+  .section-header h2 { font-size: 16px !important; }
+  .premium-card {
+    border-radius: 14px !important;
+  }
+  input, select, textarea {
+    font-size: 14px !important;
+  }
+  .auth-wrapper {
+    padding: 16px 12px !important;
+  }
 }

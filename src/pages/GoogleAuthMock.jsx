@@ -43,12 +43,14 @@ function GoogleAuthMock() {
 
       const authenticateDirectly = async () => {
         try {
+          const flow = sessionStorage.getItem("google_auth_flow") || "login";
+          const isLoginOnly = ["login", "user_login", "provider_login"].includes(flow);
+          const targetLoginAs = flow === "provider_login" ? "provider" : "user";
           const pendingSignupStr = sessionStorage.getItem("pending_google_signup");
           const extraBody = pendingSignupStr ? JSON.parse(pendingSignupStr) : {};
-          const isLoginOnly = sessionStorage.getItem("google_auth_flow") === "login";
 
           const requestBody = isLoginOnly 
-            ? { email: selectedAccount.email, name: selectedAccount.name }
+            ? { email: selectedAccount.email, name: selectedAccount.name, loginAs: targetLoginAs }
             : { email: selectedAccount.email, name: selectedAccount.name, ...extraBody };
 
           const response = await fetch("/api/auth/google-mock", {
@@ -71,30 +73,56 @@ function GoogleAuthMock() {
           }
 
           const user = data.user;
-          sessionStorage.setItem("userRole", user.role);
-          sessionStorage.setItem("userName", user.name);
-          sessionStorage.setItem("userEmail", user.email);
-          sessionStorage.setItem("userId", user.id || user._id);
-          sessionStorage.setItem("authToken", data.token);
+          const context = data.loginContext || (user.role === "admin" ? "admin" : (user.role === "worker" ? "provider" : "user"));
+          const activeRole = context === "admin" ? "admin" : (context === "provider" ? "worker" : "user");
+
+          sessionStorage.removeItem("loggedInWorkerId");
+          sessionStorage.removeItem("workerSession_email");
+          sessionStorage.removeItem("workerSession_profileId");
+          sessionStorage.removeItem("workerSession_name");
+
+          sessionStorage.setItem("userRole",        activeRole);
+          sessionStorage.setItem("actualRole",      user.actualRole || user.role);
+          sessionStorage.setItem("userName",        user.name);
+          sessionStorage.setItem("userEmail",       user.email);
+          sessionStorage.setItem("userId",          user.id || user._id);
+          sessionStorage.setItem("authToken",       data.token);
+          sessionStorage.setItem("isWorker",        String(user.isWorker || false));
+          sessionStorage.setItem("workerProfileId", user.workerProfileId || "");
+          sessionStorage.setItem("loginContext",    context);
           localStorage.removeItem("manualLocationSet");
+
+          // Separate worker session namespace
+          if (activeRole === "worker" || user.isWorker) {
+            const wId = user.workerProfileId || (data.worker ? data.worker.id : (user.id || user._id));
+            sessionStorage.setItem("loggedInWorkerId", String(wId));
+            sessionStorage.setItem("workerSession_email",     user.email);
+            sessionStorage.setItem("workerSession_profileId", String(wId));
+            sessionStorage.setItem("workerSession_name",      user.name);
+          }
 
           // 🔒 Persist login for 1 week across browser sessions
           localStorage.setItem("authSession", JSON.stringify({
-            userRole: user.role,
-            userName: user.name,
-            userEmail: user.email,
-            userId: user.id || user._id,
-            authToken: data.token,
-            loggedInWorkerId: user.role === "worker" ? user.id : null,
-            userCity: user.city || null,
-            expiry: Date.now() + 7 * 24 * 60 * 60 * 1000
+            userRole:        activeRole,
+            actualRole:      user.actualRole || user.role,
+            loginContext:    context,
+            userName:        user.name,
+            userEmail:       user.email,
+            userId:          user.id || user._id,
+            authToken:       data.token,
+            isWorker:        user.isWorker || false,
+            workerProfileId: user.workerProfileId || null,
+            loggedInWorkerId: (activeRole === "worker" || user.isWorker) ? (user.workerProfileId || user.id || user._id) : null,
+            userCity:        user.city || null,
+            expiry:          Date.now() + 7 * 24 * 60 * 60 * 1000
           }));
 
-          if (user.role === "worker") {
-            sessionStorage.setItem("loggedInWorkerId", user.id);
-            navigate("/worker-dashboard");
-          } else if (user.role === "admin") {
+          window.dispatchEvent(new Event("storage"));
+
+          if (activeRole === "admin" || user.role === "admin") {
             navigate("/admin-dashboard");
+          } else if (activeRole === "worker" || context === "provider") {
+            navigate("/worker-dashboard");
           } else {
             if (user.city) {
               sessionStorage.setItem("userCity", user.city);
@@ -108,24 +136,7 @@ function GoogleAuthMock() {
         }
       };
 
-      if (isRedirectMode) {
-        authenticateDirectly();
-      } else {
-        const timer = setTimeout(() => {
-          if (window.opener) {
-            window.opener.postMessage(
-              {
-                type: "GOOGLE_AUTH_SUCCESS",
-                email: selectedAccount.email,
-                name: selectedAccount.name
-              },
-              window.location.origin
-            );
-            setTimeout(() => window.close(), 300);
-          }
-        }, 1500);
-        return () => clearTimeout(timer);
-      }
+      authenticateDirectly();
     }
   }, [step, selectedAccount, isRedirectMode, navigate]);
 

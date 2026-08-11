@@ -21,7 +21,7 @@ const truncateLocation = (loc) => {
   return loc;
 };
 
-function TopWorkers({ searchedLocation, userCoords, flat = false }) {
+function TopWorkers({ searchedLocation, userCoords, flat = false, excludeEmail = "" }) {
   const [cloudWorkers, setCloudWorkers] = useState([]);
   const [loading, setLoading] = useState(() => {
     return !!(searchedLocation || userCoords);
@@ -52,8 +52,9 @@ function TopWorkers({ searchedLocation, userCoords, flat = false }) {
     fetchWorkers();
   }, [searchedLocation, userCoords]);
 
-  // Always show top 4 by rating
+  // Always show top rated, filtering out the logged-in user's own worker card
   const topWorkers = [...cloudWorkers]
+    .filter(w => !excludeEmail || (w.email || "").toLowerCase() !== excludeEmail.toLowerCase())
     .sort((a, b) => (b.rating || 0) - (a.rating || 0))
     .slice(0, 20);
 

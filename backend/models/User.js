@@ -10,6 +10,9 @@ const userSchema = new mongoose.Schema({
   city: { type: String },
   walletBalance: { type: Number, default: 1000 },
   status: { type: String, default: "Active" },
+  // Dual-role support: a regular user can also be a service provider
+  isWorker: { type: Boolean, default: false },
+  workerProfileId: { type: mongoose.Schema.Types.ObjectId, ref: "Worker", default: null },
   subscriptions: [{
     planTitle: String,
     startDate: Date,

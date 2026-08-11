@@ -163,8 +163,9 @@ function WorkerDashboard() {
 
   useEffect(() => {
     const role = sessionStorage.getItem("userRole");
+    const isWorker = sessionStorage.getItem("isWorker") === "true";
     const userId = sessionStorage.getItem("userId");
-    if (!userId || role !== "worker") {
+    if (!userId || (role !== "worker" && !isWorker && role !== "admin")) {
       navigate("/login");
     }
   }, [navigate]);
@@ -233,6 +234,18 @@ function WorkerDashboard() {
             return editMode ? prev : p;
           });
           setIsActive(match.status === "Active");
+        } else if (sessionStorage.getItem("userRole") !== "admin") {
+          // No worker record found in DB for this email -> immediately eject to Customer Home
+          console.warn("No worker record found in database for email:", userEmail);
+          sessionStorage.setItem("userRole", "user");
+          sessionStorage.setItem("isWorker", "false");
+          sessionStorage.removeItem("loggedInWorkerId");
+          sessionStorage.removeItem("workerSession_email");
+          sessionStorage.removeItem("workerSession_profileId");
+          sessionStorage.removeItem("workerSession_name");
+          alert("⚠️ No Service Provider profile exists for this account.\n\nRedirecting to Customer Home.");
+          navigate("/");
+          return;
         }
       }
 

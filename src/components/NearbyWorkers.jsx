@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { filterWorkersClientSide } from "../utils/workerService";
 import { FaTools, FaHandPointRight, FaSearch, FaBuilding, FaMapMarkerAlt, FaStar, FaMap } from "react-icons/fa";
@@ -133,7 +133,7 @@ const truncateLocation = (loc) => {
   return loc;
 };
 
-function NearbyWorkers({ searchedLocation, userCoords }) {
+function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
   const [selectedService, setSelectedService] = useState(null);
   const [cloudWorkers, setCloudWorkers] = useState([]);
 
@@ -165,6 +165,45 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
   const [selectedGender, setSelectedGender] = useState(null);
   const [activeBeautySubService, setActiveBeautySubService] = useState(null);
 
+  // ── Fast Smooth Auto-Scroller Setup ─────────────────────────────
+  const scrollTrackRef = useRef(null);
+  const isPausedRef = useRef(false);
+  const resumeTimerRef = useRef(null);
+
+  useEffect(() => {
+    const el = scrollTrackRef.current;
+    if (!el) return;
+
+    let animId;
+    const speed = 1.35; // Fast, lively and readable scrolling speed
+
+    const step = () => {
+      if (!isPausedRef.current && el) {
+        el.scrollLeft += speed;
+        // Infinite seamless loop when passing halfway
+        if (el.scrollLeft >= el.scrollWidth / 2) {
+          el.scrollLeft -= el.scrollWidth / 2;
+        }
+      }
+      animId = requestAnimationFrame(step);
+    };
+
+    animId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animId);
+  }, []);
+
+  const handlePauseAutoScroll = () => {
+    isPausedRef.current = true;
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+  };
+
+  const handleResumeAutoScroll = (delay = 600) => {
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+    resumeTimerRef.current = setTimeout(() => {
+      isPausedRef.current = false;
+    }, delay);
+  };
+
   // Determine active service filter text based on interactive state selection
   let activeServiceText = null;
 
@@ -178,7 +217,10 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
     activeServiceText = selectedService.name;
   }
 
-  const allWorkers = cloudWorkers;
+  // Filter out the logged-in user's own worker profile (self-booking prevention)
+  const allWorkers = excludeEmail
+    ? cloudWorkers.filter(w => (w.email || "").toLowerCase() !== excludeEmail.toLowerCase())
+    : cloudWorkers;
   
   let filteredWorkers = [];
   if (activeServiceText) {
@@ -203,7 +245,11 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
   }
 
   const handleServiceClick = (service) => {
-    setSelectedService(service);
+    if (selectedService?.id === service.id) {
+      setSelectedService(null);
+    } else {
+      setSelectedService(service);
+    }
     setActiveSubService(null);
     setSelectedGender(null);
     setActiveBeautySubService(null);
@@ -233,81 +279,112 @@ function NearbyWorkers({ searchedLocation, userCoords }) {
     : [];
 
   return (
-    <div className="fade-in nearby-workers-container" style={{ padding: "20px 24px", margin: "14px 0px", background: "linear-gradient(135deg, rgba(49, 82, 91, 0.05) 0%, rgba(49, 82, 91, 0.01) 100%)", borderRadius: "0px", borderTop: "1.5px solid rgba(49, 82, 91, 0.12)", borderBottom: "1.5px solid rgba(49, 82, 91, 0.12)", borderLeft: "none", borderRight: "none", fontFamily: "'Outfit', sans-serif" }}>
-      <h2 className="nearby-title" style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 6px 0", display: "flex", alignItems: "center", gap: "8px" }}>
-        <FaTools size={20} style={{ color: "var(--primary)" }} /> Explore & Book Services
-      </h2>
-      <p className="nearby-subtitle" style={{ color: "var(--text-secondary)", fontSize: "14px", margin: "0 0 10px 0" }}>
+    <div className="fade-in nearby-workers-container" style={{ padding: "16px 20px", margin: "10px 0px", background: "linear-gradient(135deg, rgba(49, 82, 91, 0.05) 0%, rgba(49, 82, 91, 0.01) 100%)", borderRadius: "0px", borderTop: "1.5px solid rgba(49, 82, 91, 0.12)", borderBottom: "1.5px solid rgba(49, 82, 91, 0.12)", borderLeft: "none", borderRight: "none", fontFamily: "'Outfit', sans-serif" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+        <h2 className="nearby-title" style={{ fontSize: "20px", fontWeight: 800, color: "var(--text-primary)", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
+          <FaTools size={18} style={{ color: "var(--primary)" }} /> Explore & Book Services
+        </h2>
+        {selectedService && (
+          <button
+            onClick={() => setSelectedService(null)}
+            style={{
+              padding: "4px 10px",
+              background: "rgba(239, 68, 68, 0.1)",
+              color: "#ef4444",
+              border: "1px solid rgba(239, 68, 68, 0.25)",
+              borderRadius: "20px",
+              fontSize: "11.5px",
+              fontWeight: 700,
+              cursor: "pointer"
+            }}
+          >
+            ✕ Clear Filter
+          </button>
+        )}
+      </div>
+      <p className="nearby-subtitle" style={{ color: "var(--text-secondary)", fontSize: "13px", margin: "0 0 10px 0" }}>
         Select a category below to view verified available professionals near you.
       </p>
 
-      {/* Styles for mobile horizontal scrolling slider and full width support */}
+      {/* Horizontal Box-by-Box Auto-Scrolling Styles */}
       <style>{`
+        .services-horizontal-track::-webkit-scrollbar {
+          display: none;
+        }
         @media (max-width: 768px) {
           .nearby-workers-container {
-            padding: 16px 12px !important;
-            margin: 10px 0 !important;
-            border-radius: 0px !important;
+            padding: 12px 10px !important;
+            margin: 6px 0 !important;
           }
-          .nearby-title, .nearby-subtitle {
-            padding-left: 0px !important;
-            padding-right: 0px !important;
+          .nearby-title {
+            font-size: 16px !important;
           }
-          .services-grid-container {
-            display: flex !important;
-            overflow-x: auto !important;
-            scroll-snap-type: x mandatory;
-            gap: 12px !important;
-            margin-left: -12px !important;
-            margin-right: -12px !important;
-            padding: 4px 12px 12px 12px !important;
-            margin-bottom: 16px !important;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none; /* Hide scrollbar for Firefox */
+          .nearby-subtitle {
+            font-size: 11.5px !important;
+            margin-bottom: 8px !important;
           }
-          .services-grid-container::-webkit-scrollbar {
-            display: none; /* Hide scrollbar for Chrome/Safari */
+          .category-scroll-pill {
+            min-width: 105px !important;
+            max-width: 115px !important;
+            padding: 10px 6px !important;
+            border-radius: 12px !important;
           }
-          .services-grid-container .category-card {
-            min-width: 110px !important;
-            max-width: 110px !important;
-            scroll-snap-align: start;
-            flex: 0 0 auto !important;
-            padding: 14px 6px !important;
+          .category-scroll-pill div:first-child {
+            font-size: 22px !important;
+            margin-bottom: 3px !important;
+          }
+          .category-scroll-pill div:last-child {
+            font-size: 10.5px !important;
           }
         }
       `}</style>
 
-      {/* Services Grid (Main Categories) */}
+      {/* Live Fast Auto-scrolling horizontal carousel */}
       <div
-        className="services-grid-container"
+        ref={scrollTrackRef}
+        className="services-horizontal-track"
+        onMouseEnter={handlePauseAutoScroll}
+        onMouseLeave={() => handleResumeAutoScroll(300)}
+        onTouchStart={handlePauseAutoScroll}
+        onTouchEnd={() => handleResumeAutoScroll(800)}
+        onMouseDown={handlePauseAutoScroll}
+        onMouseUp={() => handleResumeAutoScroll(600)}
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
-          gap: "14px",
-          marginBottom: "24px"
+          display: "flex",
+          gap: "12px",
+          overflowX: "auto",
+          width: "100%",
+          padding: "6px 0 14px",
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+          WebkitOverflowScrolling: "touch",
+          cursor: "grab",
+          userSelect: "none",
         }}
       >
-        {SERVICES.map((service) => {
+        {[...SERVICES, ...SERVICES, ...SERVICES, ...SERVICES].map((service, idx) => {
           const isSelected = selectedService?.id === service.id;
           return (
             <div
-              key={service.id}
-              className="premium-card category-card"
+              key={`${service.id}-${idx}`}
+              className="premium-card category-scroll-pill"
               onClick={() => handleServiceClick(service)}
               style={{
+                flex: "0 0 auto",
+                minWidth: "125px",
+                maxWidth: "140px",
                 backgroundColor: isSelected ? "var(--primary-light)" : "var(--bg-card)",
-                border: isSelected ? "2.5px solid var(--primary)" : "1.5px solid rgba(107, 79, 79, 0.35)",
-                padding: "20px 10px",
+                border: isSelected ? "2.5px solid var(--primary)" : "1.5px solid rgba(107, 79, 79, 0.3)",
+                padding: "14px 10px",
                 textAlign: "center",
+                borderRadius: "14px",
                 cursor: "pointer",
                 boxShadow: isSelected ? "0 8px 20px var(--primary-glow)" : "var(--card-shadow)",
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                userSelect: "none"
+                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
               }}
             >
-              <div style={{ fontSize: "32px", marginBottom: "8px", filter: isSelected ? "drop-shadow(0 4px 6px var(--primary-glow))" : "none" }}>{service.icon}</div>
-              <div style={{ fontSize: "13px", fontWeight: 700, color: isSelected ? "var(--primary-dark)" : "var(--text-secondary)" }}>
+              <div style={{ fontSize: "28px", marginBottom: "6px", filter: isSelected ? "drop-shadow(0 4px 6px var(--primary-glow))" : "none" }}>{service.icon}</div>
+              <div style={{ fontSize: "12px", fontWeight: 700, color: isSelected ? "var(--primary-dark)" : "var(--text-main)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                 {service.name}
               </div>
             </div>

@@ -40,17 +40,31 @@ function restoreSession() {
       localStorage.removeItem("authSession");
       return;
     }
-    sessionStorage.setItem("userRole", session.userRole);
-    sessionStorage.setItem("userName", session.userName);
+    sessionStorage.setItem("userRole",  session.userRole);
+    sessionStorage.setItem("userName",  session.userName);
     sessionStorage.setItem("userEmail", session.userEmail);
-    sessionStorage.setItem("userId", session.userId);
+    sessionStorage.setItem("userId",    session.userId);
     sessionStorage.setItem("authToken", session.authToken);
-    if (session.loggedInWorkerId) {
-      sessionStorage.setItem("loggedInWorkerId", session.loggedInWorkerId);
+
+    // Dual-role: restore service-provider status
+    sessionStorage.setItem("isWorker",        String(session.isWorker || false));
+    sessionStorage.setItem("workerProfileId", session.workerProfileId || "");
+
+    if (session.userRole === "worker" && (session.loggedInWorkerId || session.workerProfileId)) {
+      const wId = session.workerProfileId || session.loggedInWorkerId;
+      sessionStorage.setItem("loggedInWorkerId", String(wId));
+      sessionStorage.setItem("workerSession_email",     session.userEmail);
+      sessionStorage.setItem("workerSession_profileId", String(wId));
+      sessionStorage.setItem("workerSession_name",      session.userName);
+    } else {
+      sessionStorage.removeItem("loggedInWorkerId");
+      sessionStorage.removeItem("workerSession_email");
+      sessionStorage.removeItem("workerSession_profileId");
+      sessionStorage.removeItem("workerSession_name");
     }
     if (session.userCity) {
       sessionStorage.setItem("userCity", session.userCity);
-      localStorage.setItem("userCity", session.userCity);
+      localStorage.setItem("userCity",   session.userCity);
     }
     console.log("🔒 Session restored from persistent storage for:", session.userName);
   } catch (e) {

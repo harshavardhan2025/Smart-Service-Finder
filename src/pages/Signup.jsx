@@ -167,15 +167,6 @@ function ResultPopup({ result, onClose, navigate }) {
 
 function Signup() {
   // ── State ──────────────────────────────────────────────────
-  const [step, setStep] = useState("choose"); // "choose" | "worker-details" | "email-form"
-
-  // Worker Google details
-  const [wName, setWName]       = useState("");
-  const [wPhone, setWPhone]     = useState("");
-  const [wService, setWService] = useState("Carpentry");
-  const [wCity, setWCity]       = useState("");
-
-  // Email signup state
   const [name, setName]         = useState("");
   const [email, setEmail]       = useState("");
   const [phone, setPhone]       = useState("");
@@ -227,9 +218,14 @@ function Signup() {
       sessionStorage.setItem("userEmail", data.user.email);
       sessionStorage.setItem("userId", data.user.id || data.user._id);
       sessionStorage.setItem("authToken", data.token);
+      sessionStorage.setItem("isWorker", String(data.user.isWorker || false));
+      sessionStorage.setItem("workerProfileId", data.user.workerProfileId || "");
       localStorage.removeItem("manualLocationSet");
       if (data.user.role === "worker") {
-        sessionStorage.setItem("loggedInWorkerId", data.user.id);
+        sessionStorage.setItem("loggedInWorkerId", data.user.workerProfileId || data.user.id);
+        sessionStorage.setItem("workerSession_email", data.user.email);
+        sessionStorage.setItem("workerSession_profileId", String(data.user.workerProfileId || data.user.id));
+        sessionStorage.setItem("workerSession_name", data.user.name);
       } else if (data.user.city) {
         sessionStorage.setItem("userCity", data.user.city);
         localStorage.setItem("userCity", data.user.city);
@@ -242,7 +238,9 @@ function Signup() {
         userEmail: data.user.email,
         userId: data.user.id || data.user._id,
         authToken: data.token,
-        loggedInWorkerId: data.user.role === "worker" ? data.user.id : null,
+        isWorker: data.user.isWorker || false,
+        workerProfileId: data.user.workerProfileId || null,
+        loggedInWorkerId: data.user.role === "worker" ? (data.user.workerProfileId || data.user.id) : null,
         userCity: data.user.city || null,
         expiry: Date.now() + 7 * 24 * 60 * 60 * 1000
       }));
@@ -369,29 +367,6 @@ function Signup() {
     window.location.href = authUrl;
   };
 
-  // ── Google Sign-Up for Customer ───────────────────────────
-  const handleGoogleCustomer = () => {
-    launchGoogleAuth({ role: "user", city: "Mumbai" });
-  };
-
-  // ── Google Sign-Up for Worker ─────────────────────────
-  const handleGoogleWorker = (e) => {
-    e.preventDefault();
-    if (!wName.trim()) {
-      setPopupResult({ type: "fail", message: "Please enter your full name." });
-      return;
-    }
-    if (!wPhone.trim() || !/^[0-9]{10}$/.test(wPhone.trim())) {
-      setPopupResult({ type: "fail", message: "Please enter a valid 10-digit phone number." });
-      return;
-    }
-    if (!wCity.trim()) {
-      setPopupResult({ type: "fail", message: "Please enter your serving location." });
-      return;
-    }
-    launchGoogleAuth({ role: "worker", name: wName, phone: wPhone, profession: wService, city: wCity });
-  };
-
   // ── Render ────────────────────────────────────────────────
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -400,7 +375,7 @@ function Signup() {
       {/* Result Popup */}
       <ResultPopup
         result={popupResult}
-        onClose={() => { setPopupResult(null); setStep("choose"); }}
+        onClose={() => setPopupResult(null)}
         navigate={navigate}
       />
 
@@ -417,169 +392,148 @@ function Signup() {
         <div
           className="premium-card"
           ref={signupCardRef}
-          style={{ width: "100%", maxWidth: "420px", backgroundColor: "var(--bg-card)", padding: "36px", boxSizing: "border-box" }}
+          style={{ width: "100%", maxWidth: "440px", backgroundColor: "var(--bg-card)", padding: isMobile ? "26px 20px" : "36px", boxSizing: "border-box", borderRadius: "16px", boxShadow: "0 20px 50px rgba(0,0,0,0.15)" }}
         >
+          <div style={{ textAlign: "center", marginBottom: "22px" }}>
+            <h1 style={{ margin: "0 0 6px", fontSize: "24px", fontWeight: 800, color: "var(--text-main)" }}>
+              Create an Account
+            </h1>
+            <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "13px" }}>
+              Join Workzy to book services or offer your expertise
+            </p>
+          </div>
 
-          {/* ─── STEP: CHOOSE METHOD ─── */}
-          {step === "choose" && (
-            <>
-              <div style={{ textAlign: "center", marginBottom: "28px" }}>
-                <h1 style={{ margin: "0 0 6px", fontSize: "26px", fontWeight: 800, color: "var(--text-main)" }}>
-                  Create Account
-                </h1>
-                <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "13.5px" }}>
-                  Join Workzy – choose how you want to sign up
-                </p>
-              </div>
+          {/* Quick Google Sign Up */}
+          <button
+            type="button"
+            onClick={() => launchGoogleAuth({ 
+              role, 
+              name: name.trim() || undefined, 
+              phone: phone.trim() || undefined, 
+              profession: role === "worker" ? profession : undefined, 
+              city: role === "worker" ? (city.trim() || "Mumbai") : "Mumbai" 
+            })}
+            disabled={isLoading}
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "12px",
+              padding: "12px 18px",
+              background: "var(--bg-card)",
+              border: "1.5px solid var(--border)",
+              borderRadius: "10px",
+              fontSize: "14px",
+              fontWeight: 600,
+              color: "var(--text-main)",
+              cursor: isLoading ? "not-allowed" : "pointer",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
+              transition: "all 0.2s",
+              marginBottom: "16px"
+            }}
+          >
+            <GoogleIcon />
+            <span>Sign up with Google</span>
+          </button>
 
-              {/* Two Google role cards */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginBottom: "24px" }}>
-                {/* Customer Card */}
-                <button
-                  onClick={handleGoogleCustomer}
-                  disabled={isLoading}
+          {/* Divider */}
+          <div style={{ display: "flex", alignItems: "center", margin: "14px 0 18px" }}>
+            <div style={{ flex: 1, height: "1px", background: "var(--border)" }} />
+            <span style={{ padding: "0 12px", color: "var(--text-muted)", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.5px" }}>or sign up with email</span>
+            <div style={{ flex: 1, height: "1px", background: "var(--border)" }} />
+          </div>
+
+          {/* Direct Normal Signup Form */}
+          <form onSubmit={handleSignup} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+              <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Full Name *</label>
+              <input 
+                type="text" 
+                placeholder="e.g. Harsha Vardhan" 
+                value={name} 
+                onChange={(e) => setName(e.target.value)} 
+                style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text-main)", fontSize: "14px" }} 
+                required 
+              />
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+              <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Phone Number *</label>
+              <input 
+                type="tel" 
+                placeholder="e.g. 9876543210" 
+                value={phone} 
+                onChange={(e) => setPhone(e.target.value)} 
+                style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text-main)", fontSize: "14px" }} 
+                required 
+              />
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+              <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Email Address *</label>
+              <input 
+                type="email" 
+                placeholder="name@example.com" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+                style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text-main)", fontSize: "14px" }} 
+                required 
+              />
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+              <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Password *</label>
+              <div style={{ position: "relative" }}>
+                <input 
+                  type={showPassword ? "text" : "password"} 
+                  placeholder="••••••••" 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  style={{ width: "100%", boxSizing: "border-box", padding: "10px 40px 10px 12px", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text-main)", fontSize: "14px" }} 
+                  required 
+                />
+                <span
+                  role="button"
+                  onClick={() => setShowPassword(!showPassword)}
                   style={{
-                    display: "flex", alignItems: "center", gap: "16px",
-                    padding: "18px 20px",
-                    background: "linear-gradient(135deg, #eff6ff, #e0f2fe)",
-                    border: "2px solid #bfdbfe",
-                    borderRadius: "14px",
-                    cursor: isLoading ? "not-allowed" : "pointer",
-                    textAlign: "left",
-                    transition: "all 0.2s",
-                    opacity: isLoading ? 0.7 : 1
+                    position: "absolute",
+                    right: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    color: "var(--text-muted)",
+                    padding: "4px",
+                    userSelect: "none"
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 20px rgba(59,130,246,0.15)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
                 >
-                  <span style={{ fontSize: "32px" }}>👤</span>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: "15px", color: "#1e40af" }}>Sign up as Customer</div>
-                    <div style={{ fontSize: "12px", color: "#60a5fa", marginTop: "2px" }}>Book services instantly. No extra details needed.</div>
-                  </div>
-                  <div style={{ marginLeft: "auto" }}>
-                    <GoogleIcon />
-                  </div>
-                </button>
-
-                {/* Worker Card */}
-                <button
-                  onClick={() => setStep("worker-details")}
-                  disabled={isLoading}
-                  style={{
-                    display: "flex", alignItems: "center", gap: "16px",
-                    padding: "18px 20px",
-                    background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
-                    border: "2px solid #bbf7d0",
-                    borderRadius: "14px",
-                    cursor: isLoading ? "not-allowed" : "pointer",
-                    textAlign: "left",
-                    transition: "all 0.2s",
-                    opacity: isLoading ? 0.7 : 1
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 20px rgba(34,197,94,0.15)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
-                >
-                  <span style={{ fontSize: "32px" }}>🛠️</span>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: "15px", color: "var(--success)" }}>Sign up as Worker</div>
-                    <div style={{ fontSize: "12px", color: "#4ade80", marginTop: "2px" }}>Offer your services. Fill a few details first.</div>
-                  </div>
-                  <div style={{ marginLeft: "auto" }}>
-                    <GoogleIcon />
-                  </div>
-                </button>
+                  {showPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                </span>
               </div>
+            </div>
 
-              {/* Divider + Email signup */}
-              <div style={{ display: "flex", alignItems: "center", margin: "4px 0 16px" }}>
-                <div style={{ flex: 1, height: "1px", background: "var(--border)" }} />
-                <span style={{ padding: "0 10px", color: "var(--text-muted)", fontSize: "12px" }}>or use email instead</span>
-                <div style={{ flex: 1, height: "1px", background: "var(--border)" }} />
-              </div>
-              <button
-                type="button"
-                onClick={() => setStep("email-form")}
-                style={{
-                  width: "100%", padding: "12px",
-                  border: "1.5px solid var(--border)",
-                  borderRadius: "10px",
-                  background: "transparent",
-                  color: "var(--text-main)",
-                  fontSize: "14px", fontWeight: 600,
-                  cursor: "pointer",
-                  transition: "all 0.2s"
-                }}
+            <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+              <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Account Type</label>
+              <select 
+                value={role} 
+                onChange={(e) => setRole(e.target.value)} 
+                style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text-main)", fontSize: "14px" }}
               >
-                ✉️ Sign up with Email & Password
-              </button>
+                <option value="user">👤 Customer (Book Services)</option>
+                <option value="worker">🛠️ Service Provider (Offer Services)</option>
+              </select>
+            </div>
 
-              <p style={{ textAlign: "center", marginTop: "20px", fontSize: "13px", color: "var(--text-muted)" }}>
-                Already have an account?{" "}
-                <Link to="/login" style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>Sign in</Link>
-              </p>
-            </>
-          )}
-
-          {/* ─── STEP: WORKER DETAILS ─── */}
-          {step === "worker-details" && (
-            <>
-              <button
-                onClick={() => setStep("choose")}
-                style={{
-                  background: "none", border: "none", cursor: "pointer",
-                  display: "flex", alignItems: "center", gap: "6px",
-                  color: "var(--text-muted)", fontSize: "13px", marginBottom: "20px", padding: 0
-                }}
-              >
-                ← Back
-              </button>
-
-              <div style={{ textAlign: "center", marginBottom: "24px" }}>
-                <div style={{ fontSize: "40px", marginBottom: "8px" }}>🛠️</div>
-                <h2 style={{ margin: "0 0 6px", fontSize: "22px", fontWeight: 800, color: "var(--text-main)" }}>
-                  Worker Registration
-                </h2>
-                <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "13px" }}>
-                  Fill in your details, then authenticate via Google
-                </p>
-              </div>
-
-              <form onSubmit={handleGoogleWorker} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                {/* Name */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Full Name *</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Harsha Vardhan"
-                    value={wName}
-                    onChange={(e) => setWName(e.target.value)}
-                    style={{ width: "100%", boxSizing: "border-box" }}
-                    required
-                  />
-                </div>
-
-                {/* Phone */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Phone Number * <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>(10 digits)</span></label>
-                  <input
-                    type="tel"
-                    placeholder="e.g. 9876543210"
-                    value={wPhone}
-                    onChange={(e) => setWPhone(e.target.value)}
-                    maxLength={10}
-                    style={{ width: "100%", boxSizing: "border-box" }}
-                    required
-                  />
-                </div>
-
-                {/* Service */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Service / Profession *</label>
-                  <select
-                    value={wService}
-                    onChange={(e) => setWService(e.target.value)}
-                    style={{ width: "100%", boxSizing: "border-box" }}
+            {role === "worker" && (
+              <>
+                <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Select Profession *</label>
+                  <select 
+                    value={profession} 
+                    onChange={(e) => setProfession(e.target.value)} 
+                    style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text-main)", fontSize: "14px" }}
                   >
                     {PROFESSIONS.map((g) =>
                       <optgroup key={g.group} label={g.group}>
@@ -588,172 +542,46 @@ function Signup() {
                     )}
                   </select>
                 </div>
-
-                {/* Location */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Serving Location * <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>(District, State)</span></label>
-                  <input
-                    type="text"
-                    placeholder="e.g. East Godavari, Andhra Pradesh"
-                    value={wCity}
-                    onChange={(e) => setWCity(e.target.value)}
-                    style={{ width: "100%", boxSizing: "border-box" }}
-                    required
+                <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Serving Location (City / District) *</label>
+                  <input 
+                    type="text" 
+                    value={city} 
+                    onChange={(e) => setCity(e.target.value)} 
+                    placeholder="e.g. Mumbai or Visakhapatnam" 
+                    style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text-main)", fontSize: "14px" }} 
+                    required={role === "worker"}
                   />
                 </div>
+              </>
+            )}
 
-                {/* Steps info pill */}
-                <div style={{
-                  display: "flex", alignItems: "center", gap: "8px",
-                  padding: "10px 14px",
-                  background: "rgba(66, 86, 100, 0.06)",
-                  borderRadius: "10px",
-                  border: "1px dashed rgba(66, 86, 100, 0.2)",
-                  fontSize: "12.5px", color: "var(--primary)"
-                }}>
-                  <span>ℹ️</span>
-                  <span>After submitting, you'll be taken to Google to authenticate your account.</span>
-                </div>
+            <button 
+              type="submit" 
+              disabled={isLoading}
+              style={{ 
+                padding: "13px", 
+                fontSize: "15px", 
+                fontWeight: 700,
+                marginTop: "6px", 
+                width: "100%", 
+                background: "linear-gradient(135deg, #dfb453 0%, #f1a829 100%)", 
+                border: "none",
+                borderRadius: "10px", 
+                color: "white", 
+                cursor: isLoading ? "not-allowed" : "pointer",
+                boxShadow: "0 8px 24px rgba(223, 180, 83, 0.3)",
+                transition: "all 0.2s"
+              }}
+            >
+              {isLoading ? "Creating Account..." : "Create Account"}
+            </button>
+          </form>
 
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  style={{
-                    padding: "13px",
-                    fontSize: "14px", fontWeight: 700,
-                    borderRadius: "10px",
-                    background: isLoading ? "#94a3b8" : "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)",
-                    color: "white",
-                    border: "none",
-                    cursor: isLoading ? "not-allowed" : "pointer",
-                    display: "flex", justifyContent: "center", alignItems: "center", gap: "10px",
-                    transition: "all 0.2s"
-                  }}
-                >
-                  {isLoading ? (
-                    <>
-                      <span style={{ width: "16px", height: "16px", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "white", borderRadius: "50%", display: "inline-block", animation: "spin 0.6s linear infinite" }} />
-                      Authenticating...
-                    </>
-                  ) : (
-                    <>
-                      <GoogleIcon white />
-                      Continue with Google
-                    </>
-                  )}
-                </button>
-              </form>
-
-              <p style={{ textAlign: "center", marginTop: "18px", fontSize: "13px", color: "var(--text-muted)" }}>
-                Already have an account?{" "}
-                <Link to="/login" style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>Sign in</Link>
-              </p>
-            </>
-          )}
-
-          {/* ─── STEP: EMAIL FORM ─── */}
-          {step === "email-form" && (
-            <>
-              <button
-                onClick={() => setStep("choose")}
-                style={{
-                  background: "none", border: "none", cursor: "pointer",
-                  display: "flex", alignItems: "center", gap: "6px",
-                  color: "var(--text-muted)", fontSize: "13px", marginBottom: "20px", padding: 0
-                }}
-              >
-                ← Back
-              </button>
-
-              <div style={{ textAlign: "center", marginBottom: "22px" }}>
-                <h2 style={{ margin: "0 0 6px", fontSize: "22px", fontWeight: 800, color: "var(--text-main)" }}>
-                  Sign Up with Email
-                </h2>
-                <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "13px" }}>
-                  Fill all the details to register your account
-                </p>
-              </div>
-
-              <form onSubmit={handleSignup} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Full Name</label>
-                  <input type="text" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} style={{ width: "100%", boxSizing: "border-box" }} />
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Phone Number</label>
-                  <input type="tel" placeholder="9876543210" value={phone} onChange={(e) => setPhone(e.target.value)} style={{ width: "100%", boxSizing: "border-box" }} />
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Email Address</label>
-                  <input type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: "100%", boxSizing: "border-box" }} />
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Password</label>
-                  <div style={{ position: "relative" }}>
-                    <input 
-                      type={showPassword ? "text" : "password"} 
-                      placeholder="••••••••" 
-                      value={password} 
-                      onChange={(e) => setPassword(e.target.value)} 
-                      style={{ width: "100%", boxSizing: "border-box", paddingRight: "40px" }} 
-                    />
-                    <span
-                      role="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      style={{
-                        position: "absolute",
-                        right: "12px",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        color: "var(--text-muted)",
-                        padding: "4px",
-                        userSelect: "none"
-                      }}
-                    >
-                      {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
-                    </span>
-                  </div>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Register As</label>
-                  <select value={role} onChange={(e) => setRole(e.target.value)} style={{ width: "100%", boxSizing: "border-box" }}>
-                    <option value="user">User / Customer</option>
-                    <option value="worker">Professional Worker</option>
-                  </select>
-                </div>
-                {role === "worker" && (
-                  <>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                      <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Select Profession</label>
-                      <select value={profession} onChange={(e) => setProfession(e.target.value)} style={{ width: "100%", boxSizing: "border-box" }}>
-                        {PROFESSIONS.map((g) =>
-                          <optgroup key={g.group} label={g.group}>
-                            {g.options.map((o) => <option key={o} value={o}>{o}</option>)}
-                          </optgroup>
-                        )}
-                      </select>
-                    </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                      <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Serving Location</label>
-                      <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. East Godavari, Andhra Pradesh" style={{ width: "100%", boxSizing: "border-box" }} />
-                    </div>
-                  </>
-                )}
-                <button type="submit" className="btn-primary" style={{ padding: "12px", fontSize: "15px", marginTop: "6px", width: "100%", background: "linear-gradient(135deg, #dfb453 0%, #f1a829 100%)", borderBottom: "4px solid #a67c1e", color: "white", boxShadow: "0 10px 30px rgba(223, 180, 83, 0.25)" }}>
-                  Sign Up
-                </button>
-              </form>
-
-              <p style={{ textAlign: "center", marginTop: "20px", fontSize: "13px", color: "var(--text-muted)" }}>
-                Already have an account?{" "}
-                <Link to="/login" style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>Sign in</Link>
-              </p>
-            </>
-          )}
-
+          <p style={{ textAlign: "center", marginTop: "20px", fontSize: "13px", color: "var(--text-muted)" }}>
+            Already have an account?{" "}
+            <Link to="/login" style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>Sign in</Link>
+          </p>
         </div>
       </div>
 

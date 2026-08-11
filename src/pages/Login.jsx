@@ -1,68 +1,299 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaUser, FaHardHat, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import authBg from "../assets/auth-bg.jpg";
 import authMobileBg from "../assets/auth-mobile-bg.png";
 import { use3dTilt } from "../utils/use3dTilt";
 import { fetchAllWorkersCached } from "../utils/workerService";
 
-// Safe JSON parser – prevents "Unexpected token 'A'" errors when backend
-// is unreachable and the proxy/server returns an HTML error page instead of JSON.
+// ── Safe JSON parser ────────────────────────────────────────────────────────
 const safeJson = async (response) => {
   const contentType = response.headers.get("content-type") || "";
-  if (contentType.includes("application/json")) {
-    return response.json();
-  }
-  // Non-JSON body (HTML error page from proxy or server) – return a safe error object
+  if (contentType.includes("application/json")) return response.json();
   const text = await response.text();
   console.error("Non-JSON response received:", text.slice(0, 200));
   return { error: "Server is unreachable – please try again shortly." };
 };
 
+// ── Professions list (for Join as Service Provider) ─────────────────────────
+const PROFESSIONS = [
+  { group: "Main Services", options: ["Carpentry", "Plumbing", "Electrical", "Beauty, Salon & Spa", "Doctors & Medical"] },
+  { group: "Cleaning", options: ["House Cleaning", "Floor cleaning", "Utensils Cleaning"] },
+  { group: "Painting", options: ["Interior Painting", "Exterior Painting", "Wall Putty Coating", "Wood Polishing"] },
+  { group: "Mechanical", options: ["Two-Wheeler (Bikes)", "Four-Wheeler (Cars)"] },
+  { group: "Automobile Cleaning", options: ["Car Wash", "Bike Wash"] },
+  { group: "Appliance Repair", options: ["AC Repair", "Washing Machine", "Refrigerator", "Geyser"] },
+  { group: "Specializations", options: ["Photography", "Events", "Packers & Movers", "Mechanic"] },
+];
+
+const CITIES = [
+  "Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai", "Pune", "Kolkata", "Ahmedabad", "Jaipur", "Surat", "Lucknow", "Kanpur", "Nagpur", "Indore", "Visakhapatnam", "Bhopal", "Patna", "Vadodara", "Ludhiana", "Agra", "Nashik", "Rajkot", "Meerut", "Varanasi", "Kakinada", "Vijayawada", "Guntur", "Tirupati", "Rajahmundry", "Kadapa", "Nellore", "Kurnool", "Anantapur", "Warangal", "Karimnagar", "Nizamabad", "Khammam", "Secunderabad", "Coimbatore", "Madurai", "Trichy", "Salem", "Erode", "Tiruppur", "Mysuru", "Mangalore", "Belgaum", "Hubli", "Dharwad", "Gulbarga", "Davanagere", "Bellary", "Raipur", "Bhilai", "Durg", "Bilaspur", "Korba", "Ranchi", "Jamshedpur", "Dhanbad", "Bokaro", "Hazaribagh", "Bhubaneswar", "Cuttack", "Rourkela", "Sambalpur", "Balasore", "Guwahati", "Silchar", "Dibrugarh", "Jorhat", "Shillong", "Imphal", "Aizawl", "Kohima", "Dimapur", "Agartala", "Gangtok", "Port Blair", "Chandigarh", "Amritsar", "Jalandhar", "Patiala", "Bathinda", "Mohali", "Panchkula", "Faridabad", "Gurgaon", "Noida", "Greater Noida", "Ghaziabad", "Aligarh", "Moradabad", "Bareilly", "Saharanpur", "Muzaffarnagar", "Roorkee", "Dehradun", "Haridwar", "Haldwani", "Rudrapur", "Srinagar", "Jammu", "Leh", "Kargil", "Shimla", "Solan", "Dharamshala", "Kangra", "Hamirpur", "Una", "Manali", "Kullu", "Palampur", "Udaipur", "Jodhpur", "Ajmer", "Kota", "Bikaner", "Alwar", "Bharatpur", "Sikar", "Bhilwara", "Pali", "Tonk", "Chittorgarh", "Sawai Madhopur", "Dausa", "Barmer", "Jaisalmer", "Gwalior", "Jabalpur", "Satna", "Rewa", "Sagar", "Katni", "Chhindwara", "Hoshangabad", "Khandwa", "Ratlam", "Dewas", "Morena", "Shivpuri", "Betul", "Mandla", "Seoni", "Chhatarpur", "Tikamgarh", "Panna", "Sidhi", "Singrauli", "Shahdol", "Anuppur", "Umaria", "Dindori", "Balaghat", "Sehore", "Raisen", "Vidisha", "Rajgarh", "Shajapur", "Agar Malwa", "Ujjain", "Neemuch", "Mandsaur", "Barwani", "Khargone", "Burhanpur", "Dhar", "Jhabua", "Alirajpur", "Aurangabad", "Jalgaon", "Kolhapur", "Sangli", "Satara", "Solapur", "Latur", "Osmanabad", "Beed", "Parbhani", "Nanded", "Hingoli", "Akola", "Amravati", "Yavatmal", "Chandrapur", "Gadchiroli", "Wardha", "Washim", "Buldhana", "Ratnagiri", "Sindhudurg", "Palghar", "Thane", "Navi Mumbai", "Vasai", "Virar", "Kalyan", "Dombivli", "Ulhasnagar", "Panvel", "Mira Bhayandar", "Nagapattinam", "Thanjavur", "Kumbakonam", "Karaikal", "Pudukkottai", "Sivaganga", "Ramanathapuram", "Virudhunagar", "Thoothukudi", "Nagercoil", "Tirunelveli", "Dindigul", "Karur", "Namakkal", "Krishnagiri", "Dharmapuri", "Hosur", "Vellore", "Tiruvannamalai", "Villupuram", "Cuddalore", "Ariyalur", "Perambalur", "Mayiladuthurai", "Tiruvarur", "Kanchipuram", "Chengalpattu", "Tiruvallur",
+
+  "Nagarkurnool", "Mahbubnagar", "Nalgonda", "Suryapet", "Jagtial", "Mancherial", "Adilabad", "Nirmal", "Kamareddy", "Sangareddy", "Medak", "Siddipet", "Vikarabad", "Rangareddy", "Yadadri", "Bhongir", "Mulugu", "Jayashankar", "Bhupalpally", "Mahabubabad", "Jangaon", "Hanamkonda",
+
+  "Ongole", "Chittoor", "Vizianagaram", "Srikakulam", "Bhimavaram", "Eluru", "Machilipatnam", "Tenali", "Narasaraopet", "Gudivada", "Proddatur", "Hindupur", "Adoni", "Nandyal", "Markapur", "Chirala", "Bapatla", "Amalapuram", "Tadepalligudem", "Tanuku", "Pithapuram", "Samalkot", "Anakapalle", "Vizag Steel Township", "Gajuwaka", "Malkapuram", "Simhachalam", "Marripalem", "Kancharapalem", "Gopalapatnam", "Madhurawada", "Pedagantyada", "Parawada", "Sabbavaram", "Pendurthi", "Chodavaram", "Yelamanchili", "Payakaraopeta", "Narsipatnam", "Kotapadu", "Annavaram", "Tuni", "Etapaka", "Polavaram", "Rampachodavaram", "Maredumilli", "Paderu", "Araku Valley", "S Kota", "Bobbili", "Parvathipuram", "Salur", "Palakonda", "Seethampeta", "Amadalavalasa", "Narasannapeta", "Ichchapuram", "Sompeta", "Palasa", "Tekkali", "Kaviti", "Mandasa", "Vajrapukotturu", "Pathapatnam", "Hiramandalam", "Kothuru", "Bhamini", "Veeraghattam", "Burja", "Ponduru", "Santhabommali", "Kotabommali", "Jalumuru", "Saravakota", "Laveru", "Ranastalam", "Etcherla",
+
+  "Berhampur", "Puri", "Khurda", "Angul", "Dhenkanal", "Jajpur", "Kendrapara", "Jagatsinghpur", "Nayagarh", "Boudh", "Kandhamal", "Kalahandi", "Balangir", "Nuapada", "Nabarangpur", "Koraput", "Malkangiri", "Rayagada", "Sundargarh", "Jharsuguda", "Bargarh", "Sonepur", "Keonjhar", "Mayurbhanj", "Baripada", "Bhadrak", "Jaleswar", "Basudevpur", "Chandbali", "Dhamra", "Paradip", "Talcher", "Athmallik", "Kamakhyanagar", "Bhawanipatna", "Titlagarh", "Kesinga", "Kantabanji", "Patnagarh", "Bolangir", "Saintala", "Loisingha", "Turekela", "Khaprakhol", "Muribahal", "Belpara", "Deogaon", "Agalpur", "Tusura", "Tarbha", "Subarnapur", "Binika", "Birmaharajpur", "Ulunda", "Rampur", "Rairakhol", "Kuchinda", "Rajgangpur", "Bonai", "Koira", "Tensa", "Biramitrapur", "Hemgir", "Lephripara", "Bhasma", "Tangarpali", "Balishankara", "Bhawanipur", "Bhubaneswar outskirts",
+];
+
+
+// ── Login Result Popup Modal ───────────────────────────────────────────────
+function LoginResultPopup({ popup, onClose, onSwitchTab, onOpenJoinForm, navigate }) {
+  if (!popup) return null;
+
+  const config = {
+    not_found: {
+      icon: "🔍",
+      title: popup.title || "Account Not Found",
+      titleColor: "#b45309",
+      bg: "#fffbeb",
+      border: "#fde68a",
+      primaryBtnText: "📝 Create a New Account",
+      primaryAction: () => { onClose(); navigate("/signup"); },
+      secondaryBtnText: "Try Again",
+      secondaryAction: onClose,
+    },
+    not_provider: {
+      icon: "🛠️",
+      title: popup.title || "No Provider Account Found",
+      titleColor: "#1e3a8a",
+      bg: "#eff6ff",
+      border: "#bfdbfe",
+      primaryBtnText: "🛠️ Register as Service Provider",
+      primaryAction: () => { onClose(); onOpenJoinForm(); },
+      secondaryBtnText: "👤 Sign In as Customer",
+      secondaryAction: () => { onClose(); onSwitchTab("user"); },
+    },
+    worker_only: {
+      icon: "🛠️",
+      title: popup.title || "Service Provider Account",
+      titleColor: "#065f46",
+      bg: "#ecfdf5",
+      border: "#a7f3d0",
+      primaryBtnText: "🛠️ Switch to Service Provider Tab",
+      primaryAction: () => { onClose(); onSwitchTab("provider"); },
+      secondaryBtnText: "Close",
+      secondaryAction: onClose,
+    },
+    blocked: {
+      icon: "🚫",
+      title: popup.title || "Account Blocked",
+      titleColor: "#991b1b",
+      bg: "#fef2f2",
+      border: "#fecaca",
+      primaryBtnText: "📞 Contact Support",
+      primaryAction: () => { onClose(); navigate("/support"); },
+      secondaryBtnText: "Close",
+      secondaryAction: onClose,
+    },
+    error: {
+      icon: "❌",
+      title: popup.title || "Sign In Failed",
+      titleColor: "#991b1b",
+      bg: "#fef2f2",
+      border: "#fecaca",
+      primaryBtnText: "Try Again",
+      primaryAction: onClose,
+    }
+  }[popup.type] || {
+    icon: "⚠️",
+    title: popup.title || "Notice",
+    titleColor: "#92400e",
+    bg: "#fffbeb",
+    border: "#fde68a",
+    primaryBtnText: "OK",
+    primaryAction: onClose,
+  };
+
+  return (
+    <div style={{
+      position: "fixed",
+      inset: 0,
+      zIndex: 9999,
+      background: "rgba(15, 23, 42, 0.65)",
+      backdropFilter: "blur(8px)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: "20px"
+    }}>
+      <div style={{
+        background: "var(--bg-card, #ffffff)",
+        border: `2px solid ${config.border}`,
+        borderRadius: "20px",
+        padding: "36px 30px",
+        maxWidth: "420px",
+        width: "100%",
+        textAlign: "center",
+        boxShadow: "0 25px 60px rgba(0,0,0,0.3)",
+        animation: "popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both"
+      }}>
+        <div style={{ fontSize: "50px", marginBottom: "12px", lineHeight: 1 }}>
+          {config.icon}
+        </div>
+        <h2 style={{ margin: "0 0 10px 0", fontSize: "20px", fontWeight: 800, color: config.titleColor }}>
+          {config.title}
+        </h2>
+        <p style={{ margin: "0 0 24px 0", fontSize: "13.5px", color: "var(--text-secondary, #64748b)", lineHeight: 1.65 }}>
+          {popup.message}
+        </p>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {config.primaryBtnText && (
+            <button
+              onClick={config.primaryAction}
+              style={{
+                background: "linear-gradient(135deg, #dfb453 0%, #f1a829 100%)",
+                color: "white",
+                border: "none",
+                borderRadius: "10px",
+                padding: "12px 20px",
+                fontSize: "14px",
+                fontWeight: 700,
+                cursor: "pointer",
+                boxShadow: "0 4px 14px rgba(223, 180, 83, 0.35)",
+                transition: "all 0.2s"
+              }}
+            >
+              {config.primaryBtnText}
+            </button>
+          )}
+
+          {config.secondaryBtnText && (
+            <button
+              onClick={config.secondaryAction}
+              style={{
+                background: "transparent",
+                color: "var(--text-muted, #64748b)",
+                border: "1.5px solid var(--border, #cbd5e1)",
+                borderRadius: "10px",
+                padding: "11px 20px",
+                fontSize: "13px",
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              {config.secondaryBtnText}
+            </button>
+          )}
+        </div>
+      </div>
+      <style>{`
+        @keyframes popIn {
+          0% { opacity: 0; transform: scale(0.72); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [activeTab, setActiveTab] = useState("user"); // "user" | "provider"
+
+  // Separate form state for User tab
+  const [userEmail, setUserEmail] = useState("");
+  const [userPassword, setUserPassword] = useState("");
+  const [showUserPassword, setShowUserPassword] = useState(false);
+
+  // Separate form state for Provider tab
+  const [providerEmail, setProviderEmail] = useState("");
+  const [providerPassword, setProviderPassword] = useState("");
+  const [showProviderPassword, setShowProviderPassword] = useState(false);
+
   const [isLoading, setIsLoading] = useState(window.location.hash.includes("access_token"));
-  const [loginStatus, setLoginStatus] = useState(null); // { type: 'success'|'error', message: '' }
+  const [loginStatus, setLoginStatus] = useState(null);
+  const [popupModal, setPopupModal] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  // Join-as-provider sub-form state
+  const [showJoinForm, setShowJoinForm] = useState(false);
+  const [joinEmail, setJoinEmail] = useState("");
+  const [joinPassword, setJoinPassword] = useState("");
+  const [showJoinPassword, setShowJoinPassword] = useState(false);
+  const [joinProfession, setJoinProfession] = useState("");
+  const [joinCity, setJoinCity] = useState("");
+  const [isJoining, setIsJoining] = useState(false);
+  const [joinStatus, setJoinStatus] = useState(null);
+
   const navigate = useNavigate();
   const loginCardRef = use3dTilt();
 
-  const handleGoogleLoginWithToken = async (accessToken) => {
+  // ── Helper to convert server error string to structured popup ─────────────
+  const parseErrorToPopup = (errMsg) => {
+    const msg = errMsg || "";
+    if (
+      msg.toLowerCase().includes("no account found") || 
+      msg.toLowerCase().includes("sign up first") || 
+      msg.toLowerCase().includes("does not exist")
+    ) {
+      return {
+        type: "not_found",
+        title: "Account Not Found",
+        message: msg || "No registered account found with this email. Please sign up to create a new account."
+      };
+    }
+    if (
+      msg.toLowerCase().includes("no service provider profile") || 
+      msg.toLowerCase().includes("not registered as a provider")
+    ) {
+      return {
+        type: "not_provider",
+        title: "Service Provider Profile Required",
+        message: msg || "No service provider profile was found for this account. You can register as a provider or sign in under 'Login as User'."
+      };
+    }
+    if (
+      msg.toLowerCase().includes("service provider only") || 
+      msg.toLowerCase().includes("switch to the service provider tab")
+    ) {
+      return {
+        type: "worker_only",
+        title: "Service Provider Account",
+        message: msg || "This account is registered exclusively as a Service Provider. Please switch to the Service Provider tab to sign in."
+      };
+    }
+    if (msg.toLowerCase().includes("blocked")) {
+      return {
+        type: "blocked",
+        title: "Account Access Blocked",
+        message: msg || "Your account has been permanently blocked by administrative control."
+      };
+    }
+    return null;
+  };
+
+  // ── Google OAuth handler ─────────────────────────────────────────────────
+  const handleGoogleLoginWithToken = async (accessToken, targetLoginAs = "user") => {
     setIsLoading(true);
     setLoginStatus({ type: "success", message: "Verifying Google Authentication... 🔑" });
-    console.log("📡 Sending token to backend /api/auth/google...");
     try {
       const response = await fetch("/api/auth/google", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accessToken })
+        body: JSON.stringify({ accessToken, loginAs: targetLoginAs }),
       });
-      console.log(`📡 Backend responded with status: ${response.status}`);
       const data = await safeJson(response);
-      console.log("📡 Backend responded with data:", data);
       if (!response.ok) {
-        console.error("❌ Backend token verification failed:", data.error);
         setIsLoading(false);
+        const popup = parseErrorToPopup(data.error);
+        if (popup) {
+          setPopupModal(popup);
+        }
         setLoginStatus({ type: "error", message: data.error || "Google Sign-In failed!" });
         return;
       }
-      console.log("✅ Google login verified successfully, calling handleLoginSuccess...");
-      handleLoginSuccess(data);
+      handleLoginSuccess(data, data.loginContext || targetLoginAs);
     } catch (err) {
-      console.error("💥 Fetch error verifying Google token:", err);
       setIsLoading(false);
-      setLoginStatus({ type: "error", message: "Network error! The backend server is unreachable. Please ensure it is running." });
+      setLoginStatus({ type: "error", message: "Network error! Backend is unreachable." });
     }
   };
 
-  // Prefetch workers & location data while user is on login page
-  // so home page loads workers instantly after login
+  // ── Effects ──────────────────────────────────────────────────────────────
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    // Check for Google OAuth2 redirect token in URL hash
     const hash = window.location.hash;
     if (hash) {
       const params = new URLSearchParams(hash.substring(1));
@@ -72,23 +303,27 @@ function Login() {
         const flow = sessionStorage.getItem("google_auth_flow");
         if (flow === "signup") {
           navigate(`/signup#access_token=${accessToken}`);
+        } else if (flow === "provider_login") {
+          setActiveTab("provider");
+          sessionStorage.removeItem("google_auth_flow");
+          handleGoogleLoginWithToken(accessToken, "provider");
         } else {
-          handleGoogleLoginWithToken(accessToken);
+          setActiveTab("user");
+          sessionStorage.removeItem("google_auth_flow");
+          handleGoogleLoginWithToken(accessToken, "user");
         }
       }
     }
-
-    // Check for mock redirect auth errors
     const redirectError = sessionStorage.getItem("google_auth_error");
     if (redirectError) {
+      const popup = parseErrorToPopup(redirectError);
+      if (popup) {
+        setPopupModal(popup);
+      }
       setLoginStatus({ type: "error", message: redirectError });
       sessionStorage.removeItem("google_auth_error");
     }
-
-    // Warm up the worker cache in background
     fetchAllWorkersCached();
-
-    // If user has a saved city, prefetch geocode too
     const savedCity = localStorage.getItem("userCity");
     if (savedCity) {
       fetch(`/api/workers/geocode?q=${encodeURIComponent(savedCity)}`)
@@ -100,153 +335,286 @@ function Login() {
             localStorage.setItem("userCoordsLng", String(parseFloat(data.lon)));
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }
-
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
+    return () => window.removeEventListener("resize", handleResize);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleLoginSuccess = (data) => {
-    console.log("🔑 handleLoginSuccess called with data:", data);
+  // ── Shared session writer ────────────────────────────────────────────────
+  const handleLoginSuccess = (data, forcedContext = null) => {
     const user = data.user;
     if (!user) {
-      console.error("❌ user object is missing in response data!");
       setLoginStatus({ type: "error", message: "Authentication response is missing user data." });
       setIsLoading(false);
       return;
     }
-    console.log("👤 Logged in user:", user);
-    sessionStorage.setItem("userRole", user.role);
+
+    const context = forcedContext || data.loginContext || (user.role === "admin" ? "admin" : (user.role === "worker" ? "provider" : "user"));
+    const activeRole = context === "admin" ? "admin" : (context === "provider" ? "worker" : "user");
+
+    // Clear previous sessions to avoid data bleeding
+    sessionStorage.removeItem("loggedInWorkerId");
+    sessionStorage.removeItem("workerSession_email");
+    sessionStorage.removeItem("workerSession_profileId");
+    sessionStorage.removeItem("workerSession_name");
+
+    // ── Session write ────────────────────────────────────
+    sessionStorage.setItem("userRole", activeRole);
+    sessionStorage.setItem("actualRole", user.actualRole || user.role);
     sessionStorage.setItem("userName", user.name);
     sessionStorage.setItem("userEmail", user.email);
     sessionStorage.setItem("userId", user.id || user._id);
     sessionStorage.setItem("authToken", data.token);
+    sessionStorage.setItem("isWorker", String(user.isWorker || false));
+    sessionStorage.setItem("workerProfileId", user.workerProfileId || "");
+    sessionStorage.setItem("loginContext", context);
+
+    // ── Worker session (only when acting in provider role) ─────────
+    if (activeRole === "worker" || user.isWorker) {
+      const wId = user.workerProfileId || (data.worker ? data.worker.id : (user.id || user._id));
+      sessionStorage.setItem("loggedInWorkerId", String(wId));
+      sessionStorage.setItem("workerSession_email", user.email);
+      sessionStorage.setItem("workerSession_profileId", String(wId));
+      sessionStorage.setItem("workerSession_name", user.name);
+    }
+
     localStorage.removeItem("manualLocationSet");
 
-    // 🔒 Persist login for 1 week across browser sessions
+    // ── Persist session for 1 week ────────────────────────────────────────
     localStorage.setItem("authSession", JSON.stringify({
-      userRole: user.role,
+      userRole: activeRole,
+      actualRole: user.actualRole || user.role,
+      loginContext: context,
       userName: user.name,
       userEmail: user.email,
       userId: user.id || user._id,
       authToken: data.token,
-      loggedInWorkerId: user.role === "worker" ? user.id : null,
+      isWorker: user.isWorker || false,
+      workerProfileId: user.workerProfileId || null,
+      loggedInWorkerId: (activeRole === "worker" || user.isWorker) ? (user.workerProfileId || user.id || user._id) : null,
       userCity: user.city || null,
-      expiry: Date.now() + 7 * 24 * 60 * 60 * 1000
+      expiry: Date.now() + 7 * 24 * 60 * 60 * 1000,
     }));
 
-    if (user.role === "worker") {
-      sessionStorage.setItem("loggedInWorkerId", user.id);
-      setLoginStatus({ type: "success", message: `Welcome ${user.name}! Redirecting to dashboard... 🛠️` });
-      console.log("🚀 Redirecting worker to /worker-dashboard...");
-      setTimeout(() => navigate("/worker-dashboard"), 800);
-    } else if (user.role === "admin") {
-      setLoginStatus({ type: "success", message: "Welcome Administrator! Redirecting... 👑" });
-      console.log("🚀 Redirecting admin to /admin-dashboard...");
-      setTimeout(() => navigate("/admin-dashboard"), 800);
-    } else {
-      setLoginStatus({ type: "success", message: `Welcome ${user.name}! Redirecting... 🎉` });
+    window.dispatchEvent(new Event("storage"));
 
+    // ── Redirect logic ────────────────────────────────────────────────────
+    if (activeRole === "admin" || user.role === "admin") {
+      setLoginStatus({ type: "success", message: "Welcome Administrator! Redirecting... 👑" });
+      setTimeout(() => navigate("/admin-dashboard"), 800);
+    } else if (activeRole === "worker" || context === "provider") {
+      setLoginStatus({ type: "success", message: `Welcome ${user.name}! Redirecting to worker dashboard... 🛠️` });
+      setTimeout(() => navigate("/worker-dashboard"), 800);
+    } else {
+      // Regular user / Customer
+      setLoginStatus({ type: "success", message: `Welcome ${user.name}! Redirecting... 🎉` });
       if (user.city) {
         sessionStorage.setItem("userCity", user.city);
         localStorage.setItem("userCity", user.city);
       }
-
       const targetCity = user.city || "Mumbai";
-
-      console.log("🚀 Redirecting customer to /...");
       setTimeout(() => navigate("/"), 800);
-
-      // Trigger background geocoding request to refresh coordinates in case of changes
       fetch(`/api/workers/geocode?q=${encodeURIComponent(targetCity)}`)
         .then(res => res.ok ? res.json() : null)
         .then(geoData => {
-          console.log("🛰️ Geocode response received:", geoData);
           if (geoData?.lat && geoData?.lon) {
             localStorage.setItem("userLocation", geoData.label || targetCity);
             localStorage.setItem("userCoordsLat", String(parseFloat(geoData.lat)));
             localStorage.setItem("userCoordsLng", String(parseFloat(geoData.lon)));
           }
         })
-        .catch((err) => {
-          console.error("💥 Geocode fetch failed:", err);
-        });
+        .catch(() => { });
     }
   };
 
-  const handleLogin = async (e) => {
+  // ── User Login ───────────────────────────────────────────────────────────
+  const handleUserLogin = async (e) => {
     e.preventDefault();
-    if (!email || !password) {
-      setLoginStatus({ type: "error", message: "Please fill in all fields!" });
+    if (!userEmail || !userPassword) {
+      setLoginStatus({ type: "error", message: "Please fill in email and password!" });
       return;
     }
-
     setIsLoading(true);
     setLoginStatus(null);
-
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email: userEmail, password: userPassword, loginAs: "user" }),
       });
-
       const data = await safeJson(response);
-
       if (!response.ok) {
         setIsLoading(false);
+        const popup = parseErrorToPopup(data.error);
+        if (popup) {
+          setPopupModal(popup);
+        }
         setLoginStatus({ type: "error", message: data.error || "Invalid email or password!" });
         return;
       }
-
-      handleLoginSuccess(data);
+      handleLoginSuccess(data, data.loginContext || "user");
     } catch (err) {
       setIsLoading(false);
-      setLoginStatus({ type: "error", message: "Network error! The backend server is unreachable. Please ensure it is running on port 5000." });
+      setLoginStatus({ type: "error", message: "Network error! Backend is unreachable." });
     }
   };
 
-  const handleGoogleSignIn = () => {
-    console.log("🔍 handleGoogleSignIn clicked.");
-    sessionStorage.setItem("google_auth_flow", "login");
+  // ── Provider Login ───────────────────────────────────────────────────────
+  const handleProviderLogin = async (e) => {
+    e.preventDefault();
+    if (!providerEmail || !providerPassword) {
+      setLoginStatus({ type: "error", message: "Please fill in provider email and password!" });
+      return;
+    }
+    setIsLoading(true);
+    setLoginStatus(null);
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: providerEmail, password: providerPassword, loginAs: "provider" }),
+      });
+      const data = await safeJson(response);
+      if (!response.ok) {
+        setIsLoading(false);
+        const popup = parseErrorToPopup(data.error);
+        if (popup) {
+          setPopupModal(popup);
+        }
+        setLoginStatus({ type: "error", message: data.error || "Invalid email or password!" });
+        return;
+      }
+      handleLoginSuccess(data, data.loginContext || "provider");
+    } catch (err) {
+      setIsLoading(false);
+      setLoginStatus({ type: "error", message: "Network error! Backend is unreachable." });
+    }
+  };
 
+  // ── Join as Service Provider ─────────────────────────────────────────────
+  const handleJoinAsWorker = async (e) => {
+    e.preventDefault();
+    setJoinStatus(null);
+    if (!joinEmail || !joinPassword || !joinProfession || !joinCity) {
+      setJoinStatus({ type: "error", message: "Please fill in all fields to register as a provider." });
+      return;
+    }
+    setIsJoining(true);
+    try {
+      const response = await fetch("/api/auth/join-as-worker", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: joinEmail,
+          password: joinPassword,
+          profession: joinProfession,
+          city: joinCity,
+        }),
+      });
+      const data = await safeJson(response);
+      if (!response.ok) {
+        setIsJoining(false);
+        setJoinStatus({ type: "error", message: data.error || "Registration failed. Please try again." });
+        return;
+      }
+      setJoinStatus({ type: "success", message: `🎉 Service provider profile created! Logging you in...` });
+      setTimeout(() => {
+        setIsJoining(false);
+        handleLoginSuccess(data, "provider");
+      }, 900);
+    } catch (err) {
+      setIsJoining(false);
+      setJoinStatus({ type: "error", message: "Network error! Backend is unreachable." });
+    }
+  };
+
+  // ── Google Sign-In ────────────────────────────────────────────────────────
+  // flow: "user_login" (user tab) | "provider_login" (provider tab)
+  const handleGoogleSignIn = (flow = "user_login") => {
+    sessionStorage.setItem("google_auth_flow", flow);
     const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || "849555982996-giolb22mkrfbg8c4ut0ohbv1ps9giv2o.apps.googleusercontent.com";
     const redirectUri = window.location.origin;
     const scope = encodeURIComponent("https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email");
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${scope}&prompt=select_account`;
-
     const isLocalIp = window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1" && /^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(window.location.hostname);
-
     if (isMobile && isLocalIp) {
-      console.log("📱 Mobile device with local IP detected. Google OAuth does not allow local IPs. Redirecting to Mock Google Auth...");
-      setLoginStatus({ type: "success", message: "Real Google Sign-In requires localhost or HTTPS. Launching Mock Google Sign-in for local IP testing..." });
-      setTimeout(() => {
-        window.location.href = "/google-auth?redirect=true";
-      }, 1500);
+      setLoginStatus({ type: "success", message: "Launching Mock Google Sign-in for local IP testing..." });
+      setTimeout(() => { window.location.href = "/google-auth?redirect=true"; }, 1500);
       return;
     }
-
-    // Always redirect on the same page
-    console.log("📡 Redirecting user to Google OAuth on the same page...");
     window.location.href = authUrl;
   };
 
+  // ── Shared status banner ─────────────────────────────────────────────────
+  const StatusBanner = ({ status }) => status ? (
+    <div style={{
+      padding: isMobile ? "10px 14px" : "12px 16px",
+      borderRadius: "10px",
+      marginBottom: isMobile ? "12px" : "16px",
+      fontSize: isMobile ? "12px" : "13px",
+      fontWeight: 600,
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      animation: "fadeIn 0.3s ease-out forwards",
+      backgroundColor: status.type === "success" ? "#dcfce7" : "#fee2e2",
+      color: status.type === "success" ? "#15803d" : "#dc2626",
+      border: `1px solid ${status.type === "success" ? "#bbf7d0" : "#fecaca"}`,
+    }}>
+      <span style={{ fontSize: "16px" }}>{status.type === "success" ? "✅" : "❌"}</span>
+      {status.message}
+    </div>
+  ) : null;
+
+  // ── Spinner ───────────────────────────────────────────────────────────────
+  const Spinner = () => (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+      <span style={{
+        width: "14px", height: "14px",
+        border: "2px solid rgba(255,255,255,0.35)",
+        borderTopColor: "white",
+        borderRadius: "50%",
+        display: "inline-block",
+        animation: "spin 0.6s linear infinite",
+      }} />
+      Processing...
+    </span>
+  );
+
+  // ── Styles ────────────────────────────────────────────────────────────────
+  const tabBtn = (active) => ({
+    flex: 1,
+    padding: isMobile ? "9px 6px" : "11px 8px",
+    border: "none",
+    borderRadius: "10px",
+    fontWeight: 700,
+    fontSize: isMobile ? "12px" : "13px",
+    cursor: "pointer",
+    transition: "all 0.25s",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "6px",
+    background: active
+      ? "linear-gradient(135deg, #dfb453 0%, #f1a829 100%)"
+      : "transparent",
+    color: active ? "white" : "var(--text-muted)",
+    boxShadow: active ? "0 4px 12px rgba(223,180,83,0.35)" : "none",
+  });
+
+  const inputStyle = (errorActive) => ({
+    width: "100%",
+    boxSizing: "border-box",
+    padding: isMobile ? "10px" : "12px",
+    borderColor: errorActive ? "#fecaca" : undefined,
+    transition: "border-color 0.2s",
+  });
 
   return (
-    <div style={{ 
-      minHeight: "100vh", 
-      display: "flex", 
-      flexDirection: "column"
-    }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Navbar />
 
       <div
@@ -255,13 +623,14 @@ function Login() {
           flex: 1,
           display: "flex",
           justifyContent: "center",
-          alignItems: "center",
-          padding: isMobile ? "24px 14px" : "48px 24px",
-          backgroundImage: `url(${isMobile ? authMobileBg : authBg})`, 
-          backgroundSize: "100% 100%", 
-          backgroundPosition: "center center", 
+          alignItems: "flex-start",
+          padding: isMobile ? "20px 14px 32px" : "40px 24px 48px",
+          backgroundImage: `url(${isMobile ? authMobileBg : authBg})`,
+          backgroundSize: "100% 100%",
+          backgroundPosition: "center center",
           backgroundRepeat: "no-repeat",
-          backgroundColor: "#b4d5fa"
+          backgroundColor: "#b4d5fa",
+          overflowY: "auto",
         }}
       >
         <div
@@ -269,197 +638,264 @@ function Login() {
           ref={loginCardRef}
           style={{
             width: isMobile ? "92%" : "100%",
-            maxWidth: isMobile ? "340px" : "400px",
+            maxWidth: isMobile ? "360px" : "420px",
             backgroundColor: "var(--bg-card)",
-            padding: isMobile ? "24px 20px" : "40px"
+            padding: isMobile ? "22px 18px" : "36px 40px",
+            marginTop: isMobile ? "8px" : "0",
           }}
         >
-          <div style={{ textAlign: "center", marginBottom: isMobile ? "20px" : "30px" }}>
-            <h1 style={{ margin: isMobile ? "0 0 4px 0" : "0 0 8px 0", fontSize: isMobile ? "22px" : "28px", fontWeight: 800, color: "var(--text-main)" }}>
+          {/* ── Header ─────────────────────────────────────────────────── */}
+          <div style={{ textAlign: "center", marginBottom: isMobile ? "16px" : "22px" }}>
+            <h1 style={{ margin: isMobile ? "0 0 4px" : "0 0 6px", fontSize: isMobile ? "22px" : "26px", fontWeight: 800, color: "var(--text-main)" }}>
               Welcome Back
             </h1>
-            <p style={{ margin: 0, color: "var(--text-muted)", fontSize: isMobile ? "12px" : "14px" }}>
-              Login to manage your bookings and services
+            <p style={{ margin: 0, color: "var(--text-muted)", fontSize: isMobile ? "12px" : "13px" }}>
+              Sign in to manage your bookings and services
             </p>
           </div>
 
-          {/* Inline Status Message */}
-          {loginStatus && (
-            <div
-              style={{
-                padding: isMobile ? "10px 14px" : "12px 16px",
-                borderRadius: "10px",
-                marginBottom: isMobile ? "12px" : "18px",
-                fontSize: isMobile ? "12px" : "13px",
-                fontWeight: 600,
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                animation: "fadeIn 0.3s ease-out forwards",
-                backgroundColor: loginStatus.type === "success" ? "#dcfce7" : "#fee2e2",
-                color: loginStatus.type === "success" ? "#15803d" : "#dc2626",
-                border: `1px solid ${loginStatus.type === "success" ? "#bbf7d0" : "#fecaca"}`
-              }}
-            >
-              <span style={{ fontSize: "16px" }}>
-                {loginStatus.type === "success" ? "✅" : "❌"}
-              </span>
-              {loginStatus.message}
-            </div>
-          )}
-
-          <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: isMobile ? "14px" : "20px" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <label style={{ fontSize: isMobile ? "13px" : "14px", fontWeight: 600, color: "var(--text-main)" }}>Email Address</label>
-              <input
-                type="email"
-                placeholder="name@example.com"
-                value={email}
-                onChange={(e) => { setEmail(e.target.value); setLoginStatus(null); }}
-                style={{ 
-                  width: "100%", 
-                  boxSizing: "border-box",
-                  padding: isMobile ? "10px" : "12px",
-                  borderColor: loginStatus?.type === "error" ? "#fecaca" : undefined,
-                  transition: "border-color 0.2s"
-                }}
-              />
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <label style={{ fontSize: isMobile ? "13px" : "14px", fontWeight: 600, color: "var(--text-main)" }}>Password</label>
-              <div style={{ position: "relative" }}>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => { setPassword(e.target.value); setLoginStatus(null); }}
-                  style={{ 
-                    width: "100%", 
-                    boxSizing: "border-box",
-                    padding: isMobile ? "10px" : "12px",
-                    paddingRight: "40px",
-                    borderColor: loginStatus?.type === "error" ? "#fecaca" : undefined,
-                    transition: "border-color 0.2s"
-                  }}
-                />
-                <span
-                  role="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  style={{
-                    position: "absolute",
-                    right: "12px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    color: "var(--text-muted)",
-                    padding: "4px",
-                    userSelect: "none"
-                  }}
-                >
-                  {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
-                </span>
-              </div>
-            </div>
-
+          {/* ── Tab Switcher ────────────────────────────────────────────── */}
+          <div style={{
+            display: "flex",
+            gap: "6px",
+            background: "var(--bg-secondary, #f1f5f9)",
+            borderRadius: "12px",
+            padding: "4px",
+            marginBottom: isMobile ? "16px" : "20px",
+          }}>
             <button
-              type="submit"
-              className="btn-primary"
-              disabled={isLoading}
-              style={{
-                padding: isMobile ? "10px" : "12px",
-                fontSize: isMobile ? "14px" : "15px",
-                marginTop: "6px",
-                width: "100%",
-                opacity: isLoading ? 0.7 : 1,
-                cursor: isLoading ? "not-allowed" : "pointer",
-                position: "relative",
-                background: "linear-gradient(135deg, #dfb453 0%, #f1a829 100%)",
-                borderBottom: "4px solid #a67c1e",
-                color: "white",
-                boxShadow: "0 10px 30px rgba(223, 180, 83, 0.25)"
-              }}
+              id="tab-login-user"
+              onClick={() => { setActiveTab("user"); setLoginStatus(null); setJoinStatus(null); setShowJoinForm(false); }}
+              style={tabBtn(activeTab === "user")}
             >
-              {isLoading ? (
-                <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ 
-                    width: "14px", height: "14px", 
-                    border: "2px solid rgba(255,255,255,0.3)", 
-                    borderTopColor: "white", 
-                    borderRadius: "50%", 
-                    display: "inline-block",
-                    animation: "spin 0.6s linear infinite"
-                  }} />
-                  Signing In...
-                </span>
-              ) : "Sign In"}
+              <FaUser size={13} />
+              Login as User
             </button>
-          </form>
-
-          {/* Social Divider */}
-          <div style={{ display: "flex", alignItems: "center", margin: isMobile ? "16px 0" : "20px 0" }}>
-            <div style={{ flex: 1, height: "1px", backgroundColor: "var(--border)" }}></div>
-            <span style={{ padding: "0 10px", color: "var(--text-muted)", fontSize: "12px" }}>or continue with</span>
-            <div style={{ flex: 1, height: "1px", backgroundColor: "var(--border)" }}></div>
+            <button
+              id="tab-login-provider"
+              onClick={() => { setActiveTab("provider"); setLoginStatus(null); setJoinStatus(null); }}
+              style={tabBtn(activeTab === "provider")}
+            >
+              <FaHardHat size={13} />
+              Service Provider
+            </button>
           </div>
 
-          {/* Google Sign-In Button */}
-          <button
-            type="button"
-            onClick={handleGoogleSignIn}
-            className="btn-secondary"
-            style={{
-              padding: isMobile ? "10px" : "12px",
-              fontSize: isMobile ? "14px" : "15px",
-              width: "100%",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              boxShadow: "none"
-            }}
-          >
-            <svg width="18" height="18" viewBox="0 0 18 18" style={{ marginRight: "10px" }}>
-              <path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.7v2.24h2.91c1.7-1.57 2.68-3.88 2.68-6.57z"/>
-              <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.23l-2.91-2.24c-.8.54-1.84.87-3.05.87-2.34 0-4.33-1.58-5.03-3.7H.95v2.3C2.43 15.89 5.5 18 9 18z"/>
-              <path fill="#FBBC05" d="M3.97 10.7c-.18-.54-.28-1.12-.28-1.7s.1-1.16.28-1.7V5H.95C.35 6.2.01 7.57.01 9s.34 2.8 1.04 4l2.92-2.3z"/>
-              <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35L15 2.4C13.46.97 11.41 0 9 0 5.5 0 2.43 2.11.95 5.1l2.97 2.3c.7-2.12 2.69-3.82 5.03-3.82z"/>
-            </svg>
-            Sign In with Google
-          </button>
+          {/* ── Status ──────────────────────────────────────────────────── */}
+          <StatusBanner status={loginStatus} />
 
-          <p style={{ textAlign: "center", marginTop: isMobile ? "16px" : "24px", margin: isMobile ? "16px 0 0 0" : "24px 0 0 0", fontSize: isMobile ? "13px" : "14px", color: "var(--text-muted)" }}>
-            Don't have an account?{" "}
-            <Link to="/signup" style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>
-              Sign up
-            </Link>
-          </p>
+          {/* ════════════════════════════════════════════════════════════
+              TAB A — LOGIN AS USER
+          ════════════════════════════════════════════════════════════ */}
+          {activeTab === "user" && (
+            <>
+              <form onSubmit={handleUserLogin} style={{ display: "flex", flexDirection: "column", gap: isMobile ? "13px" : "18px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                  <label style={{ fontSize: isMobile ? "13px" : "14px", fontWeight: 600, color: "var(--text-main)" }}>Email Address</label>
+                  <input
+                    id="user-email"
+                    type="email"
+                    placeholder="name@example.com"
+                    value={userEmail}
+                    onChange={(e) => { setUserEmail(e.target.value); setLoginStatus(null); }}
+                    style={inputStyle(loginStatus?.type === "error")}
+                  />
+                </div>
 
+                <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                  <label style={{ fontSize: isMobile ? "13px" : "14px", fontWeight: 600, color: "var(--text-main)" }}>Password</label>
+                  <div style={{ position: "relative" }}>
+                    <input
+                      id="user-password"
+                      type={showUserPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={userPassword}
+                      onChange={(e) => { setUserPassword(e.target.value); setLoginStatus(null); }}
+                      style={{ ...inputStyle(loginStatus?.type === "error"), paddingRight: "40px" }}
+                    />
+                    <span
+                      role="button"
+                      onClick={() => setShowUserPassword(!showUserPassword)}
+                      style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", cursor: "pointer", display: "flex", alignItems: "center", color: "var(--text-muted)", padding: "4px", userSelect: "none" }}
+                    >
+                      {showUserPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                    </span>
+                  </div>
+                </div>
 
+                <button
+                  id="user-login-btn"
+                  type="submit"
+                  className="btn-primary"
+                  disabled={isLoading}
+                  style={{
+                    padding: isMobile ? "10px" : "12px",
+                    fontSize: isMobile ? "14px" : "15px",
+                    marginTop: "4px",
+                    width: "100%",
+                    opacity: isLoading ? 0.7 : 1,
+                    cursor: isLoading ? "not-allowed" : "pointer",
+                    background: "linear-gradient(135deg, #dfb453 0%, #f1a829 100%)",
+                    borderBottom: "4px solid #a67c1e",
+                    color: "white",
+                    boxShadow: "0 10px 30px rgba(223,180,83,0.25)",
+                  }}
+                >
+                  {isLoading ? <Spinner /> : "Sign In as User"}
+                </button>
+              </form>
+
+              {/* Divider + Google */}
+              <div style={{ display: "flex", alignItems: "center", margin: isMobile ? "14px 0" : "18px 0" }}>
+                <div style={{ flex: 1, height: "1px", backgroundColor: "var(--border)" }} />
+                <span style={{ padding: "0 10px", color: "var(--text-muted)", fontSize: "12px" }}>or continue with</span>
+                <div style={{ flex: 1, height: "1px", backgroundColor: "var(--border)" }} />
+              </div>
+              <button
+                id="user-google-btn"
+                type="button"
+                onClick={() => handleGoogleSignIn("user_login")}
+                className="btn-secondary"
+                style={{ padding: isMobile ? "10px" : "12px", fontSize: isMobile ? "14px" : "15px", width: "100%", display: "flex", justifyContent: "center", alignItems: "center", boxShadow: "none" }}
+              >
+                <svg width="18" height="18" viewBox="0 0 18 18" style={{ marginRight: "10px" }}>
+                  <path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.7v2.24h2.91c1.7-1.57 2.68-3.88 2.68-6.57z" />
+                  <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.23l-2.91-2.24c-.8.54-1.84.87-3.05.87-2.34 0-4.33-1.58-5.03-3.7H.95v2.3C2.43 15.89 5.5 18 9 18z" />
+                  <path fill="#FBBC05" d="M3.97 10.7c-.18-.54-.28-1.12-.28-1.7s.1-1.16.28-1.7V5H.95C.35 6.2.01 7.57.01 9s.34 2.8 1.04 4l2.92-2.3z" />
+                  <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35L15 2.4C13.46.97 11.41 0 9 0 5.5 0 2.43 2.11.95 5.1l2.97 2.3c.7-2.12 2.69-3.82 5.03-3.82z" />
+                </svg>
+                Sign In with Google
+              </button>
+
+              <p style={{ textAlign: "center", marginTop: isMobile ? "14px" : "20px", fontSize: isMobile ? "13px" : "14px", color: "var(--text-muted)" }}>
+                Don't have an account?{" "}
+                <Link to="/signup" style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>Sign up</Link>
+              </p>
+            </>
+          )}
+
+          {/* ════════════════════════════════════════════════════════════
+              TAB B — SERVICE PROVIDER
+          ════════════════════════════════════════════════════════════ */}
+          {activeTab === "provider" && (
+            <>
+              {/* Provider login: separate provider email/password */}
+              <form onSubmit={handleProviderLogin} style={{ display: "flex", flexDirection: "column", gap: isMobile ? "13px" : "18px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                  <label style={{ fontSize: isMobile ? "13px" : "14px", fontWeight: 600, color: "var(--text-main)" }}>Provider Email</label>
+                  <input
+                    id="provider-email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={providerEmail}
+                    onChange={(e) => { setProviderEmail(e.target.value); setLoginStatus(null); }}
+                    style={inputStyle(loginStatus?.type === "error")}
+                  />
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                  <label style={{ fontSize: isMobile ? "13px" : "14px", fontWeight: 600, color: "var(--text-main)" }}>Password</label>
+                  <div style={{ position: "relative" }}>
+                    <input
+                      id="provider-password"
+                      type={showProviderPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={providerPassword}
+                      onChange={(e) => { setProviderPassword(e.target.value); setLoginStatus(null); }}
+                      style={{ ...inputStyle(loginStatus?.type === "error"), paddingRight: "40px" }}
+                    />
+                    <span role="button" onClick={() => setShowProviderPassword(!showProviderPassword)} style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", cursor: "pointer", display: "flex", alignItems: "center", color: "var(--text-muted)", padding: "4px", userSelect: "none" }}>
+                      {showProviderPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  id="provider-login-btn"
+                  type="submit"
+                  disabled={isLoading}
+                  style={{
+                    padding: isMobile ? "10px" : "12px",
+                    fontSize: isMobile ? "14px" : "15px",
+                    width: "100%",
+                    border: "none",
+                    borderRadius: "10px",
+                    fontWeight: 700,
+                    cursor: isLoading ? "not-allowed" : "pointer",
+                    opacity: isLoading ? 0.7 : 1,
+                    background: "linear-gradient(135deg, #1e3a5f 0%, #2d5a9e 100%)",
+                    color: "white",
+                    boxShadow: "0 8px 24px rgba(30,58,95,0.28)",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {isLoading ? <Spinner /> : "🛠️ Sign In as Provider"}
+                </button>
+              </form>
+
+              {/* Google Sign-In for Provider */}
+              <div style={{ display: "flex", alignItems: "center", margin: isMobile ? "14px 0 10px" : "18px 0 12px" }}>
+                <div style={{ flex: 1, height: "1px", backgroundColor: "var(--border)" }} />
+                <span style={{ padding: "0 10px", color: "var(--text-muted)", fontSize: "12px" }}>or sign in with</span>
+                <div style={{ flex: 1, height: "1px", backgroundColor: "var(--border)" }} />
+              </div>
+              <button
+                id="provider-google-btn"
+                type="button"
+                onClick={() => handleGoogleSignIn("provider_login")}
+                className="btn-secondary"
+                style={{
+                  padding: isMobile ? "10px" : "12px",
+                  fontSize: isMobile ? "14px" : "15px",
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  boxShadow: "none",
+                  marginBottom: isMobile ? "14px" : "18px",
+                  border: "1.5px solid #1e3a5f30",
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 18 18" style={{ marginRight: "10px" }}>
+                  <path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.7v2.24h2.91c1.7-1.57 2.68-3.88 2.68-6.57z" />
+                  <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.23l-2.91-2.24c-.8.54-1.84.87-3.05.87-2.34 0-4.33-1.58-5.03-3.7H.95v2.3C2.43 15.89 5.5 18 9 18z" />
+                  <path fill="#FBBC05" d="M3.97 10.7c-.18-.54-.28-1.12-.28-1.7s.1-1.16.28-1.7V5H.95C.35 6.2.01 7.57.01 9s.34 2.8 1.04 4l2.92-2.3z" />
+                  <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35L15 2.4C13.46.97 11.41 0 9 0 5.5 0 2.43 2.11.95 5.1l2.97 2.3c.7-2.12 2.69-3.82 5.03-3.82z" />
+                </svg>
+                Continue with Google as Provider
+              </button>
+
+              <p style={{ textAlign: "center", marginTop: isMobile ? "14px" : "20px", fontSize: isMobile ? "12px" : "13px", color: "var(--text-muted)" }}>
+                New to Workzy?{" "}
+                <Link to="/signup" state={{ role: "worker" }} style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>Sign up as a provider</Link>
+              </p>
+            </>
+          )}
         </div>
       </div>
 
-      {/* Modern Footer */}
-      <footer
-        style={{
-          textAlign: "center",
-          padding: "24px",
-          color: "var(--text-secondary)",
-          fontSize: "14px",
-          backgroundColor: "var(--bg-card)",
-          borderTop: "1px solid var(--border-color)",
-          fontWeight: 500
+      {/* Login Result Popup Modal */}
+      <LoginResultPopup
+        popup={popupModal}
+        onClose={() => setPopupModal(null)}
+        onSwitchTab={(tab) => {
+          setActiveTab(tab);
+          setLoginStatus(null);
         }}
-      >
+        onOpenJoinForm={() => {
+          setActiveTab("provider");
+          setShowJoinForm(true);
+          setLoginStatus(null);
+        }}
+        navigate={navigate}
+      />
+
+      {/* Footer */}
+      <footer style={{ textAlign: "center", padding: "22px", color: "var(--text-secondary)", fontSize: "13px", backgroundColor: "var(--bg-card)", borderTop: "1px solid var(--border-color)", fontWeight: 500 }}>
         © 2026 Workzy Inc. All rights reserved. Made with ❤️ by PS-152 Team.
       </footer>
 
-      {/* Spinner animation */}
       <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
     </div>
   );

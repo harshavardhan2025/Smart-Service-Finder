@@ -147,35 +147,38 @@ function SearchResults() {
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: "'Outfit', sans-serif" }}>
       <Navbar />
       
+      {/* Main Content Container */}
       <div 
         style={{ 
           flex: 1, 
-          maxWidth: "1200px", 
+          maxWidth: "1100px", 
           width: "100%", 
           margin: "0 auto", 
-          padding: isMobile ? "20px 14px" : "30px 20px",
+          padding: isMobile ? "12px 12px 90px 12px" : "24px 20px 50px 20px",
           display: "flex",
           flexDirection: "column",
-          gap: "20px"
+          gap: isMobile ? "14px" : "18px",
+          boxSizing: "border-box"
         }}
       >
-        {/* Navigation / Header Actions */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
+        {/* Navigation / Header Actions Bar */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px", width: "100%" }}>
           <Link to="/" style={{ textDecoration: "none" }}>
             <button 
               className="btn-secondary" 
               style={{ 
-                display: "flex", 
+                display: "inline-flex", 
                 alignItems: "center", 
-                gap: "8px", 
-                padding: "10px 18px", 
-                borderRadius: "12px", 
-                fontSize: "14px", 
-                fontWeight: "bold",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
+                gap: "6px", 
+                padding: "8px 14px", 
+                borderRadius: "10px", 
+                fontSize: "13px", 
+                fontWeight: 700,
+                boxShadow: "0 2px 6px rgba(0,0,0,0.06)",
+                cursor: "pointer"
               }}
             >
-              <FaArrowLeft /> Back to Home
+              <FaArrowLeft size={12} /> Back to Home
             </button>
           </Link>
           
@@ -184,75 +187,77 @@ function SearchResults() {
               className="btn-primary" 
               onClick={() => setFiltersOpen(!filtersOpen)}
               style={{ 
-                display: "flex", 
+                display: "inline-flex", 
                 alignItems: "center", 
-                gap: "8px", 
-                padding: "10px 18px", 
-                borderRadius: "12px", 
-                fontSize: "14px", 
-                fontWeight: "bold"
+                gap: "6px", 
+                padding: "8px 14px", 
+                borderRadius: "10px", 
+                fontSize: "13px", 
+                fontWeight: 700,
+                cursor: "pointer"
               }}
             >
-              <FaFilter /> {filtersOpen ? "Hide Filters ▲" : "Show Filters ▼"}
+              <FaFilter size={12} /> {filtersOpen ? "Hide Filters ▲" : "Filters ▼"}
             </button>
           )}
         </div>
 
-        <div className="premium-card" style={{ padding: "10px", background: "var(--bg-card)" }}>
-          <LocationSearch
-            value={searchText}
-            onChange={setSearchText}
-            onSearch={(newQuery) => setSearchParams({ q: newQuery })}
-            detectedLocation={localStorage.getItem("userLocation") || ""}
-          />
-        </div>
+        {/* Search & Location Bar */}
+        <LocationSearch
+          value={searchText}
+          onChange={setSearchText}
+          onSearch={(newQuery) => setSearchParams({ q: newQuery })}
+          detectedLocation={localStorage.getItem("userLocation") || ""}
+        />
 
-        <div>
-          <h2 style={{ fontSize: "26px", fontWeight: 800, color: "var(--text-main)", margin: "0 0 6px 0", letterSpacing: "-0.02em" }}>
-            🔍 Search Results for "{query}"
+        {/* Search Title & Count */}
+        <div style={{ padding: "0 4px" }}>
+          <h2 style={{ fontSize: isMobile ? "18px" : "22px", fontWeight: 800, color: "var(--text-main)", margin: "0 0 4px 0", letterSpacing: "-0.2px" }}>
+            🔍 Results for "{query}"
           </h2>
-          <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14.5px", fontWeight: 500 }}>
-            Found {processedWorkers.length} matching verified professionals near your active location.
+          <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: isMobile ? "12.5px" : "14px", fontWeight: 500 }}>
+            Found {processedWorkers.length} verified professional{processedWorkers.length === 1 ? "" : "s"} near your location.
           </p>
         </div>
 
         {/* Layout split: Sidebar Filters + Vertical Cards */}
-        <div style={{ display: "flex", gap: "24px", flexDirection: isMobile ? "column" : "row", alignItems: "flex-start" }}>
+        <div style={{ display: "flex", gap: "18px", flexDirection: isMobile ? "column" : "row", alignItems: "flex-start", width: "100%" }}>
           
           {/* Filters Sidebar */}
           {(!isMobile || filtersOpen) && (
             <div 
               className="premium-card fade-in" 
               style={{ 
-                flex: isMobile ? "1 1 100%" : "0 0 280px", 
-                width: "100%",
-                padding: "24px", 
+                flex: isMobile ? "1 1 100%" : "0 0 250px", 
+                width: isMobile ? "100%" : "250px",
+                padding: "16px 18px", 
                 height: "fit-content",
                 display: "flex",
                 flexDirection: "column",
-                gap: "24px",
+                gap: "16px",
                 background: "var(--bg-card)",
-                boxShadow: "var(--shadow-3d)",
-                border: "1.5px solid var(--border)",
-                borderRadius: "20px",
-                animation: "fadeIn 0.2s ease-out"
+                boxShadow: "var(--card-shadow)",
+                border: "1.5px solid var(--border-color)",
+                borderRadius: "16px",
+                boxSizing: "border-box"
               }}
             >
               <div>
-                <h3 style={{ fontSize: "16px", fontWeight: 800, display: "flex", alignItems: "center", gap: "8px", color: "var(--text-primary)", margin: "0 0 14px 0" }}>
-                  <FaSortAmountDown /> Sort Results
+                <h3 style={{ fontSize: "14px", fontWeight: 800, display: "flex", alignItems: "center", gap: "6px", color: "var(--text-main)", margin: "0 0 10px 0" }}>
+                  <FaSortAmountDown size={13} /> Sort Results
                 </h3>
                 <select 
                   value={sortBy} 
                   onChange={(e) => setSortBy(e.target.value)}
                   style={{ 
                     width: "100%", 
-                    padding: "12px 14px", 
-                    borderRadius: "12px",
-                    border: "1.5px solid var(--border)",
-                    backgroundColor: "rgba(255,255,255,0.05)",
+                    padding: "10px 12px", 
+                    borderRadius: "10px",
+                    border: "1.5px solid var(--border-color)",
+                    backgroundColor: "var(--bg-card-hover)",
                     color: "var(--text-main)",
                     fontWeight: 600,
+                    fontSize: "13px",
                     outline: "none"
                   }}
                 >
@@ -262,22 +267,22 @@ function SearchResults() {
                 </select>
               </div>
 
-              <div style={{ borderTop: "1px solid var(--border)", paddingTop: "20px" }}>
-                <h3 style={{ fontSize: "16px", fontWeight: 800, display: "flex", alignItems: "center", gap: "8px", color: "var(--text-primary)", margin: "0 0 14px 0" }}>
-                  <FaFilter /> Star Rating
+              <div style={{ borderTop: "1px solid var(--border-color)", paddingTop: "14px" }}>
+                <h3 style={{ fontSize: "14px", fontWeight: 800, display: "flex", alignItems: "center", gap: "6px", color: "var(--text-main)", margin: "0 0 10px 0" }}>
+                  <FaFilter size={13} /> Star Rating
                 </h3>
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   {[0, 3, 4, 4.5].map((ratingVal) => (
                     <label 
                       key={ratingVal} 
                       style={{ 
                         display: "flex", 
                         alignItems: "center", 
-                        gap: "10px", 
+                        gap: "8px", 
                         cursor: "pointer", 
-                        fontSize: "14px",
+                        fontSize: "13px",
                         fontWeight: 600,
-                        color: minRating === ratingVal ? "var(--text-primary)" : "var(--text-secondary)"
+                        color: minRating === ratingVal ? "var(--text-main)" : "var(--text-secondary)"
                       }}
                     >
                       <input 
@@ -285,7 +290,7 @@ function SearchResults() {
                         name="ratingFilter" 
                         checked={minRating === ratingVal} 
                         onChange={() => setMinRating(ratingVal)}
-                        style={{ width: "16px", height: "16px", cursor: "pointer" }}
+                        style={{ width: "15px", height: "15px", cursor: "pointer" }}
                       />
                       {ratingVal === 0 ? "All Ratings" : `${ratingVal} ★ & above`}
                     </label>
@@ -296,18 +301,18 @@ function SearchResults() {
           )}
 
           {/* Results Listings */}
-          <div style={{ flex: 1, width: "100%", display: "flex", flexDirection: "column", gap: "18px" }}>
+          <div style={{ flex: 1, width: "100%", display: "flex", flexDirection: "column", gap: "12px", minWidth: 0 }}>
             {loading ? (
-              <div className="premium-card" style={{ padding: "50px", textAlign: "center" }}>
-                <p style={{ fontStyle: "italic", color: "var(--text-secondary)", fontSize: "15px", fontWeight: 500 }}>
+              <div className="premium-card" style={{ padding: "40px 20px", textAlign: "center", borderRadius: "16px", border: "1.5px solid var(--border-color)" }}>
+                <p style={{ fontStyle: "italic", color: "var(--text-secondary)", fontSize: "14px", fontWeight: 500, margin: 0 }}>
                   Scanning nearby databases for matching experts...
                 </p>
               </div>
             ) : processedWorkers.length === 0 ? (
-              <div className="premium-card" style={{ padding: "50px", textAlign: "center" }}>
-                <span style={{ fontSize: "48px", display: "block", marginBottom: "12px" }}>🔍</span>
-                <h3 style={{ margin: "0 0 8px 0", color: "var(--text-primary)", fontSize: "18px", fontWeight: 800 }}>No professionals found</h3>
-                <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "14.5px" }}>Try using alternate search keywords or resetting filters.</p>
+              <div className="premium-card" style={{ padding: "40px 20px", textAlign: "center", borderRadius: "16px", border: "1.5px solid var(--border-color)" }}>
+                <span style={{ fontSize: "40px", display: "block", marginBottom: "8px" }}>🔍</span>
+                <h3 style={{ margin: "0 0 6px 0", color: "var(--text-main)", fontSize: "17px", fontWeight: 800 }}>No professionals found</h3>
+                <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "13.5px" }}>Try using alternate search keywords or resetting filters.</p>
               </div>
             ) : (
               processedWorkers.map((worker) => (
@@ -316,15 +321,15 @@ function SearchResults() {
                   className="premium-card search-result-row-card"
                   style={{
                     display: "flex",
-                    flexDirection: isMobile ? "column" : "row",
-                    padding: isMobile ? "12px 14px" : "14px 18px",
-                    gap: "14px",
-                    alignItems: isMobile ? "stretch" : "center",
-                    transition: "transform 0.25s ease, box-shadow 0.25s ease",
+                    flexDirection: "column",
+                    padding: isMobile ? "14px" : "16px 20px",
+                    gap: "10px",
                     background: "var(--bg-card)",
-                    border: "1.5px solid var(--border)",
-                    boxShadow: "var(--shadow-3d)",
-                    borderRadius: "16px"
+                    border: "1.5px solid var(--border-color)",
+                    boxShadow: "var(--card-shadow)",
+                    borderRadius: "16px",
+                    boxSizing: "border-box",
+                    transition: "transform 0.2s ease, box-shadow 0.2s ease",
                   }}
                   onMouseEnter={(e) => {
                     if (!isMobile) {
@@ -335,62 +340,66 @@ function SearchResults() {
                   onMouseLeave={(e) => {
                     if (!isMobile) {
                       e.currentTarget.style.transform = "none";
-                      e.currentTarget.style.boxShadow = "var(--shadow-3d)";
+                      e.currentTarget.style.boxShadow = "var(--card-shadow)";
                     }
                   }}
                 >
-                  {/* Left Side: Compact Avatar */}
-                  <div 
-                    style={{ 
-                      width: "60px", 
-                      height: "60px", 
-                      borderRadius: "12px", 
-                      background: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "24px",
-                      color: "white",
-                      flexShrink: 0,
-                      boxShadow: "0 4px 10px rgba(0, 0, 0, 0.08)"
-                    }}
-                  >
-                    {worker.service && worker.service.toLowerCase().includes("doc") ? "🩺" : 
-                     worker.service && worker.service.toLowerCase().includes("plumb") ? "🔧" : 
-                     worker.service && worker.service.toLowerCase().includes("paint") ? "🎨" : "👷"}
-                  </div>
+                  {/* Top Row: Avatar + Name + Category + Rating */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px", width: "100%" }}>
+                    {/* Avatar */}
+                    <div 
+                      style={{ 
+                        width: isMobile ? "46px" : "54px", 
+                        height: isMobile ? "46px" : "54px", 
+                        borderRadius: "12px", 
+                        background: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: isMobile ? "22px" : "26px",
+                        color: "white",
+                        flexShrink: 0,
+                        boxShadow: "0 3px 8px rgba(0, 0, 0, 0.08)"
+                      }}
+                    >
+                      {worker.service && worker.service.toLowerCase().includes("doc") ? "🩺" : 
+                       worker.service && worker.service.toLowerCase().includes("plumb") ? "🔧" : 
+                       worker.service && worker.service.toLowerCase().includes("paint") ? "🎨" : 
+                       worker.service && worker.service.toLowerCase().includes("car") ? "🚗" : 
+                       worker.service && worker.service.toLowerCase().includes("electr") ? "⚡" : "👷"}
+                    </div>
 
-                  {/* Middle Side: Worker Details */}
-                  <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                    <div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginBottom: "2px" }}>
-                        <h3 style={{ fontSize: "16px", fontWeight: 800, margin: 0, color: "var(--text-primary)" }}>
+                    {/* Middle: Name & Badges */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginBottom: "3px" }}>
+                        <h3 style={{ fontSize: isMobile ? "15px" : "16.5px", fontWeight: 800, margin: 0, color: "var(--text-main)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                           {worker.name}
                         </h3>
                         <span 
                           style={{ 
                             backgroundColor: "var(--primary-light)", 
                             color: "var(--primary-dark)", 
-                            padding: "2px 8px", 
+                            padding: "2px 7px", 
                             borderRadius: "6px", 
                             fontSize: "11px", 
-                            fontWeight: "bold",
-                            border: "1px solid var(--border)"
+                            fontWeight: 700,
+                            border: "1px solid var(--border-color)",
+                            whiteSpace: "nowrap"
                           }}
                         >
                           {worker.service}
                         </span>
                       </div>
-                      
-                      <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", margin: "4px 0" }}>
-                        <span style={{ display: "flex", alignItems: "center", gap: "4px", color: "var(--warning)", fontWeight: "bold", fontSize: "13px" }}>
-                          <FaStar /> {worker.rating}
+
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "3px", color: "var(--warning)", fontWeight: 800, fontSize: "12.5px" }}>
+                          <FaStar size={12} /> {worker.rating || "5.0"}
                         </span>
-                        <span style={{ display: "flex", alignItems: "center", gap: "4px", color: "var(--text-secondary)", fontSize: "12.5px", fontWeight: 600 }}>
-                          <FaMapMarkerAlt /> {worker.city}
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "3px", color: "var(--text-secondary)", fontSize: "12px", fontWeight: 600 }}>
+                          <FaMapMarkerAlt size={11} /> {worker.city}
                         </span>
                         {worker.distanceKm !== undefined && (
-                          <span style={{ backgroundColor: "var(--info-light)", color: "var(--text-main)", border: "1px solid var(--border-color)", padding: "1px 6px", borderRadius: "8px", fontSize: "11px", fontWeight: 700 }}>
+                          <span style={{ backgroundColor: "rgba(49, 82, 91, 0.08)", color: "var(--text-main)", padding: "1px 7px", borderRadius: "10px", fontSize: "10.5px", fontWeight: 700 }}>
                             {worker.distanceKm < 0.5 ? "Under 0.5 km away" : `${worker.distanceKm} km away`}
                           </span>
                         )}
@@ -398,43 +407,38 @@ function SearchResults() {
                     </div>
                   </div>
 
-                  {/* Right Side: Price & Action */}
-                  <div 
-                    style={{ 
-                      width: isMobile ? "100%" : "180px", 
-                      display: "flex", 
-                      flexDirection: isMobile ? "row" : "column", 
-                      justifyContent: isMobile ? "space-between" : "center", 
-                      alignItems: isMobile ? "center" : "flex-end",
-                      borderLeft: isMobile ? "none" : "1px solid var(--border)",
-                      paddingLeft: isMobile ? "0" : "18px",
-                      paddingTop: isMobile ? "10px" : "0",
-                      borderTop: isMobile ? "1px solid var(--border)" : "none",
-                      gap: "10px"
-                    }}
-                  >
-                    <div style={{ textAlign: isMobile ? "left" : "right" }}>
+                  {/* Clean Divider */}
+                  <div style={{ height: "1px", backgroundColor: "var(--border-color)", opacity: 0.6, margin: "2px 0" }} />
+
+                  {/* Bottom Row: Standard Rate on Left, Book Button on Right */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                    <div>
                       <span style={{ fontSize: "10.5px", color: "var(--text-secondary)", display: "block", fontWeight: 600 }}>Standard Rate</span>
-                      <span className="price-badge" style={{ margin: "4px 0 0 0", fontSize: "13.5px" }}>₹{worker.price || 349}</span>
+                      <span style={{ fontSize: "16px", fontWeight: 800, color: "var(--text-main)", letterSpacing: "-0.2px" }}>
+                        ₹{worker.price || 349}
+                      </span>
                     </div>
 
                     <Link 
                       to="/worker" 
                       onClick={() => localStorage.setItem("selected_worker", JSON.stringify(worker))}
-                      style={{ textDecoration: "none", width: isMobile ? "auto" : "100%" }}
+                      style={{ textDecoration: "none" }}
                     >
                       <button 
                         className="btn-primary" 
                         style={{ 
-                          width: "100%", 
-                          padding: "8px 14px", 
-                          borderRadius: "8px", 
-                          fontSize: "12px", 
-                          fontWeight: "bold",
-                          boxShadow: "0 4px 12px rgba(49, 82, 91, 0.12)"
+                          padding: "8px 18px", 
+                          borderRadius: "10px", 
+                          fontSize: "13px", 
+                          fontWeight: 800,
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          boxShadow: "0 3px 10px rgba(49, 82, 91, 0.15)"
                         }}
                       >
-                        Book
+                        Book Now ➔
                       </button>
                     </Link>
                   </div>
