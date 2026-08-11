@@ -431,16 +431,20 @@ function AISmartSearchHub({
               flex-wrap: nowrap !important;
             }
             .search-input-wrapper input {
-              padding: 8px 34px 8px 10px !important;
+              padding: 8px 40px 8px 10px !important;
               font-size: 12px !important;
               border-radius: 10px !important;
               height: 38px !important;
             }
             .search-voice-mic-btn {
-              width: 26px !important;
-              height: 26px !important;
-              font-size: 12px !important;
+              width: 28px !important;
+              height: 28px !important;
               right: 6px !important;
+            }
+            .search-voice-mic-btn svg {
+              width: 13px !important;
+              height: 13px !important;
+              display: block !important;
             }
             #service-search-btn {
               padding: 8px 14px !important;
@@ -739,11 +743,11 @@ function SearchInput({
           type="button"
           className="search-voice-mic-btn"
           onClick={onVoiceClick}
-          aria-label={isListening ? "Stop voice search" : "Start voice search"}
-          title={isListening ? "Stop voice search" : "Start voice search"}
+          aria-label={isListening ? "Stop voice search" : "Start voice search with Zy AI"}
+          title={isListening ? "Listening... Click to stop" : "Voice Search with Zy AI 🎙️"}
           style={{
             position: "absolute",
-            right: "10px",
+            right: "8px",
             top: "50%",
             transform: "translateY(-50%)",
             cursor: "pointer",
@@ -752,17 +756,21 @@ function SearchInput({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: isListening ? "#ef4444" : "var(--text-secondary)",
-            fontSize: "16px",
+            color: isListening ? "#ffffff" : "#10b981",
+            fontSize: "15px",
             zIndex: 10,
-            padding: "6px",
+            padding: 0,
             borderRadius: "50%",
-            border: "none",
-            backgroundColor: isListening ? "rgba(239, 68, 68, 0.1)" : "transparent",
+            border: isListening ? "2px solid #ef4444" : "1.5px solid rgba(16, 185, 129, 0.4)",
+            backgroundColor: isListening ? "#ef4444" : "rgba(16, 185, 129, 0.12)",
+            boxShadow: isListening
+              ? "0 0 14px rgba(239, 68, 68, 0.6)"
+              : "0 2px 6px rgba(16, 185, 129, 0.15)",
             animation: isListening ? "pulse-mic 1.2s infinite ease-in-out" : "none",
+            transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
           }}
         >
-          <FaMicrophone />
+          <FaMicrophone style={{ width: "15px", height: "15px", display: "block" }} />
         </button>
 
         {focused && suggestions.length > 0 && (
