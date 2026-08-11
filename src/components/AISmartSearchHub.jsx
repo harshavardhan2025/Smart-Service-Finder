@@ -403,34 +403,122 @@ function AISmartSearchHub({
             50% { transform: translateY(-50%) scale(1.25); box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
             100% { transform: translateY(-50%) scale(1); }
           }
-          @keyframes quickChipsScroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-          }
-          .quick-chips-track:hover,
-          .quick-chips-track.is-paused {
-            animation-play-state: paused !important;
-          }
           @media (max-width: 768px) {
+            .service-search-container {
+              padding: 10px 10px !important;
+              margin: 4px 6px 8px 6px !important;
+              border-radius: 14px !important;
+              gap: 8px !important;
+            }
+            .search-header-container {
+              margin-bottom: 2px !important;
+              gap: 6px !important;
+            }
+            .search-header-status-pill {
+              padding: 2px 6px !important;
+              font-size: 10px !important;
+            }
+            .search-header-status-text {
+              font-size: 11px !important;
+            }
+            .search-header-loc-btn {
+              padding: 3px 8px !important;
+              font-size: 11px !important;
+              border-radius: 12px !important;
+            }
+            .search-input-wrapper {
+              gap: 6px !important;
+              flex-wrap: nowrap !important;
+            }
+            .search-input-wrapper input {
+              padding: 8px 34px 8px 10px !important;
+              font-size: 12px !important;
+              border-radius: 10px !important;
+              height: 38px !important;
+            }
+            .search-voice-mic-btn {
+              width: 26px !important;
+              height: 26px !important;
+              font-size: 12px !important;
+              right: 6px !important;
+            }
+            #service-search-btn {
+              padding: 8px 14px !important;
+              font-size: 12px !important;
+              border-radius: 10px !important;
+              height: 38px !important;
+              border-bottom: 2px solid var(--primary-dark) !important;
+            }
+            .quick-find-badge {
+              padding: 2px 5px !important;
+              font-size: 10px !important;
+              border-radius: 6px !important;
+            }
+            .quick-chips-horizontal-track button {
+              padding: 3px 8px !important;
+              font-size: 10.5px !important;
+              border-radius: 12px !important;
+            }
+            .ai-banner-card {
+              padding: 8px 10px !important;
+              border-radius: 12px !important;
+              gap: 6px !important;
+              margin-top: 2px !important;
+            }
+            .ai-banner-robot-icon {
+              width: 24px !important;
+              height: 24px !important;
+              font-size: 12px !important;
+              border-radius: 6px !important;
+            }
+            .ai-banner-title {
+              font-size: 11.5px !important;
+            }
+            .ai-banner-msg {
+              font-size: 11px !important;
+              line-height: 1.3 !important;
+              margin-top: 1px !important;
+            }
+            .ai-banner-top-picks-title {
+              font-size: 10px !important;
+            }
             .zy-hub-grid {
               display: grid !important;
               grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-              gap: 10px !important;
+              gap: 5px !important;
+              margin-top: 3px !important;
             }
             .zy-hub-grid > a {
               min-width: 0 !important;
             }
-          }
-          @media (max-width: 600px) {
-            .service-search-container {
-              padding: 14px 12px !important;
-              margin: 8px 8px 14px 8px !important;
-              border-radius: 18px !important;
-              gap: 12px !important;
+            .zy-hub-grid-item {
+              padding: 5px 7px !important;
+              border-radius: 8px !important;
             }
-            .search-input-wrapper input {
-              padding: 12px 42px 12px 14px !important;
-              font-size: 14px !important;
+            .zy-hub-grid-name {
+              font-size: 11.5px !important;
+            }
+            .zy-hub-grid-role {
+              font-size: 10px !important;
+            }
+            .zy-hub-grid-rating {
+              font-size: 10px !important;
+            }
+            .ai-banner-bonuses {
+              padding-top: 6px !important;
+              margin-top: 2px !important;
+              gap: 6px !important;
+            }
+            .ai-banner-bonus-title {
+              font-size: 11px !important;
+            }
+            .ai-banner-bonus-desc {
+              font-size: 10px !important;
+            }
+            .ai-banner-offers-btn {
+              padding: 4px 10px !important;
+              font-size: 10.5px !important;
+              border-radius: 6px !important;
             }
           }
         `}
@@ -495,6 +583,7 @@ function AISmartSearchHub({
 function SearchHeader({ detectedLocation, onShowMap }) {
   return (
     <div
+      className="search-header-container"
       style={{
         display: "flex",
         alignItems: "center",
@@ -504,6 +593,7 @@ function SearchHeader({ detectedLocation, onShowMap }) {
       }}
     >
       <div
+        className="search-header-status"
         style={{
           display: "flex",
           alignItems: "center",
@@ -512,6 +602,7 @@ function SearchHeader({ detectedLocation, onShowMap }) {
         }}
       >
         <div
+          className="search-header-status-pill"
           style={{
             display: "flex",
             alignItems: "center",
@@ -545,6 +636,7 @@ function SearchHeader({ detectedLocation, onShowMap }) {
           </span>
         </div>
         <span
+          className="search-header-status-text"
           style={{
             fontSize: "13px",
             color: "var(--text-secondary)",
@@ -557,6 +649,7 @@ function SearchHeader({ detectedLocation, onShowMap }) {
 
       <button
         type="button"
+        className="search-header-loc-btn"
         onClick={onShowMap}
         aria-label="Select service location"
         style={{
@@ -614,7 +707,7 @@ function SearchInput({
         position: "relative",
       }}
     >
-      <div style={{ position: "relative", flex: 1, minWidth: "220px" }}>
+      <div style={{ position: "relative", flex: 1, minWidth: "160px" }}>
         <input
           id="service-search-input"
           type="text"
@@ -644,6 +737,7 @@ function SearchInput({
 
         <button
           type="button"
+          className="search-voice-mic-btn"
           onClick={onVoiceClick}
           aria-label={isListening ? "Stop voice search" : "Start voice search"}
           title={isListening ? "Stop voice search" : "Start voice search"}
@@ -833,6 +927,7 @@ function QuickSearchChips({ value, onChipClick }) {
       }}
     >
       <span
+        className="quick-find-badge"
         style={{
           fontSize: "12px",
           color: "var(--text-secondary)",
@@ -954,8 +1049,9 @@ function AIRecommendationCard({
         event.currentTarget.style.boxShadow = "0 12px 30px -10px rgba(0, 0, 0, 0.35), 0 0 15px rgba(16, 185, 129, 0.15)";
       }}
     >
-      <div style={{ display: "flex", gap: "12px" }}>
+      <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
         <div
+          className="ai-banner-robot-icon"
           style={{
             width: "36px",
             height: "36px",
@@ -973,16 +1069,19 @@ function AIRecommendationCard({
         </div>
         <div style={{ flex: 1 }}>
           <span
+            className="ai-banner-title"
             style={{
               fontSize: "13.5px",
               fontWeight: 800,
               color: "#34d399",
               letterSpacing: "0.5px",
+              display: "block",
             }}
           >
             Zy AI Assistant
           </span>
           <div
+            className="ai-banner-msg"
             style={{
               fontSize: "14px",
               color: "rgba(241, 245, 249, 0.95)",
@@ -1035,11 +1134,13 @@ function SuggestedWorkers({ isAiLoading, aiSuggestedWorkers, aiBannerExpertsTitl
   return (
     <div style={{ marginTop: "6px" }}>
       <strong
+        className="ai-banner-top-picks-title"
         style={{
           fontSize: "12.5px",
           color: "#94a3b8",
           letterSpacing: "0.3px",
           textTransform: "uppercase",
+          display: "block",
         }}
       >
         {aiBannerExpertsTitle || "🔍 Top Picks Near You:"}
@@ -1063,6 +1164,7 @@ function SuggestedWorkers({ isAiLoading, aiSuggestedWorkers, aiBannerExpertsTitl
             style={{ textDecoration: "none" }}
           >
             <div
+              className="zy-hub-grid-item"
               style={{
                 backgroundColor: "rgba(255, 255, 255, 0.07)",
                 backdropFilter: "blur(12px)",
@@ -1085,9 +1187,9 @@ function SuggestedWorkers({ isAiLoading, aiSuggestedWorkers, aiBannerExpertsTitl
                 event.currentTarget.style.transform = "none";
               }}
             >
-              <span style={{ fontWeight: 800, fontSize: "13.5px", color: "#ffffff" }}>{worker.name}</span>
-              <span style={{ fontSize: "11.5px", color: "#94a3b8", fontWeight: 500 }}>{worker.service}</span>
-              <span style={{ fontSize: "11.5px", color: "#fbbf24", fontWeight: 800, display: "flex", alignItems: "center", gap: "3px", marginTop: "1px" }}>⭐ {worker.rating}</span>
+              <span className="zy-hub-grid-name" style={{ fontWeight: 800, fontSize: "13.5px", color: "#ffffff" }}>{worker.name}</span>
+              <span className="zy-hub-grid-role" style={{ fontSize: "11.5px", color: "#94a3b8", fontWeight: 500 }}>{worker.service}</span>
+              <span className="zy-hub-grid-rating" style={{ fontSize: "11.5px", color: "#fbbf24", fontWeight: 800, display: "flex", alignItems: "center", gap: "3px", marginTop: "1px" }}>⭐ {worker.rating}</span>
             </div>
           </Link>
         ))}
@@ -1107,6 +1209,7 @@ function LocationBonuses({
   }
   return (
     <div
+      className="ai-banner-bonuses"
       style={{
         marginTop: "4px",
         paddingTop: "12px",
@@ -1120,6 +1223,7 @@ function LocationBonuses({
     >
       <div style={{ display: "flex", flexDirection: "column" }}>
         <strong
+          className="ai-banner-bonus-title"
           style={{
             fontSize: "12.5px",
             color: "#ffffff",
@@ -1131,6 +1235,7 @@ function LocationBonuses({
           🎁 Location Bonuses Unlocked!
         </strong>
         <span
+          className="ai-banner-bonus-desc"
           style={{
             fontSize: "11.5px",
             color: "rgba(203, 213, 225, 0.85)",
@@ -1155,10 +1260,9 @@ function LocationBonuses({
             </>
           )}
         </span>
-      </div>
-
       <Link
         to="/plans-offers"
+        className="ai-banner-offers-btn"
         onClick={(event) => event.stopPropagation()}
         style={{
           display: "inline-flex",
@@ -1181,7 +1285,7 @@ function LocationBonuses({
           event.currentTarget.style.transform = "none";
         }}
       >
-        View Plans & Offers →
+        View Plans & Offers &rarr;
       </Link>
     </div>
   );
