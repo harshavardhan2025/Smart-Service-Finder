@@ -1260,6 +1260,8 @@ function LocationBonuses({
             </>
           )}
         </span>
+      </div>
+
       <Link
         to="/plans-offers"
         className="ai-banner-offers-btn"
