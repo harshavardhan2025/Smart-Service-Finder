@@ -13,16 +13,11 @@ const SERVICE_SUGGESTIONS = [
   "Doctor",
   "AC Repair",
   "House Cleaning",
-  "Pest Control",
-  "Gardener",
-  "Security Guard",
   "CCTV Installation",
+  "Washing Machine Repair",
+  "Geyser Repair",
   "Appliance Repair",
-  "Tutor",
-  "Cook",
-  "Driver",
   "Mechanic",
-  "Yoga Trainer",
   "Beauty",
   "Salon",
   "Spa",
@@ -293,7 +288,7 @@ function AISmartSearchHub({
     const filteredWorkers = (onlineWorkers || [])
       .filter((w) => w?.name?.toLowerCase().includes(searchValue))
       .map((w) => w.name);
-    
+
     setSuggestions([...new Set([...filteredServices, ...filteredWorkers])].slice(0, 8));
   };
 
@@ -696,22 +691,30 @@ function QuickSearchChips({ value, onChipClick }) {
     const el = scrollRef.current;
     if (!el) return;
 
-    let animId;
-    const speed = 1.35; // Fast, continuous, readable auto-scrolling
+    const interval = setInterval(() => {
+      if (isPausedRef.current || !el) return;
 
-    const step = () => {
-      if (!isPausedRef.current && el) {
-        el.scrollLeft += speed;
-        // Loop back seamlessly once half the repeated track is scrolled
-        if (el.scrollLeft >= el.scrollWidth / 2) {
-          el.scrollLeft -= el.scrollWidth / 2;
+      const buttons = el.querySelectorAll("button");
+      if (!buttons.length) return;
+
+      // Find the next chip button whose offsetLeft is ahead of current scrollLeft
+      let nextTarget = null;
+      for (let btn of buttons) {
+        if (btn.offsetLeft > el.scrollLeft + 8) {
+          nextTarget = btn.offsetLeft;
+          break;
         }
       }
-      animId = requestAnimationFrame(step);
-    };
 
-    animId = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(animId);
+      // If there's a next chip ahead, smooth scroll to it; otherwise loop back to the start
+      if (nextTarget !== null && nextTarget <= el.scrollWidth - el.clientWidth + 5) {
+        el.scrollTo({ left: nextTarget, behavior: "smooth" });
+      } else {
+        el.scrollTo({ left: 0, behavior: "smooth" });
+      }
+    }, 1500); // Moves one-by-one to the next chip every 1.5 seconds
+
+    return () => clearInterval(interval);
   }, []);
 
   const handlePause = () => {
@@ -719,7 +722,7 @@ function QuickSearchChips({ value, onChipClick }) {
     if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
   };
 
-  const handleResume = (delay = 600) => {
+  const handleResume = (delay = 1800) => {
     if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
     resumeTimerRef.current = setTimeout(() => {
       isPausedRef.current = false;
@@ -755,17 +758,18 @@ function QuickSearchChips({ value, onChipClick }) {
         ref={scrollRef}
         className="quick-chips-horizontal-track"
         onMouseEnter={handlePause}
-        onMouseLeave={() => handleResume(300)}
+        onMouseLeave={() => handleResume(600)}
         onTouchStart={handlePause}
-        onTouchEnd={() => handleResume(800)}
+        onTouchEnd={() => handleResume(1800)}
         onMouseDown={handlePause}
-        onMouseUp={() => handleResume(600)}
+        onMouseUp={() => handleResume(1500)}
         style={{
           display: "flex",
           gap: "8px",
           overflowX: "auto",
           flex: 1,
           padding: "3px 0",
+          scrollBehavior: "smooth",
           scrollbarWidth: "none",
           msOverflowStyle: "none",
           WebkitOverflowScrolling: "touch",
@@ -773,11 +777,11 @@ function QuickSearchChips({ value, onChipClick }) {
           userSelect: "none",
         }}
       >
-        {[...QUICK_CHIPS, ...QUICK_CHIPS, ...QUICK_CHIPS, ...QUICK_CHIPS].map((chip, idx) => {
+        {QUICK_CHIPS.map((chip) => {
           const isSelected = value === chip.query;
           return (
             <button
-              key={`${chip.query}-${idx}`}
+              key={chip.query}
               type="button"
               onClick={() => onChipClick(chip.query)}
               aria-label={`Search for ${chip.query}`}
