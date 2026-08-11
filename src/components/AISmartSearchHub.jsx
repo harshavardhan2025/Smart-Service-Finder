@@ -686,6 +686,7 @@ function QuickSearchChips({ value, onChipClick }) {
   const scrollRef = useRef(null);
   const isPausedRef = useRef(false);
   const resumeTimerRef = useRef(null);
+  const currentIndexRef = useRef(0);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -695,24 +696,20 @@ function QuickSearchChips({ value, onChipClick }) {
       if (isPausedRef.current || !el) return;
 
       const buttons = el.querySelectorAll("button");
-      if (!buttons.length) return;
+      if (!buttons || buttons.length <= 1) return;
 
-      // Find the next chip button whose offsetLeft is ahead of current scrollLeft
-      let nextTarget = null;
-      for (let btn of buttons) {
-        if (btn.offsetLeft > el.scrollLeft + 8) {
-          nextTarget = btn.offsetLeft;
-          break;
+      // Advance sequentially: 0 -> 1 -> 2 -> 3 ... -> end -> 0
+      currentIndexRef.current = (currentIndexRef.current + 1) % buttons.length;
+      const targetBtn = buttons[currentIndexRef.current];
+
+      if (targetBtn) {
+        if (currentIndexRef.current === 0) {
+          el.scrollTo({ left: 0, behavior: "smooth" });
+        } else {
+          el.scrollTo({ left: targetBtn.offsetLeft, behavior: "smooth" });
         }
       }
-
-      // If there's a next chip ahead, smooth scroll to it; otherwise loop back to the start
-      if (nextTarget !== null && nextTarget <= el.scrollWidth - el.clientWidth + 5) {
-        el.scrollTo({ left: nextTarget, behavior: "smooth" });
-      } else {
-        el.scrollTo({ left: 0, behavior: "smooth" });
-      }
-    }, 1500); // Moves one-by-one to the next chip every 1.5 seconds
+    }, 1800); // Normal, clean, readable pace (1.8s per chip)
 
     return () => clearInterval(interval);
   }, []);
@@ -722,9 +719,23 @@ function QuickSearchChips({ value, onChipClick }) {
     if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
   };
 
-  const handleResume = (delay = 1800) => {
+  const handleResume = (delay = 2000) => {
     if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
     resumeTimerRef.current = setTimeout(() => {
+      const el = scrollRef.current;
+      if (el) {
+        const buttons = el.querySelectorAll("button");
+        let closestIdx = 0;
+        let minDiff = Infinity;
+        buttons.forEach((btn, idx) => {
+          const diff = Math.abs(btn.offsetLeft - el.scrollLeft);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closestIdx = idx;
+          }
+        });
+        currentIndexRef.current = closestIdx;
+      }
       isPausedRef.current = false;
     }, delay);
   };
