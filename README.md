@@ -1,70 +1,73 @@
-# Getting Started with Create React App
+# 🚀 Smart Service Finder
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**Smart Service Finder** is a premium, AI-powered on-demand home service booking platform designed to instantly connect customers with verified local professionals (Plumbers, Electricians, Carpenters, Doctors, Cleaners, and more).
 
-## Available Scripts
+This platform is built with a state-of-the-art aesthetic and dynamic real-time architecture to deliver a seamless, ultra-premium user experience.
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## ✨ Key Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 🧠 AI Smart Search Hub
+- **Natural Language Processing**: Users can search for complex issues (e.g., "My sink is leaking and smells bad") and our integrated AI (`meta/llama-3.1-70b-instruct`) will instantly diagnose the problem and recommend the exact service sub-category required.
+- **Voice Search**: Fully integrated Web Speech API allows hands-free voice searching.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 📍 Hyper-Local Real-Time Tracking
+- **Proximity Matching**: The platform dynamically calculates the distance (`distanceKm`) between the customer and active workers.
+- **Dynamic Response Times**: Automatically estimates arrival times based on live distance brackets (e.g., `< 1 KM = < 15 Mins`).
+- **Geo-Pricing**: Service prices scale dynamically based on the cost of living in the selected city using advanced Geo-Multipliers.
 
-### `npm test`
+### 💳 Premium Plans & Offers
+- **Subscription Tiers**: Users can subscribe to premium plans (Monthly/Yearly) to unlock 100% discounts on base service prices and bypass platform convenience fees.
+- **Dynamic Upselling**: Intelligent banners prompt non-subscribed users to upgrade during checkout when it's financially beneficial for them.
+- **Custom Coupons**: The system supports highly configurable promotional offers with strict constraints (City limits, usage limits per user, expiration dates).
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### 🛡️ Admin Command Center
+- **Live Metrics**: Monitor Total Revenue, Active Workers, and Escrow Payouts in real-time.
+- **SOS Emergency Monitor**: A dedicated dashboard for tracking critical distress signals sent by field workers.
+- **Plan & Offer Management**: Fully functional CRUD interface allowing admins to generate new subscription tiers and marketing coupons on the fly.
+- **Defensive Data Handling**: The dashboard is heavily fortified with defensive rendering mechanisms to prevent crashes from incomplete legacy database records.
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🛠️ Technology Stack
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- **Frontend Core**: React 18
+- **Styling**: Vanilla CSS with modern Glassmorphism, CSS Variables, and dynamic animations.
+- **Backend Core**: Node.js & Express
+- **Database**: MongoDB (Mongoose ORM)
+- **Authentication**: JWT & Google OAuth (Seamless & secure login flows)
+- **AI Integration**: NVIDIA API (LLaMA 3.1)
+- **Mapping**: Leaflet & OpenStreetMap API
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+## 💻 Local Development
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### 1. Start the Backend Server
+```bash
+cd backend
+npm install
+npm start
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### 2. Start the Frontend Application
+Open a new terminal window:
+```bash
+npm install
+npm start
+```
+The application will boot up at `http://localhost:3000`.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+---
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 🚀 Deployment (Vercel)
 
-## Learn More
+This repository is pre-configured for instant deployment on Vercel.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+If you have the Vercel CLI authenticated locally, simply run:
+```bash
+npx vercel --prod
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+*Note: If your local Vercel session expires, run `npx vercel login` first to re-authenticate your machine.*

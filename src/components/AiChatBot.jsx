@@ -694,7 +694,7 @@ function AiChatBot() {
     }
 
     if (matchedTopic === "payment") {
-      return "We support multiple secure payment options including UPI, Credit/Debit Cards, Net Banking, and Cash on Delivery. To see your past transaction receipts, please head over to your 'Profile' section!";
+      return "We support multiple secure payment options including Credit/Debit Cards, UPI, Net Banking, and your internal Secure Wallet. You can top up your wallet in the 'Profile' section for seamless checkout!";
     }
 
     if (matchedTopic === "refund") {

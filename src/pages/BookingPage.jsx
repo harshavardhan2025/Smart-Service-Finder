@@ -11,7 +11,7 @@ function BookingPage() {
   const [date, setDate] = useState(new Date());
   const [selectedSlot, setSelectedSlot] = useState("Instant (10-20 mins)");
   const [isEmergency, setIsEmergency] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("UPI");
+  const [paymentMethod, setPaymentMethod] = useState("Wallet");
   const [walletBal, setWalletBal] = useState(getWalletBalance());
   const [dispatchAddress, setDispatchAddress] = useState("");
   const customPrice = null;
@@ -378,19 +378,26 @@ function BookingPage() {
       
       if (bookErr) throw new Error(bookErr);
 
-      // Fire authoritative Physical cloud transaction record instantly flawlessly!
-      await fetch("/api/transactions", {
-         method: "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({
-            customer: sessionStorage.getItem("userName") || "Verified Client",
-            worker: selectedWorker.name,
-            service: selectedWorker.service,
-            amount: calculatedPrice,
-            status: "Paid",
-            method: paymentMethod
-         })
-      });
+      if (paymentMethod === "Wallet") {
+        const deductRes = await deductFromWallet(calculatedPrice, `Booking: ${selectedWorker.service}`, "Wallet");
+        if (!deductRes.success) {
+           throw new Error(deductRes.error);
+        }
+        setWalletBal(deductRes.balance);
+      } else {
+        await fetch("/api/transactions", {
+           method: "POST",
+           headers: { "Content-Type": "application/json" },
+           body: JSON.stringify({
+              customer: sessionStorage.getItem("userName") || "Verified Client",
+              worker: selectedWorker.name,
+              service: selectedWorker.service,
+              amount: calculatedPrice,
+              status: "Paid",
+              method: paymentMethod
+           })
+        });
+      }
 
       setBookingDetails({
          service: selectedWorker.service,
@@ -628,11 +635,16 @@ function BookingPage() {
                   color: "var(--text-main)",
                   cursor: "pointer"
                 }}>
-                <option value="UPI">📱 Google Pay / UPI</option>
-                <option value="Wallet">💼 Secure Wallet (₹{walletBal})</option>
                 <option value="Card">💳 Credit / Debit Card</option>
-                <option value="Cash">💵 Cash on Delivery</option>
+                <option value="Wallet">💼 Secure Wallet</option>
+                <option value="UPI">📱 Google Pay / UPI</option>
+                <option value="Net Banking">🏦 Net Banking</option>
               </select>
+              {paymentMethod === "Wallet" && (
+                <div style={{ marginTop: 8, fontSize: 13.5, fontWeight: 600, color: walletBal >= calculatedPrice ? "#22c55e" : "#f87171" }}>
+                  Wallet Balance: ₹{walletBal}
+                </div>
+              )}
             </div>
 
             {paymentMethod === "Wallet" && walletBal < calculatedPrice && (
