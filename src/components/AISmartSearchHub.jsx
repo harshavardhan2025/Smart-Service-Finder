@@ -844,7 +844,7 @@ function QuickSearchChips({ value, onChipClick }) {
           background: "rgba(49, 82, 91, 0.08)",
         }}
       >
-        ⚡ Quick Tasks:
+        ⚡ Quick Find:
       </span>
 
       <div
