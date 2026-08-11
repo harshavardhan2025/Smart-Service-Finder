@@ -14,7 +14,8 @@ const planSchema = new mongoose.Schema({
   startDate: { type: String },
   endDate: { type: String },
   cancellationPolicy: { type: String },
-  city: { type: String, default: "" }
+  city: { type: String, default: "" },
+  limitPerUser: { type: Number, default: null } // null means unlimited
 }, { timestamps: true });
 
 const Plan = mongoose.model("Plan", planSchema);

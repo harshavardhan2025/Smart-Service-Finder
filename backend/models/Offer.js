@@ -13,7 +13,8 @@ const offerSchema = new mongoose.Schema({
   city: { type: String, default: "" },
   validServices: { type: String, default: "" },
   minPrice: { type: Number, default: 0 },
-  validPeriods: { type: String, default: "" }
+  validPeriods: { type: String, default: "" },
+  limitPerUser: { type: Number, default: null } // null means unlimited
 }, { timestamps: true });
 
 const Offer = mongoose.model("Offer", offerSchema);

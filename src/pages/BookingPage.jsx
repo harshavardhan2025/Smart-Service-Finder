@@ -28,6 +28,14 @@ function BookingPage() {
   const [failureMessage, setFailureMessage] = useState("");
   const [bookingDetails, setBookingDetails] = useState(null);
 
+  const [userPlans, setUserPlans] = useState(() => {
+    try {
+      const stored = localStorage.getItem("userSubscriptions");
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return [];
+  });
+
   const [busyBookings, setBusyBookings] = useState([]);
 
   useEffect(() => {
@@ -143,6 +151,11 @@ function BookingPage() {
   const basePrice = selectedWorker.price || (selectedWorker.service.includes("Carpentry") ? 399 : selectedWorker.service.includes("Plumbing") ? 299 : selectedWorker.service.includes("Doctors") ? 599 : 349);
   const rawSubTotal = customPrice !== null ? customPrice : (basePrice + distanceFee + (isEmergency ? 150 : 0));
 
+  let planDiscount = 0;
+  if (userPlans.length > 0) {
+    planDiscount = basePrice;
+  }
+
   let discountVal = 0;
   if (appliedOffer) {
     const rawDisc = appliedOffer.discount || "";
@@ -158,7 +171,7 @@ function BookingPage() {
     }
   }
 
-  const calculatedPrice = Math.max(1, rawSubTotal - discountVal);
+  const calculatedPrice = Math.max(0, rawSubTotal - discountVal - planDiscount);
 
   const handleApplyCoupon = (codeToApply) => {
     const code = (codeToApply || couponInput).trim().toUpperCase();
@@ -794,6 +807,50 @@ function BookingPage() {
             )}
           </div>
 
+          {/* 👑 PREMIUM UPSELL BANNER */}
+          {userPlans.length === 0 && (
+            <div 
+              style={{
+                background: "linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.03) 100%)",
+                border: "1.5px solid rgba(16, 185, 129, 0.4)",
+                borderRadius: 20,
+                padding: "20px 26px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: "20px",
+                flexWrap: "wrap",
+                boxShadow: "0 4px 14px rgba(16, 185, 129, 0.1)"
+              }}
+            >
+              <div>
+                <h3 style={{ margin: "0 0 6px 0", color: "#059669", fontSize: 17, fontWeight: 800, display: "flex", alignItems: "center", gap: 8 }}>
+                  👑 Want this worker's visit for FREE?
+                </h3>
+                <p style={{ margin: 0, fontSize: "14px", color: "var(--text-secondary)", fontWeight: 500, lineHeight: 1.4 }}>
+                  Subscribe to a premium service plan today and unlock free service visits with 0% platform fees!
+                </p>
+              </div>
+              <button 
+                onClick={() => navigate("/plans-offers")}
+                style={{
+                  background: "#10b981",
+                  color: "white",
+                  border: "none",
+                  borderRadius: 12,
+                  padding: "10px 18px",
+                  fontSize: 14,
+                  fontWeight: 800,
+                  cursor: "pointer",
+                  boxShadow: "0 4px 10px rgba(16, 185, 129, 0.2)",
+                  whiteSpace: "nowrap"
+                }}
+              >
+                View Plans →
+              </button>
+            </div>
+          )}
+
           {/* SECTION 5: 📊 FINAL ORDER SUMMARY & BOOK BUTTON */}
           <div style={{ 
             background: "var(--bg-card)", 
@@ -836,6 +893,13 @@ function BookingPage() {
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, color: "#16a34a", fontSize: 14, fontWeight: 700 }}>
                   <span>🏷️ Coupon Discount ({appliedOffer.code})</span>
                   <span>- ₹{discountVal}</span>
+                </div>
+              )}
+
+              {userPlans.length > 0 && (
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, color: "#0284c7", fontSize: 14, fontWeight: 700 }}>
+                  <span>👑 Premium Plan Benefit (Free Base Visit)</span>
+                  <span>- ₹{planDiscount}</span>
                 </div>
               )}
 

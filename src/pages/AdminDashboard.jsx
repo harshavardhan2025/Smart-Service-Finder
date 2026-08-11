@@ -135,12 +135,12 @@ function AdminDashboard() {
   const [adminOffers, setAdminOffers] = useState([]);
   // Form states for creating/editing a Plan
   const [editingPlan, setEditingPlan] = useState(null);
-  const [planForm, setPlanForm] = useState({ title: "", price: "", period: "year", features: "", color: "#4f46e5", btnText: "Subscribe Now", workerId: "", terms: "", startDate: "", endDate: "", cancellationPolicy: "", city: "" });
+  const [planForm, setPlanForm] = useState({ title: "", price: "", period: "year", features: "", color: "#4f46e5", btnText: "Subscribe Now", workerId: "", terms: "", startDate: "", endDate: "", cancellationPolicy: "", city: "", limitPerUser: "" });
   const [expandedWorkerRow, setExpandedWorkerRow] = useState(null);
 
   // Form states for creating/editing an Offer
   const [editingOffer, setEditingOffer] = useState(null);
-  const [offerForm, setOfferForm] = useState({ code: "", discount: "", desc: "", expiry: "", terms: "", startDate: "", endDate: "", city: "", validServices: "", minPrice: "" });
+  const [offerForm, setOfferForm] = useState({ code: "", discount: "", desc: "", expiry: "", terms: "", startDate: "", endDate: "", city: "", validServices: "", minPrice: "", limitPerUser: "" });
   // Send money form states
   const [sendMoneyWorkerId, setSendMoneyWorkerId] = useState("");
   const [sendMoneyWorkerAmount, setSendMoneyWorkerAmount] = useState("");
@@ -2206,6 +2206,13 @@ function AdminDashboard() {
                       onChange={(e) => setPlanForm({ ...planForm, city: e.target.value })}
                       style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1" }}
                     />
+                    <input 
+                      type="number" 
+                      placeholder="Limit Per User (e.g. 1)" 
+                      value={planForm.limitPerUser || ""} 
+                      onChange={(e) => setPlanForm({ ...planForm, limitPerUser: e.target.value })}
+                      style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1" }}
+                    />
 
                     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                       <select
@@ -2302,7 +2309,7 @@ function AdminDashboard() {
                                    body: JSON.stringify(payload)
                                 });
                              }
-                             setPlanForm({ title: "", price: "", period: "year", features: "", color: "#4f46e5", btnText: "Subscribe Now", workerId: "", terms: "", startDate: "", endDate: "", cancellationPolicy: "", city: "" });
+                             setPlanForm({ title: "", price: "", period: "year", features: "", color: "#4f46e5", btnText: "Subscribe Now", workerId: "", terms: "", startDate: "", endDate: "", cancellationPolicy: "", city: "", limitPerUser: "" });
                              syncAdminStore();
                           } catch(err) { alert("🛑 Database Sync Error: Failed to modify Plan ledger."); }
                         }}
@@ -2314,7 +2321,7 @@ function AdminDashboard() {
                         <button 
                           onClick={() => {
                             setEditingPlan(null);
-                            setPlanForm({ title: "", price: "", period: "year", features: "", color: "#4f46e5", btnText: "Subscribe Now", workerId: "", terms: "", startDate: "", endDate: "", cancellationPolicy: "", city: "" });
+                            setPlanForm({ title: "", price: "", period: "year", features: "", color: "#4f46e5", btnText: "Subscribe Now", workerId: "", terms: "", startDate: "", endDate: "", cancellationPolicy: "", city: "", limitPerUser: "" });
                           }}
                           style={{ backgroundColor: "#e2e8f0", color: "var(--text-secondary)", border: "none", padding: "12px 20px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}
                         >
@@ -2384,7 +2391,8 @@ function AdminDashboard() {
                                   startDate: p.startDate || "",
                                   endDate: p.endDate || "",
                                   cancellationPolicy: p.cancellationPolicy || "",
-                                  city: p.city || ""
+                                  city: p.city || "",
+                                  limitPerUser: p.limitPerUser || ""
                                 });
                               }}
                               style={{ backgroundColor: "var(--primary)", color: "white", border: "none", padding: "4px 8px", borderRadius: "4px", fontSize: "11px", marginRight: "6px", cursor: "pointer" }}
@@ -2482,6 +2490,13 @@ function AdminDashboard() {
                       placeholder="Target City / Location (e.g. Rajahmundry, Kakinada, or leave blank for All)" 
                       value={offerForm.city || ""} 
                       onChange={(e) => setOfferForm({ ...offerForm, city: e.target.value })}
+                      style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1" }}
+                    />
+                    <input 
+                      type="number" 
+                      placeholder="Usage Limit Per User (e.g. 1)" 
+                      value={offerForm.limitPerUser || ""} 
+                      onChange={(e) => setOfferForm({ ...offerForm, limitPerUser: e.target.value })}
                       style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1" }}
                     />
 
@@ -2628,7 +2643,7 @@ function AdminDashboard() {
                                    body: JSON.stringify(offerForm)
                                 });
                              }
-                             setOfferForm({ code: "", discount: "", desc: "", expiry: "", terms: "", startDate: "", endDate: "", city: "", validServices: "", minPrice: "" });
+                             setOfferForm({ code: "", discount: "", desc: "", expiry: "", terms: "", startDate: "", endDate: "", city: "", validServices: "", minPrice: "", limitPerUser: "" });
                              syncAdminStore();
                           } catch(e) { alert("🛑 Database Offer Sync Error."); }
                         }}
@@ -2640,7 +2655,7 @@ function AdminDashboard() {
                         <button 
                           onClick={() => {
                             setEditingOffer(null);
-                            setOfferForm({ code: "", discount: "", desc: "", expiry: "", terms: "", startDate: "", endDate: "", city: "", validServices: "", minPrice: "" });
+                            setOfferForm({ code: "", discount: "", desc: "", expiry: "", terms: "", startDate: "", endDate: "", city: "", validServices: "", minPrice: "", limitPerUser: "" });
                           }}
                           style={{ backgroundColor: "#e2e8f0", color: "var(--text-secondary)", border: "none", padding: "12px 20px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}
                         >

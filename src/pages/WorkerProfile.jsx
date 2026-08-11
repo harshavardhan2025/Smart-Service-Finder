@@ -13,7 +13,16 @@ function WorkerProfile() {
     price: 599
   };
 
-  const calculatedPrice = worker.price || (worker.service.includes("Carpentry") ? 399 : worker.service.includes("Plumbing") ? 299 : worker.service.includes("Doctors") ? 599 : 349);
+  const calculatedPrice = worker.price || (worker.service?.includes("Carpentry") ? 399 : worker.service?.includes("Plumbing") ? 299 : worker.service?.includes("Doctors") ? 599 : 349);
+
+  // Dynamically calculate estimated response time based on real distance
+  const getResponseTime = (distanceKm) => {
+    if (distanceKm === undefined) return "< 15 Mins (Fast)";
+    if (distanceKm < 1) return "< 15 Mins (Fast)";
+    if (distanceKm < 3) return "< 30 Mins (Standard)";
+    if (distanceKm < 8) return "< 45 Mins (Moderate)";
+    return "< 60 Mins (Extended)";
+  };
 
   const handleInitiateBooking = () => {
     const userId = sessionStorage.getItem("userId");
@@ -175,19 +184,19 @@ function WorkerProfile() {
               <div>
                 <label style={{ fontSize: "12px", fontWeight: 500, color: "var(--text-secondary)" }}>Location & Proximity</label>
                 <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "6px" }}>
-                  <FaMapMarkerAlt size={14} style={{ color: "var(--danger)" }} /> {worker.distance || "1.0 KM"} Away ({worker.city})
+                  <FaMapMarkerAlt size={14} style={{ color: "var(--danger)" }} /> {worker.distanceKm !== undefined ? (worker.distanceKm < 0.5 ? "below 0.5 KM" : `${worker.distanceKm} KM`) : (worker.distance || "1.0 KM")} Away ({worker.city})
                 </p>
               </div>
               <div>
                 <label style={{ fontSize: "12px", fontWeight: 500, color: "var(--text-secondary)" }}>Overall Rating</label>
                 <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "var(--warning)", display: "flex", alignItems: "center", gap: "6px" }}>
-                  <FaStar size={14} style={{ color: "var(--warning)" }} /> {worker.rating} / 5.0
+                  <FaStar size={14} style={{ color: "var(--warning)" }} /> {worker.rating || "4.5"} / 5.0
                 </p>
               </div>
               <div>
                 <label style={{ fontSize: "12px", fontWeight: 500, color: "var(--text-secondary)" }}>Response Time</label>
                 <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "var(--primary)", display: "flex", alignItems: "center", gap: "6px" }}>
-                  <FaBolt size={14} style={{ color: "var(--warning)" }} /> &lt; 15 Mins (Fast)
+                  <FaBolt size={14} style={{ color: "var(--warning)" }} /> {getResponseTime(worker.distanceKm)}
                 </p>
               </div>
             </div>
