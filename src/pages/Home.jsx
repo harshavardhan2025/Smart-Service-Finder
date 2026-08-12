@@ -362,7 +362,6 @@ function Home() {
   /* =======================================================
      UI
   ======================================================= */
-  const [activeTab, setActiveTab] = useState("categories");
   const [aiBannerText, setAiBannerText] = useState("");
   const [aiBannerExpertsTitle, setAiBannerExpertsTitle] = useState("");
   const [aiBannerBonusText, setAiBannerBonusText] = useState("");

@@ -1,4 +1,4 @@
-import React from "react";
+
 
 function SkeletonLoader({ type = "card", count = 1 }) {
   const shimmerAnimation = `

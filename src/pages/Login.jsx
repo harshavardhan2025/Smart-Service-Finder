@@ -210,6 +210,8 @@ function Login() {
 
   // Join-as-provider sub-form state
   const [showJoinForm, setShowJoinForm] = useState(false);
+  const [joinName, setJoinName] = useState("");
+  const [joinPhone, setJoinPhone] = useState("");
   const [joinEmail, setJoinEmail] = useState("");
   const [joinPassword, setJoinPassword] = useState("");
   const [showJoinPassword, setShowJoinPassword] = useState(false);
@@ -498,36 +500,109 @@ function Login() {
   const handleJoinAsWorker = async (e) => {
     e.preventDefault();
     setJoinStatus(null);
-    if (!joinEmail || !joinPassword || !joinProfession || !joinCity) {
-      setJoinStatus({ type: "error", message: "Please fill in all fields to register as a provider." });
+
+    // All fields are mandatory
+    if (!joinName.trim() || !joinPhone.trim() || !joinEmail || !joinPassword || !joinProfession || !joinCity) {
+      setJoinStatus({ type: "error", message: "Please fill in all fields (Name, Phone, Email, Password, Profession, Location)." });
       return;
     }
+    // Phone validation
+    if (!/^\d{10}$/.test(joinPhone.trim())) {
+      setJoinStatus({ type: "error", message: "Please enter a valid 10-digit phone number." });
+      return;
+    }
+    // Password strength
+    const hasLetter = /[a-zA-Z]/.test(joinPassword);
+    const hasNumber = /[0-9]/.test(joinPassword);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(joinPassword);
+    if (!hasLetter || !hasNumber || !hasSpecial) {
+      setJoinStatus({ type: "error", message: "Password must have at least one letter, one number, and one special character." });
+      return;
+    }
+
     setIsJoining(true);
     try {
-      const response = await fetch("/api/auth/join-as-worker", {
+      // Try to register as a brand-new worker account
+      const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          name: joinName.trim(),
           email: joinEmail,
           password: joinPassword,
+          phone: joinPhone.trim(),
+          role: "worker",
           profession: joinProfession,
           city: joinCity,
         }),
       });
       const data = await safeJson(response);
+
+      // If account already exists, try upgrading via join-as-worker
+      if (response.status === 400 && data.error?.toLowerCase().includes("already exists")) {
+        const joinResp = await fetch("/api/auth/join-as-worker", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: joinEmail,
+            password: joinPassword,
+            profession: joinProfession,
+            city: joinCity,
+          }),
+        });
+        const joinData = await safeJson(joinResp);
+        if (!joinResp.ok) {
+          setIsJoining(false);
+          setJoinStatus({ type: "error", message: joinData.error || "Registration failed. Please try again." });
+          return;
+        }
+        setJoinStatus({ type: "success", message: `🎉 Service provider profile created! Logging you in...` });
+        setTimeout(() => {
+          setIsJoining(false);
+          handleLoginSuccess(joinData, "provider");
+        }, 900);
+        return;
+      }
+
       if (!response.ok) {
         setIsJoining(false);
         setJoinStatus({ type: "error", message: data.error || "Registration failed. Please try again." });
         return;
       }
-      setJoinStatus({ type: "success", message: `🎉 Service provider profile created! Logging you in...` });
+
+      // New account created — auto-login
+      setJoinStatus({ type: "success", message: `🎉 Worker account created for ${joinName.trim()}! Logging you in...` });
       setTimeout(() => {
         setIsJoining(false);
-        handleLoginSuccess(data, "provider");
+        // For new registration, we need to login since register doesn't return a session
+        handleProviderAutoLogin(joinEmail, joinPassword);
       }, 900);
     } catch (err) {
       setIsJoining(false);
       setJoinStatus({ type: "error", message: "Network error! Backend is unreachable." });
+    }
+  };
+
+  // Auto-login helper after new worker registration
+  const handleProviderAutoLogin = async (email, password) => {
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, loginAs: "provider" }),
+      });
+      const data = await safeJson(response);
+      if (!response.ok) {
+        setJoinStatus({ type: "success", message: "Account created! Please sign in with your credentials above." });
+        setProviderEmail(email);
+        setShowJoinForm(false);
+        return;
+      }
+      handleLoginSuccess(data, data.loginContext || "provider");
+    } catch (err) {
+      setJoinStatus({ type: "success", message: "Account created! Please sign in with your credentials above." });
+      setProviderEmail(email);
+      setShowJoinForm(false);
     }
   };
 
@@ -862,6 +937,177 @@ function Login() {
                 </svg>
                 Continue with Google as Provider
               </button>
+
+              {/* ── Join as Service Provider (Inline Registration) ──── */}
+              <div style={{ marginTop: isMobile ? "10px" : "14px" }}>
+                <button
+                  type="button"
+                  onClick={() => setShowJoinForm(!showJoinForm)}
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    padding: isMobile ? "10px" : "12px",
+                    border: "1.5px dashed var(--border, #cbd5e1)",
+                    borderRadius: "10px",
+                    backgroundColor: showJoinForm ? "rgba(30, 58, 95, 0.06)" : "transparent",
+                    color: "var(--text-main, #1e293b)",
+                    fontSize: isMobile ? "13px" : "14px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  🛠️ {showJoinForm ? "Hide Registration Form" : "New? Register as Service Provider"}
+                  {showJoinForm ? <FaChevronUp size={11} /> : <FaChevronDown size={11} />}
+                </button>
+
+                {showJoinForm && (
+                  <div
+                    style={{
+                      marginTop: "12px",
+                      padding: isMobile ? "16px 14px" : "20px",
+                      borderRadius: "14px",
+                      border: "1.5px solid var(--border, #e2e8f0)",
+                      backgroundColor: "var(--bg-card-hover, #f8fafc)",
+                      animation: "fadeIn 0.3s ease-out forwards",
+                    }}
+                  >
+                    <h3 style={{ margin: "0 0 4px 0", fontSize: isMobile ? "15px" : "16px", fontWeight: 800, color: "var(--text-main)" }}>
+                      🛠️ Worker Registration
+                    </h3>
+                    <p style={{ margin: "0 0 14px 0", fontSize: "12px", color: "var(--text-secondary, #64748b)" }}>
+                      Fill in your details to register as a service provider
+                    </p>
+
+                    <StatusBanner status={joinStatus} />
+
+                    <form onSubmit={handleJoinAsWorker} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                        <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Full Name *</label>
+                        <input
+                          id="join-name"
+                          type="text"
+                          placeholder="e.g. Harsha Vardhan"
+                          value={joinName}
+                          onChange={(e) => setJoinName(e.target.value)}
+                          style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border, #cbd5e1)", background: "var(--bg-card, #fff)", color: "var(--text-main)", fontSize: "14px" }}
+                          required
+                        />
+                      </div>
+
+                      <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                        <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Phone Number * <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 400 }}>(10 digits)</span></label>
+                        <input
+                          id="join-phone"
+                          type="tel"
+                          placeholder="e.g. 9876543210"
+                          value={joinPhone}
+                          onChange={(e) => setJoinPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                          maxLength={10}
+                          style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border, #cbd5e1)", background: "var(--bg-card, #fff)", color: "var(--text-main)", fontSize: "14px" }}
+                          required
+                        />
+                      </div>
+
+                      <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                        <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Email Address *</label>
+                        <input
+                          id="join-email"
+                          type="email"
+                          placeholder="name@example.com"
+                          value={joinEmail}
+                          onChange={(e) => setJoinEmail(e.target.value)}
+                          style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border, #cbd5e1)", background: "var(--bg-card, #fff)", color: "var(--text-main)", fontSize: "14px" }}
+                          required
+                        />
+                      </div>
+
+                      <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                        <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Password *</label>
+                        <div style={{ position: "relative" }}>
+                          <input
+                            id="join-password"
+                            type={showJoinPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            value={joinPassword}
+                            onChange={(e) => setJoinPassword(e.target.value)}
+                            style={{ width: "100%", boxSizing: "border-box", padding: "10px 40px 10px 12px", borderRadius: "8px", border: "1px solid var(--border, #cbd5e1)", background: "var(--bg-card, #fff)", color: "var(--text-main)", fontSize: "14px" }}
+                            required
+                          />
+                          <span
+                            role="button"
+                            onClick={() => setShowJoinPassword(!showJoinPassword)}
+                            style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", cursor: "pointer", display: "flex", alignItems: "center", color: "var(--text-muted)", padding: "4px", userSelect: "none" }}
+                          >
+                            {showJoinPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                        <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Service / Profession *</label>
+                        <select
+                          id="join-profession"
+                          value={joinProfession}
+                          onChange={(e) => setJoinProfession(e.target.value)}
+                          style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border, #cbd5e1)", background: "var(--bg-card, #fff)", color: "var(--text-main)", fontSize: "14px" }}
+                          required
+                        >
+                          <option value="">Select your profession...</option>
+                          {PROFESSIONS.map((g) => (
+                            <optgroup key={g.group} label={g.group}>
+                              {g.options.map((o) => <option key={o} value={o}>{o}</option>)}
+                            </optgroup>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                        <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Serving Location *</label>
+                        <input
+                          id="join-city"
+                          type="text"
+                          placeholder="e.g. Hyderabad or Kadapa"
+                          value={joinCity}
+                          onChange={(e) => setJoinCity(e.target.value)}
+                          list="join-cities-list"
+                          style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border, #cbd5e1)", background: "var(--bg-card, #fff)", color: "var(--text-main)", fontSize: "14px" }}
+                          required
+                        />
+                        <datalist id="join-cities-list">
+                          {CITIES.slice(0, 50).map((c) => <option key={c} value={c} />)}
+                        </datalist>
+                      </div>
+
+                      <button
+                        id="join-provider-btn"
+                        type="submit"
+                        disabled={isJoining}
+                        style={{
+                          padding: isMobile ? "10px" : "12px",
+                          fontSize: isMobile ? "14px" : "15px",
+                          width: "100%",
+                          border: "none",
+                          borderRadius: "10px",
+                          fontWeight: 700,
+                          cursor: isJoining ? "not-allowed" : "pointer",
+                          opacity: isJoining ? 0.7 : 1,
+                          background: "linear-gradient(135deg, #065f46 0%, #059669 100%)",
+                          color: "white",
+                          boxShadow: "0 6px 18px rgba(5, 150, 105, 0.3)",
+                          transition: "all 0.2s",
+                          marginTop: "4px",
+                        }}
+                      >
+                        {isJoining ? <Spinner /> : "🚀 Register & Sign In as Provider"}
+                      </button>
+                    </form>
+                  </div>
+                )}
+              </div>
 
               <p style={{ textAlign: "center", marginTop: isMobile ? "14px" : "20px", fontSize: isMobile ? "12px" : "13px", color: "var(--text-muted)" }}>
                 New to Workzy?{" "}

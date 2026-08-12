@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import "../App.css";
 import Sidebar from "./Sidebar";
@@ -19,6 +19,7 @@ function Navbar() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [logoutToast, setLogoutToast] = useState(false);
+  const notificationRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -49,6 +50,18 @@ function Navbar() {
     const timer = setInterval(fetchNotifications, 8000);
     return () => clearInterval(timer);
   }, [isLoggedIn, userRole]);
+
+  // Close notification dropdown when clicking outside
+  useEffect(() => {
+    if (!showNotifications) return;
+    const handleClickOutside = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showNotifications]);
 
   const toggleTheme = () => {
     setTheme(theme === "light" ? "dark" : "light");
@@ -154,7 +167,7 @@ function Navbar() {
 
           {/* NOTIFICATION BELL & MESSAGES (Active on Header for both Mobile & Desktop) */}
           {isLoggedIn && (
-            <div style={{ position: "relative" }}>
+            <div style={{ position: "relative" }} ref={notificationRef}>
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
                 style={{

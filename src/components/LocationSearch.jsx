@@ -118,6 +118,7 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
   const handleSearch = () => {
     if (value.trim()) {
       setSuggestions([]);
+      if (onSearch) onSearch(value.trim());
       navigate(`/search?q=${encodeURIComponent(value.trim())}`);
     }
   };
@@ -274,28 +275,38 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
           />
 
           {/* Draggable/Pulsing Microphone Trigger */}
-          <div
+          <button
+            type="button"
             onClick={handleVoiceClick}
+            aria-label={isListening ? "Stop voice search" : "Start voice search"}
+            title={isListening ? "Listening... Click to stop" : "Voice Search 🎙️"}
             style={{
               position: "absolute",
-              right: "14px",
+              right: "10px",
               top: "50%",
               transform: "translateY(-50%)",
               cursor: "pointer",
+              width: "36px",
+              height: "36px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: isListening ? "#ef4444" : "var(--text-secondary, #94a3b8)",
-              fontSize: "16px",
+              color: isListening ? "#ffffff" : "#10b981",
               zIndex: 10,
-              padding: "6px",
+              padding: 0,
               borderRadius: "50%",
-              backgroundColor: isListening ? "rgba(239, 68, 68, 0.1)" : "transparent",
-              animation: isListening ? "pulse-mic 1.2s infinite ease-in-out" : "none"
+              border: isListening ? "2px solid #ef4444" : "1.5px solid rgba(16, 185, 129, 0.4)",
+              backgroundColor: isListening ? "#ef4444" : "rgba(16, 185, 129, 0.12)",
+              boxShadow: isListening
+                ? "0 0 14px rgba(239, 68, 68, 0.6)"
+                : "0 2px 6px rgba(16, 185, 129, 0.15)",
+              animation: isListening ? "pulse-mic 1.2s infinite ease-in-out" : "none",
+              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+              outline: "none",
             }}
           >
-            <FaMicrophone />
-          </div>
+            <FaMicrophone size={18} style={{ display: "block" }} />
+          </button>
 
           {/* Inline animations inside standard stylesheet falls */}
           <style>{`
@@ -355,7 +366,9 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
 
         <button
           id="service-search-btn"
+          type="button"
           onClick={handleSearch}
+          aria-label="Search services"
           style={{
             padding: "12px 24px",
             borderRadius: "12px",

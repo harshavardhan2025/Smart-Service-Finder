@@ -437,13 +437,13 @@ function AISmartSearchHub({
               height: 38px !important;
             }
             .search-voice-mic-btn {
-              width: 28px !important;
-              height: 28px !important;
+              width: 32px !important;
+              height: 32px !important;
               right: 6px !important;
             }
             .search-voice-mic-btn svg {
-              width: 13px !important;
-              height: 13px !important;
+              width: 16px !important;
+              height: 16px !important;
               display: block !important;
             }
             #service-search-btn {
@@ -751,8 +751,8 @@ function SearchInput({
             top: "50%",
             transform: "translateY(-50%)",
             cursor: "pointer",
-            width: "34px",
-            height: "34px",
+            width: "38px",
+            height: "38px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -770,7 +770,7 @@ function SearchInput({
             transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
           }}
         >
-          <FaMicrophone style={{ width: "15px", height: "15px", display: "block" }} />
+          <FaMicrophone style={{ width: "18px", height: "18px", display: "block" }} />
         </button>
 
         {focused && suggestions.length > 0 && (

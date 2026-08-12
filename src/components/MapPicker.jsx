@@ -244,6 +244,8 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
         const data = await res.json();
         if (data?.lat && data?.lon) {
           applyLocation(parseFloat(data.lat), parseFloat(data.lon), data.label || search, data.city || "");
+          setIsSearching(false);
+          return;
         }
       }
     } catch (e) {

@@ -374,7 +374,7 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
                 minWidth: "125px",
                 maxWidth: "140px",
                 backgroundColor: isSelected ? "var(--primary-light)" : "var(--bg-card)",
-                border: isSelected ? "2.5px solid var(--primary)" : "1.5px solid rgba(107, 79, 79, 0.3)",
+                border: isSelected ? "2.5px solid var(--primary)" : "1.5px solid var(--border-color)",
                 padding: "14px 10px",
                 textAlign: "center",
                 borderRadius: "14px",
@@ -424,7 +424,7 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
                     gap: "8px",
                     padding: "14px",
                     borderRadius: "12px",
-                    border: isGenderSelected ? "2.5px solid var(--primary)" : "1.5px solid rgba(107, 79, 79, 0.35)",
+                    border: isGenderSelected ? "2.5px solid var(--primary)" : "1.5px solid var(--border-color)",
                     backgroundColor: isGenderSelected ? "var(--primary-light)" : "var(--bg-card)",
                     color: isGenderSelected ? "var(--primary-dark)" : "var(--text-secondary)",
                     fontWeight: "bold",
@@ -462,7 +462,7 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
                       onClick={() => handleBeautySubServiceClick(sub)}
                       style={{
                         backgroundColor: isBeautySubActive ? "var(--primary-light)" : "var(--bg-card)",
-                        border: isBeautySubActive ? "2.5px solid var(--primary)" : "1.5px solid rgba(107, 79, 79, 0.35)",
+                        border: isBeautySubActive ? "2.5px solid var(--primary)" : "1.5px solid var(--border-color)",
                         borderRadius: "12px",
                         padding: "12px 8px",
                         textAlign: "center",
@@ -509,7 +509,7 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
                   padding: "8px 16px",
                   fontSize: "13px",
                   borderRadius: "10px",
-                  border: "1.5px solid rgba(107, 79, 79, 0.35)",
+                  border: "1.5px solid var(--border-color)",
                   outline: "none",
                   width: "180px",
                   backgroundColor: "var(--bg-card)",
@@ -536,7 +536,7 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
                     onClick={() => handleSubServiceClick(sub)}
                     style={{
                       backgroundColor: isSubActive ? "var(--primary-light)" : "var(--bg-card)",
-                      border: isSubActive ? "2.5px solid var(--primary)" : "1.5px solid rgba(107, 79, 79, 0.35)",
+                      border: isSubActive ? "2.5px solid var(--primary)" : "1.5px solid var(--border-color)",
                       borderRadius: "12px",
                       padding: "16px 8px",
                       textAlign: "center",
@@ -676,8 +676,17 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
                       <button
                         style={{
                           width: "100%",
-                          background: "var(--primary-grad)",
+                          background: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)",
                           color: "white",
+                          border: "none",
+                          borderRadius: "10px",
+                          padding: "10px 16px",
+                          fontWeight: 800,
+                          fontSize: "13.5px",
+                          cursor: "pointer",
+                          marginTop: "10px",
+                          boxShadow: "0 4px 12px rgba(49, 82, 91, 0.2)",
+                          transition: "all 0.15s ease",
                         }}
                       >
                         Book

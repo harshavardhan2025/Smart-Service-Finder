@@ -7,17 +7,12 @@ import { FaStar, FaMapMarkerAlt, FaFilter, FaSortAmountDown, FaArrowLeft } from 
 
 function getShortLocation(fullAddress) {
   if (!fullAddress) return "";
-  const lower = fullAddress.toLowerCase();
-  if (lower.includes("kakinada")) return "kakinada";
-  if (lower.includes("rajahmundry")) return "rajahmundry";
-  if (lower.includes("new delhi") || lower.includes("delhi")) return "new delhi";
-  if (lower.includes("hyderabad")) return "hyderabad";
-  if (lower.includes("kadapa")) return "kadapa";
-  
+  const storedCity = localStorage.getItem("userCity");
+  if (storedCity) return storedCity.toLowerCase().trim();
+
   const firstSegment = fullAddress.split(",")[0].trim();
   if (!isNaN(parseFloat(firstSegment))) {
-    const storedCity = localStorage.getItem("userCity");
-    if (storedCity) return storedCity.toLowerCase().trim();
+    return "";
   }
   return firstSegment.toLowerCase();
 }
