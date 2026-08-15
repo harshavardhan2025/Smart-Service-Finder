@@ -99,8 +99,19 @@ app.use(async (req, res, next) => {
 });
 
 // ── Health check endpoint (no auth, no DB needed) ──
-app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString(), env: process.env.NODE_ENV || "development" });
+import { getRedisHealth } from "./config/redisClient.js";
+
+app.get("/api/health", async (req, res) => {
+  const redisHealth = await getRedisHealth();
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    env: process.env.NODE_ENV || "development",
+    database: {
+      status: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+    },
+    redis: redisHealth,
+  });
 });
 
 app.use("/api/auth", authRoutes);
