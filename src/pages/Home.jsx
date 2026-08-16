@@ -324,6 +324,13 @@ function Home() {
   // Email of the logged-in user's worker profile (to filter self from listings)
   const myWorkerEmail = sessionStorage.getItem("workerSession_email") || "";
 
+  // 🛡️ STRICT WORKER GUARD: Service Providers do not have access to customer Home Page
+  useEffect(() => {
+    if (role === "worker") {
+      navigate("/worker-dashboard", { replace: true });
+    }
+  }, [role, navigate]);
+
   /* =======================================================
      AUTH
   ======================================================= */
@@ -888,6 +895,10 @@ Do not use markdown.`,
       </div>
     );
   };
+
+  if (role === "worker") {
+    return null;
+  }
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>

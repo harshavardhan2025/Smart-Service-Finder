@@ -342,7 +342,21 @@ export const updateWorker = async (req, res) => {
       return res.status(403).json({ error: "Access denied. You can only update your own profile." });
     }
 
-    Object.assign(worker, req.body);
+    // Strict validation: Non-admin workers are strictly permitted to update ONLY Name, Location (City), or Online Status
+    if (req.user.role !== "admin") {
+      if (req.body.name && typeof req.body.name === "string") {
+        worker.name = req.body.name.trim();
+      }
+      if (req.body.city && typeof req.body.city === "string") {
+        worker.city = req.body.city.trim();
+      }
+      if (req.body.status && ["Active", "Inactive"].includes(req.body.status)) {
+        worker.status = req.body.status;
+      }
+    } else {
+      Object.assign(worker, req.body);
+    }
+
     await worker.save();
 
     // Invalidate Redis cache

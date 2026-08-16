@@ -182,13 +182,7 @@ function Sidebar() {
      NAVIGATION LINKS
   ========================================================= */
 
-  const links = [
-    {
-      to: "/",
-      icon: <FaHome />,
-      label: "Home Page",
-    },
-  ];
+  const links = [];
 
   let sidebarSubtitle =
     "Explore Local Professionals";
@@ -201,6 +195,11 @@ function Sidebar() {
         "Customer Navigation";
 
       links.push(
+        {
+          to: "/",
+          icon: <FaHome />,
+          label: "Home Page",
+        },
         {
           to: "/user-dashboard",
           icon: <FaUser />,
@@ -243,7 +242,7 @@ function Sidebar() {
       links.push(
         {
           to: "/worker-dashboard",
-          icon: <FaUser />,
+          icon: <FaTools />,
           label: "Worker Dashboard",
         },
         {
@@ -274,11 +273,18 @@ function Sidebar() {
   /* ================= GUEST ================= */
 
   else {
-    links.push({
-      to: "/plans-offers",
-      icon: <FaPercent />,
-      label: "Plans & Offers",
-    });
+    links.push(
+      {
+        to: "/",
+        icon: <FaHome />,
+        label: "Home Page",
+      },
+      {
+        to: "/plans-offers",
+        icon: <FaPercent />,
+        label: "Plans & Offers",
+      }
+    );
   }
 
   /* =========================================================

@@ -270,19 +270,62 @@ function Signup() {
       const data = await safeJson(response);
       setIsLoading(false);
 
-      if (response.status === 400 && data.error?.toLowerCase().includes("already exists")) {
-        setPopupResult({ type: "exists", message: `An account with ${email} already exists. You can sign in directly.` });
-        return;
-      }
       if (!response.ok) {
-        setPopupResult({ type: "fail", message: data.error || "Registration failed." });
+        if (data.error?.toLowerCase().includes("registered as") || data.error?.toLowerCase().includes("already exists")) {
+          setPopupResult({ type: "exists", message: data.error });
+        } else {
+          setPopupResult({ type: "fail", message: data.error || "Registration failed." });
+        }
         return;
       }
+
+      // Auto log-in on successful signup or dual-role activation
+      if (data.token && data.user) {
+        const activeRole = data.loginContext === "provider" ? "worker" : (data.user.role || emailRole);
+        sessionStorage.setItem("userRole", activeRole);
+        sessionStorage.setItem("actualRole", data.user.actualRole || data.user.role);
+        sessionStorage.setItem("userName", data.user.name || name);
+        sessionStorage.setItem("userEmail", data.user.email || email);
+        sessionStorage.setItem("userId", data.user.id || data.user._id);
+        sessionStorage.setItem("authToken", data.token);
+        sessionStorage.setItem("isWorker", String(data.user.isWorker || false));
+        sessionStorage.setItem("workerProfileId", data.user.workerProfileId || "");
+        sessionStorage.setItem("loginContext", data.loginContext || (activeRole === "worker" ? "provider" : "user"));
+
+        if (activeRole === "worker" || data.user.isWorker) {
+          const wId = data.user.workerProfileId || (data.worker ? data.worker.id : (data.user.id || data.user._id));
+          sessionStorage.setItem("loggedInWorkerId", String(wId));
+          sessionStorage.setItem("workerSession_email", data.user.email);
+          sessionStorage.setItem("workerSession_profileId", String(wId));
+          sessionStorage.setItem("workerSession_name", data.user.name);
+        } else if (data.user.city) {
+          sessionStorage.setItem("userCity", data.user.city);
+          localStorage.setItem("userCity", data.user.city);
+        }
+
+        localStorage.setItem("authSession", JSON.stringify({
+          userRole: activeRole,
+          actualRole: data.user.actualRole || data.user.role,
+          loginContext: data.loginContext || (activeRole === "worker" ? "provider" : "user"),
+          userName: data.user.name,
+          userEmail: data.user.email,
+          userId: data.user.id || data.user._id,
+          authToken: data.token,
+          isWorker: data.user.isWorker || false,
+          workerProfileId: data.user.workerProfileId || null,
+          loggedInWorkerId: (activeRole === "worker" || data.user.isWorker) ? (data.user.workerProfileId || data.user.id || data.user._id) : null,
+          userCity: data.user.city || null,
+          expiry: Date.now() + 7 * 24 * 60 * 60 * 1000
+        }));
+
+        window.dispatchEvent(new Event("storage"));
+      }
+
       setPopupResult({
         type: "success",
-        message: emailRole === "worker"
-          ? `Your Worker account as ${emailProfession} in ${emailCity} has been created!`
-          : `Your Customer account has been created! Welcome aboard.`
+        message: data.message || (emailRole === "worker"
+          ? `Welcome! Your Worker account as ${emailProfession} in ${emailCity} is active!`
+          : `Welcome! Your Customer account is active with full access to both roles!`)
       });
     } catch (err) {
       setIsLoading(false);

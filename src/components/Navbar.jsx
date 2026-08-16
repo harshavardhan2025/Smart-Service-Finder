@@ -126,7 +126,7 @@ function Navbar() {
         }}
       >
         <Link
-          to="/"
+          to={userRole === "worker" ? "/worker-dashboard" : (userRole === "admin" ? "/admin-dashboard" : "/")}
           style={{
             textDecoration: "none",
             color: "inherit",

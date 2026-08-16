@@ -111,8 +111,12 @@ function Profile() {
   };
 
   const handleSave = async () => {
-    if (!draft.name.trim() || !draft.email.trim()) {
-      showToast("⚠️ Name and Email are required!");
+    if (!draft.name?.trim()) {
+      showToast("⚠️ Full Name cannot be empty!");
+      return;
+    }
+    if (!draft.location?.trim()) {
+      showToast("⚠️ Location cannot be empty!");
       return;
     }
     try {
@@ -126,25 +130,29 @@ function Profile() {
             "Authorization": `Bearer ${token}`
           },
           body: JSON.stringify({
-            name: draft.name,
-            email: draft.email,
-            phone: draft.phone,
-            city: draft.location
+            name: draft.name.trim(),
+            city: draft.location.trim()
           })
         });
         if (resp.ok) {
-          setProfile(draft);
+          const updated = {
+            ...profile,
+            name: draft.name.trim(),
+            location: draft.location.trim()
+          };
+          setProfile(updated);
+          setDraft(updated);
           setEditing(false);
-          showToast("✅ Profile updated successfully!");
+          showToast("✅ Name and Location updated successfully!");
           
           // Sync sessions
-          sessionStorage.setItem("userName", draft.name);
-          sessionStorage.setItem("userEmail", draft.email);
-          sessionStorage.setItem("userCity", draft.location);
+          sessionStorage.setItem("userName", draft.name.trim());
+          sessionStorage.setItem("userCity", draft.location.trim());
+          localStorage.setItem("userLocation", draft.location.trim());
+          localStorage.setItem("userCity", draft.location.trim());
           const authSession = JSON.parse(localStorage.getItem("authSession") || "{}");
-          authSession.userName = draft.name;
-          authSession.userEmail = draft.email;
-          authSession.userCity = draft.location;
+          authSession.userName = draft.name.trim();
+          authSession.userCity = draft.location.trim();
           localStorage.setItem("authSession", JSON.stringify(authSession));
           
           // Dispatch event to refresh Navbar instantly
@@ -154,7 +162,9 @@ function Profile() {
           showToast(`🛑 Update failed: ${errData.error || "Please try again."}`);
         }
       } else {
-        setProfile(draft);
+        const updated = { ...profile, name: draft.name.trim(), location: draft.location.trim() };
+        setProfile(updated);
+        setDraft(updated);
         setEditing(false);
         showToast("✅ Profile updated locally!");
       }
@@ -386,75 +396,166 @@ function Profile() {
           </h3>
 
           {editing ? (
-            /* Edit Form */
+            /* Edit Form (Only Name & Location are editable) */
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              {[
-                { label: "Full Name", key: "name", type: "text", icon: "👤" },
-                { label: "Email Address", key: "email", type: "email", icon: "📧" },
-                { label: "Phone Number", key: "phone", type: "tel", icon: "📱" },
-                { label: "Location", key: "location", type: "text", icon: "📍" }
-              ].map(({ label, key, type, icon }) => (
-                <div key={key}>
-                  <label
-                    style={{
-                      display: "block",
-                      fontSize: "12px",
-                      fontWeight: 600,
-                      color: "var(--text-secondary)",
-                      marginBottom: "6px",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em"
-                    }}
-                  >
-                    {icon} {label}
-                  </label>
-                  <input
-                    type={type}
-                    value={draft[key]}
-                    onChange={(e) => setDraft((prev) => ({ ...prev, [key]: e.target.value }))}
-                    style={{
-                      width: "100%",
-                      padding: "12px 14px",
-                      borderRadius: "10px",
-                      border: "1.5px solid #e2e8f0",
-                      fontSize: "15px",
-                      boxSizing: "border-box",
-                      fontFamily: "inherit",
-                      outline: "none",
-                      transition: "border 0.2s"
-                    }}
-                    onFocus={(e) => (e.target.style.border = "1.5px solid #2196F3")}
-                    onBlur={(e) => (e.target.style.border = "1.5px solid #e2e8f0")}
-                  />
-                </div>
-              ))}
-
-              {/* Role (read-only) */}
+              {/* Full Name (Editable) */}
               <div>
                 <label
                   style={{
                     display: "block",
                     fontSize: "12px",
-                    fontWeight: 600,
+                    fontWeight: 700,
                     color: "var(--text-secondary)",
                     marginBottom: "6px",
                     textTransform: "uppercase",
                     letterSpacing: "0.05em"
                   }}
                 >
-                  🎭 Role
+                  👤 Full Name <span style={{ color: "var(--primary)", fontSize: "11px" }}>(Editable)</span>
+                </label>
+                <input
+                  type="text"
+                  value={draft.name}
+                  onChange={(e) => setDraft((prev) => ({ ...prev, name: e.target.value }))}
+                  placeholder="Enter your full name"
+                  style={{
+                    width: "100%",
+                    padding: "12px 14px",
+                    borderRadius: "10px",
+                    border: "1.5px solid var(--primary)",
+                    fontSize: "15px",
+                    boxSizing: "border-box",
+                    fontFamily: "inherit",
+                    outline: "none",
+                    backgroundColor: "var(--bg-card)",
+                    color: "var(--text-main)",
+                    fontWeight: 600,
+                    transition: "border 0.2s"
+                  }}
+                />
+              </div>
+
+              {/* Location (Editable) */}
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    color: "var(--text-secondary)",
+                    marginBottom: "6px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em"
+                  }}
+                >
+                  📍 Location / City <span style={{ color: "var(--primary)", fontSize: "11px" }}>(Editable)</span>
+                </label>
+                <input
+                  type="text"
+                  value={draft.location}
+                  onChange={(e) => setDraft((prev) => ({ ...prev, location: e.target.value }))}
+                  placeholder="Enter your city or area"
+                  style={{
+                    width: "100%",
+                    padding: "12px 14px",
+                    borderRadius: "10px",
+                    border: "1.5px solid var(--primary)",
+                    fontSize: "15px",
+                    boxSizing: "border-box",
+                    fontFamily: "inherit",
+                    outline: "none",
+                    backgroundColor: "var(--bg-card)",
+                    color: "var(--text-main)",
+                    fontWeight: 600,
+                    transition: "border 0.2s"
+                  }}
+                />
+              </div>
+
+              {/* Email Address (Read-only) */}
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: "var(--text-muted, #94a3b8)",
+                    marginBottom: "6px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em"
+                  }}
+                >
+                  📧 Email Address 🔒 <span style={{ fontSize: "11px", fontWeight: 500 }}>(Fixed)</span>
                 </label>
                 <div
                   style={{
                     padding: "12px 14px",
                     borderRadius: "10px",
                     backgroundColor: "var(--bg-card-hover)",
-                    border: "1.5px solid #e2e8f0",
+                    border: "1.5px solid var(--border-color)",
                     fontSize: "15px",
                     color: "var(--text-secondary)"
                   }}
                 >
-                  {profile.role} (cannot be changed)
+                  {profile.email}
+                </div>
+              </div>
+
+              {/* Phone Number (Read-only) */}
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: "var(--text-muted, #94a3b8)",
+                    marginBottom: "6px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em"
+                  }}
+                >
+                  📱 Phone Number 🔒 <span style={{ fontSize: "11px", fontWeight: 500 }}>(Fixed)</span>
+                </label>
+                <div
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: "10px",
+                    backgroundColor: "var(--bg-card-hover)",
+                    border: "1.5px solid var(--border-color)",
+                    fontSize: "15px",
+                    color: "var(--text-secondary)"
+                  }}
+                >
+                  {profile.phone}
+                </div>
+              </div>
+
+              {/* Role (Read-only) */}
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: "var(--text-muted, #94a3b8)",
+                    marginBottom: "6px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em"
+                  }}
+                >
+                  🎭 Account Role 🔒 <span style={{ fontSize: "11px", fontWeight: 500 }}>(Fixed)</span>
+                </label>
+                <div
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: "10px",
+                    backgroundColor: "var(--bg-card-hover)",
+                    border: "1.5px solid var(--border-color)",
+                    fontSize: "15px",
+                    color: "var(--text-secondary)"
+                  }}
+                >
+                  {profile.role}
                 </div>
               </div>
 

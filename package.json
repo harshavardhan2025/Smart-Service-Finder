@@ -8,6 +8,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^13.5.0",
+    "firebase": "^12.17.1",
     "leaflet": "^1.9.4",
     "leaflet-geosearch": "^4.4.0",
     "mapbox-gl": "^3.23.1",

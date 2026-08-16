@@ -238,23 +238,24 @@ function Login() {
       };
     }
     if (
-      msg.toLowerCase().includes("no service provider profile") || 
-      msg.toLowerCase().includes("not registered as a provider")
-    ) {
-      return {
-        type: "not_provider",
-        title: "Service Provider Profile Required",
-        message: msg || "No service provider profile was found for this account. You can register as a provider or sign in under 'Login as User'."
-      };
-    }
-    if (
       msg.toLowerCase().includes("service provider only") || 
       msg.toLowerCase().includes("switch to the service provider tab")
     ) {
       return {
         type: "worker_only",
         title: "Service Provider Account",
-        message: msg || "This account is registered exclusively as a Service Provider. Please switch to the Service Provider tab to sign in."
+        message: msg || "This account is registered strictly as a Service Provider. Please switch to the Service Provider tab to sign in."
+      };
+    }
+    if (
+      msg.toLowerCase().includes("no service provider profile") || 
+      msg.toLowerCase().includes("registered as a customer") ||
+      msg.toLowerCase().includes("switch to the user tab")
+    ) {
+      return {
+        type: "not_provider",
+        title: "Customer Account",
+        message: msg || "This account is registered as a Customer. Please switch to the User tab to sign in."
       };
     }
     if (msg.toLowerCase().includes("blocked")) {

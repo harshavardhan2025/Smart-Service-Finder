@@ -20,6 +20,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
+    "firebase-admin": "^14.2.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.6.1",
     "nodemon": "^3.1.14",

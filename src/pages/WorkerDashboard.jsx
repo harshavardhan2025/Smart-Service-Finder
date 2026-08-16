@@ -520,15 +520,19 @@ function WorkerDashboard() {
   });
 
   const handleSaveProfile = async () => {
-    if (!editProfile.name.trim() || !editProfile.profession.trim() || !editProfile.city.trim()) {
-      alert("Name, Profession, and City are required!");
+    if (!editProfile.name?.trim()) {
+      alert("Full Name is required!");
+      return;
+    }
+    if (!editProfile.city?.trim()) {
+      alert("City / Location is required!");
       return;
     }
     try {
       const token = sessionStorage.getItem("authToken");
       const userId = sessionStorage.getItem("userId");
       if (token && profile.mongoId) {
-        // 1. Update Worker profile in DB
+        // 1. Update Worker profile in DB (Strictly Name & City)
         const workerResp = await fetch(`/api/workers/${profile.mongoId}`, {
           method: "PATCH",
           headers: {
@@ -536,13 +540,12 @@ function WorkerDashboard() {
             "Authorization": `Bearer ${token}`
           },
           body: JSON.stringify({
-            name: editProfile.name,
-            service: editProfile.profession,
-            city: editProfile.city
+            name: editProfile.name.trim(),
+            city: editProfile.city.trim()
           })
         });
 
-        // 2. Update User profile in DB
+        // 2. Update User profile in DB (Strictly Name & City)
         let userOk = true;
         if (userId) {
           const userResp = await fetch(`/api/users/${userId}`, {
@@ -552,25 +555,26 @@ function WorkerDashboard() {
               "Authorization": `Bearer ${token}`
             },
             body: JSON.stringify({
-              name: editProfile.name,
-              city: editProfile.city,
-              phone: editProfile.phone
+              name: editProfile.name.trim(),
+              city: editProfile.city.trim()
             })
           });
           userOk = userResp.ok;
         }
 
         if (workerResp.ok && userOk) {
-          setProfile({ ...editProfile });
+          const updated = { ...profile, name: editProfile.name.trim(), city: editProfile.city.trim() };
+          setProfile(updated);
+          setEditProfile(updated);
           setEditMode(false);
           alert("Profile updated successfully!");
 
           // Update storage sessions
-          sessionStorage.setItem("userName", editProfile.name);
-          sessionStorage.setItem("userCity", editProfile.city);
+          sessionStorage.setItem("userName", editProfile.name.trim());
+          sessionStorage.setItem("userCity", editProfile.city.trim());
           const authSession = JSON.parse(localStorage.getItem("authSession") || "{}");
-          authSession.userName = editProfile.name;
-          authSession.userCity = editProfile.city;
+          authSession.userName = editProfile.name.trim();
+          authSession.userCity = editProfile.city.trim();
           localStorage.setItem("authSession", JSON.stringify(authSession));
 
           // Dispatch event to refresh Navbar instantly
@@ -581,7 +585,9 @@ function WorkerDashboard() {
           alert("Failed to update profile details on the server.");
         }
       } else {
-        setProfile({ ...editProfile });
+        const updated = { ...profile, name: editProfile.name.trim(), city: editProfile.city.trim() };
+        setProfile(updated);
+        setEditProfile(updated);
         setEditMode(false);
         alert("Profile updated locally!");
       }
@@ -1130,14 +1136,38 @@ function WorkerDashboard() {
                       ✏️ Edit Profile
                     </button>
                   ) : (
-                    <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 10 }}>
-                      <input value={editProfile.name} onChange={e => setEditProfile({ ...editProfile, name: e.target.value })} placeholder="Name" style={{ width: "100%", boxSizing: "border-box", padding: "8px 12px", borderRadius: "6px", border: "1px solid #cbd5e1" }} />
-                      <input value={editProfile.profession} onChange={e => setEditProfile({ ...editProfile, profession: e.target.value })} placeholder="Profession" style={{ width: "100%", boxSizing: "border-box", padding: "8px 12px", borderRadius: "6px", border: "1px solid #cbd5e1" }} />
-                      <input value={editProfile.city} onChange={e => setEditProfile({ ...editProfile, city: e.target.value })} placeholder="City" style={{ width: "100%", boxSizing: "border-box", padding: "8px 12px", borderRadius: "6px", border: "1px solid #cbd5e1" }} />
-                      <input value={editProfile.phone} onChange={e => setEditProfile({ ...editProfile, phone: e.target.value })} placeholder="Phone" style={{ width: "100%", boxSizing: "border-box", padding: "8px 12px", borderRadius: "6px", border: "1px solid #cbd5e1" }} />
-                      <div style={{ display: "flex", gap: 10 }}>
-                        <button onClick={handleSaveProfile} style={{ flex: 1, padding: "10px", backgroundColor: "var(--primary)", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer" }}>Save</button>
-                        <button onClick={() => setEditMode(false)} style={{ flex: 1, padding: "10px", backgroundColor: "#e2e8f0", color: "var(--text-secondary)", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer" }}>Cancel</button>
+                    <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 12 }}>
+                      <div>
+                        <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", display: "block", marginBottom: "4px", textTransform: "uppercase" }}>
+                          👤 Full Name <span style={{ color: "var(--primary)" }}>(Editable)</span>
+                        </label>
+                        <input
+                          value={editProfile.name}
+                          onChange={e => setEditProfile({ ...editProfile, name: e.target.value })}
+                          placeholder="Full Name"
+                          style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: "8px", border: "1.5px solid var(--primary)", fontWeight: 600, fontSize: "14px", backgroundColor: "var(--bg-card)", color: "var(--text-main)" }}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", display: "block", marginBottom: "4px", textTransform: "uppercase" }}>
+                          📍 City / Location <span style={{ color: "var(--primary)" }}>(Editable)</span>
+                        </label>
+                        <input
+                          value={editProfile.city}
+                          onChange={e => setEditProfile({ ...editProfile, city: e.target.value })}
+                          placeholder="City or Location"
+                          style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: "8px", border: "1.5px solid var(--primary)", fontWeight: 600, fontSize: "14px", backgroundColor: "var(--bg-card)", color: "var(--text-main)" }}
+                        />
+                      </div>
+
+                      <div style={{ padding: "8px 12px", backgroundColor: "var(--bg-card-hover)", borderRadius: "8px", border: "1px solid var(--border-color)", fontSize: "12px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                        🔒 <strong>Protected Details:</strong> Profession ({profile.profession}), Phone ({profile.phone}), Email ({profile.email}) are fixed and cannot be changed.
+                      </div>
+
+                      <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+                        <button onClick={handleSaveProfile} style={{ flex: 1, padding: "11px", backgroundColor: "var(--primary)", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: "14px" }}>💾 Save Changes</button>
+                        <button onClick={() => setEditMode(false)} style={{ flex: 1, padding: "11px", backgroundColor: "#e2e8f0", color: "var(--text-secondary)", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: "14px" }}>Cancel</button>
                       </div>
                     </div>
                   )}

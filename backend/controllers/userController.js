@@ -20,7 +20,21 @@ export const updateUser = async (req, res) => {
     }
     // Prevent direct password updates (would bypass hashing middleware)
     const { password, ...updateData } = req.body;
-    const user = await User.findByIdAndUpdate(req.params.id, updateData, { returnDocument: 'after' });
+
+    // Strict validation: Non-admin users are strictly permitted to update ONLY Name and Location (City)
+    if (req.user.role !== "admin") {
+      const allowedUpdates = {};
+      if (updateData.name && typeof updateData.name === "string") {
+        allowedUpdates.name = updateData.name.trim();
+      }
+      if (updateData.city && typeof updateData.city === "string") {
+        allowedUpdates.city = updateData.city.trim();
+      }
+      const user = await User.findByIdAndUpdate(req.params.id, allowedUpdates, { returnDocument: 'after' }).select("-password");
+      return res.status(200).json({ success: true, user });
+    }
+
+    const user = await User.findByIdAndUpdate(req.params.id, updateData, { returnDocument: 'after' }).select("-password");
     res.status(200).json({ success: true, user });
   } catch (error) {
     res.status(400).json({ error: error.message });

@@ -9,7 +9,6 @@ import mongoose from "mongoose";
 const ensureDbConnection = async () => {
   if (mongoose.connection.readyState === 1) return;
   console.log("⏳ [DB Connect] Database connection not ready. State:", mongoose.connection.readyState);
-  // Wait for up to 5 seconds
   for (let i = 0; i < 10; i++) {
     if (mongoose.connection.readyState === 1) return;
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -79,30 +78,43 @@ export const registerUser = async (req, res) => {
     }
 
     const userExists = await User.findOne({ email });
+
+    // ── Strict Role Isolation: Block duplicate registrations across roles ──
     if (userExists) {
-      return res.status(400).json({ error: "User already exists" });
+      if (userExists.role === "worker" || userExists.isWorker) {
+        return res.status(400).json({
+          error: "This email is registered as a Service Provider only. You cannot create a Customer account with this email. Please switch to the Service Provider tab to sign in."
+        });
+      } else {
+        return res.status(400).json({
+          error: "An account with this email already exists. Please sign in directly."
+        });
+      }
     }
 
+    // ── Create brand new user ──
     const user = await User.create({
       name,
       email,
       password,
-      role,
-      city,
-      phone,
+      role: role || "user",
+      city: city || "Mumbai",
+      phone: phone || "",
       isWorker: role === "worker",
     });
 
+    let associatedWorker = null;
+
     if (role === "worker") {
-      const basePrice = SERVICE_BASE_PRICES[profession] || 350;
+      const basePrice = SERVICE_BASE_PRICES[profession || "Plumbing"] || 350;
       const multiplier = getPriceMultiplier(city || "");
       const locationPrice = Math.round(basePrice * multiplier);
 
-      const worker = await Worker.create({
+      associatedWorker = await Worker.create({
         name,
         email,
-        service: profession,
-        city,
+        service: profession || "Plumbing",
+        city: city || "Mumbai",
         rating: 2.7,      // Bayesian new-worker baseline
         ratingSum: 0,
         reviews: 0,
@@ -110,7 +122,7 @@ export const registerUser = async (req, res) => {
         status: "Active"
       });
       user.isWorker = true;
-      user.workerProfileId = worker._id;
+      user.workerProfileId = associatedWorker._id;
       await user.save();
     }
 
@@ -128,15 +140,25 @@ export const registerUser = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "User registered successfully",
+      loginContext: role === "worker" ? "provider" : "user",
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
+        actualRole: user.role,
         city: user.city,
         isWorker: user.isWorker || false,
         workerProfileId: user.workerProfileId || null,
       },
+      worker: associatedWorker ? {
+        id: associatedWorker._id,
+        name: associatedWorker.name,
+        service: associatedWorker.service,
+        city: associatedWorker.city,
+        price: associatedWorker.price,
+        status: associatedWorker.status,
+      } : null,
       token: generateToken(user._id),
     });
   } catch (error) {
@@ -157,13 +179,6 @@ export const loginUser = async (req, res) => {
 
     const associatedWorker = await Worker.findOne({ email: user.email });
 
-    // Keep user's isWorker & workerProfileId in sync if Worker record exists
-    if (associatedWorker && (!user.isWorker || !user.workerProfileId)) {
-      user.isWorker = true;
-      user.workerProfileId = associatedWorker._id;
-      await user.save();
-    }
-
     let loginContext = "user";
 
     // ── ADMIN ACCESS: Always permitted from any login tab ──
@@ -174,7 +189,7 @@ export const loginUser = async (req, res) => {
       const hasWorkerAccount = !!associatedWorker || user.role === "worker" || user.isWorker === true;
       if (!hasWorkerAccount) {
         return res.status(404).json({
-          error: "No service provider profile found for this email. Please register as a service provider below or sign in under 'Login as User'."
+          error: "No service provider profile found for this email. This account is registered as a Customer. Please switch to the User tab to sign in."
         });
       }
       if (associatedWorker && associatedWorker.status === "Blocked") {
@@ -184,9 +199,8 @@ export const loginUser = async (req, res) => {
       }
       loginContext = "provider";
     } else if (loginAs === "user") {
-      // ── USER / CUSTOMER TAB LOGIN ──
-      // Accounts registered primarily as workers must use the Service Provider tab
-      if (user.role === "worker") {
+      // ── USER / CUSTOMER TAB LOGIN (Strict Separation) ──
+      if (user.role === "worker" || user.isWorker === true || !!associatedWorker) {
         return res.status(403).json({
           error: "This account is registered as a Service Provider only. Please switch to the Service Provider tab to sign in."
         });
@@ -194,10 +208,7 @@ export const loginUser = async (req, res) => {
       loginContext = "user";
     } else {
       // Fallback
-      if (user.role === "worker") {
-        if (associatedWorker && associatedWorker.status === "Blocked") {
-          return res.status(403).json({ error: "CRITICAL: Your worker account has been PERMANENTLY BLOCKED by admin control." });
-        }
+      if (user.role === "worker" || user.isWorker === true) {
         loginContext = "provider";
       } else {
         loginContext = "user";
@@ -265,27 +276,29 @@ export const joinAsWorker = async (req, res) => {
     }
 
     // 2. Check if a worker profile already exists for this email
-    const existingWorker = await Worker.findOne({ email });
-    if (existingWorker) {
-      return res.status(409).json({ error: "A service provider profile already exists for this email." });
+    let worker = await Worker.findOne({ email });
+    if (!worker) {
+      // 3. Create the Worker record
+      const basePrice = SERVICE_BASE_PRICES[profession] || 350;
+      const multiplier = getPriceMultiplier(city || "");
+      const locationPrice = Math.round(basePrice * multiplier);
+
+      worker = await Worker.create({
+        name: user.name,
+        email,
+        service: profession,
+        city,
+        rating: 2.7,
+        ratingSum: 0,
+        reviews: 0,
+        price: locationPrice,
+        status: "Active"
+      });
+    } else {
+      worker.service = profession;
+      worker.city = city;
+      await worker.save();
     }
-
-    // 3. Create the Worker record
-    const basePrice = SERVICE_BASE_PRICES[profession] || 350;
-    const multiplier = getPriceMultiplier(city || "");
-    const locationPrice = Math.round(basePrice * multiplier);
-
-    const worker = await Worker.create({
-      name: user.name,
-      email,
-      service: profession,
-      city,
-      rating: 2.7,
-      ratingSum: 0,
-      reviews: 0,
-      price: locationPrice,
-      status: "Active"
-    });
 
     // 4. Update user: mark as worker, store reference
     user.isWorker = true;
@@ -303,7 +316,7 @@ export const joinAsWorker = async (req, res) => {
       city: city || "Unknown"
     });
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message: "Service provider profile created successfully!",
       loginContext: "provider",
@@ -377,7 +390,7 @@ export const googleAuth = async (req, res) => {
     let user = await executeWithRetry(() => User.findOne({ email }));
     console.log("📡 [googleAuth] Found existing user in DB:", user ? `${user.email} (${user.role})` : "None");
     const placeholderPassword = `GoogleOAuthSecurePassword123!`;
-    const isSignupFlow = !!role; // if role is passed, it's a signup attempt
+    const isSignupFlow = !!role;
 
     let loginContext = "user";
     let associatedWorker = null;
@@ -391,7 +404,6 @@ export const googleAuth = async (req, res) => {
       }
 
       const finalName = customName || name;
-
       user = await executeWithRetry(() => User.create({
         name: finalName,
         email,
@@ -402,13 +414,13 @@ export const googleAuth = async (req, res) => {
         isWorker: role === "worker",
       }));
 
-      if (user.role === "worker") {
+      if (role === "worker") {
         const basePrice = SERVICE_BASE_PRICES[profession || "Carpentry"] || 350;
-        const multiplier = getPriceMultiplier(city || "");
+        const multiplier = getPriceMultiplier(city || "Mumbai");
         const locationPrice = Math.round(basePrice * multiplier);
 
         associatedWorker = await executeWithRetry(() => Worker.create({
-          name: finalName,
+          name: user.name,
           email,
           service: profession || "Carpentry",
           city: city || "Mumbai",
@@ -443,11 +455,6 @@ export const googleAuth = async (req, res) => {
       }
 
       associatedWorker = await executeWithRetry(() => Worker.findOne({ email: user.email }));
-      if (associatedWorker && (!user.isWorker || !user.workerProfileId)) {
-        user.isWorker = true;
-        user.workerProfileId = associatedWorker._id;
-        await user.save();
-      }
 
       if (user.role === "admin") {
         loginContext = "admin";
@@ -455,7 +462,7 @@ export const googleAuth = async (req, res) => {
         const hasWorkerAccount = !!associatedWorker || user.role === "worker" || user.isWorker === true;
         if (!hasWorkerAccount) {
           return res.status(404).json({
-            error: "No service provider profile found for this Google account. Please register as a service provider first or sign in under 'Login as User'."
+            error: "No service provider profile found for this Google email. This account is registered as a Customer. Please switch to the User tab to sign in."
           });
         }
         if (associatedWorker && associatedWorker.status === "Blocked") {
@@ -463,17 +470,14 @@ export const googleAuth = async (req, res) => {
         }
         loginContext = "provider";
       } else if (loginAs === "user") {
-        if (user.role === "worker") {
+        if (user.role === "worker" || user.isWorker === true || !!associatedWorker) {
           return res.status(403).json({
             error: "This account is registered as a Service Provider only. Please switch to the Service Provider tab to sign in."
           });
         }
         loginContext = "user";
       } else {
-        if (user.role === "worker") {
-          if (associatedWorker && associatedWorker.status === "Blocked") {
-            return res.status(403).json({ error: "Your worker account has been blocked by admin. Please contact support." });
-          }
+        if (user.role === "worker" || user.isWorker === true) {
           loginContext = "provider";
         } else {
           loginContext = "user";
@@ -552,7 +556,6 @@ export const googleMockAuth = async (req, res) => {
         });
       }
 
-      // Create new user
       user = await executeWithRetry(() => User.create({
         name,
         email,
@@ -563,9 +566,9 @@ export const googleMockAuth = async (req, res) => {
         isWorker: role === "worker",
       }));
 
-      if (user.role === "worker") {
+      if (role === "worker") {
         const basePrice = SERVICE_BASE_PRICES[profession || "Carpentry"] || 350;
-        const multiplier = getPriceMultiplier(city || "");
+        const multiplier = getPriceMultiplier(city || "Mumbai");
         const locationPrice = Math.round(basePrice * multiplier);
 
         associatedWorker = await executeWithRetry(() => Worker.create({
@@ -604,11 +607,6 @@ export const googleMockAuth = async (req, res) => {
       }
 
       associatedWorker = await executeWithRetry(() => Worker.findOne({ email: user.email }));
-      if (associatedWorker && (!user.isWorker || !user.workerProfileId)) {
-        user.isWorker = true;
-        user.workerProfileId = associatedWorker._id;
-        await user.save();
-      }
 
       if (user.role === "admin") {
         loginContext = "admin";
@@ -616,7 +614,7 @@ export const googleMockAuth = async (req, res) => {
         const hasWorkerAccount = !!associatedWorker || user.role === "worker" || user.isWorker === true;
         if (!hasWorkerAccount) {
           return res.status(404).json({
-            error: "No service provider profile found for this Google email. Please register as a service provider first or sign in under 'Login as User'."
+            error: "No service provider profile found for this Google email. This account is registered as a Customer. Please switch to the User tab to sign in."
           });
         }
         if (associatedWorker && associatedWorker.status === "Blocked") {
@@ -624,17 +622,14 @@ export const googleMockAuth = async (req, res) => {
         }
         loginContext = "provider";
       } else if (loginAs === "user") {
-        if (user.role === "worker") {
+        if (user.role === "worker" || user.isWorker === true || !!associatedWorker) {
           return res.status(403).json({
             error: "This account is registered as a Service Provider only. Please switch to the Service Provider tab to sign in."
           });
         }
         loginContext = "user";
       } else {
-        if (user.role === "worker") {
-          if (associatedWorker && associatedWorker.status === "Blocked") {
-            return res.status(403).json({ error: "Your worker account has been blocked by admin." });
-          }
+        if (user.role === "worker" || user.isWorker === true) {
           loginContext = "provider";
         } else {
           loginContext = "user";
