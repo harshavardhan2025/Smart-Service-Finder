@@ -27,3 +27,4 @@ backend/.env
 
 # Local scratch / temp dev files
 scratch/
+.vercel

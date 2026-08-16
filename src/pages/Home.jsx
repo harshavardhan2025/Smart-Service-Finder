@@ -16,7 +16,6 @@ import {
   FaStethoscope,
   FaPercent,
   FaStar,
-  FaTools,
 } from "react-icons/fa";
 
 /* =========================================================
@@ -634,7 +633,8 @@ function Home() {
     return () => {
       cancelled = true;
     };
-  }, [searchedLocation, userCoords, aiSuggestedAreas]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchedLocation, userCoords, aiSuggestedAreas, myWorkerEmail]);
 
   /* =======================================================
      PLANS + OFFERS

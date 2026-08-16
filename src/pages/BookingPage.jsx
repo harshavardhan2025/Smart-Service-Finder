@@ -28,7 +28,7 @@ function BookingPage() {
   const [failureMessage, setFailureMessage] = useState("");
   const [bookingDetails, setBookingDetails] = useState(null);
 
-  const [userPlans, setUserPlans] = useState(() => {
+  const [userPlans] = useState(() => {
     try {
       const stored = localStorage.getItem("userSubscriptions");
       if (stored) return JSON.parse(stored);

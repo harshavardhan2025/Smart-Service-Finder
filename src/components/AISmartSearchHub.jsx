@@ -331,6 +331,7 @@ function AISmartSearchHub({
       }
       recognitionRef.current = null;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleVoiceClick = () => {
@@ -798,6 +799,7 @@ function SearchInput({
               <li
                 key={service}
                 role="option"
+                aria-selected={false}
                 onMouseDown={() => onPickSuggestion(service)}
                 style={{
                   padding: "10px 18px",

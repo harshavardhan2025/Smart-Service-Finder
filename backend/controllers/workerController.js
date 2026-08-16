@@ -266,7 +266,7 @@ export const getNearbyWorkers = async (req, res) => {
 
         const resolvedDistance = distanceKm !== null ? distanceKm : 2.5;
 
-        if (resolvedDistance > radius && !cityMatch) {
+        if (resolvedDistance > radius) {
           return null;
         }
 
