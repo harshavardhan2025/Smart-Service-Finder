@@ -597,60 +597,7 @@ function SearchHeader({ detectedLocation, onShowMap }) {
         gap: "10px",
       }}
     >
-      <div
-        className="search-header-status"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          flexWrap: "wrap",
-        }}
-      >
-        <div
-          className="search-header-status-pill"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-            backgroundColor: "rgba(16, 185, 129, 0.08)",
-            border: "1px solid rgba(16, 185, 129, 0.2)",
-            padding: "4px 10px",
-            borderRadius: "20px",
-          }}
-        >
-          <span
-            style={{
-              width: "6px",
-              height: "6px",
-              borderRadius: "50%",
-              backgroundColor: "#10b981",
-              display: "inline-block",
-              boxShadow: "0 0 8px #10b981",
-              animation: "pulse-badge 1.8s infinite ease-in-out",
-            }}
-          />
-          <span
-            style={{
-              fontSize: "11.5px",
-              fontWeight: 800,
-              color: "#10b981",
-              letterSpacing: "0.5px",
-            }}
-          >
-            Zy AI Online
-          </span>
-        </div>
-        <span
-          className="search-header-status-text"
-          style={{
-            fontSize: "13px",
-            color: "var(--text-secondary)",
-            fontWeight: 600,
-          }}
-        >
-          Live AI Matchmaker Active
-        </span>
-      </div>
+
 
       <button
         type="button"
