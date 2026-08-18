@@ -4,8 +4,8 @@ import Navbar from "../components/Navbar";
 import { FaEye, FaEyeSlash, FaUser, FaHardHat, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import authBg from "../assets/auth-bg.jpg";
 import authMobileBg from "../assets/auth-mobile-bg.png";
-import { use3dTilt } from "../utils/use3dTilt";
 import { fetchAllWorkersCached } from "../utils/workerService";
+import { triggerGoogleAuth } from "../utils/googleAuth";
 
 // ── Safe JSON parser ────────────────────────────────────────────────────────
 const safeJson = async (response) => {
@@ -221,7 +221,6 @@ function Login() {
   const [joinStatus, setJoinStatus] = useState(null);
 
   const navigate = useNavigate();
-  const loginCardRef = use3dTilt();
 
   // ── Helper to convert server error string to structured popup ─────────────
   const parseErrorToPopup = (errMsg) => {
@@ -610,18 +609,25 @@ function Login() {
   // ── Google Sign-In ────────────────────────────────────────────────────────
   // flow: "user_login" (user tab) | "provider_login" (provider tab)
   const handleGoogleSignIn = (flow = "user_login") => {
-    sessionStorage.setItem("google_auth_flow", flow);
-    const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || "849555982996-giolb22mkrfbg8c4ut0ohbv1ps9giv2o.apps.googleusercontent.com";
-    const redirectUri = window.location.origin;
-    const scope = encodeURIComponent("https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email");
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${scope}&prompt=select_account`;
-    const isLocalIp = window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1" && /^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(window.location.hostname);
-    if (isMobile && isLocalIp) {
-      setLoginStatus({ type: "success", message: "Launching Mock Google Sign-in for local IP testing..." });
-      setTimeout(() => { window.location.href = "/google-auth?redirect=true"; }, 1500);
-      return;
-    }
-    window.location.href = authUrl;
+    const targetLoginAs = flow === "provider_login" ? "provider" : "user";
+    setIsLoading(true);
+    setLoginStatus({ type: "success", message: "Connecting to Google... 🔑" });
+
+    triggerGoogleAuth({
+      flow,
+      navigate,
+      onSuccess: async (accessToken) => {
+        await handleGoogleLoginWithToken(accessToken, targetLoginAs);
+      },
+      onError: (errMsg) => {
+        setIsLoading(false);
+        setLoginStatus({ type: "error", message: errMsg });
+      },
+      onFallback: () => {
+        setIsLoading(false);
+        navigate("/google-auth?redirect=true");
+      },
+    });
   };
 
   // ── Shared status banner ─────────────────────────────────────────────────
@@ -711,7 +717,6 @@ function Login() {
       >
         <div
           className="premium-card"
-          ref={loginCardRef}
           style={{
             width: isMobile ? "92%" : "100%",
             maxWidth: isMobile ? "360px" : "420px",

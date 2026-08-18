@@ -4,7 +4,7 @@ import Navbar from "../components/Navbar";
 import { FaEye, FaEyeSlash, FaUser, FaTools } from "react-icons/fa";
 import authBg from "../assets/auth-bg.jpg";
 import authMobileBg from "../assets/auth-mobile-bg.png";
-import { use3dTilt } from "../utils/use3dTilt";
+import { triggerGoogleAuth } from "../utils/googleAuth";
 
 // Safe JSON parser
 const safeJson = async (response) => {
@@ -111,7 +111,6 @@ function Signup() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const navigate = useNavigate();
-  const signupCardRef = use3dTilt();
 
   // ── Google OAuth Token Handler ─────────────────────────────
   const handleGoogleSignUpWithToken = async (accessToken, extraBody) => {
@@ -205,21 +204,24 @@ function Signup() {
 
   // ── Launch Google Auth ─────────────────────────────────────
   const launchGoogleAuth = (extraBody = {}) => {
-    sessionStorage.setItem("google_auth_flow", "signup");
-    sessionStorage.setItem("pending_google_signup", JSON.stringify(extraBody));
+    setIsLoading(true);
 
-    const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || "849555982996-giolb22mkrfbg8c4ut0ohbv1ps9giv2o.apps.googleusercontent.com";
-    const redirectUri = window.location.origin;
-    const scope = encodeURIComponent("https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email");
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${scope}&prompt=select_account`;
-
-    const isLocalIp = window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1" && /^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(window.location.hostname);
-    if (isMobile && isLocalIp) {
-      setPopupResult({ type: "fail", message: "Google OAuth does not support local IP addresses on mobile. Redirecting to Mock Google Sign-In..." });
-      setTimeout(() => { window.location.href = "/google-auth?redirect=true"; }, 3000);
-      return;
-    }
-    window.location.href = authUrl;
+    triggerGoogleAuth({
+      flow: "signup",
+      extraBody,
+      navigate,
+      onSuccess: async (accessToken) => {
+        await handleGoogleSignUpWithToken(accessToken, extraBody);
+      },
+      onError: (errMsg) => {
+        setIsLoading(false);
+        setPopupResult({ type: "fail", message: errMsg });
+      },
+      onFallback: () => {
+        setIsLoading(false);
+        navigate("/google-auth?redirect=true");
+      },
+    });
   };
 
   // ── Customer Google Signup ─────────────────────────────────
@@ -351,7 +353,6 @@ function Signup() {
       >
         <div
           className="premium-card"
-          ref={signupCardRef}
           style={{
             width: "100%", maxWidth: "440px", backgroundColor: "var(--bg-card)",
             padding: isMobile ? "26px 20px" : "36px", boxSizing: "border-box",
