@@ -1,53 +1,32 @@
-/**
- * 🚀 UNIFIED API GATEWAY
- * Standardized client that dynamically injects auth telemetry and executes robust try-catch cycles.
- */
 const BASE_URL = "/api";
 
 const apiClient = async (endpoint, options = {}) => {
-  // Automatic Header Construction
+  const token = sessionStorage.getItem("authToken");
   const headers = {
     "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
 
-  // Security Relay: Dynamically latch on the session token automatically!
-  const token = sessionStorage.getItem("authToken");
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
-  const config = {
-    ...options,
-    headers,
-  };
-
   try {
-    const response = await fetch(`${BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`, config);
-    
-    // Advanced Status Diagnostics
+    const response = await fetch(`${BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`, { ...options, headers });
     if (!response.ok) {
-       const errorData = await response.json().catch(() => ({}));
-       throw new Error(errorData.error || errorData.message || `HTTP FAIL: ${response.status}`);
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || err.message || `HTTP ${response.status}`);
     }
-
-    // Auto-deserialization
-    const data = await response.json();
-    return { data, error: null };
-
+    return { data: await response.json(), error: null };
   } catch (err) {
-    console.error(`[API_FAILURE] URL:${endpoint} Details:`, err.message);
+    console.error(`[API] ${endpoint}:`, err.message);
     return { data: null, error: err.message };
   }
 };
 
-// Semantic Expressives Helpers
 export const api = {
-  get: (url, opts) => apiClient(url, { method: "GET", ...opts }),
-  post: (url, body, opts) => apiClient(url, { method: "POST", body: JSON.stringify(body), ...opts }),
-  put: (url, body, opts) => apiClient(url, { method: "PUT", body: JSON.stringify(body), ...opts }),
-  patch: (url, body, opts) => apiClient(url, { method: "PATCH", body: JSON.stringify(body), ...opts }),
-  delete: (url, opts) => apiClient(url, { method: "DELETE", ...opts }),
+  get:    (url, opts)       => apiClient(url, { method: "GET",    ...opts }),
+  post:   (url, body, opts) => apiClient(url, { method: "POST",   body: JSON.stringify(body), ...opts }),
+  put:    (url, body, opts) => apiClient(url, { method: "PUT",    body: JSON.stringify(body), ...opts }),
+  patch:  (url, body, opts) => apiClient(url, { method: "PATCH",  body: JSON.stringify(body), ...opts }),
+  delete: (url, opts)       => apiClient(url, { method: "DELETE", ...opts }),
 };
 
 export default api;

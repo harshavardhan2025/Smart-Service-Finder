@@ -1349,3 +1349,4 @@ function LocationMapModal({ onClose, onLocationUpdate, onCoordsChange }) {
 }
 
 export default AISmartSearchHub;
+

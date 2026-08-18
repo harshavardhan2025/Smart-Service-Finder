@@ -5,16 +5,9 @@ import { FaEye, FaEyeSlash, FaUser, FaHardHat, FaChevronDown, FaChevronUp } from
 import authBg from "../assets/auth-bg.jpg";
 import authMobileBg from "../assets/auth-mobile-bg.png";
 import { fetchAllWorkersCached } from "../utils/workerService";
+import safeJson from "../utils/safeJson";
 import { triggerGoogleAuth } from "../utils/googleAuth";
 
-// ── Safe JSON parser ────────────────────────────────────────────────────────
-const safeJson = async (response) => {
-  const contentType = response.headers.get("content-type") || "";
-  if (contentType.includes("application/json")) return response.json();
-  const text = await response.text();
-  console.error("Non-JSON response received:", text.slice(0, 200));
-  return { error: "Server is unreachable – please try again shortly." };
-};
 
 // ── Professions list (for Join as Service Provider) ─────────────────────────
 const PROFESSIONS = [
@@ -1154,3 +1147,4 @@ function Login() {
 }
 
 export default Login;
+

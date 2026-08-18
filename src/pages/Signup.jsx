@@ -4,16 +4,9 @@ import Navbar from "../components/Navbar";
 import { FaEye, FaEyeSlash, FaUser, FaTools } from "react-icons/fa";
 import authBg from "../assets/auth-bg.jpg";
 import authMobileBg from "../assets/auth-mobile-bg.png";
+import safeJson from "../utils/safeJson";
 import { triggerGoogleAuth } from "../utils/googleAuth";
 
-// Safe JSON parser
-const safeJson = async (response) => {
-  const contentType = response.headers.get("content-type") || "";
-  if (contentType.includes("application/json")) return response.json();
-  const text = await response.text();
-  console.error("Non-JSON response:", text.slice(0, 200));
-  return { error: "Server is unreachable – please ensure the backend is running on port 5000." };
-};
 
 const PROFESSIONS = [
   { group: "Main Services", options: ["Carpentry", "Plumbing", "Electrical", "Beauty, Salon & Spa", "Doctors"] },
@@ -687,3 +680,4 @@ function Signup() {
 }
 
 export default Signup;
+

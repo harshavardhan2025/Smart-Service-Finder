@@ -23,8 +23,10 @@
     "firebase-admin": "^14.2.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.6.1",
-    "nodemon": "^3.1.14",
     "redis": "^6.0.0",
     "zhipuai-sdk-nodejs-v4": "^0.1.12"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }

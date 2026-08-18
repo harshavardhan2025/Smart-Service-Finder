@@ -3,7 +3,6 @@ import { FaStar, FaMapMarkerAlt, FaCheckCircle, FaBolt, FaClock, FaLock, FaShiel
 
 function WorkerProfile() {
   const navigate = useNavigate();
-  // Retrieve the selected worker details from localStorage, with a beautiful default fallback
   const worker = JSON.parse(localStorage.getItem("selected_worker")) || {
     name: "Dr. Priya Sen",
     service: "Doctors & Medical",
@@ -15,7 +14,6 @@ function WorkerProfile() {
 
   const calculatedPrice = worker.price || (worker.service?.includes("Carpentry") ? 399 : worker.service?.includes("Plumbing") ? 299 : worker.service?.includes("Doctors") ? 599 : 349);
 
-  // Dynamically calculate estimated response time based on real distance
   const getResponseTime = (distanceKm) => {
     if (distanceKm === undefined) return "< 15 Mins (Fast)";
     if (distanceKm < 1) return "< 15 Mins (Fast)";
@@ -27,7 +25,6 @@ function WorkerProfile() {
   const handleInitiateBooking = () => {
     const userId = sessionStorage.getItem("userId");
     const userRole = sessionStorage.getItem("userRole");
-    // 🛡️ FRONT-LINE FIREWALL: Verify valid user credentials before releasing slots!
     if (!userId || userRole !== "user") {
        if (userId) {
          alert("🔑 Customer Account Required!\n\nLogging you out now. Please log in with a customer account to schedule bookings.");
@@ -45,7 +42,6 @@ function WorkerProfile() {
     navigate("/booking");
   };
 
-  // Get clean initials for the avatar (filtering common titles like Dr., Mr., etc.)
   const getInitials = (name) => {
     if (!name) return "?";
     const parts = name.split(" ");
@@ -55,7 +51,6 @@ function WorkerProfile() {
     return (cleanParts[0].charAt(0) + cleanParts[1].charAt(0)).toUpperCase();
   };
 
-  // Color-coded background based on worker name string hash for premium feeling
   const getAvatarColor = (name) => {
     const colors = [
       "#0d9488", // Teal

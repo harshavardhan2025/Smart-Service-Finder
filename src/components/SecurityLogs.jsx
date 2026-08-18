@@ -169,3 +169,4 @@ function SecurityLogs({ userId = "admin", limit = 0 }) {
 }
 
 export default SecurityLogs;
+

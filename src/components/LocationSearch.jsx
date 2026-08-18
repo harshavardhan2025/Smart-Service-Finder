@@ -394,3 +394,4 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
 }
 
 export default LocationSearch;
+

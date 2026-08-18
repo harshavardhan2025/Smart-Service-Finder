@@ -174,9 +174,9 @@ function PaymentPage() {
                }}
             >
                {processing ? (
-                  <>⌛ Processing Bank Link...</>
+                   <>Processing...</>
                ) : (
-                  <>Authorize ₹{amount || 0} Deposit 🔒</>
+                   <>Add ₹{amount || 0} to Wallet</>
                )}
             </button>
 
@@ -188,7 +188,7 @@ function PaymentPage() {
                   color: "var(--text-secondary)", fontSize: "13px", fontWeight: 600, cursor: "pointer", textDecoration: "underline"
                }}
             >
-               Cancel & Retreat
+               Cancel
             </button>
          </div>
       </div>

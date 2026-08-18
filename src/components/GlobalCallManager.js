@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 function GlobalCallManager() {
   const [activeCall, setActiveCall] = useState(null); // 'ringing' | 'connected' | null

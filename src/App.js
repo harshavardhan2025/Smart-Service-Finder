@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -66,7 +66,7 @@ function restoreSession() {
       sessionStorage.setItem("userCity", session.userCity);
       localStorage.setItem("userCity",   session.userCity);
     }
-    console.log("🔒 Session restored from persistent storage for:", session.userName);
+    console.info("Session restored for:", session.userName);
   } catch (e) {
     console.error("Session restore failed:", e);
     localStorage.removeItem("authSession");

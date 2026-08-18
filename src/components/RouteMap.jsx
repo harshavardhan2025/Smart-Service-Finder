@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -71,7 +71,7 @@ const RouteMap = ({ startAddress, endAddress }) => {
         const queryA = startAddress || "Hyderabad, India";
         const queryB = endAddress || "Banjara Hills, Hyderabad";
 
-        console.log(`🛰️ Photon Route: [${queryA}] --> [${queryB}]`);
+
 
         let resA, resB;
         try {

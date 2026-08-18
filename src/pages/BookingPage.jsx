@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
-import Calendar from "react-calendar";
-import "react-calendar/dist/Calendar.css";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/apiClient";
-import AnimatedSuccess from "../components/AnimatedSuccess";
-import AnimatedFailure from "../components/AnimatedFailure";
+import BookingFeedback from "../components/BookingFeedback";
 import { getWalletBalance, deductFromWallet } from "../utils/wallet";
 
 function BookingPage() {
-  const [date, setDate] = useState(new Date());
+  // ponytail: native date input uses YYYY-MM-DD string directly
+  const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+  const [date, setDate] = useState(todayStr());
   const [selectedSlot, setSelectedSlot] = useState("Instant (10-20 mins)");
   const [isEmergency, setIsEmergency] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("Wallet");
@@ -245,9 +244,7 @@ function BookingPage() {
     setCouponStatus(null);
   };
 
-  // 🛡️ CRITICAL SCHEDULING LOCK: Cap booking capabilities strictly to 9 Days Max!
-  const maxBookingDate = new Date();
-  maxBookingDate.setDate(maxBookingDate.getDate() + 9);
+
 
   const timeSlots = [
     { label: "9 AM", hour: 9 },
@@ -257,33 +254,18 @@ function BookingPage() {
     { label: "5 PM", hour: 17 }
   ];
 
-  const isToday = (d) => {
-    const t = new Date();
-    return d.getDate() === t.getDate() && d.getMonth() === t.getMonth() && d.getFullYear() === t.getFullYear();
-  };
-
+  // date is a YYYY-MM-DD string — compare directly
+  const isToday = (d) => d === todayStr();
   const isSlotPast = (h) => isToday(date) && h <= new Date().getHours();
-
-  // 🕰️ Timezone Fortress: Guarantees robust, zero-drift string conversion immune to UTC rollback bugs!
-  const formatSafeYMD = (d) => {
-     const y = d.getFullYear();
-     const m = String(d.getMonth() + 1).padStart(2, '0');
-     const day = String(d.getDate()).padStart(2, '0');
-     return `${y}-${m}-${day}`;
-  };
-
-  // 🛑 COLLISION GUARD A: Check if the specific slot is physically occupied
-  const isSlotAlreadyBooked = (hLabel) => {
-     const dStr = formatSafeYMD(date);
-     return busyBookings.some(b => b.date === dStr && b.time === hLabel && !["Cancelled", "Rejected", "Completed", "Paid Out"].includes(b.status));
-  };
+  const isSlotAlreadyBooked = (hLabel) =>
+    busyBookings.some(b => b.date === date && b.time === hLabel && !["Cancelled", "Rejected", "Completed", "Paid Out"].includes(b.status));
 
   // 🚨 COLLISION GUARD B: Determine if Instant Booking should be hard-locked due to immediate conflicts
   const isBusyForInstant = () => {
-     const todayStr = formatSafeYMD(new Date());
+     const today = todayStr();
      const currentHour = new Date().getHours();
      
-     const activeToday = busyBookings.filter(b => b.date === todayStr && !["Cancelled", "Rejected", "Completed", "Paid Out"].includes(b.status));
+     const activeToday = busyBookings.filter(b => b.date === today && !["Cancelled", "Rejected", "Completed", "Paid Out"].includes(b.status));
      if (activeToday.some(b => b.time && b.time.includes("Instant"))) return true; // Active instant job!
 
      return activeToday.some(b => {
@@ -365,7 +347,7 @@ function BookingPage() {
          customer_id: customerId,
          customer_name: customerName,
          worker_id: workerDbId,
-         date: formatSafeYMD(date),
+         date: date,
          time: selectedSlot,
          service: selectedWorker.service,
          price: calculatedPrice,
@@ -401,7 +383,7 @@ function BookingPage() {
 
       setBookingDetails({
          service: selectedWorker.service,
-         date: formatSafeYMD(date),
+         date: date,
          time: selectedSlot,
          price: calculatedPrice
       });
@@ -541,17 +523,19 @@ function BookingPage() {
               📅 1. Choose Service Date & Time Window
             </h3>
 
-            <Calendar 
-              className="modern-booking-calendar"
-              onChange={(d) => { setDate(d); setSelectedSlot(null); setIsEmergency(false); }} 
-              value={date} 
-              minDate={new Date()} 
-              maxDate={maxBookingDate}
+            {/* ponytail: browser has one — replaced react-calendar with native input */}
+            <input
+              type="date"
+              value={date}
+              min={todayStr()}
+              max={(() => { const d = new Date(); d.setDate(d.getDate() + 9); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })()}
+              onChange={(e) => { setDate(e.target.value); setSelectedSlot(null); setIsEmergency(false); }}
+              style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: "1.5px solid var(--border-color)", backgroundColor: "var(--bg-card-hover)", color: "var(--text-main)", fontSize: 15, fontWeight: 600, cursor: "pointer", outline: "none", boxSizing: "border-box" }}
             />
 
             <div style={{ marginTop: 22 }}>
               <label style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text-secondary)", display: "block", marginBottom: 12 }}>
-                🕒 Select Available Window for {date.toDateString()}:
+                🕒 Select Available Window for {date}:
               </label>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: 12 }}>
                 {timeSlots.map(slot => {
@@ -961,22 +945,19 @@ function BookingPage() {
       </div>
 
       {showSuccessOverlay && (
-        <AnimatedSuccess
+        <BookingFeedback
+          type="success"
           bookingDetails={bookingDetails}
           onClose={() => navigate("/user-dashboard")}
         />
       )}
 
       {showFailureOverlay && (
-        <AnimatedFailure
+        <BookingFeedback
+          type="failure"
           errorMessage={failureMessage}
-          onRetry={() => {
-            setShowFailureOverlay(false);
-            handlePayNow();
-          }}
-          onBack={() => {
-            setShowFailureOverlay(false);
-          }}
+          onRetry={() => { setShowFailureOverlay(false); handlePayNow(); }}
+          onBack={() => setShowFailureOverlay(false)}
         />
       )}
     </div>
@@ -984,3 +965,4 @@ function BookingPage() {
 }
 
 export default BookingPage;
+
