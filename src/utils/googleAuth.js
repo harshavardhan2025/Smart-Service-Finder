@@ -49,7 +49,6 @@ const launchGooglePopup = ({ onSuccess, onError }) => {
     const client = window.google.accounts.oauth2.initTokenClient({
       client_id: GOOGLE_CLIENT_ID,
       scope: "email profile openid",
-      ux_mode: "redirect",
       callback: async (tokenResponse) => {
         if (tokenResponse?.error) {
           console.warn("⚠️ Google OAuth response error:", tokenResponse.error);
