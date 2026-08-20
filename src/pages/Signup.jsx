@@ -210,10 +210,6 @@ function Signup() {
         setIsLoading(false);
         setPopupResult({ type: "fail", message: errMsg });
       },
-      onFallback: () => {
-        setIsLoading(false);
-        navigate("/google-auth?redirect=true");
-      },
     });
   };
 

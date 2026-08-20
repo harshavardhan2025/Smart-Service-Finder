@@ -61,15 +61,15 @@ const RouteMap = ({ startAddress, endAddress }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const defaultCenter = [17.3850, 78.4867]; // Hyderabad fallback
+  const defaultCenter = [16.9890, 82.2439]; // Kakinada fallback
 
   useEffect(() => {
     const geocodeBoth = async () => {
       setLoading(true);
       setError(null);
       try {
-        const queryA = startAddress || "Hyderabad, India";
-        const queryB = endAddress || "Banjara Hills, Hyderabad";
+        const queryA = startAddress || "Kakinada, India";
+        const queryB = endAddress || "Bhanugudi Junction, Kakinada";
 
 
 

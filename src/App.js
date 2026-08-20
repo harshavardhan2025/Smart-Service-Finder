@@ -27,7 +27,6 @@ const ReviewsRewards = lazy(() => import("./pages/ReviewsRewards"));
 const Profile = lazy(() => import("./pages/Profile"));
 const PlansOffers = lazy(() => import("./pages/PlansOffers"));
 const AiChatBot = lazy(() => import("./components/AiChatBot"));
-const GoogleAuthMock = lazy(() => import("./pages/GoogleAuthMock"));
 
 // 🔒 PERSISTENT SESSION RESTORE: Recover auth from localStorage on cold start
 function restoreSession() {
@@ -112,7 +111,6 @@ function App() {
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/plans-offers" element={<PlansOffers />} />
           <Route path="/plans" element={<PlansOffers />} />
-          <Route path="/google-auth" element={<GoogleAuthMock />} />
         </Routes>
         <AiChatBot />
       </Suspense>

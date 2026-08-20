@@ -1,6 +1,5 @@
 // ── Centralized Google Authentication Utility ──────────────────────────────────
-// Uses Google Identity Services (GIS) Token Client for modern OAuth popup flow
-// with seamless fallback to Google Account Selector (/google-auth)
+// Uses Google Identity Services (GIS) Token Client for modern real-time OAuth popup flow.
 
 export const GOOGLE_CLIENT_ID =
   process.env.REACT_APP_GOOGLE_CLIENT_ID ||
@@ -14,22 +13,90 @@ export const isGoogleSdkLoaded = () => {
 };
 
 /**
- * Trigger Google OAuth Sign-in / Sign-up Flow
+ * Wait for the Google Identity Services SDK to finish loading.
+ * The SDK is loaded via <script async defer> so it may not be ready
+ * when the user clicks "Sign In with Google". This polls every 200ms
+ * for up to `maxWaitMs` before giving up.
+ * @param {number} maxWaitMs - Maximum time to wait in milliseconds (default: 3000)
+ * @returns {Promise<boolean>} - true if SDK loaded, false if timed out
+ */
+const waitForGoogleSdk = (maxWaitMs = 3000) => {
+  return new Promise((resolve) => {
+    if (isGoogleSdkLoaded()) {
+      resolve(true);
+      return;
+    }
+    const interval = 200;
+    let waited = 0;
+    const timer = setInterval(() => {
+      waited += interval;
+      if (isGoogleSdkLoaded()) {
+        clearInterval(timer);
+        resolve(true);
+      } else if (waited >= maxWaitMs) {
+        clearInterval(timer);
+        resolve(false);
+      }
+    }, interval);
+  });
+};
+
+/**
+ * Launch the real Google OAuth popup using the GIS Token Client.
+ */
+const launchGooglePopup = ({ onSuccess, onError }) => {
+  try {
+    const client = window.google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: "email profile openid",
+      callback: async (tokenResponse) => {
+        if (tokenResponse?.error) {
+          console.warn("⚠️ Google OAuth response error:", tokenResponse.error);
+          if (tokenResponse.error === "popup_closed_by_user") {
+            onError?.("Google Sign-In popup was closed before completing.");
+            return;
+          }
+          onError?.(tokenResponse.error_description || tokenResponse.error || "Google Sign-In failed.");
+          return;
+        }
+
+        if (tokenResponse?.access_token) {
+          try {
+            await onSuccess?.(tokenResponse.access_token);
+          } catch (err) {
+            onError?.(err.message || "Failed to authenticate with backend.");
+          }
+        } else {
+          onError?.("No access token received from Google.");
+        }
+      },
+      error_callback: (err) => {
+        console.warn("⚠️ Google GIS initialization error:", err);
+        onError?.(err?.message || "Google Identity Services error. Please try again.");
+      },
+    });
+
+    client.requestAccessToken({ prompt: "select_account" });
+  } catch (err) {
+    console.warn("⚠️ Error initializing Google Token Client:", err.message);
+    onError?.(err.message || "Could not initialize Google Authentication popup.");
+  }
+};
+
+/**
+ * Trigger Real-time Google OAuth Sign-in / Sign-up Flow
  * @param {Object} options
  * @param {string} options.flow - "user_login" | "provider_login" | "signup"
  * @param {Object} [options.extraBody] - Extra signup data (role, profession, city, phone, name)
  * @param {Function} options.onSuccess - Callback on successful token receipt (accessToken) => Promise<void>
  * @param {Function} options.onError - Callback on error (errorMessage) => void
- * @param {Function} [options.onFallback] - Callback when falling back to mock Google Auth
  * @param {Function} [options.navigate] - react-router navigate function
  */
-export const triggerGoogleAuth = ({
+export const triggerGoogleAuth = async ({
   flow = "user_login",
   extraBody = {},
   onSuccess,
   onError,
-  onFallback,
-  navigate,
 }) => {
   // Store flow context in sessionStorage for state recovery
   sessionStorage.setItem("google_auth_flow", flow);
@@ -39,66 +106,21 @@ export const triggerGoogleAuth = ({
     sessionStorage.removeItem("pending_google_signup");
   }
 
-  const fallbackToMock = (reason) => {
-    console.info("ℹ️ Using Google Auth Assistant:", reason);
-    if (onFallback) {
-      onFallback(reason);
-    } else if (navigate) {
-      navigate("/google-auth?redirect=true");
-    } else {
-      window.location.href = "/google-auth?redirect=true";
-    }
-  };
-
-  // Check if GIS is available
+  // If SDK is already loaded, launch immediately
   if (isGoogleSdkLoaded()) {
-    try {
-      const client = window.google.accounts.oauth2.initTokenClient({
-        client_id: GOOGLE_CLIENT_ID,
-        scope: "email profile openid",
-        callback: async (tokenResponse) => {
-          if (tokenResponse?.error) {
-            console.warn("⚠️ Google OAuth response error:", tokenResponse.error);
-            if (tokenResponse.error === "popup_closed_by_user") {
-              onError?.("Google Sign-In popup was closed before completing.");
-              return;
-            }
-            if (
-              tokenResponse.error === "access_denied" ||
-              tokenResponse.error === "idpiframe_initialization_failed"
-            ) {
-              fallbackToMock("Google popup permission denied");
-              return;
-            }
-            fallbackToMock(tokenResponse.error_description || tokenResponse.error);
-            return;
-          }
-
-          if (tokenResponse?.access_token) {
-            try {
-              await onSuccess?.(tokenResponse.access_token);
-            } catch (err) {
-              onError?.(err.message || "Failed to authenticate with backend.");
-            }
-          } else {
-            fallbackToMock("No access token received from Google");
-          }
-        },
-        error_callback: (err) => {
-          console.warn("⚠️ Google GIS initialization error:", err);
-          fallbackToMock(err?.message || "Google GIS error");
-        },
-      });
-
-      client.requestAccessToken({ prompt: "select_account" });
-      return;
-    } catch (err) {
-      console.warn("⚠️ Error initializing Google Token Client:", err.message);
-      fallbackToMock(err.message);
-      return;
-    }
+    launchGooglePopup({ onSuccess, onError });
+    return;
   }
 
-  // If GIS SDK is not loaded yet or blocked, fallback
-  fallbackToMock("Google SDK not initialized");
+  // SDK not ready yet — wait for it (async script may still be loading)
+  console.info("⏳ Google SDK not ready yet, waiting up to 3s...");
+  const sdkLoaded = await waitForGoogleSdk(3000);
+
+  if (sdkLoaded) {
+    console.info("✅ Google SDK loaded successfully, launching popup");
+    launchGooglePopup({ onSuccess, onError });
+  } else {
+    onError?.("Google SDK could not be loaded. Please check your internet connection or ad-blocker.");
+  }
 };
+

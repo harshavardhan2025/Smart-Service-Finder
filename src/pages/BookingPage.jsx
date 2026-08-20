@@ -83,6 +83,17 @@ function BookingPage() {
     }
   }, [navigate]);
 
+  // Load the currently selected worker dynamically from localStorage
+  // NOTE: Must be defined before the useEffect that references it
+  const selectedWorker = JSON.parse(localStorage.getItem("selected_worker")) || {
+    name: "Dr. Priya Sen",
+    service: "Doctors & Medical",
+    rating: 4.8,
+    distance: "1.5 KM",
+    city: "Bangalore",
+    price: 599
+  };
+
   // 🛡️ Authoritative Live Collision Check: Fetch worker's dynamic calendar
   useEffect(() => {
      const loadSchedule = async () => {
@@ -97,16 +108,6 @@ function BookingPage() {
      loadSchedule();
      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Load the currently selected worker dynamically from localStorage
-  const selectedWorker = JSON.parse(localStorage.getItem("selected_worker")) || {
-    name: "Dr. Priya Sen",
-    service: "Doctors & Medical",
-    rating: 4.8,
-    distance: "1.5 KM",
-    city: "Bangalore",
-    price: 599
-  };
 
   // Parse distance from selected worker safely
   let distanceVal = 0;
@@ -314,14 +315,11 @@ function BookingPage() {
   };
 
   const handlePayNow = async () => {
-    if (paymentMethod === "Wallet") {
-      const walletRes = await deductFromWallet(calculatedPrice, `${selectedWorker.service} Service Booking`, "Wallet");
-      if (!walletRes.success) {
-        setFailureMessage(walletRes.error);
-        setShowFailureOverlay(true);
-        return;
-      }
-      setWalletBal(walletRes.balance);
+    // Validate a time slot is selected before proceeding
+    if (!selectedSlot) {
+      setFailureMessage("Please select a time slot before booking.");
+      setShowFailureOverlay(true);
+      return;
     }
 
     const customerId = sessionStorage.getItem("userId");
@@ -454,7 +452,7 @@ function BookingPage() {
               const nextEmergencyState = !isEmergency;
               setIsEmergency(nextEmergencyState);
               if (nextEmergencyState) {
-                setDate(new Date());
+                setDate(todayStr());
                 setSelectedSlot("Instant (10-20 mins)");
               } else {
                 setSelectedSlot(null);
@@ -914,29 +912,31 @@ function BookingPage() {
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-secondary)", fontSize: 13.5 }}>
                 <span>Scheduled Delivery Window</span>
-                <span style={{ fontWeight: 700, color: "var(--text-main)" }}>{date.toDateString()} — {selectedSlot || "Select slot"}</span>
+                <span style={{ fontWeight: 700, color: "var(--text-main)" }}>{typeof date === 'string' ? new Date(date + 'T00:00:00').toDateString() : new Date(date).toDateString()} — {selectedSlot || "Select slot"}</span>
               </div>
             </div>
             
             <button 
-              onClick={handlePayNow} 
+              onClick={handlePayNow}
+              disabled={!selectedSlot}
               style={{ 
                 width: "100%",
                 padding: "18px",
-                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                background: !selectedSlot ? "#94a3b8" : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
                 color: "white",
                 border: "none",
                 borderRadius: 16,
                 fontSize: 18,
                 fontWeight: 900,
-                cursor: "pointer",
-                boxShadow: "0 8px 20px rgba(16, 185, 129, 0.35)",
-                transition: "all 0.2s ease"
+                cursor: !selectedSlot ? "not-allowed" : "pointer",
+                boxShadow: !selectedSlot ? "none" : "0 8px 20px rgba(16, 185, 129, 0.35)",
+                transition: "all 0.2s ease",
+                opacity: !selectedSlot ? 0.7 : 1
               }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-1px)"}
+              onMouseEnter={(e) => { if (selectedSlot) e.currentTarget.style.transform = "translateY(-1px)"; }}
               onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
             >
-              Complete Payment & Book ✅
+              {!selectedSlot ? "⏰ Select a Time Slot First" : "Complete Payment & Book ✅"}
             </button>
           </div>
 

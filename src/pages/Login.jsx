@@ -616,10 +616,6 @@ function Login() {
         setIsLoading(false);
         setLoginStatus({ type: "error", message: errMsg });
       },
-      onFallback: () => {
-        setIsLoading(false);
-        navigate("/google-auth?redirect=true");
-      },
     });
   };
 
@@ -1069,7 +1065,7 @@ function Login() {
                         <input
                           id="join-city"
                           type="text"
-                          placeholder="e.g. Hyderabad or Kadapa"
+                          placeholder="e.g. Kakinada or Rajahmundry"
                           value={joinCity}
                           onChange={(e) => setJoinCity(e.target.value)}
                           list="join-cities-list"
