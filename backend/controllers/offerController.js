@@ -1,7 +1,50 @@
 import Offer from "../models/Offer.js";
 
+const DEFAULT_OFFERS = [
+  {
+    code: "EGOD20",
+    discount: "20% Off",
+    desc: "Get 20% off on all services",
+    expiry: "Valid till Dec 31, 2030",
+    endDate: "2030-12-31",
+    minPrice: 200,
+    validServices: "All"
+  },
+  {
+    code: "WELCOME100",
+    discount: "Flat ₹100 Off",
+    desc: "Valid on all service bookings for new clients",
+    expiry: "Valid till Dec 31, 2030",
+    endDate: "2030-12-31",
+    minPrice: 200,
+    validServices: "All"
+  },
+  {
+    code: "WORKZY20",
+    discount: "20% Off",
+    desc: "Get 20% off on Plumbing, Electrical & Carpentry repairs",
+    expiry: "Valid till Dec 31, 2030",
+    endDate: "2030-12-31",
+    minPrice: 250,
+    validServices: "Plumbing, Electrical, Carpentry"
+  },
+  {
+    code: "FESTIVE25",
+    discount: "25% Off",
+    desc: "Festive season special discount across all plans and services",
+    expiry: "Valid till Dec 31, 2030",
+    endDate: "2030-12-31",
+    minPrice: 300,
+    validServices: "All"
+  }
+];
+
 export const getOffers = async (req, res) => {
   try {
+    const count = await Offer.countDocuments();
+    if (count === 0) {
+      await Offer.insertMany(DEFAULT_OFFERS);
+    }
     const filter = {};
     if (req.query.adminView !== "true") {
       const today = new Date();
