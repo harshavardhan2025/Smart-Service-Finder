@@ -637,14 +637,251 @@ function PlansOffers() {
       </div>
 
       <div style={{ height: 40, width: 90, backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 8, marginLeft: 16 }} />
-
     </div>
-
   );
 
+  const renderPlansContent = () => {
+    if (loading && plans.length === 0) {
+      return [1, 2, 3].map(i => <SkeletonPlanCard key={i} />);
+    }
+    if (plans.length === 0) {
+      return (
+        <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "40px 20px", color: "var(--text-muted)", fontSize: "15px" }}>
+          No active subscription plans available at the moment.
+        </div>
+      );
+    }
+    return plans.map((plan, i) => {
+      const bgTone = plan.popular 
+        ? "linear-gradient(135deg, rgba(234, 179, 8, 0.1) 0%, rgba(234, 179, 8, 0.03) 100%)" 
+        : i % 2 === 0 
+          ? "linear-gradient(135deg, rgba(49, 82, 91, 0.07) 0%, rgba(49, 82, 91, 0.02) 100%)" 
+          : "linear-gradient(135deg, rgba(14, 165, 233, 0.07) 0%, rgba(14, 165, 233, 0.02) 100%)";
 
+      const borderCol = plan.popular 
+        ? "2.5px solid #eab308" 
+        : i % 2 === 0 
+          ? "1.5px solid rgba(49, 82, 91, 0.25)" 
+          : "1.5px solid rgba(14, 165, 233, 0.25)";
 
+      const planShadow = plan.popular
+        ? "0 20px 40px -10px rgba(234, 179, 8, 0.2), var(--shadow-3d)"
+        : "var(--shadow-3d)";
 
+      const featuresArr = Array.isArray(plan.features) 
+        ? plan.features 
+        : (typeof plan.features === "string" ? plan.features.split(",").map(f => f.trim()).filter(Boolean) : []);
+
+      return (
+        <div 
+          key={plan._id || plan.id || i}
+          className="premium-card"
+          style={{
+            background: bgTone,
+            borderRadius: 16,
+            padding: 32,
+            border: borderCol,
+            position: "relative",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+            transform: plan.popular ? "scale(1.03)" : "none",
+            boxShadow: planShadow,
+            zIndex: plan.popular ? 2 : 1
+          }}
+        >
+          {plan.popular && (
+            <span style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", backgroundColor: "var(--warning)", color: "var(--text-main)", padding: "6px 16px", borderRadius: 20, fontSize: 11, fontWeight: 800, boxShadow: "0 4px 12px rgba(234, 179, 8, 0.4)", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+              MOST POPULAR <FaStar size={10} />
+            </span>
+          )}
+
+          <div>
+            <h3 style={{ margin: "0 0 12px 0", fontSize: 20, fontWeight: 700, color: plan.popular ? "#eab308" : "var(--text-main)" }}>{plan.title}</h3>
+
+            <div style={{ display: "flex", flexDirection: "column", marginBottom: 24 }}>
+              <div style={{ display: "flex", alignItems: "baseline" }}>
+                <span style={{ fontSize: 36, fontWeight: 800, color: "var(--text-main)" }}>₹{(plan.price || "").toString().replace("₹", "")}</span>
+                <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>/{plan.period || "month"}</span>
+              </div>
+
+              {(plan.title?.toLowerCase().includes("annual") || plan.title?.toLowerCase().includes("yearly")) && (
+                <span style={{ fontSize: "12px", color: "#10b981", fontWeight: 600, marginTop: "2px" }}>
+                  Billed Annually (Commitment Plan)
+                </span>
+              )}
+            </div>
+
+            <ul style={{ paddingLeft: 20, margin: "0 0 32px 0", color: "var(--text-main)", fontSize: 14, lineHeight: "1.8" }}>
+              {featuresArr.map((f, idx) => <li key={idx} style={{ marginBottom: 8 }}>{f}</li>)}
+
+              {plan.startDate && plan.endDate && (
+                <li style={{ marginBottom: 8, listStyleType: "none", marginLeft: "-20px", fontSize: "12px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "6px" }}>
+                  📅 Validity: {plan.startDate} to {plan.endDate}
+                </li>
+              )}
+
+              {plan.terms && (
+                <li style={{ marginBottom: 8, listStyleType: "none", marginLeft: "-20px", fontSize: "12px", borderTop: "1px dashed var(--border-color)", paddingTop: "8px", marginTop: "12px" }}>
+                  <span 
+                    onClick={() => setSelectedTermsItem({ ...plan, type: 'plan' })}
+                    style={{ color: "var(--primary)", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px", textDecoration: "underline" }}
+                  >
+                    📌 Terms & Conditions
+                  </span>
+                </li>
+              )}
+            </ul>
+
+            {plan.workerId && (
+              <div style={{ marginBottom: 20, padding: "10px 14px", backgroundColor: "var(--border)", borderRadius: "8px", border: "1px solid var(--border)", display: "flex", alignItems: "center", gap: "12px" }}>
+                <FaUser size={18} style={{ color: "var(--primary)" }} />
+                <div>
+                  <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Primary Assigned Expert</p>
+                  <p style={{ margin: 0, fontSize: "13px", fontWeight: "bold", color: "#34d399" }}>
+                    {workers.find(w => String(w._id || w.id) === String(plan.workerId))?.name || "Expert Professional"}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {userPlans.includes(plan.title) ? (
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#10b981", fontWeight: 700, fontSize: 14 }}>
+                <FaCheckCircle size={18} /> Active Subscription
+              </div>
+            </div>
+          ) : isLoggedIn && sessionStorage.getItem("userRole") === "user" ? (
+            <button 
+              onClick={() => {
+                setPayingPlan(plan);
+                setAppliedCoupon("");
+                setCouponSuccess("");
+                setCouponError("");
+                setDiscountAmount(0);
+                setAgreedToTerms(false);
+              }}
+              style={{
+                width: "100%", padding: "14px", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: "pointer",
+                backgroundColor: plan.color || "var(--primary)", color: "white", transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                boxShadow: `0 4px 14px ${plan.color ? plan.color + "30" : "rgba(49, 82, 91, 0.2)"}`, position: "relative"
+              }}
+            >
+              {plan.btnText || "Subscribe Now"}
+            </button>
+          ) : (
+            <button 
+              onClick={() => {
+                if (isLoggedIn) {
+                  alert("🔑 Customer Account Required!\n\nLogging you out now. Please log in with a customer account to subscribe to premium plans.");
+                  sessionStorage.clear();
+                }
+                navigate("/login");
+              }}
+              className="btn-secondary"
+              style={{
+                width: "100%", padding: "14px", borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", border: "1px solid var(--border)"
+              }}
+            >
+              <FaLock size={12} /> Unlock Plan & Subscribe
+            </button>
+          )}
+        </div>
+      );
+    });
+  };
+
+  const renderOffersContent = () => {
+    if (loading && offers.length === 0) {
+      return [1, 2, 3, 4].map(i => <SkeletonOfferCard key={i} />);
+    }
+    if (offers.length === 0) {
+      return (
+        <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "40px 20px", color: "var(--text-muted)", fontSize: "15px" }}>
+          No active promo coupons available at the moment.
+        </div>
+      );
+    }
+    return offers.map((offer, i) => {
+      const couponBg = "var(--bg-card)";
+      const couponBorder = "1.5px dashed rgba(52, 211, 153, 0.6)";
+
+      return (
+        <div 
+          key={offer._id || offer.id || i}
+          className="premium-card coupon-card"
+          style={{
+            background: couponBg,
+            borderRadius: 14,
+            padding: 24,
+            border: couponBorder,
+            borderLeft: "8px solid #34d399",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            boxShadow: "0 4px 14px rgba(0,0,0,0.04)"
+          }}
+        >
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <span style={{ fontSize: 20, fontWeight: 800, color: "#34d399" }}>{offer.discount}</span>
+              {offer.code && (
+                <span style={{ backgroundColor: "rgba(52, 211, 153, 0.15)", color: "#34d399", padding: "2px 8px", borderRadius: "6px", fontSize: "12px", fontWeight: 700, fontFamily: "monospace" }}>
+                  {offer.code}
+                </span>
+              )}
+            </div>
+            <h4 style={{ margin: "12px 0 4px 0", color: "var(--text-main)", fontSize: 16, fontWeight: 600 }}>{offer.desc}</h4>
+            <p style={{ margin: 0, fontSize: 12, color: "var(--text-muted)" }}>{offer.expiry || offer.endDate}</p>
+            {offer.startDate && offer.endDate && (
+              <p style={{ margin: "6px 0 0 0", fontSize: 12, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "6px" }}>
+                📅 Validity: {offer.startDate} to {offer.endDate}
+              </p>
+            )}
+            {offer.terms && (
+              <p style={{ margin: "10px 0 0 0", fontSize: 12, borderTop: "1px dashed rgba(52, 211, 153, 0.2)", paddingTop: "6px" }}>
+                <span 
+                  onClick={() => setSelectedTermsItem({ ...offer, type: 'offer' })}
+                  style={{ color: "#34d399", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px", textDecoration: "underline" }}
+                >
+                  📌 Terms & Conditions
+                </span>
+              </p>
+            )}
+          </div>
+          {isLoggedIn ? (
+            <button 
+              onClick={() => handleCopy(offer.code)}
+              className="btn-secondary"
+              style={{
+                padding: "10px 16px", 
+                backgroundColor: copiedCode === offer.code ? "rgba(52, 211, 153, 0.2)" : "var(--bg-card)",
+                color: copiedCode === offer.code ? "#34d399" : "var(--text-main)", cursor: "pointer", fontWeight: 700, fontSize: 13, minWidth: 90,
+                transition: "all 0.2s"
+              }}
+            >
+              {copiedCode === offer.code ? "Copied! ✅" : offer.code}
+            </button>
+          ) : (
+            <button 
+              onClick={() => navigate("/login")}
+              className="btn-secondary"
+              style={{
+                padding: "10px 16px", cursor: "pointer",
+                fontWeight: 700, fontSize: 12, minWidth: 110,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px"
+              }}
+            >
+              <FaLock size={10} /> Login to Copy
+            </button>
+          )}
+        </div>
+      );
+    });
+  };
 
   return (
 
@@ -830,364 +1067,7 @@ function PlansOffers() {
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 30, marginBottom: 56, alignItems: "stretch" }}>
 
-          {loading && plans.length === 0 ? (
-            [1, 2, 3].map(i => <SkeletonPlanCard key={i} />)
-          ) : plans.length === 0 ? (
-            <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "40px 20px", color: "var(--text-muted)", fontSize: "15px" }}>
-              No active subscription plans available at the moment.
-            </div>
-          ) : (
-            plans.map((plan, i) => {
-
-              // Custom premium color tones for plans
-
-              const bgTone = plan.popular 
-
-                ? "linear-gradient(135deg, rgba(234, 179, 8, 0.1) 0%, rgba(234, 179, 8, 0.03) 100%)" 
-
-                : i % 2 === 0 
-
-                  ? "linear-gradient(135deg, rgba(49, 82, 91, 0.07) 0%, rgba(49, 82, 91, 0.02) 100%)" 
-
-                  : "linear-gradient(135deg, rgba(14, 165, 233, 0.07) 0%, rgba(14, 165, 233, 0.02) 100%)";
-
-              const borderCol = plan.popular 
-
-                ? "2.5px solid #eab308" 
-
-                : i % 2 === 0 
-
-                  ? "1.5px solid rgba(49, 82, 91, 0.25)" 
-
-                  : "1.5px solid rgba(14, 165, 233, 0.25)";
-
-              const planShadow = plan.popular
-
-                ? "0 20px 40px -10px rgba(234, 179, 8, 0.2), var(--shadow-3d)"
-
-                : "var(--shadow-3d)";
-
-
-
-              return (
-
-                <div 
-
-                  key={i}
-
-                  className="premium-card"
-
-                  style={{
-
-                    background: bgTone,
-
-                    borderRadius: 16,
-
-                    padding: 32,
-
-                    border: borderCol,
-
-                    position: "relative",
-
-                    display: "flex",
-
-                    flexDirection: "column",
-
-                    justifyContent: "space-between",
-
-                    transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-
-                    transform: plan.popular ? "scale(1.03)" : "none",
-
-                    boxShadow: planShadow,
-
-                    zIndex: plan.popular ? 2 : 1
-
-                  }}
-
-                >
-
-                  {plan.popular && (
-
-                    <span style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", backgroundcolor: "var(--warning)", color: "var(--text-main)", padding: "6px 16px", borderRadius: 20, fontSize: 11, fontWeight: 800, boxShadow: "0 4px 12px rgba(234, 179, 8, 0.4)", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-
-                      MOST POPULAR <FaStar size={10} />
-
-                    </span>
-
-                  )}
-
-                  <div>
-
-                    <h3 style={{ margin: "0 0 12px 0", fontSize: 20, fontWeight: 700, color: plan.popular ? "#eab308" : "var(--text-main)" }}>{plan.title}</h3>
-
-                    
-
-                    {/* Fixed Pricing Contradiction */}
-
-                    <div style={{ display: "flex", flexDirection: "column", marginBottom: 24 }}>
-
-                      <div style={{ display: "flex", alignItems: "baseline" }}>
-
-                        <span style={{ fontSize: 36, fontWeight: 800, color: "var(--text-main)" }}>₹{(plan.price || "").replace("₹", "")}</span>
-
-                        <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>/{plan.period}</span>
-
-                      </div>
-
-                      {(plan.title.toLowerCase().includes("annual") || plan.title.toLowerCase().includes("yearly")) && (
-
-                        <span style={{ fontSize: "12px", color: "#10b981", fontWeight: 600, marginTop: "2px" }}>
-
-                          Billed Annually (Commitment Plan)
-
-                        </span>
-
-                      )}
-
-                    </div>
-
-
-
-                      {(Array.isArray(plan.features) ? plan.features : (typeof plan.features === "string" ? plan.features.split(",").map(f => f.trim()).filter(Boolean) : [])).map((f, idx) => <li key={idx} style={{ marginBottom: 8 }}>{f}</li>)}
-
-                      {plan.startDate && plan.endDate && (
-
-                        <li style={{ marginBottom: 8, listStyleType: "none", marginLeft: "-20px", fontSize: "12px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "6px" }}>
-
-                          📅 Validity: {plan.startDate} to {plan.endDate}
-
-                        </li>
-
-                      )}
-
-                      {plan.terms && (
-
-                        <li style={{ marginBottom: 8, listStyleType: "none", marginLeft: "-20px", fontSize: "12px", borderTop: "1px dashed var(--border-color)", paddingTop: "8px", marginTop: "12px" }}>
-
-                          <span 
-
-                            onClick={() => setSelectedTermsItem({ ...plan, type: 'plan' })}
-
-                            style={{ color: "var(--primary)", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px", textDecoration: "underline" }}
-
-                          >
-
-                            📌 Terms & Conditions
-
-                          </span>
-
-                        </li>
-
-                      )}
-
-                    </ul>
-
-                    {plan.workerId && (
-
-                      <div style={{ marginBottom: 20, padding: "10px 14px", backgroundColor: "var(--border)", borderRadius: "8px", border: "1px solid var(--border)", display: "flex", alignItems: "center", gap: "12px" }}>
-
-                        <FaUser size={18} style={{ color: "var(--primary)" }} />
-
-                        <div>
-
-                          <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Primary Assigned Expert</p>
-
-                          <p style={{ margin: 0, fontSize: "13px", fontWeight: "bold", color: "#34d399" }}>
-
-                            {workers.find(w => String(w._id || w.id) === String(plan.workerId))?.name || "Expert Professional"}
-
-                          </p>
-
-                        </div>
-
-                      </div>
-
-                    )}
-
-                  </div>
-
-                  {userPlans.includes(plan.title) ? (
-
-                    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-
-                      <div 
-
-                        style={{
-
-                          width: "100%", padding: "14px", borderRadius: 12, fontSize: 15, fontWeight: 800,
-
-                          backgroundColor: "#10b981", color: "#ffffff", border: "none",
-
-                          display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px",
-
-                          boxShadow: "0 6px 16px rgba(16, 185, 129, 0.3)"
-
-                        }}
-
-                      >
-
-                        <FaCheckCircle size={18} /> Active Subscription
-
-                      </div>
-
-                    </div>
-
-                  ) : isLoggedIn && sessionStorage.getItem("userRole") === "user" ? (
-
-                    <button 
-
-                      onClick={() => {
-
-                        setPayingPlan(plan);
-
-                        setAppliedCoupon("");
-
-                        setCouponSuccess("");
-
-                        setCouponError("");
-
-                        setDiscountAmount(0);
-
-                        setAgreedToTerms(false);
-
-                      }}
-
-                      style={{
-
-                        width: "100%", 
-
-                        padding: "14px", 
-
-                        border: "none", 
-
-                        borderRadius: 10, 
-
-                        fontSize: 14, 
-
-                        fontWeight: 800, 
-
-                        cursor: "pointer",
-
-                        backgroundColor: plan.color || "var(--primary)", 
-
-                        color: "white", 
-
-                        transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)", 
-
-                        boxShadow: `0 4px 14px ${plan.color ? plan.color + "30" : "rgba(49, 82, 91, 0.2)"}`,
-
-                        position: "relative"
-
-                      }}
-
-                      onMouseEnter={(e) => { 
-
-                        e.currentTarget.style.transform = "translateY(-3px)"; 
-
-                        e.currentTarget.style.boxShadow = `0 8px 20px ${plan.color ? plan.color + "50" : "rgba(49, 82, 91, 0.3)"}`;
-
-                        e.currentTarget.style.filter = "brightness(1.15)";
-
-                      }}
-
-                      onMouseLeave={(e) => { 
-
-                        e.currentTarget.style.transform = "translateY(0)"; 
-
-                        e.currentTarget.style.boxShadow = `0 4px 14px ${plan.color ? plan.color + "30" : "rgba(49, 82, 91, 0.2)"}`;
-
-                        e.currentTarget.style.filter = "none";
-
-                      }}
-
-                    >
-
-                      {plan.btnText}
-
-                    </button>
-
-                  ) : (
-
-                    <button 
-
-                      onClick={() => {
-
-                        if (isLoggedIn) {
-
-                          alert("🔑 Customer Account Required!\n\nLogging you out now. Please log in with a customer account to subscribe to premium plans.");
-
-                          sessionStorage.clear();
-
-                          localStorage.removeItem("userLocation");
-
-                          localStorage.removeItem("userCity");
-
-                          localStorage.removeItem("userCoordsLat");
-
-                          localStorage.removeItem("userCoordsLng");
-
-                        }
-
-                        navigate("/login");
-
-                      }}
-
-                      className="btn-secondary"
-
-                      style={{
-
-                        width: "100%", 
-
-                        padding: "14px", 
-
-                        borderRadius: 10, 
-
-                        fontSize: 14, 
-
-                        fontWeight: 800, 
-
-                        cursor: "pointer",
-
-                        display: "flex", 
-
-                        alignItems: "center", 
-
-                        justifyContent: "center", 
-
-                        gap: "6px",
-
-                        border: "1px solid var(--border)",
-
-                        transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
-
-                      }}
-
-                      onMouseEnter={(e) => {
-
-                        e.currentTarget.style.transform = "translateY(-3px)";
-
-                      }}
-
-                      onMouseLeave={(e) => {
-
-                        e.currentTarget.style.transform = "translateY(0)";
-
-                      }}
-
-                    >
-
-                      <FaLock size={12} /> Unlock Plan & Subscribe
-
-                    </button>
-
-                  )}
-
-                </div>
-
-              );
-
-            })}
+          {renderPlansContent()}
 
         </div>
 
@@ -1254,180 +1134,7 @@ function PlansOffers() {
         </h2>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
-
-          {loading && offers.length === 0 ? (
-            [1, 2, 3, 4].map(i => <SkeletonOfferCard key={i} />)
-          ) : offers.length === 0 ? (
-            <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "40px 20px", color: "var(--text-muted)", fontSize: "15px" }}>
-              No active promo coupons available at the moment.
-            </div>
-          ) : (
-            offers.map((offer, i) => {
-
-              // Tone-on-tone green background for promo codes
-
-              const couponBg = "var(--bg-card)";
-
-              const couponBorder = "1.5px dashed rgba(52, 211, 153, 0.6)";
-
-              return (
-
-                <div 
-
-                  key={i}
-
-                  className="premium-card coupon-card"
-
-                  style={{
-
-                    background: couponBg,
-
-                    borderRadius: 14,
-
-                    padding: 24,
-
-                    border: couponBorder,
-
-                    borderLeft: "8px solid #34d399",
-
-                    display: "flex",
-
-                    justifyContent: "space-between",
-
-                    alignItems: "center",
-
-                    boxShadow: "0 6px 12px rgba(0,0,0,0.04)"
-
-                  }}
-
-                >
-
-              <div style={{ flex: 1, paddingRight: "10px" }}>
-
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", alignItems: "center", marginBottom: "8px" }}>
-
-                  <span style={{ backgroundColor: "rgba(52, 211, 153, 0.15)", color: "#34d399", border: "1px solid rgba(52, 211, 153, 0.2)", padding: "4px 10px", borderRadius: 8, fontSize: 12, fontWeight: 700 }}>
-
-                    {offer.discount}
-
-                  </span>
-
-                  {offer.validServices && offer.validServices !== "All" && (
-
-                    <span style={{ backgroundColor: "var(--primary-light)", color: "var(--primary)", border: "1px solid var(--border-color)", padding: "4px 8px", borderRadius: 8, fontSize: 11, fontWeight: 700 }}>
-
-                      🛠️ {offer.validServices}
-
-                    </span>
-
-                  )}
-
-                  {offer.minPrice > 0 && (
-
-                    <span style={{ backgroundColor: "var(--bg-card-hover)", color: "var(--text-secondary)", border: "1px solid var(--border-color)", padding: "4px 8px", borderRadius: 8, fontSize: 11, fontWeight: 700 }}>
-
-                      Min Subtotal: ₹{offer.minPrice}
-
-                    </span>
-
-                  )}
-
-                </div>
-
-                <h4 style={{ margin: "12px 0 4px 0", color: "var(--text-main)", fontSize: 16, fontWeight: 600 }}>{offer.desc}</h4>
-
-                <p style={{ margin: 0, fontSize: 12, color: "var(--text-muted)" }}>{offer.expiry}</p>
-
-                {offer.startDate && offer.endDate && (
-
-                  <p style={{ margin: "6px 0 0 0", fontSize: 12, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "6px" }}>
-
-                    📅 Validity: {offer.startDate} to {offer.endDate}
-
-                  </p>
-
-                )}
-
-                {offer.terms && (
-
-                  <p style={{ margin: "10px 0 0 0", fontSize: 12, borderTop: "1px dashed rgba(52, 211, 153, 0.2)", paddingTop: "6px" }}>
-
-                    <span 
-
-                      onClick={() => setSelectedTermsItem({ ...offer, type: 'offer' })}
-
-                      style={{ color: "#34d399", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px", textDecoration: "underline" }}
-
-                    >
-
-                      📌 Terms & Conditions
-
-                    </span>
-
-                  </p>
-
-                )}
-
-              </div>
-
-              {isLoggedIn ? (
-
-                <button 
-
-                  onClick={() => handleCopy(offer.code)}
-
-                  className="btn-secondary"
-
-                  style={{
-
-                    padding: "10px 16px", 
-
-                    backgroundColor: copiedCode === offer.code ? "rgba(52, 211, 153, 0.2)" : "var(--bg-card)",
-
-                    color: copiedCode === offer.code ? "#34d399" : "var(--text-main)", cursor: "pointer", fontWeight: 700, fontSize: 13, minWidth: 90,
-
-                    transition: "all 0.2s"
-
-                  }}
-
-                >
-
-                  {copiedCode === offer.code ? "Copied! ✅" : offer.code}
-
-                </button>
-
-              ) : (
-
-                <button
-
-                  onClick={() => navigate("/login")}
-
-                  className="btn-secondary"
-
-                  style={{
-
-                    padding: "10px 16px", cursor: "pointer",
-
-                    fontWeight: 700, fontSize: 12, minWidth: 110,
-
-                    display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px"
-
-                  }}
-
-                >
-
-                  <FaLock size={10} /> Login to Copy
-
-                </button>
-
-              )}
-
-            </div>
-
-          );
-
-        })}
-
+          {renderOffersContent()}
         </div>
 
 
