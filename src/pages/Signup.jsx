@@ -5,8 +5,8 @@ import { FaEye, FaEyeSlash, FaUser, FaTools } from "react-icons/fa";
 import authBg from "../assets/auth-bg.jpg";
 import authMobileBg from "../assets/auth-mobile-bg.png";
 import safeJson from "../utils/safeJson";
-import { triggerGoogleAuth } from "../utils/googleAuth";
-
+import { useGoogleLogin } from "@react-oauth/google";
+import { useRef } from "react";
 
 const PROFESSIONS = [
   { group: "Main Services", options: ["Carpentry", "Plumbing", "Electrical", "Beauty, Salon & Spa", "Doctors"] },
@@ -169,49 +169,31 @@ function Signup() {
     }
   };
 
-  // ── Google OAuth Return ────────────────────────────────────
   useEffect(() => {
-    const hash = window.location.hash;
-    if (hash) {
-      const params = new URLSearchParams(hash.substring(1));
-      const accessToken = params.get("access_token");
-      if (accessToken) {
-        window.history.replaceState(null, null, window.location.pathname);
-        const flow = sessionStorage.getItem("google_auth_flow");
-        if (flow === "signup") {
-          const pendingSignupStr = sessionStorage.getItem("pending_google_signup");
-          const extraBody = pendingSignupStr ? JSON.parse(pendingSignupStr) : {};
-          handleGoogleSignUpWithToken(accessToken, extraBody);
-        }
-      }
-    }
-    const redirectError = sessionStorage.getItem("google_auth_error");
-    if (redirectError) {
-      setPopupResult({ type: "fail", message: redirectError });
-      sessionStorage.removeItem("google_auth_error");
-    }
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // ── Launch Google Auth ─────────────────────────────────────
-  const launchGoogleAuth = (extraBody = {}) => {
-    setIsLoading(true);
+  const pendingGoogleDataRef = useRef({});
 
-    triggerGoogleAuth({
-      flow: "signup",
-      extraBody,
-      navigate,
-      onSuccess: async (accessToken) => {
-        await handleGoogleSignUpWithToken(accessToken, extraBody);
-      },
-      onError: (errMsg) => {
-        setIsLoading(false);
-        if (typeof errMsg === "string" && errMsg.toLowerCase().includes("closed")) return;
-        setPopupResult({ type: "fail", message: errMsg });
-      },
-    });
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      await handleGoogleSignUpWithToken(tokenResponse.access_token, pendingGoogleDataRef.current);
+    },
+    onError: (error) => {
+      setIsLoading(false);
+      const errMsg = error?.error || error?.message || "";
+      if (typeof errMsg === "string" && errMsg.toLowerCase().includes("closed")) return;
+      setPopupResult({ type: "fail", message: "Google Sign-In failed or was cancelled." });
+    },
+  });
+
+  const launchGoogleAuth = (extraBody = {}) => {
+    pendingGoogleDataRef.current = extraBody;
+    setIsLoading(true);
+    googleLogin();
   };
 
   // ── Customer Google Signup ─────────────────────────────────

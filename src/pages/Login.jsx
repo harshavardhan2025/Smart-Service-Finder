@@ -6,8 +6,8 @@ import authBg from "../assets/auth-bg.jpg";
 import authMobileBg from "../assets/auth-mobile-bg.png";
 import { fetchAllWorkersCached } from "../utils/workerService";
 import safeJson from "../utils/safeJson";
-import { triggerGoogleAuth } from "../utils/googleAuth";
-
+import { useGoogleLogin } from "@react-oauth/google";
+import { useRef } from "react";
 
 // ── Professions list (for Join as Service Provider) ─────────────────────────
 const PROFESSIONS = [
@@ -289,26 +289,9 @@ function Login() {
 
   // ── Effects ──────────────────────────────────────────────────────────────
   useEffect(() => {
-    const hash = window.location.hash;
-    if (hash) {
-      const params = new URLSearchParams(hash.substring(1));
-      const accessToken = params.get("access_token");
-      if (accessToken) {
-        window.history.replaceState(null, null, window.location.pathname);
-        const flow = sessionStorage.getItem("google_auth_flow");
-        if (flow === "signup") {
-          navigate(`/signup#access_token=${accessToken}`);
-        } else if (flow === "provider_login") {
-          setActiveTab("provider");
-          sessionStorage.removeItem("google_auth_flow");
-          handleGoogleLoginWithToken(accessToken, "provider");
-        } else {
-          setActiveTab("user");
-          sessionStorage.removeItem("google_auth_flow");
-          handleGoogleLoginWithToken(accessToken, "user");
-        }
-      }
-    }
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    
     const redirectError = sessionStorage.getItem("google_auth_error");
     if (redirectError) {
       const popup = parseErrorToPopup(redirectError);
@@ -600,27 +583,29 @@ function Login() {
   };
 
   // ── Google Sign-In ────────────────────────────────────────────────────────
-  // flow: "user_login" (user tab) | "provider_login" (provider tab)
+  const pendingGoogleFlowRef = useRef("user");
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      await handleGoogleLoginWithToken(tokenResponse.access_token, pendingGoogleFlowRef.current);
+    },
+    onError: (error) => {
+      setIsLoading(false);
+      const errMsg = error?.error || error?.message || "";
+      if (typeof errMsg === "string" && errMsg.toLowerCase().includes("closed")) {
+        setLoginStatus(null);
+        return;
+      }
+      setLoginStatus({ type: "error", message: "Google Sign-In failed or was cancelled." });
+    },
+  });
+
   const handleGoogleSignIn = (flow = "user_login") => {
     const targetLoginAs = flow === "provider_login" ? "provider" : "user";
+    pendingGoogleFlowRef.current = targetLoginAs;
     setIsLoading(true);
     setLoginStatus({ type: "success", message: "Connecting to Google... 🔑" });
-
-    triggerGoogleAuth({
-      flow,
-      navigate,
-      onSuccess: async (accessToken) => {
-        await handleGoogleLoginWithToken(accessToken, targetLoginAs);
-      },
-      onError: (errMsg) => {
-        setIsLoading(false);
-        if (typeof errMsg === "string" && errMsg.toLowerCase().includes("closed")) {
-          setLoginStatus(null);
-          return;
-        }
-        setLoginStatus({ type: "error", message: errMsg });
-      },
-    });
+    googleLogin();
   };
 
   // ── Shared status banner ─────────────────────────────────────────────────
