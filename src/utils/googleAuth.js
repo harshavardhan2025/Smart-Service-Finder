@@ -1,39 +1,58 @@
 // ── Centralized Google Authentication Utility ──────────────────────────────────
-// Uses Google Identity Services (GIS) Token Client for modern real-time OAuth popup flow.
+// Google Identity Services (GIS) Token Client
+// Supports Google Login / Signup using OAuth access tokens.
 
+
+// Google OAuth Client ID
 export const GOOGLE_CLIENT_ID =
   process.env.REACT_APP_GOOGLE_CLIENT_ID ||
   "849555982996-giolb22mkrfbg8c4ut0ohbv1ps9giv2o.apps.googleusercontent.com";
 
-/**
- * Check if Google Identity Services SDK is loaded in the browser
- */
-export const isGoogleSdkLoaded = () => {
-  return typeof window !== "undefined" && !!window.google?.accounts?.oauth2;
-};
 
 /**
- * Wait for the Google Identity Services SDK to finish loading.
- * The SDK is loaded via <script async defer> so it may not be ready
- * when the user clicks "Sign In with Google". This polls every 200ms
- * for up to `maxWaitMs` before giving up.
- * @param {number} maxWaitMs - Maximum time to wait in milliseconds (default: 3000)
- * @returns {Promise<boolean>} - true if SDK loaded, false if timed out
+ * Check if Google Identity Services SDK is loaded.
  */
-const waitForGoogleSdk = (maxWaitMs = 3000) => {
+export const isGoogleSdkLoaded = () => {
+  return (
+    typeof window !== "undefined" &&
+    !!window.google?.accounts?.oauth2
+  );
+};
+
+
+/**
+ * Wait for Google Identity Services SDK to load.
+ *
+ * @param {number} maxWaitMs - Maximum time to wait
+ * @returns {Promise<boolean>}
+ */
+const waitForGoogleSdk = (maxWaitMs = 5000) => {
   return new Promise((resolve) => {
+    // Already loaded
     if (isGoogleSdkLoaded()) {
       resolve(true);
       return;
     }
+
+
     const interval = 200;
     let waited = 0;
+
+
     const timer = setInterval(() => {
       waited += interval;
+
+
+      // SDK loaded
       if (isGoogleSdkLoaded()) {
         clearInterval(timer);
         resolve(true);
-      } else if (waited >= maxWaitMs) {
+        return;
+      }
+
+
+      // Timeout
+      if (waited >= maxWaitMs) {
         clearInterval(timer);
         resolve(false);
       }
@@ -41,11 +60,42 @@ const waitForGoogleSdk = (maxWaitMs = 3000) => {
   });
 };
 
+
 /**
- * Launch the real Google OAuth popup using the GIS Token Client.
+ * Launch Google OAuth popup using GIS Token Client.
+ *
+ * @param {Object} options
+ * @param {Function} options.onSuccess
+ * @param {Function} options.onError
  */
 const launchGooglePopup = ({ onSuccess, onError }) => {
   try {
+    // Check browser
+    if (typeof window === "undefined") {
+      onError?.(
+        "Google Sign-In is only available in the browser."
+      );
+      return;
+    }
+
+
+    // Check Google SDK
+    if (!isGoogleSdkLoaded()) {
+      onError?.(
+        "Google Identity Services SDK is not loaded."
+      );
+      return;
+    }
+
+
+    // Check Client ID
+    if (!GOOGLE_CLIENT_ID) {
+      onError?.(
+        "Google Client ID is missing."
+      );
+      return;
+    }
+
     const client = window.google.accounts.oauth2.initTokenClient({
       client_id: GOOGLE_CLIENT_ID,
       scope: "email profile openid",
@@ -113,8 +163,8 @@ export const triggerGoogleAuth = ({
   }
 
   // SDK not ready yet — wait for it (async script may still be loading)
-  console.info("⏳ Google SDK not ready yet, waiting up to 3s...");
-  waitForGoogleSdk(3000).then((sdkLoaded) => {
+  console.info("⏳ Google SDK not ready yet, waiting up to 5s...");
+  waitForGoogleSdk(5000).then((sdkLoaded) => {
     if (sdkLoaded) {
       console.info("✅ Google SDK loaded successfully, launching popup");
       launchGooglePopup({ onSuccess, onError });
@@ -123,4 +173,3 @@ export const triggerGoogleAuth = ({
     }
   });
 };
-
