@@ -92,7 +92,7 @@ const launchGooglePopup = ({ onSuccess, onError }) => {
  * @param {Function} options.onError - Callback on error (errorMessage) => void
  * @param {Function} [options.navigate] - react-router navigate function
  */
-export const triggerGoogleAuth = async ({
+export const triggerGoogleAuth = ({
   flow = "user_login",
   extraBody = {},
   onSuccess,
@@ -114,13 +114,13 @@ export const triggerGoogleAuth = async ({
 
   // SDK not ready yet — wait for it (async script may still be loading)
   console.info("⏳ Google SDK not ready yet, waiting up to 3s...");
-  const sdkLoaded = await waitForGoogleSdk(3000);
-
-  if (sdkLoaded) {
-    console.info("✅ Google SDK loaded successfully, launching popup");
-    launchGooglePopup({ onSuccess, onError });
-  } else {
-    onError?.("Google SDK could not be loaded. Please check your internet connection or ad-blocker.");
-  }
+  waitForGoogleSdk(3000).then((sdkLoaded) => {
+    if (sdkLoaded) {
+      console.info("✅ Google SDK loaded successfully, launching popup");
+      launchGooglePopup({ onSuccess, onError });
+    } else {
+      onError?.("Google SDK could not be loaded. Please check your internet connection or ad-blocker.");
+    }
+  });
 };
 

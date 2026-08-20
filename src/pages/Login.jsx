@@ -614,6 +614,10 @@ function Login() {
       },
       onError: (errMsg) => {
         setIsLoading(false);
+        if (errMsg.includes("closed before completing")) {
+          setLoginStatus(null);
+          return;
+        }
         setLoginStatus({ type: "error", message: errMsg });
       },
     });
