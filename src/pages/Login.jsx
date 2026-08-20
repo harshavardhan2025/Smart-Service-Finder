@@ -289,9 +289,6 @@ function Login() {
 
   // ── Effects ──────────────────────────────────────────────────────────────
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener("resize", handleResize);
-    
     const redirectError = sessionStorage.getItem("google_auth_error");
     if (redirectError) {
       const popup = parseErrorToPopup(redirectError);
