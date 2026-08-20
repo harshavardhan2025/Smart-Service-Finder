@@ -49,10 +49,11 @@ const launchGooglePopup = ({ onSuccess, onError }) => {
     const client = window.google.accounts.oauth2.initTokenClient({
       client_id: GOOGLE_CLIENT_ID,
       scope: "email profile openid",
+      ux_mode: "redirect",
       callback: async (tokenResponse) => {
         if (tokenResponse?.error) {
           console.warn("⚠️ Google OAuth response error:", tokenResponse.error);
-          if (tokenResponse.error === "popup_closed_by_user") {
+          if (tokenResponse.error === "popup_closed_by_user" || tokenResponse.error === "popup_closed") {
             onError?.("Google Sign-In popup was closed before completing.");
             return;
           }
