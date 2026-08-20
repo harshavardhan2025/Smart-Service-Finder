@@ -70,66 +70,32 @@ const waitForGoogleSdk = (maxWaitMs = 5000) => {
  */
 const launchGooglePopup = ({ onSuccess, onError }) => {
   try {
-    // Check browser
     if (typeof window === "undefined") {
-      onError?.(
-        "Google Sign-In is only available in the browser."
-      );
+      onError?.("Google Sign-In is only available in the browser.");
       return;
     }
 
-
-    // Check Google SDK
-    if (!isGoogleSdkLoaded()) {
-      onError?.(
-        "Google Identity Services SDK is not loaded."
-      );
-      return;
-    }
-
-
-    // Check Client ID
     if (!GOOGLE_CLIENT_ID) {
-      onError?.(
-        "Google Client ID is missing."
-      );
+      onError?.("Google Client ID is missing.");
       return;
     }
 
-    const client = window.google.accounts.oauth2.initTokenClient({
-      client_id: GOOGLE_CLIENT_ID,
-      scope: "email profile openid",
-      callback: async (tokenResponse) => {
-        if (tokenResponse?.error) {
-          console.warn("⚠️ Google OAuth response error:", tokenResponse.error);
-          if (tokenResponse.error === "popup_closed_by_user" || tokenResponse.error === "popup_closed") {
-            onError?.("Google Sign-In popup was closed before completing.");
-            return;
-          }
-          onError?.(tokenResponse.error_description || tokenResponse.error || "Google Sign-In failed.");
-          return;
-        }
+    // Manual OAuth2 Redirect (bypasses all popup/ITP blockers)
+    const oauth2Endpoint = "https://accounts.google.com/o/oauth2/v2/auth";
+    const redirectUri = window.location.origin + window.location.pathname;
 
-        if (tokenResponse?.access_token) {
-          try {
-            await onSuccess?.(tokenResponse.access_token);
-          } catch (err) {
-            onError?.(err.message || "Failed to authenticate with backend.");
-          }
-        } else {
-          onError?.("No access token received from Google.");
-        }
-      },
-      error_callback: (err) => {
-        console.warn("⚠️ Google GIS initialization error:", err);
-        onError?.(err?.message || "Google Identity Services error. Please try again.");
-      },
+    const params = new URLSearchParams({
+      client_id: GOOGLE_CLIENT_ID,
+      redirect_uri: redirectUri,
+      response_type: "token",
+      scope: "email profile openid",
+      prompt: "select_account"
     });
 
-    client.requestAccessToken({ prompt: "select_account" });
+    window.location.href = `${oauth2Endpoint}?${params.toString()}`;
   } catch (err) {
-    console.warn("⚠️ Error initializing Google Token Client:", err.message);
-    onError?.(err.message || "Could not initialize Google Authentication popup.");
+    console.warn("⚠️ Error initializing Google Redirect:", err.message);
+    onError?.(err.message || "Could not initialize Google Authentication redirect.");
   }
 };
 
