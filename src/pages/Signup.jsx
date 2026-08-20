@@ -208,7 +208,7 @@ function Signup() {
       },
       onError: (errMsg) => {
         setIsLoading(false);
-        if (errMsg.includes("closed before completing")) return;
+        if (typeof errMsg === "string" && errMsg.toLowerCase().includes("closed")) return;
         setPopupResult({ type: "fail", message: errMsg });
       },
     });

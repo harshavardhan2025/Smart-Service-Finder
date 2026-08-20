@@ -614,7 +614,7 @@ function Login() {
       },
       onError: (errMsg) => {
         setIsLoading(false);
-        if (errMsg.includes("closed before completing")) {
+        if (typeof errMsg === "string" && errMsg.toLowerCase().includes("closed")) {
           setLoginStatus(null);
           return;
         }
