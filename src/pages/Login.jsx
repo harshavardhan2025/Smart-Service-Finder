@@ -289,6 +289,18 @@ function Login() {
 
   // ── Effects ──────────────────────────────────────────────────────────────
   useEffect(() => {
+    const hash = window.location.hash;
+    if (hash && hash.includes("access_token")) {
+      const params = new URLSearchParams(hash.replace("#", "?"));
+      const accessToken = params.get("access_token");
+      if (accessToken) {
+        const flow = sessionStorage.getItem("pendingGoogleFlow") || "user";
+        handleGoogleLoginWithToken(accessToken, flow);
+        window.history.replaceState(null, null, window.location.pathname + window.location.search);
+        sessionStorage.removeItem("pendingGoogleFlow");
+      }
+    }
+
     const redirectError = sessionStorage.getItem("google_auth_error");
     if (redirectError) {
       const popup = parseErrorToPopup(redirectError);
@@ -595,11 +607,13 @@ function Login() {
       }
       setLoginStatus({ type: "error", message: "Google Sign-In failed or was cancelled." });
     },
+    ux_mode: isMobile ? "redirect" : "popup",
   });
 
   const handleGoogleSignIn = (flow = "user_login") => {
     const targetLoginAs = flow === "provider_login" ? "provider" : "user";
     pendingGoogleFlowRef.current = targetLoginAs;
+    sessionStorage.setItem("pendingGoogleFlow", targetLoginAs);
     setIsLoading(true);
     setLoginStatus({ type: "success", message: "Connecting to Google... 🔑" });
     googleLogin();

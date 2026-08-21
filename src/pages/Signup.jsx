@@ -105,6 +105,26 @@ function Signup() {
 
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash && hash.includes("access_token")) {
+      const params = new URLSearchParams(hash.replace("#", "?"));
+      const accessToken = params.get("access_token");
+      if (accessToken) {
+        let extraBody = {};
+        try {
+          const stored = sessionStorage.getItem("pendingGoogleData");
+          if (stored) extraBody = JSON.parse(stored);
+        } catch (e) {
+          extraBody = { role: "user" }; // fallback
+        }
+        handleGoogleSignUpWithToken(accessToken, extraBody);
+        window.history.replaceState(null, null, window.location.pathname + window.location.search);
+        sessionStorage.removeItem("pendingGoogleData");
+      }
+    }
+  }, []);
+
   // ── Google OAuth Token Handler ─────────────────────────────
   const handleGoogleSignUpWithToken = async (accessToken, extraBody) => {
     setIsLoading(true);
@@ -188,10 +208,12 @@ function Signup() {
       if (typeof errMsg === "string" && errMsg.toLowerCase().includes("closed")) return;
       setPopupResult({ type: "fail", message: "Google Sign-In failed or was cancelled." });
     },
+    ux_mode: isMobile ? "redirect" : "popup",
   });
 
   const launchGoogleAuth = (extraBody = {}) => {
     pendingGoogleDataRef.current = extraBody;
+    sessionStorage.setItem("pendingGoogleData", JSON.stringify(extraBody));
     setIsLoading(true);
     googleLogin();
   };
