@@ -2146,7 +2146,7 @@ function AdminDashboard() {
                                 else newList = [...currentList, serviceName];
                                 setPlanForm({ ...planForm, features: newList.join(", ") });
                               }}
-                              style={{ padding: "4px 10px", borderRadius: "12px", border: `1px solid ${isSelected ? "#3b82f6" : "#cbd5e1"}`, backgroundColor: isSelected ? "#eff6ff" : "white", color: isSelected ? "#2563eb" : "#475569", fontSize: "11px", fontWeight: "600", cursor: "pointer", transition: "all 0.2s" }}
+                              style={{ padding: "4px 10px", borderRadius: "12px", border: `1px solid ${isSelected ? "var(--primary)" : "var(--border-color)"}`, backgroundColor: isSelected ? "var(--primary-glow)" : "var(--bg-card)", color: isSelected ? "var(--primary-hover)" : "var(--text-secondary)", fontSize: "11px", fontWeight: "600", cursor: "pointer", transition: "all 0.2s" }}
                             >
                               {serviceName}
                             </button>
@@ -2538,7 +2538,7 @@ function AdminDashboard() {
                                 else newList = [...currentList, pName];
                                 setOfferForm({ ...offerForm, validPeriods: newList.join(", ") });
                               }}
-                              style={{ padding: "4px 10px", borderRadius: "12px", border: `1px solid ${isSelected ? "#8b5cf6" : "#cbd5e1"}`, backgroundColor: isSelected ? "#ede9fe" : "white", color: isSelected ? "#7c3aed" : "#475569", fontSize: "11px", fontWeight: "600", cursor: "pointer", transition: "all 0.2s" }}
+                              style={{ padding: "4px 10px", borderRadius: "12px", border: `1px solid ${isSelected ? "var(--primary)" : "var(--border-color)"}`, backgroundColor: isSelected ? "var(--primary-glow)" : "var(--bg-card)", color: isSelected ? "var(--primary-hover)" : "var(--text-secondary)", fontSize: "11px", fontWeight: "600", cursor: "pointer", transition: "all 0.2s" }}
                             >
                               {pName}
                             </button>
@@ -2605,7 +2605,7 @@ function AdminDashboard() {
                                 fontWeight: "600",
                                 cursor: "pointer",
                                 border: isSelected ? "1px solid #10b981" : "1px solid #cbd5e1",
-                                backgroundColor: isSelected ? "rgba(16, 185, 129, 0.15)" : "white",
+                                backgroundColor: isSelected ? "var(--success-light)" : "var(--bg-card)",
                                 color: isSelected ? "#10b981" : "#475569",
                                 transition: "all 0.15s"
                               }}

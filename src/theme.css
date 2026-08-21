@@ -1,0 +1,122 @@
+/* theme.css
+   Centralized design tokens for Light and Dark modes.
+   Variables are defined on :root (light) and overridden when
+   the document has data-theme="dark" (or .dark-mode class).
+*/
+
+:root {
+  /* Primary palette */
+  --primary: #31525b; /* deep teal */
+  --primary-hover: #1f353b;
+  --primary-light: #e8f6f7;
+  --primary-dark: #0e1719;
+
+  --secondary: #b3dee5;
+
+  /* Status colors */
+  --success: #10b981;
+  --success-light: rgba(16, 185, 129, 0.1);
+  --warning: #eab308;
+  --warning-light: rgba(234, 179, 8, 0.15);
+  --danger: #ef4444;
+  --danger-light: rgba(239, 68, 68, 0.1);
+
+  /* Utility glows */
+  --primary-glow: rgba(49, 82, 91, 0.15);
+
+  /* Gradients */
+  --primary-grad: linear-gradient(135deg, #31525b 0%, #b3dee5 100%);
+  --success-grad: linear-gradient(135deg, #31525b 0%, #1f353b 100%);
+  --danger-grad: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+
+  /* Backgrounds */
+  --bg-main: #f8fafc;               /* light page background */
+  --bg-card: rgba(255, 255, 255, 0.95);
+  --bg-card-hover: #ffffff;
+  --border-color: rgba(226, 232, 240, 0.8);
+
+  /* Text */
+  --text-main: #0f172a;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+
+  /* Hero section */
+  --hero-bg: linear-gradient(135deg, #1f353b 0%, #0e1719 100%);
+  --hero-border: rgba(49, 82, 91, 0.3);
+  --hero-text: #ffffff;
+  --hero-subtext: rgba(179, 222, 229, 0.9);
+
+  /* Shadows & blur */
+  --shadow-3d: 0 10px 30px -5px rgba(49, 82, 91, 0.05), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+  --card-shadow: var(--shadow-3d);
+  --hover-shadow: 0 20px 40px -5px rgba(49, 82, 91, 0.12), 0 8px 24px -2px rgba(0, 0, 0, 0.08);
+  --blur: blur(12px);
+}
+
+/* Dark mode overrides */
+[data-theme="dark"] {
+  --primary: #a0c8d1;
+  --primary-hover: #7baebf;
+  --primary-light: #0e1719;
+  --primary-dark: #f8fafc;
+
+  --secondary: #324e56;
+
+  --success: #6ee7b7;
+  --success-light: rgba(110, 231, 183, 0.1);
+  --warning: #fcd34d;
+  --warning-light: rgba(252, 211, 77, 0.15);
+  --danger: #f87171;
+  --danger-light: rgba(248, 113, 113, 0.1);
+
+  --primary-glow: rgba(160, 200, 209, 0.2);
+
+  --primary-grad: linear-gradient(135deg, #a0c8d1 0%, #324e56 100%);
+  --success-grad: linear-gradient(135deg, #6ee7b7 0%, #324e56 100%);
+  --danger-grad: linear-gradient(135deg, #f87171 0%, #7f1d1d 100%);
+
+  --bg-main: #121212;
+  --bg-card: rgba(30, 30, 30, 0.95);
+  --bg-card-hover: #1e1e1e;
+  --border-color: rgba(80, 80, 80, 0.8);
+
+  --text-main: #e5e7eb;
+  --text-primary: #d1d5db;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+
+  --hero-bg: linear-gradient(135deg, #0e1719 0%, #1f353b 100%);
+  --hero-border: rgba(160, 200, 209, 0.3);
+  --hero-text: #f8fafc;
+  --hero-subtext: rgba(179, 222, 229, 0.8);
+}
+
+/* Utility class for dark mode toggle (if using .dark-mode) */
+.dark-mode {
+  --primary: #a0c8d1;
+  --bg-main: #121212;
+  --bg-card: rgba(30, 30, 30, 0.95);
+  --text-main: #e5e7eb;
+}
+
+/* Global spacing utilities – premium spacing */
+.mt-2 { margin-top: 0.5rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mt-4 { margin-top: 1rem; }
+.mb-4 { margin-bottom: 1rem; }
+.px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+.py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+
+/* Typography scaling – ensure crisp headings */
+h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; line-height: 1.2; color: var(--text-primary); }
+h2 { font-size: clamp(1.5rem, 4vw, 2.5rem); font-weight: 700; line-height: 1.3; color: var(--text-primary); }
+h3 { font-size: clamp(1.25rem, 3vw, 2rem); font-weight: 600; line-height: 1.4; color: var(--text-primary); }
+
+/* Micro‑animation helper */
+.fade-in { animation: fadeIn 0.4s ease-out forwards; }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

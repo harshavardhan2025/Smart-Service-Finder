@@ -588,25 +588,25 @@ function PlansOffers() {
 
     <div style={{
 
-      backgroundColor: "rgba(30, 41, 59, 0.4)", borderRadius: 16, padding: 32,
+      backgroundColor: "var(--bg-card)", borderRadius: 16, padding: 32,
 
-      border: "1px solid rgba(255,255,255,0.06)", animation: "pulse 1.4s ease-in-out infinite"
+      border: "1px solid var(--border-color)", animation: "pulse 1.4s ease-in-out infinite"
 
     }}>
 
       <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }`}</style>
 
-      <div style={{ height: 20, width: "60%", backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 8, marginBottom: 16 }} />
+      <div style={{ height: 20, width: "60%", backgroundColor: "var(--border-color)", borderRadius: 8, marginBottom: 16 }} />
 
-      <div style={{ height: 40, width: "40%", backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 8, marginBottom: 24 }} />
+      <div style={{ height: 40, width: "40%", backgroundColor: "var(--border-color)", borderRadius: 8, marginBottom: 24 }} />
 
       {[1,2,3,4].map(i => (
 
-        <div key={i} style={{ height: 14, backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 6, marginBottom: 10, width: `${70 + i * 5}%` }} />
+        <div key={i} style={{ height: 14, backgroundColor: "var(--border-color)", borderRadius: 6, marginBottom: 10, width: `${70 + i * 5}%` }} />
 
       ))}
 
-      <div style={{ height: 46, backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 10, marginTop: 24 }} />
+      <div style={{ height: 46, backgroundColor: "var(--border-color)", borderRadius: 10, marginTop: 24 }} />
 
     </div>
 
@@ -618,9 +618,9 @@ function PlansOffers() {
 
     <div style={{
 
-      backgroundColor: "rgba(30, 41, 59, 0.3)", borderRadius: 14, padding: 24,
+      backgroundColor: "var(--bg-card)", borderRadius: 14, padding: 24,
 
-      border: "1px dashed rgba(255,255,255,0.08)", display: "flex", justifyContent: "space-between",
+      border: "1px dashed var(--border-color)", display: "flex", justifyContent: "space-between",
 
       alignItems: "center", animation: "pulse 1.4s ease-in-out infinite"
 
@@ -628,15 +628,15 @@ function PlansOffers() {
 
       <div style={{ flex: 1 }}>
 
-        <div style={{ height: 24, width: "30%", backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 8, marginBottom: 12 }} />
+        <div style={{ height: 24, width: "30%", backgroundColor: "var(--border-color)", borderRadius: 8, marginBottom: 12 }} />
 
-        <div style={{ height: 16, width: "70%", backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 6, marginBottom: 8 }} />
+        <div style={{ height: 16, width: "70%", backgroundColor: "var(--border-color)", borderRadius: 6, marginBottom: 8 }} />
 
-        <div style={{ height: 12, width: "40%", backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 6 }} />
+        <div style={{ height: 12, width: "40%", backgroundColor: "var(--border-color)", borderRadius: 6 }} />
 
       </div>
 
-      <div style={{ height: 40, width: 90, backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 8, marginLeft: 16 }} />
+      <div style={{ height: 40, width: 90, backgroundColor: "var(--border-color)", borderRadius: 8, marginLeft: 16 }} />
     </div>
   );
 
@@ -913,149 +913,6 @@ function PlansOffers() {
 
 
 
-        {/* 💳 USER SUBSCRIPTION & WALLET STATUS BANNER */}
-
-        <div style={{
-
-          background: userPlans.length > 0 
-
-            ? "linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.05) 100%)" 
-
-            : "linear-gradient(135deg, rgba(49, 82, 91, 0.08) 0%, rgba(14, 165, 233, 0.04) 100%)",
-
-          border: userPlans.length > 0 ? "1.5px solid rgba(16, 185, 129, 0.3)" : "1.5px solid rgba(49, 82, 91, 0.2)",
-
-          borderRadius: "20px",
-
-          padding: "20px 26px",
-
-          marginBottom: "36px",
-
-          display: "flex",
-
-          alignItems: "center",
-
-          justifyContent: "space-between",
-
-          flexWrap: "wrap",
-
-          gap: "16px",
-
-          boxShadow: "0 10px 30px -10px rgba(0,0,0,0.05)"
-
-        }}>
-
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-
-            <div style={{
-
-              width: "48px",
-
-              height: "48px",
-
-              borderRadius: "14px",
-
-              background: userPlans.length > 0 ? "linear-gradient(135deg, #10b981 0%, #059669 100%)" : "linear-gradient(135deg, #31525B 0%, #1F353B 100%)",
-
-              color: "white",
-
-              display: "flex",
-
-              alignItems: "center",
-
-              justifyContent: "center",
-
-              fontSize: "22px",
-
-              fontWeight: 800,
-
-              boxShadow: "0 6px 16px rgba(0,0,0,0.1)"
-
-            }}>
-
-              {userPlans.length > 0 ? "👑" : "💳"}
-
-            </div>
-
-            <div>
-
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-
-                <h3 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "var(--text-main)" }}>
-
-                  {userPlans.length > 0 ? "Active Premium Member" : "Standard Account (Not Subscribed)"}
-
-                </h3>
-
-                <span style={{
-
-                  padding: "3px 10px",
-
-                  borderRadius: "20px",
-
-                  fontSize: "11px",
-
-                  fontWeight: 800,
-
-                  backgroundColor: userPlans.length > 0 ? "var(--success-light)" : "var(--primary-light)",
-
-                  color: userPlans.length > 0 ? "var(--success)" : "var(--text-secondary)",
-
-                  textTransform: "uppercase"
-
-                }}>
-
-                  {userPlans.length > 0 ? "✓ Subscribed" : "Free Member"}
-
-                </span>
-
-              </div>
-
-              <p style={{ margin: "4px 0 0 0", fontSize: "13.5px", color: "var(--text-muted)", lineHeight: "1.4" }}>
-
-                {userPlans.length > 0 
-
-                  ? `Active Package: ${userPlans.join(", ")} • Enjoying 0% platform fee, priority dispatch & cashback!`
-
-                  : "Subscribe to a package below using your wallet balance or UPI to unlock 0% platform fees and free service visits."
-
-                }
-
-              </p>
-
-            </div>
-
-          </div>
-
-
-
-          <div style={{
-
-            padding: "10px 18px",
-
-            background: "var(--bg-card)",
-
-            borderRadius: "14px",
-
-            border: "1.5px solid var(--border)",
-
-            display: "flex",
-
-            flexDirection: "column",
-
-            alignItems: "flex-end"
-
-          }}>
-
-            <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Wallet Balance</span>
-
-            <span style={{ fontSize: "20px", fontWeight: 900, color: "#31525B" }}>₹{walletBal.toLocaleString()}</span>
-
-          </div>
-
-        </div>
-
-
 
         {/* Pricing Segment */}
 
@@ -1089,7 +946,7 @@ function PlansOffers() {
 
           padding: "28px",
 
-          background: "rgba(255, 255, 255, 0.4)",
+          background: "var(--bg-card)",
 
           borderRadius: "20px",
 

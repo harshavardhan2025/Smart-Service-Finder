@@ -65,9 +65,9 @@ function SecurityLogs({ userId = "admin", limit = 0 }) {
 
   return (
     <div style={{
-      background: "rgba(255, 255, 255, 0.9)",
+      background: "var(--bg-card)",
       backdropFilter: "blur(12px)",
-      border: "1px solid rgba(226, 232, 240, 0.8)",
+      border: "1px solid var(--border-color)",
       borderRadius: "20px",
       padding: "24px",
       boxShadow: "var(--card-shadow)"

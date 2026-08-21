@@ -20,8 +20,8 @@ const zyStyles = `
     to { opacity: 1; transform: translateY(0); }
   }
   @keyframes zyGlow {
-    0%, 100% { box-shadow: 0 0 20px rgba(49, 82, 91, 0.3); }
-    50% { box-shadow: 0 0 35px rgba(49, 82, 91, 0.5); }
+    0%, 100% { box-shadow: 0 0 20px var(--primary-glow); }
+    50% { box-shadow: 0 0 35px var(--primary-glow); }
   }
   @keyframes zyShimmer {
     0% { background-position: -200% 0; }
@@ -39,21 +39,21 @@ const zyStyles = `
     width: 62px;
     height: 62px;
     border-radius: 50%;
-    background: linear-gradient(145deg, #31525B 0%, #1F353B 100%);
-    box-shadow: 0 8px 32px rgba(49, 82, 91, 0.45), inset 0 1px 0 rgba(255,255,255,0.1);
+    background: var(--primary-grad);
+    box-shadow: 0 8px 32px var(--primary-glow), inset 0 1px 0 rgba(255,255,255,0.1);
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
     z-index: 10000;
     transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border: 2px solid rgba(179, 222, 229, 0.3);
+    border: 2px solid var(--border-color);
     overflow: visible;
   }
   .zy-fab:hover {
     transform: scale(1.12) rotate(-3deg);
-    box-shadow: 0 12px 40px rgba(49, 82, 91, 0.6), inset 0 1px 0 rgba(255,255,255,0.15);
-    border-color: rgba(179, 222, 229, 0.6);
+    box-shadow: 0 12px 40px var(--primary-glow), inset 0 1px 0 rgba(255,255,255,0.15);
+    border-color: var(--primary);
   }
   .zy-fab::before {
     content: '';
@@ -61,7 +61,7 @@ const zyStyles = `
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    border: 2px solid rgba(179, 222, 229, 0.3);
+    border: 2px solid var(--border-color);
     animation: zyRipple 2.5s ease-out infinite;
   }
   .zy-fab-icon {
@@ -79,7 +79,7 @@ const zyStyles = `
   }
 
   .zy-header {
-    background: linear-gradient(145deg, #1F353B 0%, #31525B 50%, #3d6670 100%);
+    background: var(--primary-grad);
     position: relative;
     overflow: hidden;
   }
@@ -90,7 +90,7 @@ const zyStyles = `
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(179, 222, 229, 0.08) 0%, transparent 70%);
+    background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
     pointer-events: none;
   }
   .zy-header::after {
@@ -100,15 +100,15 @@ const zyStyles = `
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(179, 222, 229, 0.4), transparent);
+    background: linear-gradient(90deg, transparent, var(--border-color), transparent);
   }
 
   .zy-status-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #4ade80;
-    box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+    background: var(--success);
+    box-shadow: 0 0 8px var(--success-light);
     animation: zyPulse 2s ease-in-out infinite;
   }
 
@@ -117,9 +117,9 @@ const zyStyles = `
   }
 
   .zy-msg-ai {
-    background: linear-gradient(135deg, rgba(49, 82, 91, 0.06) 0%, rgba(179, 222, 229, 0.1) 100%);
-    border: 1px solid rgba(49, 82, 91, 0.1);
-    color: var(--text-main, #0f172a);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
     border-radius: 4px 16px 16px 16px;
     position: relative;
   }
@@ -130,35 +130,35 @@ const zyStyles = `
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg, #31525B, #B3DEE5, transparent);
+    background: var(--primary-grad);
     border-radius: 4px 16px 0 0;
     opacity: 0.5;
   }
 
   .zy-msg-user {
-    background: linear-gradient(145deg, #31525B 0%, #1F353B 100%);
-    color: white;
+    background: var(--primary-grad);
+    color: var(--bg-main);
     border-radius: 16px 16px 4px 16px;
-    box-shadow: 0 4px 12px rgba(49, 82, 91, 0.25);
+    box-shadow: 0 4px 12px var(--primary-glow);
   }
 
   .zy-typing-dot {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: #31525B;
+    background: var(--primary);
     display: inline-block;
     animation: zyDotBounce 1.2s ease-in-out infinite;
   }
 
   .zy-chip {
-    background: linear-gradient(135deg, rgba(49, 82, 91, 0.05) 0%, rgba(179, 222, 229, 0.12) 100%);
-    border: 1.5px solid rgba(49, 82, 91, 0.15);
+    background: var(--bg-main);
+    border: 1.5px solid var(--border-color);
     border-radius: 20px;
     padding: 6px 14px;
     font-size: 11.5px;
     font-weight: 600;
-    color: #31525B;
+    color: var(--text-primary);
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
@@ -166,11 +166,11 @@ const zyStyles = `
     letter-spacing: 0.2px;
   }
   .zy-chip:hover {
-    background: linear-gradient(135deg, #31525B 0%, #3d6670 100%);
-    color: white;
-    border-color: #31525B;
+    background: var(--primary-grad);
+    color: var(--bg-main);
+    border-color: var(--primary);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(49, 82, 91, 0.2);
+    box-shadow: 0 4px 12px var(--primary-glow);
   }
   .zy-chip:disabled {
     opacity: 0.4;
@@ -182,27 +182,27 @@ const zyStyles = `
     flex: 1;
     padding: 12px 16px;
     border-radius: 14px;
-    border: 1.5px solid rgba(49, 82, 91, 0.15);
+    border: 1.5px solid var(--border-color);
     outline: none;
     font-size: 14px;
     font-family: 'Outfit', sans-serif;
-    background: rgba(255,255,255,0.8);
+    background: var(--bg-card);
     backdrop-filter: blur(8px);
-    color: var(--text-main, #0f172a);
+    color: var(--text-main);
     transition: all 0.25s ease;
   }
   .zy-input:focus {
-    border-color: #31525B;
-    box-shadow: 0 0 0 3px rgba(49, 82, 91, 0.1);
-    background: white;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+    background: var(--bg-card-hover);
   }
   .zy-input:disabled {
-    background: rgba(0,0,0,0.03);
-    color: #94a3b8;
+    background: var(--bg-main);
+    color: var(--text-muted);
     cursor: not-allowed;
   }
   .zy-input::placeholder {
-    color: #94a3b8;
+    color: var(--text-muted);
     font-weight: 400;
   }
 
@@ -210,22 +210,22 @@ const zyStyles = `
     width: 44px;
     height: 44px;
     border-radius: 14px;
-    background: linear-gradient(145deg, #31525B 0%, #1F353B 100%);
+    background: var(--primary-grad);
     border: none;
-    border-bottom: 3px solid #0E1719;
-    color: white;
+    border-bottom: 3px solid var(--primary-dark);
+    color: var(--bg-main);
     font-size: 18px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(49, 82, 91, 0.3);
+    box-shadow: 0 4px 12px var(--primary-glow);
     padding: 0;
   }
   .zy-send-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(49, 82, 91, 0.4);
+    box-shadow: 0 6px 20px var(--primary-glow);
   }
   .zy-send-btn:active {
     transform: translateY(1px);
@@ -238,8 +238,8 @@ const zyStyles = `
   }
 
   .zy-worker-card {
-    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%);
-    border: 1.5px solid rgba(49, 82, 91, 0.12);
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-color);
     border-radius: 16px;
     padding: 14px;
     transition: all 0.25s ease;
@@ -252,12 +252,12 @@ const zyStyles = `
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 3px;
-    background: linear-gradient(90deg, #31525B, #B3DEE5);
+    background: var(--primary-grad);
   }
   .zy-worker-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(49, 82, 91, 0.15);
-    border-color: rgba(49, 82, 91, 0.25);
+    box-shadow: 0 8px 24px var(--primary-glow);
+    border-color: var(--primary);
   }
 
   .zy-book-btn {
@@ -267,18 +267,18 @@ const zyStyles = `
     font-size: 12.5px;
     font-weight: 700;
     font-family: 'Outfit', sans-serif;
-    background: linear-gradient(145deg, #31525B 0%, #1F353B 100%);
+    background: var(--primary-grad);
     border: none;
-    border-bottom: 3px solid #0E1719;
-    color: white;
+    border-bottom: 3px solid var(--primary-dark);
+    color: var(--bg-main);
     cursor: pointer;
     transition: all 0.2s ease;
     letter-spacing: 0.3px;
-    box-shadow: 0 4px 8px rgba(49, 82, 91, 0.2);
+    box-shadow: 0 4px 8px var(--primary-glow);
   }
   .zy-book-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(49, 82, 91, 0.3);
+    box-shadow: 0 6px 16px var(--primary-glow);
   }
   .zy-book-btn:active {
     transform: translateY(1px);
@@ -307,11 +307,11 @@ const zyStyles = `
     background: transparent;
   }
   .zy-messages::-webkit-scrollbar-thumb {
-    background: rgba(49, 82, 91, 0.15);
+    background: var(--primary-glow);
     border-radius: 10px;
   }
   .zy-messages::-webkit-scrollbar-thumb:hover {
-    background: rgba(49, 82, 91, 0.3);
+    background: var(--primary);
   }
 `;
 
@@ -1043,11 +1043,11 @@ function AiChatBot() {
             overflow: "hidden",
             zIndex: 10000,
             borderRadius: "20px",
-            background: "rgba(255, 255, 255, 0.92)",
+            background: "var(--bg-card)",
             backdropFilter: "blur(20px) saturate(180%)",
             WebkitBackdropFilter: "blur(20px) saturate(180%)",
-            boxShadow: "0 20px 60px rgba(31, 53, 59, 0.2), 0 0 0 1px rgba(49, 82, 91, 0.08)",
-            border: "1px solid rgba(179, 222, 229, 0.3)",
+            boxShadow: "var(--card-shadow)",
+            border: "1px solid var(--border-color)",
             userSelect: isDragging || isResizing ? "none" : "auto"
           }}
         >
@@ -1110,7 +1110,7 @@ function AiChatBot() {
                   style={{
                     fontSize: "15px",
                     fontWeight: 700,
-                    color: "white",
+                    color: "var(--bg-main)",
                     letterSpacing:
                       "0.3px",
                   }}
@@ -1131,7 +1131,8 @@ function AiChatBot() {
                     style={{
                       fontSize: "11px",
                       color:
-                        "rgba(179,222,229,0.9)",
+                        "var(--bg-main)",
+                      opacity: 0.8,
                     }}
                   >
                     AI Service Assistant
@@ -1159,13 +1160,13 @@ function AiChatBot() {
                 aria-label="Clear chat"
                 title="Clear chat"
                 style={{
-                  background: "rgba(255,255,255,0.1)",
+                  background: "transparent",
                   border: "1px solid rgba(255,255,255,0.15)",
                   borderBottom: "none",
                   boxShadow: "none",
                   padding: 0,
                   borderRadius: "8px",
-                  color: "white",
+                  color: "var(--bg-main)",
                   width: "30px",
                   height: "30px",
                   cursor: "pointer",
@@ -1188,13 +1189,13 @@ function AiChatBot() {
                 aria-label="Close chat"
                 title="Close"
                 style={{
-                  background: "rgba(255,255,255,0.1)",
+                  background: "transparent",
                   border: "1px solid rgba(255,255,255,0.15)",
                   borderBottom: "none",
                   boxShadow: "none",
                   padding: 0,
                   borderRadius: "8px",
-                  color: "white",
+                  color: "var(--bg-main)",
                   width: "30px",
                   height: "30px",
                   cursor: "pointer",
@@ -1225,7 +1226,7 @@ function AiChatBot() {
               flexDirection: "column",
               gap: "14px",
               background:
-                "linear-gradient(180deg, rgba(248,250,252,0.5) 0%, rgba(255,255,255,0.3) 100%)",
+                "transparent",
             }}
           >
             {messages.map(
@@ -1324,9 +1325,9 @@ function AiChatBot() {
                             padding:
                               "8px 14px",
                             background:
-                              "#E5F6F8",
+                              "var(--primary-light)",
                             color:
-                              "#1F353B",
+                              "var(--text-main)",
                             borderRadius:
                               "8px",
                             textDecoration:
@@ -1336,7 +1337,7 @@ function AiChatBot() {
                             fontSize:
                               "13px",
                             border:
-                              "1px solid #B3DEE5",
+                              "1px solid var(--primary)",
                           }}
                         >
                           {message.linkText ||
@@ -1697,7 +1698,7 @@ function AiChatBot() {
                       "10.5px",
                     fontWeight: 600,
                     color:
-                      "#31525B",
+                      "var(--primary)",
                     marginBottom:
                       "4px",
                   }}
@@ -1753,12 +1754,12 @@ function AiChatBot() {
               gap: "6px",
               padding: "8px 14px",
               borderTop:
-                "1px solid rgba(49,82,91,0.08)",
+                "1px solid var(--border-color)",
               overflowX: "auto",
               whiteSpace:
                 "nowrap",
               background:
-                "rgba(248,250,252,0.5)",
+                "transparent",
               flexShrink: 0,
             }}
           >
@@ -1792,13 +1793,13 @@ function AiChatBot() {
               padding:
                 "12px 14px",
               borderTop:
-                "1px solid rgba(49,82,91,0.08)",
+                "1px solid var(--border-color)",
               display: "flex",
               gap: "8px",
               alignItems:
                 "center",
               background:
-                "rgba(255,255,255,0.6)",
+                "transparent",
               flexShrink: 0,
             }}
           >

@@ -399,12 +399,12 @@ function Sidebar() {
         }
 
         .workzy-sidebar-scroll::-webkit-scrollbar-thumb {
-          background: rgba(255,255,255,0.15);
+          background: var(--primary-glow);
           border-radius: 10px;
         }
 
         .workzy-sidebar-scroll::-webkit-scrollbar-thumb:hover {
-          background: rgba(255,255,255,0.25);
+          background: var(--primary);
         }
 
         @media (max-width: 768px) {
@@ -594,12 +594,12 @@ function Sidebar() {
                 justifyContent: "center",
 
                 background:
-                  "linear-gradient(135deg, #31525B, #B3DEE5)",
+                  "var(--primary-grad)",
 
-                color: "#ffffff",
+                color: "white",
 
                 boxShadow:
-                  "0 6px 16px rgba(49,82,91,0.35)",
+                  "0 6px 16px var(--primary-glow)",
               }}
             >
               <FaTools size={17} />
@@ -623,7 +623,7 @@ function Sidebar() {
               Work
               <span
                 style={{
-                  color: "#f1a829",
+                  color: "var(--warning)",
                 }}
               >
                 zy
@@ -782,8 +782,8 @@ function Sidebar() {
                 style={{
                   color:
                     theme === "dark"
-                      ? "#f1a829"
-                      : "#38bdf8",
+                      ? "var(--warning)"
+                      : "var(--primary)",
 
                   fontWeight: 800,
                 }}
@@ -806,7 +806,7 @@ function Sidebar() {
               paddingTop: "12px",
 
               borderTop:
-                "1px solid rgba(255,255,255,0.08)",
+                "1px solid var(--border-color)",
             }}
           >
             {isLoggedIn ? (
@@ -828,15 +828,15 @@ function Sidebar() {
                   gap: "8px",
 
                   background:
-                    "linear-gradient(135deg, #ef4444, #b91c1c)",
+                    "var(--danger-grad)",
 
                   color: "#ffffff",
 
                   border:
-                    "1px solid rgba(255,255,255,0.08)",
+                    "1px solid var(--border-color)",
 
                   borderBottom:
-                    "3px solid #991b1b",
+                    "3px solid var(--danger)",
 
                   borderRadius: "10px",
 
@@ -845,7 +845,7 @@ function Sidebar() {
                   cursor: "pointer",
 
                   boxShadow:
-                    "0 5px 12px rgba(239,68,68,0.20)",
+                    "0 5px 12px var(--danger-light)",
                 }}
               >
                 <FaSignOutAlt />
@@ -879,15 +879,15 @@ function Sidebar() {
                       padding: "11px",
 
                       background:
-                        "rgba(255,255,255,0.06)",
+                        "transparent",
 
-                      color: "#ffffff",
+                      color: "var(--text-main)",
 
                       border:
-                        "1px solid rgba(255,255,255,0.16)",
+                        "1.5px solid var(--border-color)",
 
                       borderBottom:
-                        "1px solid rgba(255,255,255,0.16)",
+                        "1.5px solid var(--border-color)",
 
                       borderRadius:
                         "10px",
@@ -919,15 +919,15 @@ function Sidebar() {
                       padding: "11px",
 
                       background:
-                        "linear-gradient(135deg, #31525B, #1F353B)",
+                        "var(--primary-grad)",
 
-                      color: "#ffffff",
+                      color: "white",
 
                       border:
-                        "1px solid rgba(179,222,229,0.15)",
+                        "1px solid var(--primary-glow)",
 
                       borderBottom:
-                        "3px solid #0E1719",
+                        "3px solid var(--primary-hover)",
 
                       borderRadius:
                         "10px",
@@ -937,7 +937,7 @@ function Sidebar() {
                       cursor: "pointer",
 
                       boxShadow:
-                        "0 5px 12px rgba(49,82,91,0.25)",
+                        "0 5px 12px var(--primary-glow)",
                     }}
                   >
                     Signup
@@ -959,7 +959,7 @@ function Sidebar() {
             paddingTop: "14px",
 
             borderTop:
-              "1px solid rgba(255,255,255,0.08)",
+              "1px solid var(--border-color)",
 
             textAlign: "center",
           }}
@@ -968,7 +968,7 @@ function Sidebar() {
             style={{
               fontSize: "10.5px",
 
-              color: "#64748b",
+              color: "var(--text-secondary)",
 
               margin: 0,
 

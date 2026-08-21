@@ -229,7 +229,7 @@ function WorkerProfile() {
                   <FaShieldAlt size={14} style={{ color: "var(--success)" }} /> Background verified & certified professional
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "var(--text-secondary)" }}>
-                  <FaMagic size={14} style={{ color: "#3b82f6" }} /> Equipped with modern, sanitized equipment
+                  <FaMagic size={14} style={{ color: "var(--primary)" }} /> Equipped with modern, sanitized equipment
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "var(--text-secondary)" }}>
                   <FaClock size={14} style={{ color: "var(--warning)" }} /> On-time service arrival guarantee

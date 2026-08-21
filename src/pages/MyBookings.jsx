@@ -902,7 +902,7 @@ function MyBookings() {
                   <div style={{
                     padding: "4px 10px",
                     borderRadius: "8px",
-                    background: "#dcfce7",
+                    background: "var(--success-light)",
                     color: "var(--success)",
                     fontSize: "11px",
                     fontWeight: 700
@@ -913,9 +913,9 @@ function MyBookings() {
 
                 <div style={{
                   padding: "8px 12px",
-                  background: "white",
+                  background: "var(--bg-main)",
                   borderRadius: "10px",
-                  border: "1px solid rgba(0,0,0,0.06)",
+                  border: "1px solid var(--border-color)",
                   fontSize: "12px",
                   color: "var(--text-secondary)",
                   display: "flex",
@@ -923,8 +923,8 @@ function MyBookings() {
                   gap: "12px"
                 }}>
                   <span>Current Slot:</span>
-                  <strong style={{ color: "#31525B" }}>📅 {activeRescheduleBooking.date}</strong>
-                  <strong style={{ color: "#31525B" }}>🕐 {activeRescheduleBooking.time}</strong>
+                  <strong style={{ color: "var(--primary)" }}>📅 {activeRescheduleBooking.date}</strong>
+                  <strong style={{ color: "var(--primary)" }}>🕐 {activeRescheduleBooking.time}</strong>
                 </div>
               </div>
 

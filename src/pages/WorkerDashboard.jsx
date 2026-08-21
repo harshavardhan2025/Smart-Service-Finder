@@ -515,8 +515,8 @@ function WorkerDashboard() {
 
   const statusStyle = (s) => ({
     padding: "4px 10px", borderRadius: "20px", fontSize: "12px", fontWeight: 700,
-    backgroundColor: s === "Completed" ? "var(--primary-light)" : s === "Upcoming" ? "#fff3e0" : s === "Accepted" ? "var(--primary-light)" : "#fee2e2",
-    color: s === "Completed" ? "var(--primary-dark)" : s === "Upcoming" ? "#e65100" : s === "Accepted" ? "#16a34a" : "#ef4444"
+    backgroundColor: s === "Completed" ? "var(--primary-light)" : s === "Upcoming" ? "var(--warning-light)" : s === "Accepted" ? "var(--primary-light)" : "var(--danger-light)",
+    color: s === "Completed" ? "var(--primary-dark)" : s === "Upcoming" ? "var(--warning)" : s === "Accepted" ? "var(--success)" : "var(--danger)"
   });
 
   const handleSaveProfile = async () => {
@@ -710,8 +710,8 @@ function WorkerDashboard() {
               style={{
                 padding: "7px 16px", borderRadius: "8px", border: "none", fontWeight: 700,
                 fontSize: "12px", cursor: "pointer",
-                background: isActive ? "rgba(220,38,38,0.1)" : "rgba(16,185,129,0.1)",
-                color: isActive ? "#dc2626" : "#059669"
+                background: isActive ? "var(--danger-light)" : "var(--success-light)",
+                color: isActive ? "var(--danger)" : "var(--success)"
               }}
             >
               {isActive ? "Go Offline" : "Go Online"}
