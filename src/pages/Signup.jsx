@@ -10,11 +10,13 @@ import authMobileBg from "../assets/auth-mobile-bg.png";
 
 const PROFESSIONS = [
   { group: "Main Services", options: ["Carpentry", "Plumbing", "Electrical", "Beauty, Salon & Spa", "Doctors"] },
-  { group: "Cleaning", options: ["Floor cleaning", "Utensils Cleaning", "House Cleaning"] },
+  { group: "Cleaning", options: ["Floor cleaning", "Utensils Cleaning", "House Cleaning", "Sofa & Carpet Cleaning"] },
   { group: "Painting", options: ["Wall Putty Coating", "Interior Painting", "Exterior Painting", "Texture & Designer Finishers", "Wallpaper Installation", "Wood Polishing"] },
   { group: "Mechanical", options: ["Two-Wheeler (Bikes)", "Four-Wheeler (Cars)", "Others (Heavy)"] },
   { group: "Automobile Cleaning", options: ["Bike Wash", "Car Wash", "Others"] },
-  { group: "Appliance Repair", options: ["AC Repair", "Washing Machine", "Geyser", "Grinder", "Mixer", "Refrigerator", "Water Purifier"] },
+  { group: "Appliance Repair", options: ["AC Repair", "Washing Machine", "Geyser", "Grinder", "Mixer", "Refrigerator", "Water Purifier", "TV & Electronics"] },
+  { group: "IT & Tech", options: ["Computer Repair", "Network Setup", "Smart Home Installation"] },
+  { group: "Home & Maintenance", options: ["Pest Control", "Termite Treatment", "Waterproofing"] },
   { group: "Specializations", options: ["Photography", "Decor", "Mehandi", "Doctors & Medical"] },
 ];
 
@@ -22,10 +24,10 @@ const PROFESSIONS = [
 function GoogleIcon({ size = 20 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 18 18">
-      <path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.7v2.24h2.91c1.7-1.57 2.68-3.88 2.68-6.57z"/>
-      <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.23l-2.91-2.24c-.8.54-1.84.87-3.05.87-2.34 0-4.33-1.58-5.03-3.7H.95v2.3C2.43 15.89 5.5 18 9 18z"/>
-      <path fill="#FBBC05" d="M3.97 10.7c-.18-.54-.28-1.12-.28-1.7s.1-1.16.28-1.7V5H.95C.35 6.2.01 7.57.01 9s.34 2.8 1.04 4l2.92-2.3z"/>
-      <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35L15 2.4C13.46.97 11.41 0 9 0 5.5 0 2.43 2.11.95 5.1l2.97 2.3c.7-2.12 2.69-3.82 5.03-3.82z"/>
+      <path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.7v2.24h2.91c1.7-1.57 2.68-3.88 2.68-6.57z" />
+      <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.23l-2.91-2.24c-.8.54-1.84.87-3.05.87-2.34 0-4.33-1.58-5.03-3.7H.95v2.3C2.43 15.89 5.5 18 9 18z" />
+      <path fill="#FBBC05" d="M3.97 10.7c-.18-.54-.28-1.12-.28-1.7s.1-1.16.28-1.7V5H.95C.35 6.2.01 7.57.01 9s.34 2.8 1.04 4l2.92-2.3z" />
+      <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35L15 2.4C13.46.97 11.41 0 9 0 5.5 0 2.43 2.11.95 5.1l2.97 2.3c.7-2.12 2.69-3.82 5.03-3.82z" />
     </svg>
   );
 }
@@ -48,8 +50,8 @@ function ResultPopup({ result, onClose, navigate }) {
 
   const config = {
     success: { icon: "✅", title: "Registration Successful!", titleColor: "#15803d", bg: "rgba(22, 163, 74, 0.04)", border: "rgba(22, 163, 74, 0.2)" },
-    exists:  { icon: "⚠️", title: "Account Already Exists", titleColor: "#92400e", bg: "rgba(245, 158, 11, 0.04)", border: "rgba(245, 158, 11, 0.2)" },
-    fail:    { icon: "❌", title: "Registration Failed", titleColor: "#dc2626", bg: "rgba(220, 38, 38, 0.04)", border: "rgba(220, 38, 38, 0.2)" },
+    exists: { icon: "⚠️", title: "Account Already Exists", titleColor: "#92400e", bg: "rgba(245, 158, 11, 0.04)", border: "rgba(245, 158, 11, 0.2)" },
+    fail: { icon: "❌", title: "Registration Failed", titleColor: "#dc2626", bg: "rgba(220, 38, 38, 0.04)", border: "rgba(220, 38, 38, 0.2)" },
   }[result.type] || {};
 
   return (
@@ -115,6 +117,56 @@ function ResultPopup({ result, onClose, navigate }) {
     </div>
   );
 }
+
+// ── Spinner ───────────────────────────────────────────────────────────────
+const Spinner = () => (
+  <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+    <span style={{
+      width: "16px", height: "16px",
+      border: "2.5px solid rgba(255,255,255,0.3)",
+      borderTopColor: "white",
+      borderRadius: "50%",
+      display: "inline-block",
+      animation: "signupSpin 0.6s linear infinite",
+    }} />
+    Processing...
+  </span>
+);
+
+// ── Shared Input Field Component ──────────────────────────────────────────
+const InputField = ({ icon: Icon, label, hint, id, type = "text", placeholder, value, onChange, children, focusColor = "#2d5a9e", ...rest }) => (
+  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+    <label htmlFor={id} style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-main)", letterSpacing: "0.3px", textTransform: "uppercase" }}>
+      {label} {hint && <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: 400, textTransform: "none" }}>{hint}</span>}
+    </label>
+    <div style={{ position: "relative" }}>
+      {Icon && (
+        <span style={{
+          position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)",
+          color: "var(--text-muted)", display: "flex", alignItems: "center", pointerEvents: "none",
+        }}>
+          <Icon size={14} />
+        </span>
+      )}
+      <input
+        id={id} type={type} placeholder={placeholder} value={value} onChange={onChange}
+        style={{
+          width: "100%", boxSizing: "border-box",
+          padding: Icon ? "12px 14px 12px 40px" : "12px 14px",
+          borderRadius: "12px",
+          border: "2px solid var(--border, #e2e8f0)",
+          background: "var(--bg-card, #ffffff)",
+          color: "var(--text-main)", fontSize: "14px", fontWeight: 500,
+          outline: "none", transition: "all 0.2s ease",
+        }}
+        onFocus={(e) => { e.target.style.borderColor = focusColor; e.target.style.boxShadow = `0 0 0 3px ${focusColor}15`; }}
+        onBlur={(e) => { e.target.style.borderColor = "var(--border, #e2e8f0)"; e.target.style.boxShadow = "none"; }}
+        {...rest}
+      />
+      {children}
+    </div>
+  </div>
+);
 
 function Signup() {
   // ── State ──────────────────────────────────────────────────
@@ -366,55 +418,6 @@ function Signup() {
     }
   };
 
-  // ── Spinner ───────────────────────────────────────────────────────────────
-  const Spinner = () => (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
-      <span style={{
-        width: "16px", height: "16px",
-        border: "2.5px solid rgba(255,255,255,0.3)",
-        borderTopColor: "white",
-        borderRadius: "50%",
-        display: "inline-block",
-        animation: "signupSpin 0.6s linear infinite",
-      }} />
-      Processing...
-    </span>
-  );
-
-  // ── Shared Input Field Component ──────────────────────────────────────────
-  const InputField = ({ icon: Icon, label, hint, id, type = "text", placeholder, value, onChange, children, focusColor = "#2d5a9e", ...rest }) => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-      <label htmlFor={id} style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-main)", letterSpacing: "0.3px", textTransform: "uppercase" }}>
-        {label} {hint && <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: 400, textTransform: "none" }}>{hint}</span>}
-      </label>
-      <div style={{ position: "relative" }}>
-        {Icon && (
-          <span style={{
-            position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)",
-            color: "var(--text-muted)", display: "flex", alignItems: "center", pointerEvents: "none",
-          }}>
-            <Icon size={14} />
-          </span>
-        )}
-        <input
-          id={id} type={type} placeholder={placeholder} value={value} onChange={onChange}
-          style={{
-            width: "100%", boxSizing: "border-box",
-            padding: Icon ? "12px 14px 12px 40px" : "12px 14px",
-            borderRadius: "12px",
-            border: "2px solid var(--border, #e2e8f0)",
-            background: "var(--bg-card, #ffffff)",
-            color: "var(--text-main)", fontSize: "14px", fontWeight: 500,
-            outline: "none", transition: "all 0.2s ease",
-          }}
-          onFocus={(e) => { e.target.style.borderColor = focusColor; e.target.style.boxShadow = `0 0 0 3px ${focusColor}15`; }}
-          onBlur={(e) => { e.target.style.borderColor = "var(--border, #e2e8f0)"; e.target.style.boxShadow = "none"; }}
-          {...rest}
-        />
-        {children}
-      </div>
-    </div>
-  );
 
   // ── Render ────────────────────────────────────────────────
   return (
@@ -423,11 +426,11 @@ function Signup() {
       <ResultPopup result={popupResult} onClose={() => setPopupResult(null)} navigate={navigate} />
 
       <div style={{
-        flex: 1, display: "flex", justifyContent: "center", alignItems: "center",
-        padding: isMobile ? "10px 8px" : "24px 16px",
+        flex: 1, display: "flex", justifyContent: "center", alignItems: isMobile ? "flex-start" : "center",
+        padding: isMobile ? "20px 8px" : "24px 16px",
         backgroundImage: `linear-gradient(135deg, rgba(15,23,42,0.85) 0%, rgba(30,58,95,0.8) 40%, rgba(45,90,158,0.75) 100%), url(${isMobile ? authMobileBg : authBg})`,
         backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat",
-        position: "relative", overflow: "hidden",
+        position: "relative", overflowX: "hidden", overflowY: "auto",
       }}>
         {/* Animated background elements */}
         <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
@@ -497,7 +500,7 @@ function Signup() {
                   fontSize: "13px", color: "rgba(255, 255, 255, 0.6)",
                   lineHeight: 1.6, marginBottom: "20px",
                 }}>
-                  Create your account today and access thousands of skilled professionals or start offering your services.
+                  Create your account today and access thousands of skilled professionals or start earning from your profession.
                 </p>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -528,8 +531,8 @@ function Signup() {
           {/* ── Right Panel (Form) ──────────────────────────────────── */}
           <div style={{
             flex: 1, background: "var(--bg-card, #ffffff)",
-            padding: isMobile ? "14px 12px" : "20px 24px",
-            overflowY: "auto", maxHeight: isMobile ? "none" : "80vh",
+            padding: isMobile ? "20px 16px" : "20px 24px",
+            overflowY: "auto", maxHeight: isMobile ? "100%" : "80vh",
           }}>
 
             {/* ═══════════════════════════════════════════════════════
@@ -613,7 +616,7 @@ function Signup() {
                       Sign up as Worker
                     </div>
                     <div style={{ fontSize: "13px", color: "var(--text-secondary)", lineHeight: 1.4 }}>
-                      Offer your services & grow your business
+                      Start earning from your skills
                     </div>
                   </div>
                   <GoogleIcon size={22} />

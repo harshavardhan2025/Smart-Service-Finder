@@ -12,11 +12,13 @@ import authMobileBg from "../assets/auth-mobile-bg.png";
 // ── Professions list (for Join as Service Provider) ─────────────────────────
 const PROFESSIONS = [
   { group: "Main Services", options: ["Carpentry", "Plumbing", "Electrical", "Beauty, Salon & Spa", "Doctors & Medical"] },
-  { group: "Cleaning", options: ["House Cleaning", "Floor cleaning", "Utensils Cleaning"] },
+  { group: "Cleaning", options: ["House Cleaning", "Floor cleaning", "Utensils Cleaning", "Sofa & Carpet Cleaning"] },
   { group: "Painting", options: ["Interior Painting", "Exterior Painting", "Wall Putty Coating", "Wood Polishing"] },
   { group: "Mechanical", options: ["Two-Wheeler (Bikes)", "Four-Wheeler (Cars)"] },
   { group: "Automobile Cleaning", options: ["Car Wash", "Bike Wash"] },
-  { group: "Appliance Repair", options: ["AC Repair", "Washing Machine", "Refrigerator", "Geyser"] },
+  { group: "Appliance Repair", options: ["AC Repair", "Washing Machine", "Refrigerator", "Geyser", "TV & Electronics"] },
+  { group: "IT & Tech", options: ["Computer Repair", "Network Setup", "Smart Home Installation"] },
+  { group: "Home & Maintenance", options: ["Pest Control", "Termite Treatment", "Waterproofing"] },
   { group: "Specializations", options: ["Photography", "Events", "Packers & Movers", "Mechanic"] },
 ];
 
@@ -160,6 +162,77 @@ function LoginResultPopup({ popup, onClose, onSwitchTab, onOpenJoinForm, navigat
     </div>
   );
 }
+
+// ── Shared status banner ─────────────────────────────────────────────────
+const StatusBanner = ({ status }) => status ? (
+  <div style={{
+    padding: "12px 16px", borderRadius: "12px", marginBottom: "16px",
+    fontSize: "13px", fontWeight: 600, display: "flex", alignItems: "center", gap: "10px",
+    animation: "loginFadeIn 0.3s ease-out forwards",
+    backgroundColor: status.type === "success" ? "rgba(22, 163, 74, 0.08)" : "rgba(220, 38, 38, 0.06)",
+    color: status.type === "success" ? "#15803d" : "#dc2626",
+    border: `1px solid ${status.type === "success" ? "rgba(22, 163, 74, 0.2)" : "rgba(220, 38, 38, 0.15)"}`,
+  }}>
+    <span style={{ fontSize: "16px", flexShrink: 0 }}>{status.type === "success" ? "✅" : "❌"}</span>
+    <span style={{ lineHeight: 1.5 }}>{status.message}</span>
+  </div>
+) : null;
+
+// ── Spinner ───────────────────────────────────────────────────────────────
+const Spinner = () => (
+  <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+    <span style={{
+      width: "16px", height: "16px",
+      border: "2.5px solid rgba(255,255,255,0.3)",
+      borderTopColor: "white",
+      borderRadius: "50%",
+      display: "inline-block",
+      animation: "loginSpin 0.6s linear infinite",
+    }} />
+    Processing...
+  </span>
+);
+
+// ── Shared Input Field Component ──────────────────────────────────────────
+const InputField = ({ icon: Icon, label, id, type = "text", placeholder, value, onChange, error, children, ...rest }) => (
+  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+    <label htmlFor={id} style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-main)", letterSpacing: "0.3px", textTransform: "uppercase" }}>
+      {label}
+    </label>
+    <div style={{ position: "relative" }}>
+      {Icon && (
+        <span style={{
+          position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)",
+          color: "var(--text-muted)", display: "flex", alignItems: "center", pointerEvents: "none",
+        }}>
+          <Icon size={14} />
+        </span>
+      )}
+      <input
+        id={id}
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        style={{
+          width: "100%", boxSizing: "border-box",
+          padding: Icon ? "10px 14px 10px 40px" : "10px 14px",
+          borderRadius: "12px",
+          border: error ? "2px solid rgba(220, 38, 38, 0.3)" : "2px solid var(--border, #e2e8f0)",
+          background: "var(--bg-card, #ffffff)",
+          color: "var(--text-main)",
+          fontSize: "14px", fontWeight: 500,
+          outline: "none",
+          transition: "all 0.2s ease",
+        }}
+        onFocus={(e) => { e.target.style.borderColor = "#2d5a9e"; e.target.style.boxShadow = "0 0 0 3px rgba(45, 90, 158, 0.1)"; }}
+        onBlur={(e) => { e.target.style.borderColor = error ? "rgba(220, 38, 38, 0.3)" : "var(--border, #e2e8f0)"; e.target.style.boxShadow = "none"; }}
+        {...rest}
+      />
+      {children}
+    </div>
+  </div>
+);
 
 function Login() {
   const [activeTab, setActiveTab] = useState("user"); // "user" | "provider"
@@ -597,87 +670,17 @@ function Login() {
     googleLogin();
   };
 
-  // ── Shared status banner ─────────────────────────────────────────────────
-  const StatusBanner = ({ status }) => status ? (
-    <div style={{
-      padding: "12px 16px", borderRadius: "12px", marginBottom: "16px",
-      fontSize: "13px", fontWeight: 600, display: "flex", alignItems: "center", gap: "10px",
-      animation: "loginFadeIn 0.3s ease-out forwards",
-      backgroundColor: status.type === "success" ? "rgba(22, 163, 74, 0.08)" : "rgba(220, 38, 38, 0.06)",
-      color: status.type === "success" ? "#15803d" : "#dc2626",
-      border: `1px solid ${status.type === "success" ? "rgba(22, 163, 74, 0.2)" : "rgba(220, 38, 38, 0.15)"}`,
-    }}>
-      <span style={{ fontSize: "16px", flexShrink: 0 }}>{status.type === "success" ? "✅" : "❌"}</span>
-      <span style={{ lineHeight: 1.5 }}>{status.message}</span>
-    </div>
-  ) : null;
-
-  // ── Spinner ───────────────────────────────────────────────────────────────
-  const Spinner = () => (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
-      <span style={{
-        width: "16px", height: "16px",
-        border: "2.5px solid rgba(255,255,255,0.3)",
-        borderTopColor: "white",
-        borderRadius: "50%",
-        display: "inline-block",
-        animation: "loginSpin 0.6s linear infinite",
-      }} />
-      Processing...
-    </span>
-  );
-
-  // ── Shared Input Field Component ──────────────────────────────────────────
-  const InputField = ({ icon: Icon, label, id, type = "text", placeholder, value, onChange, error, children, ...rest }) => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-      <label htmlFor={id} style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-main)", letterSpacing: "0.3px", textTransform: "uppercase" }}>
-        {label}
-      </label>
-      <div style={{ position: "relative" }}>
-        {Icon && (
-          <span style={{
-            position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)",
-            color: "var(--text-muted)", display: "flex", alignItems: "center", pointerEvents: "none",
-          }}>
-            <Icon size={14} />
-          </span>
-        )}
-        <input
-          id={id}
-          type={type}
-          placeholder={placeholder}
-          value={value}
-          onChange={onChange}
-          style={{
-            width: "100%", boxSizing: "border-box",
-            padding: Icon ? "10px 14px 10px 40px" : "10px 14px",
-            borderRadius: "12px",
-            border: error ? "2px solid rgba(220, 38, 38, 0.3)" : "2px solid var(--border, #e2e8f0)",
-            background: "var(--bg-card, #ffffff)",
-            color: "var(--text-main)",
-            fontSize: "14px", fontWeight: 500,
-            outline: "none",
-            transition: "all 0.2s ease",
-          }}
-          onFocus={(e) => { e.target.style.borderColor = "#2d5a9e"; e.target.style.boxShadow = "0 0 0 3px rgba(45, 90, 158, 0.1)"; }}
-          onBlur={(e) => { e.target.style.borderColor = error ? "rgba(220, 38, 38, 0.3)" : "var(--border, #e2e8f0)"; e.target.style.boxShadow = "none"; }}
-          {...rest}
-        />
-        {children}
-      </div>
-    </div>
-  );
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg-primary, #f8fafc)" }}>
       <Navbar />
 
       <div style={{
-        flex: 1, display: "flex", justifyContent: "center", alignItems: "center",
-        padding: isMobile ? "10px 8px" : "24px 16px",
+        flex: 1, display: "flex", justifyContent: "center", alignItems: isMobile ? "flex-start" : "center",
+        padding: isMobile ? "20px 8px" : "24px 16px",
         backgroundImage: `linear-gradient(135deg, rgba(15,23,42,0.85) 0%, rgba(30,58,95,0.8) 40%, rgba(45,90,158,0.75) 100%), url(${isMobile ? authMobileBg : authBg})`,
         backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat",
-        position: "relative", overflow: "hidden",
+        position: "relative", overflowX: "hidden", overflowY: "auto",
       }}>
         {/* Animated background elements */}
         <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
@@ -780,8 +783,8 @@ function Login() {
           {/* ── Right Panel (Form) ──────────────────────────────────── */}
           <div style={{
             flex: 1, background: "var(--bg-card, #ffffff)",
-            padding: isMobile ? "14px 12px" : "20px 24px",
-            overflowY: "auto", maxHeight: isMobile ? "none" : "80vh",
+            padding: isMobile ? "20px 16px" : "20px 24px",
+            overflowY: "auto", maxHeight: isMobile ? "100%" : "80vh",
           }}>
             {/* ── Header ──────────────────────────────────────────── */}
             <div style={{ marginBottom: isMobile ? "12px" : "18px" }}>
