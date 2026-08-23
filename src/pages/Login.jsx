@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import { FaEye, FaEyeSlash, FaUser, FaHardHat, FaChevronDown, FaChevronUp } from "react-icons/fa";
-import authBg from "../assets/auth-bg.jpg";
-import authMobileBg from "../assets/auth-mobile-bg.png";
+import { FaEye, FaEyeSlash, FaUser, FaHardHat, FaChevronDown, FaChevronUp, FaShieldAlt, FaLock, FaEnvelope } from "react-icons/fa";
 import { fetchAllWorkersCached } from "../utils/workerService";
 import safeJson from "../utils/safeJson";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useRef } from "react";
+import authBg from "../assets/auth-bg.jpg";
+import authMobileBg from "../assets/auth-mobile-bg.png";
 
 // ── Professions list (for Join as Service Provider) ─────────────────────────
 const PROFESSIONS = [
@@ -21,14 +21,20 @@ const PROFESSIONS = [
 ];
 
 const CITIES = [
-  "Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai", "Pune", "Kolkata", "Ahmedabad", "Jaipur", "Surat", "Lucknow", "Kanpur", "Nagpur", "Indore", "Visakhapatnam", "Bhopal", "Patna", "Vadodara", "Ludhiana", "Agra", "Nashik", "Rajkot", "Meerut", "Varanasi", "Kakinada", "Vijayawada", "Guntur", "Tirupati", "Rajahmundry", "Kadapa", "Nellore", "Kurnool", "Anantapur", "Warangal", "Karimnagar", "Nizamabad", "Khammam", "Secunderabad", "Coimbatore", "Madurai", "Trichy", "Salem", "Erode", "Tiruppur", "Mysuru", "Mangalore", "Belgaum", "Hubli", "Dharwad", "Gulbarga", "Davanagere", "Bellary", "Raipur", "Bhilai", "Durg", "Bilaspur", "Korba", "Ranchi", "Jamshedpur", "Dhanbad", "Bokaro", "Hazaribagh", "Bhubaneswar", "Cuttack", "Rourkela", "Sambalpur", "Balasore", "Guwahati", "Silchar", "Dibrugarh", "Jorhat", "Shillong", "Imphal", "Aizawl", "Kohima", "Dimapur", "Agartala", "Gangtok", "Port Blair", "Chandigarh", "Amritsar", "Jalandhar", "Patiala", "Bathinda", "Mohali", "Panchkula", "Faridabad", "Gurgaon", "Noida", "Greater Noida", "Ghaziabad", "Aligarh", "Moradabad", "Bareilly", "Saharanpur", "Muzaffarnagar", "Roorkee", "Dehradun", "Haridwar", "Haldwani", "Rudrapur", "Srinagar", "Jammu", "Leh", "Kargil", "Shimla", "Solan", "Dharamshala", "Kangra", "Hamirpur", "Una", "Manali", "Kullu", "Palampur", "Udaipur", "Jodhpur", "Ajmer", "Kota", "Bikaner", "Alwar", "Bharatpur", "Sikar", "Bhilwara", "Pali", "Tonk", "Chittorgarh", "Sawai Madhopur", "Dausa", "Barmer", "Jaisalmer", "Gwalior", "Jabalpur", "Satna", "Rewa", "Sagar", "Katni", "Chhindwara", "Hoshangabad", "Khandwa", "Ratlam", "Dewas", "Morena", "Shivpuri", "Betul", "Mandla", "Seoni", "Chhatarpur", "Tikamgarh", "Panna", "Sidhi", "Singrauli", "Shahdol", "Anuppur", "Umaria", "Dindori", "Balaghat", "Sehore", "Raisen", "Vidisha", "Rajgarh", "Shajapur", "Agar Malwa", "Ujjain", "Neemuch", "Mandsaur", "Barwani", "Khargone", "Burhanpur", "Dhar", "Jhabua", "Alirajpur", "Aurangabad", "Jalgaon", "Kolhapur", "Sangli", "Satara", "Solapur", "Latur", "Osmanabad", "Beed", "Parbhani", "Nanded", "Hingoli", "Akola", "Amravati", "Yavatmal", "Chandrapur", "Gadchiroli", "Wardha", "Washim", "Buldhana", "Ratnagiri", "Sindhudurg", "Palghar", "Thane", "Navi Mumbai", "Vasai", "Virar", "Kalyan", "Dombivli", "Ulhasnagar", "Panvel", "Mira Bhayandar", "Nagapattinam", "Thanjavur", "Kumbakonam", "Karaikal", "Pudukkottai", "Sivaganga", "Ramanathapuram", "Virudhunagar", "Thoothukudi", "Nagercoil", "Tirunelveli", "Dindigul", "Karur", "Namakkal", "Krishnagiri", "Dharmapuri", "Hosur", "Vellore", "Tiruvannamalai", "Villupuram", "Cuddalore", "Ariyalur", "Perambalur", "Mayiladuthurai", "Tiruvarur", "Kanchipuram", "Chengalpattu", "Tiruvallur",
-
-  "Nagarkurnool", "Mahbubnagar", "Nalgonda", "Suryapet", "Jagtial", "Mancherial", "Adilabad", "Nirmal", "Kamareddy", "Sangareddy", "Medak", "Siddipet", "Vikarabad", "Rangareddy", "Yadadri", "Bhongir", "Mulugu", "Jayashankar", "Bhupalpally", "Mahabubabad", "Jangaon", "Hanamkonda",
-
-  "Ongole", "Chittoor", "Vizianagaram", "Srikakulam", "Bhimavaram", "Eluru", "Machilipatnam", "Tenali", "Narasaraopet", "Gudivada", "Proddatur", "Hindupur", "Adoni", "Nandyal", "Markapur", "Chirala", "Bapatla", "Amalapuram", "Tadepalligudem", "Tanuku", "Pithapuram", "Samalkot", "Anakapalle", "Vizag Steel Township", "Gajuwaka", "Malkapuram", "Simhachalam", "Marripalem", "Kancharapalem", "Gopalapatnam", "Madhurawada", "Pedagantyada", "Parawada", "Sabbavaram", "Pendurthi", "Chodavaram", "Yelamanchili", "Payakaraopeta", "Narsipatnam", "Kotapadu", "Annavaram", "Tuni", "Etapaka", "Polavaram", "Rampachodavaram", "Maredumilli", "Paderu", "Araku Valley", "S Kota", "Bobbili", "Parvathipuram", "Salur", "Palakonda", "Seethampeta", "Amadalavalasa", "Narasannapeta", "Ichchapuram", "Sompeta", "Palasa", "Tekkali", "Kaviti", "Mandasa", "Vajrapukotturu", "Pathapatnam", "Hiramandalam", "Kothuru", "Bhamini", "Veeraghattam", "Burja", "Ponduru", "Santhabommali", "Kotabommali", "Jalumuru", "Saravakota", "Laveru", "Ranastalam", "Etcherla",
-
-  "Berhampur", "Puri", "Khurda", "Angul", "Dhenkanal", "Jajpur", "Kendrapara", "Jagatsinghpur", "Nayagarh", "Boudh", "Kandhamal", "Kalahandi", "Balangir", "Nuapada", "Nabarangpur", "Koraput", "Malkangiri", "Rayagada", "Sundargarh", "Jharsuguda", "Bargarh", "Sonepur", "Keonjhar", "Mayurbhanj", "Baripada", "Bhadrak", "Jaleswar", "Basudevpur", "Chandbali", "Dhamra", "Paradip", "Talcher", "Athmallik", "Kamakhyanagar", "Bhawanipatna", "Titlagarh", "Kesinga", "Kantabanji", "Patnagarh", "Bolangir", "Saintala", "Loisingha", "Turekela", "Khaprakhol", "Muribahal", "Belpara", "Deogaon", "Agalpur", "Tusura", "Tarbha", "Subarnapur", "Binika", "Birmaharajpur", "Ulunda", "Rampur", "Rairakhol", "Kuchinda", "Rajgangpur", "Bonai", "Koira", "Tensa", "Biramitrapur", "Hemgir", "Lephripara", "Bhasma", "Tangarpali", "Balishankara", "Bhawanipur", "Bhubaneswar outskirts",
+  "Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai", "Pune", "Kolkata", "Ahmedabad", "Jaipur", "Surat", "Lucknow", "Kanpur", "Nagpur", "Indore", "Visakhapatnam", "Bhopal", "Patna", "Vadodara", "Ludhiana", "Agra", "Nashik", "Rajkot", "Meerut", "Varanasi", "Kakinada", "Vijayawada", "Guntur", "Tirupati", "Rajahmundry", "Kadapa", "Nellore", "Kurnool", "Anantapur", "Warangal", "Karimnagar", "Nizamabad", "Khammam", "Secunderabad", "Coimbatore", "Madurai", "Trichy", "Salem", "Erode", "Tiruppur", "Mysuru", "Mangalore", "Belgaum", "Hubli", "Dharwad", "Gulbarga",
 ];
+
+// ── Google "G" SVG Icon ────────────────────────────────────
+function GoogleIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 18 18">
+      <path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.7v2.24h2.91c1.7-1.57 2.68-3.88 2.68-6.57z"/>
+      <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.23l-2.91-2.24c-.8.54-1.84.87-3.05.87-2.34 0-4.33-1.58-5.03-3.7H.95v2.3C2.43 15.89 5.5 18 9 18z"/>
+      <path fill="#FBBC05" d="M3.97 10.7c-.18-.54-.28-1.12-.28-1.7s.1-1.16.28-1.7V5H.95C.35 6.2.01 7.57.01 9s.34 2.8 1.04 4l2.92-2.3z"/>
+      <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35L15 2.4C13.46.97 11.41 0 9 0 5.5 0 2.43 2.11.95 5.1l2.97 2.3c.7-2.12 2.69-3.82 5.03-3.82z"/>
+    </svg>
+  );
+}
 
 
 // ── Login Result Popup Modal ───────────────────────────────────────────────
@@ -101,71 +107,49 @@ function LoginResultPopup({ popup, onClose, onSwitchTab, onOpenJoinForm, navigat
 
   return (
     <div style={{
-      position: "fixed",
-      inset: 0,
-      zIndex: 9999,
-      background: "rgba(15, 23, 42, 0.65)",
-      backdropFilter: "blur(8px)",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: "20px"
+      position: "fixed", inset: 0, zIndex: 9999,
+      background: "rgba(15, 23, 42, 0.65)", backdropFilter: "blur(12px)",
+      display: "flex", justifyContent: "center", alignItems: "center", padding: "20px"
     }}>
       <div style={{
         background: "var(--bg-card, #ffffff)",
         border: `2px solid ${config.border}`,
-        borderRadius: "20px",
-        padding: "36px 30px",
-        maxWidth: "420px",
-        width: "100%",
-        textAlign: "center",
-        boxShadow: "0 25px 60px rgba(0,0,0,0.3)",
-        animation: "popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both"
+        borderRadius: "24px", padding: "40px 36px", maxWidth: "420px", width: "100%",
+        textAlign: "center", boxShadow: "0 25px 80px rgba(0,0,0,0.25)",
+        animation: "loginPopIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both"
       }}>
-        <div style={{ fontSize: "50px", marginBottom: "12px", lineHeight: 1 }}>
+        <div style={{ fontSize: "56px", marginBottom: "14px", lineHeight: 1, filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.1))" }}>
           {config.icon}
         </div>
-        <h2 style={{ margin: "0 0 10px 0", fontSize: "20px", fontWeight: 800, color: config.titleColor }}>
+        <h2 style={{ margin: "0 0 10px 0", fontSize: "22px", fontWeight: 800, color: config.titleColor, letterSpacing: "-0.3px" }}>
           {config.title}
         </h2>
-        <p style={{ margin: "0 0 24px 0", fontSize: "13.5px", color: "var(--text-secondary, #64748b)", lineHeight: 1.65 }}>
+        <p style={{ margin: "0 0 28px 0", fontSize: "14px", color: "var(--text-secondary, #64748b)", lineHeight: 1.7 }}>
           {popup.message}
         </p>
-
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {config.primaryBtnText && (
             <button
               onClick={config.primaryAction}
               style={{
-                background: "linear-gradient(135deg, #dfb453 0%, #f1a829 100%)",
-                color: "white",
-                border: "none",
-                borderRadius: "10px",
-                padding: "12px 20px",
-                fontSize: "14px",
-                fontWeight: 700,
-                cursor: "pointer",
-                boxShadow: "0 4px 14px rgba(223, 180, 83, 0.35)",
-                transition: "all 0.2s"
+                background: "linear-gradient(135deg, #1e3a5f 0%, #2d5a9e 100%)",
+                color: "white", border: "none", borderRadius: "14px",
+                padding: "14px 24px", fontSize: "14px", fontWeight: 700,
+                cursor: "pointer", boxShadow: "0 6px 20px rgba(30, 58, 95, 0.3)",
+                transition: "all 0.2s", letterSpacing: "0.3px"
               }}
             >
               {config.primaryBtnText}
             </button>
           )}
-
           {config.secondaryBtnText && (
             <button
               onClick={config.secondaryAction}
               style={{
-                background: "transparent",
-                color: "var(--text-muted, #64748b)",
-                border: "1.5px solid var(--border, #cbd5e1)",
-                borderRadius: "10px",
-                padding: "11px 20px",
-                fontSize: "13px",
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "all 0.2s"
+                background: "transparent", color: "var(--text-muted, #64748b)",
+                border: "2px solid var(--border, #e2e8f0)", borderRadius: "14px",
+                padding: "12px 24px", fontSize: "13px", fontWeight: 600,
+                cursor: "pointer", transition: "all 0.2s"
               }}
             >
               {config.secondaryBtnText}
@@ -173,12 +157,6 @@ function LoginResultPopup({ popup, onClose, onSwitchTab, onOpenJoinForm, navigat
           )}
         </div>
       </div>
-      <style>{`
-        @keyframes popIn {
-          0% { opacity: 0; transform: scale(0.72); }
-          100% { opacity: 1; transform: scale(1); }
-        }
-      `}</style>
     </div>
   );
 }
@@ -622,21 +600,15 @@ function Login() {
   // ── Shared status banner ─────────────────────────────────────────────────
   const StatusBanner = ({ status }) => status ? (
     <div style={{
-      padding: isMobile ? "10px 14px" : "12px 16px",
-      borderRadius: "10px",
-      marginBottom: isMobile ? "12px" : "16px",
-      fontSize: isMobile ? "12px" : "13px",
-      fontWeight: 600,
-      display: "flex",
-      alignItems: "center",
-      gap: "8px",
-      animation: "fadeIn 0.3s ease-out forwards",
-      backgroundColor: status.type === "success" ? "#dcfce7" : "#fee2e2",
+      padding: "12px 16px", borderRadius: "12px", marginBottom: "16px",
+      fontSize: "13px", fontWeight: 600, display: "flex", alignItems: "center", gap: "10px",
+      animation: "loginFadeIn 0.3s ease-out forwards",
+      backgroundColor: status.type === "success" ? "rgba(22, 163, 74, 0.08)" : "rgba(220, 38, 38, 0.06)",
       color: status.type === "success" ? "#15803d" : "#dc2626",
-      border: `1px solid ${status.type === "success" ? "#bbf7d0" : "#fecaca"}`,
+      border: `1px solid ${status.type === "success" ? "rgba(22, 163, 74, 0.2)" : "rgba(220, 38, 38, 0.15)"}`,
     }}>
-      <span style={{ fontSize: "16px" }}>{status.type === "success" ? "✅" : "❌"}</span>
-      {status.message}
+      <span style={{ fontSize: "16px", flexShrink: 0 }}>{status.type === "success" ? "✅" : "❌"}</span>
+      <span style={{ lineHeight: 1.5 }}>{status.message}</span>
     </div>
   ) : null;
 
@@ -644,472 +616,422 @@ function Login() {
   const Spinner = () => (
     <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
       <span style={{
-        width: "14px", height: "14px",
-        border: "2px solid rgba(255,255,255,0.35)",
+        width: "16px", height: "16px",
+        border: "2.5px solid rgba(255,255,255,0.3)",
         borderTopColor: "white",
         borderRadius: "50%",
         display: "inline-block",
-        animation: "spin 0.6s linear infinite",
+        animation: "loginSpin 0.6s linear infinite",
       }} />
       Processing...
     </span>
   );
 
-  // ── Styles ────────────────────────────────────────────────────────────────
-  const tabBtn = (active) => ({
-    flex: 1,
-    padding: isMobile ? "9px 6px" : "11px 8px",
-    border: "none",
-    borderRadius: "10px",
-    fontWeight: 700,
-    fontSize: isMobile ? "12px" : "13px",
-    cursor: "pointer",
-    transition: "all 0.25s",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "6px",
-    background: active
-      ? "linear-gradient(135deg, #dfb453 0%, #f1a829 100%)"
-      : "transparent",
-    color: active ? "white" : "var(--text-muted)",
-    boxShadow: active ? "0 4px 12px rgba(223,180,83,0.35)" : "none",
-  });
-
-  const inputStyle = (errorActive) => ({
-    width: "100%",
-    boxSizing: "border-box",
-    padding: isMobile ? "10px" : "12px",
-    borderColor: errorActive ? "#fecaca" : undefined,
-    transition: "border-color 0.2s",
-  });
+  // ── Shared Input Field Component ──────────────────────────────────────────
+  const InputField = ({ icon: Icon, label, id, type = "text", placeholder, value, onChange, error, children, ...rest }) => (
+    <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+      <label htmlFor={id} style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-main)", letterSpacing: "0.3px", textTransform: "uppercase" }}>
+        {label}
+      </label>
+      <div style={{ position: "relative" }}>
+        {Icon && (
+          <span style={{
+            position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)",
+            color: "var(--text-muted)", display: "flex", alignItems: "center", pointerEvents: "none",
+          }}>
+            <Icon size={14} />
+          </span>
+        )}
+        <input
+          id={id}
+          type={type}
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          style={{
+            width: "100%", boxSizing: "border-box",
+            padding: Icon ? "10px 14px 10px 40px" : "10px 14px",
+            borderRadius: "12px",
+            border: error ? "2px solid rgba(220, 38, 38, 0.3)" : "2px solid var(--border, #e2e8f0)",
+            background: "var(--bg-card, #ffffff)",
+            color: "var(--text-main)",
+            fontSize: "14px", fontWeight: 500,
+            outline: "none",
+            transition: "all 0.2s ease",
+          }}
+          onFocus={(e) => { e.target.style.borderColor = "#2d5a9e"; e.target.style.boxShadow = "0 0 0 3px rgba(45, 90, 158, 0.1)"; }}
+          onBlur={(e) => { e.target.style.borderColor = error ? "rgba(220, 38, 38, 0.3)" : "var(--border, #e2e8f0)"; e.target.style.boxShadow = "none"; }}
+          {...rest}
+        />
+        {children}
+      </div>
+    </div>
+  );
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg-primary, #f8fafc)" }}>
       <Navbar />
 
-      <div
-        className="auth-wrapper"
-        style={{
-          flex: 1,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "flex-start",
-          padding: isMobile ? "20px 14px 32px" : "40px 24px 48px",
-          backgroundImage: `url(${isMobile ? authMobileBg : authBg})`,
-          backgroundSize: "100% 100%",
-          backgroundPosition: "center center",
-          backgroundRepeat: "no-repeat",
-          backgroundColor: "#b4d5fa",
-          overflowY: "auto",
-        }}
-      >
-        <div
-          className="premium-card"
-          style={{
-            width: isMobile ? "92%" : "100%",
-            maxWidth: isMobile ? "360px" : "420px",
-            backgroundColor: "var(--bg-card)",
-            padding: isMobile ? "22px 18px" : "36px 40px",
-            marginTop: isMobile ? "8px" : "0",
-          }}
-        >
-          {/* ── Header ─────────────────────────────────────────────────── */}
-          <div style={{ textAlign: "center", marginBottom: isMobile ? "16px" : "22px" }}>
-            <h1 style={{ margin: isMobile ? "0 0 4px" : "0 0 6px", fontSize: isMobile ? "22px" : "26px", fontWeight: 800, color: "var(--text-main)" }}>
-              Welcome Back
-            </h1>
-            <p style={{ margin: 0, color: "var(--text-muted)", fontSize: isMobile ? "12px" : "13px" }}>
-              Sign in to manage your bookings and services
-            </p>
-          </div>
-
-          {/* ── Tab Switcher ────────────────────────────────────────────── */}
+      <div style={{
+        flex: 1, display: "flex", justifyContent: "center", alignItems: "center",
+        padding: isMobile ? "10px 8px" : "24px 16px",
+        backgroundImage: `linear-gradient(135deg, rgba(15,23,42,0.85) 0%, rgba(30,58,95,0.8) 40%, rgba(45,90,158,0.75) 100%), url(${isMobile ? authMobileBg : authBg})`,
+        backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat",
+        position: "relative", overflow: "hidden",
+      }}>
+        {/* Animated background elements */}
+        <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
           <div style={{
-            display: "flex",
-            gap: "6px",
-            background: "var(--bg-secondary, #f1f5f9)",
-            borderRadius: "12px",
-            padding: "4px",
-            marginBottom: isMobile ? "16px" : "20px",
+            position: "absolute", width: "600px", height: "600px", borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(223, 180, 83, 0.08) 0%, transparent 70%)",
+            top: "-200px", right: "-100px", animation: "loginFloat 20s ease-in-out infinite",
+          }} />
+          <div style={{
+            position: "absolute", width: "400px", height: "400px", borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(45, 90, 158, 0.12) 0%, transparent 70%)",
+            bottom: "-150px", left: "-100px", animation: "loginFloat 25s ease-in-out infinite reverse",
+          }} />
+          <div style={{
+            position: "absolute", width: "200px", height: "200px", borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(255, 255, 255, 0.04) 0%, transparent 70%)",
+            top: "30%", left: "20%", animation: "loginFloat 15s ease-in-out infinite",
+          }} />
+        </div>
+
+        <div style={{
+          display: "flex", width: "100%", maxWidth: isMobile ? "340px" : "760px",
+          borderRadius: "20px", overflow: "hidden",
+          boxShadow: "0 25px 80px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.05)",
+          position: "relative", zIndex: 1,
+          animation: "loginSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both",
+        }}>
+
+          {/* ── Left Panel (Desktop Only) ────────────────────────────── */}
+          {!isMobile && (
+            <div style={{
+              width: "280px", flexShrink: 0,
+              background: "linear-gradient(135deg, #0c1929 0%, #1a365d 50%, #1e3a5f 100%)",
+              padding: "24px 20px", display: "flex", flexDirection: "column",
+              justifyContent: "center", position: "relative", overflow: "hidden",
+            }}>
+              <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
+                <div style={{
+                  position: "absolute", width: "300px", height: "300px", borderRadius: "50%",
+                  background: "radial-gradient(circle, rgba(223, 180, 83, 0.12) 0%, transparent 70%)",
+                  top: "-80px", right: "-80px",
+                }} />
+                <div style={{
+                  position: "absolute", width: "200px", height: "200px", borderRadius: "50%",
+                  background: "radial-gradient(circle, rgba(45, 90, 158, 0.15) 0%, transparent 70%)",
+                  bottom: "-60px", left: "-60px",
+                }} />
+              </div>
+
+              <div style={{ position: "relative", zIndex: 1 }}>
+                <div style={{
+                  width: "44px", height: "44px", borderRadius: "12px",
+                  background: "linear-gradient(135deg, #dfb453 0%, #f1a829 100%)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  marginBottom: "16px", boxShadow: "0 6px 18px rgba(223, 180, 83, 0.3)",
+                }}>
+                  <FaShieldAlt size={20} color="white" />
+                </div>
+
+                <h2 style={{
+                  fontSize: "26px", fontWeight: 900, color: "white",
+                  lineHeight: 1.2, marginBottom: "8px", letterSpacing: "-0.5px",
+                }}>
+                  Sign in to<br />
+                  <span style={{ background: "linear-gradient(135deg, #dfb453, #f1a829)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    Workzy
+                  </span>
+                </h2>
+
+                <p style={{
+                  fontSize: "13px", color: "rgba(255, 255, 255, 0.6)",
+                  lineHeight: 1.6, marginBottom: "20px",
+                }}>
+                  Your trusted platform to find and book skilled service providers near you.
+                </p>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {[
+                    { icon: "✓", text: "Secure & verified accounts" },
+                    { icon: "✓", text: "Book services in a few clicks" },
+                    { icon: "✓", text: "Available across India" },
+                  ].map((item, i) => (
+                    <div key={i} style={{
+                      display: "flex", alignItems: "center", gap: "10px",
+                      padding: "8px 10px", borderRadius: "10px",
+                      background: "rgba(255, 255, 255, 0.05)",
+                      border: "1px solid rgba(255, 255, 255, 0.08)",
+                    }}>
+                      <span style={{ fontSize: "16px" }}>{item.icon}</span>
+                      <span style={{ fontSize: "12.5px", color: "rgba(255, 255, 255, 0.8)", fontWeight: 500 }}>
+                        {item.text}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Right Panel (Form) ──────────────────────────────────── */}
+          <div style={{
+            flex: 1, background: "var(--bg-card, #ffffff)",
+            padding: isMobile ? "14px 12px" : "20px 24px",
+            overflowY: "auto", maxHeight: isMobile ? "none" : "80vh",
           }}>
-            <button
-              id="tab-login-user"
-              onClick={() => { setActiveTab("user"); setLoginStatus(null); setJoinStatus(null); setShowJoinForm(false); }}
-              style={tabBtn(activeTab === "user")}
-            >
-              <FaUser size={13} />
-              Login as User
-            </button>
-            <button
-              id="tab-login-provider"
-              onClick={() => { setActiveTab("provider"); setLoginStatus(null); setJoinStatus(null); }}
-              style={tabBtn(activeTab === "provider")}
-            >
-              <FaHardHat size={13} />
-              Service Provider
-            </button>
-          </div>
+            {/* ── Header ──────────────────────────────────────────── */}
+            <div style={{ marginBottom: isMobile ? "12px" : "18px" }}>
+              <h1 style={{
+                margin: "0 0 4px", fontSize: isMobile ? "21px" : "24px",
+                fontWeight: 900, color: "var(--text-main)", letterSpacing: "-0.5px",
+              }}>
+                Sign In
+              </h1>
+              <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "13px", lineHeight: 1.6 }}>
+                Manage your bookings and services securely
+              </p>
+            </div>
 
-          {/* ── Status ──────────────────────────────────────────────────── */}
-          <StatusBanner status={loginStatus} />
+            {/* ── Tab Switcher ─────────────────────────────────────── */}
+            <div style={{
+              display: "flex", gap: "4px",
+              background: "var(--bg-secondary, #f1f5f9)", borderRadius: "14px",
+              padding: "4px", marginBottom: "16px",
+            }}>
+              <button
+                id="tab-login-user"
+                onClick={() => { setActiveTab("user"); setLoginStatus(null); setJoinStatus(null); setShowJoinForm(false); }}
+                style={{
+                  flex: 1, padding: "12px 8px", border: "none", borderRadius: "11px",
+                  fontWeight: 700, fontSize: "13px", cursor: "pointer", transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+                  background: activeTab === "user" ? "linear-gradient(135deg, #1e3a5f 0%, #2d5a9e 100%)" : "transparent",
+                  color: activeTab === "user" ? "white" : "var(--text-muted)",
+                  boxShadow: activeTab === "user" ? "0 4px 16px rgba(30, 58, 95, 0.3)" : "none",
+                }}
+              >
+                <FaUser size={12} />
+                Customer
+              </button>
+              <button
+                id="tab-login-provider"
+                onClick={() => { setActiveTab("provider"); setLoginStatus(null); setJoinStatus(null); }}
+                style={{
+                  flex: 1, padding: "12px 8px", border: "none", borderRadius: "11px",
+                  fontWeight: 700, fontSize: "13px", cursor: "pointer", transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+                  background: activeTab === "provider" ? "linear-gradient(135deg, #065f46 0%, #059669 100%)" : "transparent",
+                  color: activeTab === "provider" ? "white" : "var(--text-muted)",
+                  boxShadow: activeTab === "provider" ? "0 4px 16px rgba(5, 150, 105, 0.3)" : "none",
+                }}
+              >
+                <FaHardHat size={12} />
+                Service Provider
+              </button>
+            </div>
 
-          {/* ════════════════════════════════════════════════════════════
-              TAB A — LOGIN AS USER
-          ════════════════════════════════════════════════════════════ */}
-          {activeTab === "user" && (
-            <>
-              <form onSubmit={handleUserLogin} style={{ display: "flex", flexDirection: "column", gap: isMobile ? "13px" : "18px" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                  <label style={{ fontSize: isMobile ? "13px" : "14px", fontWeight: 600, color: "var(--text-main)" }}>Email Address</label>
-                  <input
+            {/* ── Status ──────────────────────────────────────────── */}
+            <StatusBanner status={loginStatus} />
+
+            {/* ════════════════════════════════════════════════════════
+                TAB A — LOGIN AS USER
+            ════════════════════════════════════════════════════════ */}
+            {activeTab === "user" && (
+              <>
+                <form onSubmit={handleUserLogin} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <InputField
+                    icon={FaEnvelope}
+                    label="Email Address"
                     id="user-email"
                     type="email"
                     placeholder="name@example.com"
                     value={userEmail}
                     onChange={(e) => { setUserEmail(e.target.value); setLoginStatus(null); }}
-                    style={inputStyle(loginStatus?.type === "error")}
+                    error={loginStatus?.type === "error"}
+                    required
                   />
-                </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                  <label style={{ fontSize: isMobile ? "13px" : "14px", fontWeight: 600, color: "var(--text-main)" }}>Password</label>
-                  <div style={{ position: "relative" }}>
-                    <input
-                      id="user-password"
-                      type={showUserPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={userPassword}
-                      onChange={(e) => { setUserPassword(e.target.value); setLoginStatus(null); }}
-                      style={{ ...inputStyle(loginStatus?.type === "error"), paddingRight: "40px" }}
-                    />
+                  <InputField
+                    icon={FaLock}
+                    label="Password"
+                    id="user-password"
+                    type={showUserPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={userPassword}
+                    onChange={(e) => { setUserPassword(e.target.value); setLoginStatus(null); }}
+                    error={loginStatus?.type === "error"}
+                    required
+                    style={{ paddingRight: "44px" }}
+                  >
                     <span
                       role="button"
                       onClick={() => setShowUserPassword(!showUserPassword)}
-                      style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", cursor: "pointer", display: "flex", alignItems: "center", color: "var(--text-muted)", padding: "4px", userSelect: "none" }}
+                      style={{
+                        position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)",
+                        cursor: "pointer", display: "flex", alignItems: "center",
+                        color: "var(--text-muted)", padding: "4px", userSelect: "none",
+                      }}
                     >
-                      {showUserPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                      {showUserPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
                     </span>
-                  </div>
+                  </InputField>
+
+                  <button
+                    id="user-login-btn"
+                    type="submit"
+                    disabled={isLoading}
+                    style={{
+                      padding: "12px", fontSize: "15px", fontWeight: 700, marginTop: "2px",
+                      width: "100%", border: "none", borderRadius: "14px",
+                      cursor: isLoading ? "not-allowed" : "pointer",
+                      opacity: isLoading ? 0.7 : 1,
+                      background: "linear-gradient(135deg, #1e3a5f 0%, #2d5a9e 100%)",
+                      color: "white",
+                      boxShadow: "0 8px 28px rgba(30, 58, 95, 0.3)",
+                      transition: "all 0.3s ease",
+                      letterSpacing: "0.3px",
+                    }}
+                  >
+                    {isLoading ? <Spinner /> : "Sign In"}
+                  </button>
+                </form>
+
+                {/* Divider + Google */}
+                <div style={{ display: "flex", alignItems: "center", margin: "16px 0" }}>
+                  <div style={{ flex: 1, height: "1px", background: "var(--border, #e2e8f0)" }} />
+                  <span style={{ padding: "0 16px", color: "var(--text-muted)", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1px" }}>or</span>
+                  <div style={{ flex: 1, height: "1px", background: "var(--border, #e2e8f0)" }} />
                 </div>
-
                 <button
-                  id="user-login-btn"
-                  type="submit"
-                  className="btn-primary"
-                  disabled={isLoading}
+                  id="user-google-btn"
+                  type="button"
+                  onClick={() => handleGoogleSignIn("user_login")}
                   style={{
-                    padding: isMobile ? "10px" : "12px",
-                    fontSize: isMobile ? "14px" : "15px",
-                    marginTop: "4px",
-                    width: "100%",
-                    opacity: isLoading ? 0.7 : 1,
-                    cursor: isLoading ? "not-allowed" : "pointer",
-                    background: "linear-gradient(135deg, #dfb453 0%, #f1a829 100%)",
-                    borderBottom: "4px solid #a67c1e",
-                    color: "white",
-                    boxShadow: "0 10px 30px rgba(223,180,83,0.25)",
+                    padding: "12px", fontSize: "14px", fontWeight: 600, width: "100%",
+                    display: "flex", justifyContent: "center", alignItems: "center", gap: "10px",
+                    borderRadius: "14px", cursor: "pointer",
+                    background: "var(--bg-card, #ffffff)",
+                    border: "2px solid var(--border, #e2e8f0)",
+                    color: "var(--text-main)",
+                    transition: "all 0.2s",
                   }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#4285F4"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(66, 133, 244, 0.15)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border, #e2e8f0)"; e.currentTarget.style.boxShadow = "none"; }}
                 >
-                  {isLoading ? <Spinner /> : "Sign In as User"}
+                  <GoogleIcon size={18} />
+                  Continue with Google
                 </button>
-              </form>
 
-              {/* Divider + Google */}
-              <div style={{ display: "flex", alignItems: "center", margin: isMobile ? "14px 0" : "18px 0" }}>
-                <div style={{ flex: 1, height: "1px", backgroundColor: "var(--border)" }} />
-                <span style={{ padding: "0 10px", color: "var(--text-muted)", fontSize: "12px" }}>or continue with</span>
-                <div style={{ flex: 1, height: "1px", backgroundColor: "var(--border)" }} />
-              </div>
-              <button
-                id="user-google-btn"
-                type="button"
-                onClick={() => handleGoogleSignIn("user_login")}
-                className="btn-secondary"
-                style={{ padding: isMobile ? "10px" : "12px", fontSize: isMobile ? "14px" : "15px", width: "100%", display: "flex", justifyContent: "center", alignItems: "center", boxShadow: "none" }}
-              >
-                <svg width="18" height="18" viewBox="0 0 18 18" style={{ marginRight: "10px" }}>
-                  <path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.7v2.24h2.91c1.7-1.57 2.68-3.88 2.68-6.57z" />
-                  <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.23l-2.91-2.24c-.8.54-1.84.87-3.05.87-2.34 0-4.33-1.58-5.03-3.7H.95v2.3C2.43 15.89 5.5 18 9 18z" />
-                  <path fill="#FBBC05" d="M3.97 10.7c-.18-.54-.28-1.12-.28-1.7s.1-1.16.28-1.7V5H.95C.35 6.2.01 7.57.01 9s.34 2.8 1.04 4l2.92-2.3z" />
-                  <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35L15 2.4C13.46.97 11.41 0 9 0 5.5 0 2.43 2.11.95 5.1l2.97 2.3c.7-2.12 2.69-3.82 5.03-3.82z" />
-                </svg>
-                Sign In with Google
-              </button>
+                <p style={{ textAlign: "center", marginTop: "16px", fontSize: "14px", color: "var(--text-muted)" }}>
+                  Don't have an account?{" "}
+                  <Link to="/signup" style={{ color: "#2d5a9e", fontWeight: 700, textDecoration: "none" }}>Create Account</Link>
+                </p>
+              </>
+            )}
 
-              <p style={{ textAlign: "center", marginTop: isMobile ? "14px" : "20px", fontSize: isMobile ? "13px" : "14px", color: "var(--text-muted)" }}>
-                Don't have an account?{" "}
-                <Link to="/signup" style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>Sign up</Link>
-              </p>
-            </>
-          )}
-
-          {/* ════════════════════════════════════════════════════════════
-              TAB B — SERVICE PROVIDER
-          ════════════════════════════════════════════════════════════ */}
-          {activeTab === "provider" && (
-            <>
-              {/* Provider login: separate provider email/password */}
-              <form onSubmit={handleProviderLogin} style={{ display: "flex", flexDirection: "column", gap: isMobile ? "13px" : "18px" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                  <label style={{ fontSize: isMobile ? "13px" : "14px", fontWeight: 600, color: "var(--text-main)" }}>Provider Email</label>
-                  <input
+            {/* ════════════════════════════════════════════════════════
+                TAB B — SERVICE PROVIDER
+            ════════════════════════════════════════════════════════ */}
+            {activeTab === "provider" && (
+              <>
+                <form onSubmit={handleProviderLogin} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <InputField
+                    icon={FaEnvelope}
+                    label="Provider Email"
                     id="provider-email"
                     type="email"
                     placeholder="your@email.com"
                     value={providerEmail}
                     onChange={(e) => { setProviderEmail(e.target.value); setLoginStatus(null); }}
-                    style={inputStyle(loginStatus?.type === "error")}
+                    error={loginStatus?.type === "error"}
+                    required
                   />
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                  <label style={{ fontSize: isMobile ? "13px" : "14px", fontWeight: 600, color: "var(--text-main)" }}>Password</label>
-                  <div style={{ position: "relative" }}>
-                    <input
-                      id="provider-password"
-                      type={showProviderPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={providerPassword}
-                      onChange={(e) => { setProviderPassword(e.target.value); setLoginStatus(null); }}
-                      style={{ ...inputStyle(loginStatus?.type === "error"), paddingRight: "40px" }}
-                    />
-                    <span role="button" onClick={() => setShowProviderPassword(!showProviderPassword)} style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", cursor: "pointer", display: "flex", alignItems: "center", color: "var(--text-muted)", padding: "4px", userSelect: "none" }}>
-                      {showProviderPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+
+                  <InputField
+                    icon={FaLock}
+                    label="Password"
+                    id="provider-password"
+                    type={showProviderPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={providerPassword}
+                    onChange={(e) => { setProviderPassword(e.target.value); setLoginStatus(null); }}
+                    error={loginStatus?.type === "error"}
+                    required
+                    style={{ paddingRight: "44px" }}
+                  >
+                    <span
+                      role="button"
+                      onClick={() => setShowProviderPassword(!showProviderPassword)}
+                      style={{
+                        position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)",
+                        cursor: "pointer", display: "flex", alignItems: "center",
+                        color: "var(--text-muted)", padding: "4px", userSelect: "none",
+                      }}
+                    >
+                      {showProviderPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
                     </span>
-                  </div>
-                </div>
-                <button
-                  id="provider-login-btn"
-                  type="submit"
-                  disabled={isLoading}
-                  style={{
-                    padding: isMobile ? "10px" : "12px",
-                    fontSize: isMobile ? "14px" : "15px",
-                    width: "100%",
-                    border: "none",
-                    borderRadius: "10px",
-                    fontWeight: 700,
-                    cursor: isLoading ? "not-allowed" : "pointer",
-                    opacity: isLoading ? 0.7 : 1,
-                    background: "linear-gradient(135deg, #1e3a5f 0%, #2d5a9e 100%)",
-                    color: "white",
-                    boxShadow: "0 8px 24px rgba(30,58,95,0.28)",
-                    transition: "all 0.2s",
-                  }}
-                >
-                  {isLoading ? <Spinner /> : "🛠️ Sign In as Provider"}
-                </button>
-              </form>
+                  </InputField>
 
-              {/* Google Sign-In for Provider */}
-              <div style={{ display: "flex", alignItems: "center", margin: isMobile ? "14px 0 10px" : "18px 0 12px" }}>
-                <div style={{ flex: 1, height: "1px", backgroundColor: "var(--border)" }} />
-                <span style={{ padding: "0 10px", color: "var(--text-muted)", fontSize: "12px" }}>or sign in with</span>
-                <div style={{ flex: 1, height: "1px", backgroundColor: "var(--border)" }} />
-              </div>
-              <button
-                id="provider-google-btn"
-                type="button"
-                onClick={() => handleGoogleSignIn("provider_login")}
-                className="btn-secondary"
-                style={{
-                  padding: isMobile ? "10px" : "12px",
-                  fontSize: isMobile ? "14px" : "15px",
-                  width: "100%",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  boxShadow: "none",
-                  marginBottom: isMobile ? "14px" : "18px",
-                  border: "1.5px solid #1e3a5f30",
-                }}
-              >
-                <svg width="18" height="18" viewBox="0 0 18 18" style={{ marginRight: "10px" }}>
-                  <path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.7v2.24h2.91c1.7-1.57 2.68-3.88 2.68-6.57z" />
-                  <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.23l-2.91-2.24c-.8.54-1.84.87-3.05.87-2.34 0-4.33-1.58-5.03-3.7H.95v2.3C2.43 15.89 5.5 18 9 18z" />
-                  <path fill="#FBBC05" d="M3.97 10.7c-.18-.54-.28-1.12-.28-1.7s.1-1.16.28-1.7V5H.95C.35 6.2.01 7.57.01 9s.34 2.8 1.04 4l2.92-2.3z" />
-                  <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35L15 2.4C13.46.97 11.41 0 9 0 5.5 0 2.43 2.11.95 5.1l2.97 2.3c.7-2.12 2.69-3.82 5.03-3.82z" />
-                </svg>
-                Continue with Google as Provider
-              </button>
-
-              {/* ── Join as Service Provider (Inline Registration) ──── */}
-              <div style={{ marginTop: isMobile ? "10px" : "14px" }}>
-                <button
-                  type="button"
-                  onClick={() => setShowJoinForm(!showJoinForm)}
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "8px",
-                    padding: isMobile ? "10px" : "12px",
-                    border: "1.5px dashed var(--border, #cbd5e1)",
-                    borderRadius: "10px",
-                    backgroundColor: showJoinForm ? "rgba(30, 58, 95, 0.06)" : "transparent",
-                    color: "var(--text-main, #1e293b)",
-                    fontSize: isMobile ? "13px" : "14px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                  }}
-                >
-                  🛠️ {showJoinForm ? "Hide Registration Form" : "New? Register as Service Provider"}
-                  {showJoinForm ? <FaChevronUp size={11} /> : <FaChevronDown size={11} />}
-                </button>
-
-                {showJoinForm && (
-                  <div
+                  <button
+                    id="provider-login-btn"
+                    type="submit"
+                    disabled={isLoading}
                     style={{
-                      marginTop: "12px",
-                      padding: isMobile ? "16px 14px" : "20px",
-                      borderRadius: "14px",
-                      border: "1.5px solid var(--border, #e2e8f0)",
-                      backgroundColor: "var(--bg-card-hover, #f8fafc)",
-                      animation: "fadeIn 0.3s ease-out forwards",
+                      padding: "12px", fontSize: "15px", fontWeight: 700, marginTop: "2px",
+                      width: "100%", border: "none", borderRadius: "14px",
+                      cursor: isLoading ? "not-allowed" : "pointer",
+                      opacity: isLoading ? 0.7 : 1,
+                      background: "linear-gradient(135deg, #065f46 0%, #059669 100%)",
+                      color: "white",
+                      boxShadow: "0 8px 28px rgba(5, 150, 105, 0.3)",
+                      transition: "all 0.3s ease",
+                      letterSpacing: "0.3px",
                     }}
                   >
-                    <h3 style={{ margin: "0 0 4px 0", fontSize: isMobile ? "15px" : "16px", fontWeight: 800, color: "var(--text-main)" }}>
-                      🛠️ Worker Registration
-                    </h3>
-                    <p style={{ margin: "0 0 14px 0", fontSize: "12px", color: "var(--text-secondary, #64748b)" }}>
-                      Fill in your details to register as a service provider
-                    </p>
+                    {isLoading ? <Spinner /> : "🛠️ Sign In as Provider"}
+                  </button>
+                </form>
 
-                    <StatusBanner status={joinStatus} />
+                {/* Google Sign-In for Provider */}
+                <div style={{ display: "flex", alignItems: "center", margin: "22px 0" }}>
+                  <div style={{ flex: 1, height: "1px", background: "var(--border, #e2e8f0)" }} />
+                  <span style={{ padding: "0 16px", color: "var(--text-muted)", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1px" }}>or</span>
+                  <div style={{ flex: 1, height: "1px", background: "var(--border, #e2e8f0)" }} />
+                </div>
+                <button
+                  id="provider-google-btn"
+                  type="button"
+                  onClick={() => handleGoogleSignIn("provider_login")}
+                  style={{
+                    padding: "12px", fontSize: "14px", fontWeight: 600, width: "100%",
+                    display: "flex", justifyContent: "center", alignItems: "center", gap: "10px",
+                    borderRadius: "14px", cursor: "pointer",
+                    background: "var(--bg-card, #ffffff)",
+                    border: "2px solid rgba(5, 150, 105, 0.2)",
+                    color: "var(--text-main)",
+                    transition: "all 0.2s",
+                    marginBottom: "20px",
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#059669"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(5, 150, 105, 0.15)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(5, 150, 105, 0.2)"; e.currentTarget.style.boxShadow = "none"; }}
+                >
+                  <GoogleIcon size={18} />
+                  Continue with Google as Provider
+                </button>
 
-                    <form onSubmit={handleJoinAsWorker} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                        <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Full Name *</label>
-                        <input
-                          id="join-name"
-                          type="text"
-                          placeholder="e.g. Harsha Vardhan"
-                          value={joinName}
-                          onChange={(e) => setJoinName(e.target.value)}
-                          style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border, #cbd5e1)", background: "var(--bg-card, #fff)", color: "var(--text-main)", fontSize: "14px" }}
-                          required
-                        />
-                      </div>
 
-                      <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                        <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Phone Number * <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 400 }}>(10 digits)</span></label>
-                        <input
-                          id="join-phone"
-                          type="tel"
-                          placeholder="e.g. 9876543210"
-                          value={joinPhone}
-                          onChange={(e) => setJoinPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                          maxLength={10}
-                          style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border, #cbd5e1)", background: "var(--bg-card, #fff)", color: "var(--text-main)", fontSize: "14px" }}
-                          required
-                        />
-                      </div>
 
-                      <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                        <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Email Address *</label>
-                        <input
-                          id="join-email"
-                          type="email"
-                          placeholder="name@example.com"
-                          value={joinEmail}
-                          onChange={(e) => setJoinEmail(e.target.value)}
-                          style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border, #cbd5e1)", background: "var(--bg-card, #fff)", color: "var(--text-main)", fontSize: "14px" }}
-                          required
-                        />
-                      </div>
-
-                      <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                        <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Password *</label>
-                        <div style={{ position: "relative" }}>
-                          <input
-                            id="join-password"
-                            type={showJoinPassword ? "text" : "password"}
-                            placeholder="••••••••"
-                            value={joinPassword}
-                            onChange={(e) => setJoinPassword(e.target.value)}
-                            style={{ width: "100%", boxSizing: "border-box", padding: "10px 40px 10px 12px", borderRadius: "8px", border: "1px solid var(--border, #cbd5e1)", background: "var(--bg-card, #fff)", color: "var(--text-main)", fontSize: "14px" }}
-                            required
-                          />
-                          <span
-                            role="button"
-                            onClick={() => setShowJoinPassword(!showJoinPassword)}
-                            style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", cursor: "pointer", display: "flex", alignItems: "center", color: "var(--text-muted)", padding: "4px", userSelect: "none" }}
-                          >
-                            {showJoinPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                        <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Service / Profession *</label>
-                        <select
-                          id="join-profession"
-                          value={joinProfession}
-                          onChange={(e) => setJoinProfession(e.target.value)}
-                          style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border, #cbd5e1)", background: "var(--bg-card, #fff)", color: "var(--text-main)", fontSize: "14px" }}
-                          required
-                        >
-                          <option value="">Select your profession...</option>
-                          {PROFESSIONS.map((g) => (
-                            <optgroup key={g.group} label={g.group}>
-                              {g.options.map((o) => <option key={o} value={o}>{o}</option>)}
-                            </optgroup>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                        <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-main)" }}>Serving Location *</label>
-                        <input
-                          id="join-city"
-                          type="text"
-                          placeholder="e.g. Kakinada or Rajahmundry"
-                          value={joinCity}
-                          onChange={(e) => setJoinCity(e.target.value)}
-                          list="join-cities-list"
-                          style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border, #cbd5e1)", background: "var(--bg-card, #fff)", color: "var(--text-main)", fontSize: "14px" }}
-                          required
-                        />
-                        <datalist id="join-cities-list">
-                          {CITIES.slice(0, 50).map((c) => <option key={c} value={c} />)}
-                        </datalist>
-                      </div>
-
-                      <button
-                        id="join-provider-btn"
-                        type="submit"
-                        disabled={isJoining}
-                        style={{
-                          padding: isMobile ? "10px" : "12px",
-                          fontSize: isMobile ? "14px" : "15px",
-                          width: "100%",
-                          border: "none",
-                          borderRadius: "10px",
-                          fontWeight: 700,
-                          cursor: isJoining ? "not-allowed" : "pointer",
-                          opacity: isJoining ? 0.7 : 1,
-                          background: "linear-gradient(135deg, #065f46 0%, #059669 100%)",
-                          color: "white",
-                          boxShadow: "0 6px 18px rgba(5, 150, 105, 0.3)",
-                          transition: "all 0.2s",
-                          marginTop: "4px",
-                        }}
-                      >
-                        {isJoining ? <Spinner /> : "🚀 Register & Sign In as Provider"}
-                      </button>
-                    </form>
-                  </div>
-                )}
-              </div>
-
-              <p style={{ textAlign: "center", marginTop: isMobile ? "14px" : "20px", fontSize: isMobile ? "12px" : "13px", color: "var(--text-muted)" }}>
-                New to Workzy?{" "}
-                <Link to="/signup" state={{ role: "worker" }} style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>Sign up as a provider</Link>
-              </p>
-            </>
-          )}
+                <p style={{ textAlign: "center", marginTop: "16px", fontSize: "14px", color: "var(--text-muted)" }}>
+                  New to Workzy?{" "}
+                  <Link to="/signup" state={{ role: "worker" }} style={{ color: "#059669", fontWeight: 700, textDecoration: "none" }}>Sign up as a provider</Link>
+                </p>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -1130,17 +1052,28 @@ function Login() {
       />
 
       {/* Footer */}
-      <footer style={{ textAlign: "center", padding: "22px", color: "var(--text-secondary)", fontSize: "13px", backgroundColor: "var(--bg-card)", borderTop: "1px solid var(--border-color)", fontWeight: 500 }}>
+      <footer style={{
+        textAlign: "center", padding: "20px 24px",
+        color: "var(--text-secondary)", fontSize: "13px",
+        backgroundColor: "var(--bg-card)", borderTop: "1px solid var(--border)",
+        fontWeight: 500,
+      }}>
         © 2026 Workzy Inc. All rights reserved. Made with ❤️ by PS-152 Team.
       </footer>
 
       <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes loginSpin { to { transform: rotate(360deg); } }
+        @keyframes loginFadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes loginPopIn { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes loginSlideUp { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
+        @keyframes loginFloat {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(30px, -30px) scale(1.05); }
+          66% { transform: translate(-20px, 20px) scale(0.95); }
+        }
       `}</style>
     </div>
   );
 }
 
 export default Login;
-
