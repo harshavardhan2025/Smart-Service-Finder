@@ -16,6 +16,27 @@ export const setWalletBalance = (newBalance) => {
   return rounded;
 };
 
+export const syncWalletFromServer = async () => {
+  try {
+    const token = sessionStorage.getItem("authToken");
+    if (!token) return getWalletBalance();
+
+    const res = await fetch("/api/users/me", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const user = await res.json();
+      if (user && user.walletBalance !== undefined && !isNaN(user.walletBalance)) {
+        setWalletBalance(user.walletBalance);
+        return user.walletBalance;
+      }
+    }
+  } catch (e) {
+    console.error("Wallet sync error:", e);
+  }
+  return getWalletBalance();
+};
+
 const logTransaction = async (payload) => {
   try {
     await fetch("/api/transactions", {

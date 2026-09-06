@@ -39,7 +39,10 @@ function Navbar() {
     const fetchNotifications = async () => {
       try {
         const userId = sessionStorage.getItem("userId") || "";
-        const res = await fetch(`/api/notifications?role=${userRole}&user_id=${userId}`);
+        const token = sessionStorage.getItem("authToken");
+        const res = await fetch(`/api/notifications?role=${userRole}&user_id=${userId}`, {
+          headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
         if (res.ok) {
           const data = await res.json();
           setNotifications(data);
@@ -240,9 +243,13 @@ function Navbar() {
                       onClick={async () => {
                         try {
                           const userId = sessionStorage.getItem("userId") || "";
+                          const token = sessionStorage.getItem("authToken");
                           const res = await fetch("/api/notifications/mark-read", {
                             method: "PATCH",
-                            headers: { "Content-Type": "application/json" },
+                            headers: { 
+                              "Content-Type": "application/json",
+                              ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                            },
                             body: JSON.stringify({ role: userRole, user_id: userId })
                           });
                           if (res.ok) {

@@ -332,7 +332,7 @@ function AISmartSearchHub({
       }
       recognitionRef.current = null;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleVoiceClick = () => {
@@ -938,13 +938,13 @@ function QuickSearchChips({ value, onChipClick }) {
                 border: isSelected
                   ? "1.5px solid var(--primary)"
                   : isAttracted
-                  ? "1.5px solid var(--primary)"
-                  : "1px solid var(--border-color)",
+                    ? "1.5px solid var(--primary)"
+                    : "1px solid var(--border-color)",
                 background: isSelected
                   ? "var(--primary)"
                   : isAttracted
-                  ? "linear-gradient(135deg, rgba(49, 82, 91, 0.12) 0%, rgba(179, 222, 229, 0.25) 100%)"
-                  : "linear-gradient(135deg, rgba(49, 82, 91, 0.05) 0%, rgba(179, 222, 229, 0.1) 100%)",
+                    ? "linear-gradient(135deg, rgba(49, 82, 91, 0.12) 0%, rgba(179, 222, 229, 0.25) 100%)"
+                    : "linear-gradient(135deg, rgba(49, 82, 91, 0.05) 0%, rgba(179, 222, 229, 0.1) 100%)",
                 color: isSelected ? "#ffffff" : isAttracted ? "var(--primary-dark)" : "var(--text-main)",
                 fontSize: "12px",
                 fontWeight: isSelected || isAttracted ? 800 : 600,
@@ -1016,7 +1016,7 @@ function AIRecommendationCard({
             minWidth: "38px",
             minHeight: "38px",
             borderRadius: "50%",
-            background: "linear-gradient(135deg, #e68a00 0%, #ffa101 100%)",
+            background: "linear-gradient(135deg, #e6ad00ff 0%, #ffe101ff 100%)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

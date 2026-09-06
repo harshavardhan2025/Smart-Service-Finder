@@ -52,3 +52,18 @@ export const adminOrWorker = (req, res, next) => {
   }
 };
 
+export const optionalProtect = async (req, res, next) => {
+  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+    try {
+      const token = req.headers.authorization.split(" ")[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || "EMERGENCY_FALLBACK_KEY_NOT_SET_IN_ENV");
+      const user = await User.findById(decoded.id).select("-password");
+      if (user) req.user = user;
+    } catch (error) {
+      // Allow through without req.user
+    }
+  }
+  return next();
+};
+
+

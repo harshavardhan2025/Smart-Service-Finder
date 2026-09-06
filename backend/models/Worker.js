@@ -4,6 +4,7 @@ import { geocodeCity } from "../utils/geoUtils.js";
 const workerSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, unique: true },
+  phone: { type: String, default: "" },
   service: { type: String, required: true },
   city: { type: String, default: "Kakinada" },
   location: { type: String },

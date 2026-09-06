@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/apiClient";
 import BookingFeedback from "../components/BookingFeedback";
-import { getWalletBalance, deductFromWallet } from "../utils/wallet";
+import { getWalletBalance, deductFromWallet, syncWalletFromServer } from "../utils/wallet";
 
 function BookingPage() {
   // ponytail: native date input uses YYYY-MM-DD string directly
@@ -57,6 +57,11 @@ function BookingPage() {
     // 🏦 Dynamic Baseline Initialization: Query live cloud ledger to ascertain true balance flawlessy!
     const initWallet = async () => {
        try {
+          const bal = await syncWalletFromServer();
+          if (bal !== undefined && !isNaN(bal)) {
+             setWalletBal(bal);
+             return;
+          }
           const r = await fetch(`/api/transactions?user=${encodeURIComponent(currentUsr)}`);
           if (r.ok) {
              const data = await r.json();
@@ -67,7 +72,7 @@ function BookingPage() {
              }, 1000);
              setWalletBal(calculated);
           }
-       } catch(e) { setWalletBal(0); }
+       } catch(e) { setWalletBal(getWalletBalance()); }
     };
     initWallet();
 

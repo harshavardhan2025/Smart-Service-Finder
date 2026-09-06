@@ -359,6 +359,11 @@ export const updateWorker = async (req, res) => {
 
     await worker.save();
 
+    // Sync worker name change to linked User record
+    if (req.body.name && worker.email) {
+      await User.findOneAndUpdate({ email: worker.email }, { name: worker.name });
+    }
+
     // Invalidate Redis cache
     await invalidateVersion("workers");
 

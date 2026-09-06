@@ -84,7 +84,21 @@ const validateCancellationTime = (booking) => {
 
 export const createBooking = async (req, res) => {
   try {
-    const { worker_id, date, time, customer_id, address } = req.body;
+    const { worker_id, date, time, customer_id, address, service, price } = req.body;
+
+    // Validate required fields
+    if (!worker_id || !date || !time || !customer_id) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required booking fields: worker_id, date, time, and customer_id are all required."
+      });
+    }
+    if (!service) {
+      return res.status(400).json({ success: false, error: "Service type is required." });
+    }
+    if (price === undefined || price === null || isNaN(price) || Number(price) <= 0) {
+      return res.status(400).json({ success: false, error: "A valid service price is required." });
+    }
 
     // 🛡️ 9-DAY SCHEDULING LOCK: Enforce strictly up to 9 days advance booking
     if (date && !time?.includes("Instant") && !time?.includes("Emergency")) {
@@ -272,6 +286,23 @@ export const updateBookingStatus = async (req, res) => {
       booking.rejectReason = req.body.reason || "Schedule Conflict";
     }
     await booking.save();
+
+    if (booking.status === "Cancelled") {
+      const customer = await User.findById(booking.customer_id);
+      if (customer) {
+        customer.walletBalance = (customer.walletBalance || 0) + booking.price;
+        await customer.save();
+
+        await Transaction.create({
+          customer: booking.customer_name,
+          worker: "System Refund",
+          service: `Refund (Cancelled): ${booking.service}`,
+          amount: booking.price,
+          status: "Refunded",
+          method: "Wallet Topup"
+        });
+      }
+    }
 
     if (booking.status === "Rejected") {
       const customer = await User.findById(booking.customer_id);

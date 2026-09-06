@@ -92,6 +92,15 @@ export const registerUser = async (req, res) => {
       }
     }
 
+    // 📱 Validate Phone Number: Exactly 10 digits starting with 6, 7, 8, or 9
+    if (phone) {
+      const cleanPhone = String(phone).replace(/\D/g, "");
+      if (cleanPhone.length !== 10 || !/^[6-9]\d{9}$/.test(cleanPhone)) {
+        return res.status(400).json({ error: "Invalid phone number. Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9." });
+      }
+      phone = cleanPhone;
+    }
+
     // ── Create brand new user ──
     const user = await User.create({
       name,
@@ -113,6 +122,7 @@ export const registerUser = async (req, res) => {
       associatedWorker = await Worker.create({
         name,
         email,
+        phone: phone || "",
         service: profession || "Plumbing",
         city: city || "Mumbai",
         rating: 2.7,      // Bayesian new-worker baseline
@@ -437,6 +447,15 @@ export const googleAuth = async (req, res) => {
         return res.status(409).json({
           error: `An account with this email (${email}) already exists. Please go to the login page and sign in instead.`
         });
+      }
+
+      // 📱 Validate Phone Number: Exactly 10 digits starting with 6, 7, 8, or 9
+      if (phone) {
+        const cleanPhone = String(phone).replace(/\D/g, "");
+        if (cleanPhone.length !== 10 || !/^[6-9]\d{9}$/.test(cleanPhone)) {
+          return res.status(400).json({ error: "Invalid phone number. Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9." });
+        }
+        phone = cleanPhone;
       }
 
       const finalName = customName || name;

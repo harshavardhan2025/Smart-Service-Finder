@@ -26,7 +26,8 @@ export const createService = async (req, res) => {
   try {
     const { name } = req.body;
     if (name) {
-      const existingService = await Service.findOne({ name: { $regex: new RegExp(`^${name.trim()}$`, "i") } });
+      const escaped = name.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const existingService = await Service.findOne({ name: { $regex: new RegExp(`^${escaped}$`, "i") } });
       if (existingService) {
         return res.status(409).json({ error: "A service category with this name already exists." });
       }

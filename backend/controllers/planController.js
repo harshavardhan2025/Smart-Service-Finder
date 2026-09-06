@@ -78,7 +78,8 @@ export const createPlan = async (req, res) => {
   try {
     const { title } = req.body;
     if (title) {
-      const existingPlan = await Plan.findOne({ title: { $regex: new RegExp(`^${title.trim()}$`, "i") } });
+      const escaped = title.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const existingPlan = await Plan.findOne({ title: { $regex: new RegExp(`^${escaped}$`, "i") } });
       if (existingPlan) {
         return res.status(409).json({ error: "A subscription plan with this title already exists." });
       }
@@ -94,15 +95,16 @@ export const updatePlan = async (req, res) => {
   try {
     const { title } = req.body;
     if (title) {
+      const escaped = title.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const existingPlan = await Plan.findOne({
         _id: { $ne: req.params.id },
-        title: { $regex: new RegExp(`^${title.trim()}$`, "i") }
+        title: { $regex: new RegExp(`^${escaped}$`, "i") }
       });
       if (existingPlan) {
         return res.status(409).json({ error: "A subscription plan with this title already exists." });
       }
     }
-    const plan = await Plan.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const plan = await Plan.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
     res.status(200).json({ success: true, plan });
   } catch (error) {
     res.status(400).json({ error: error.message });

@@ -5,16 +5,21 @@ import Notification from "../models/Notification.js";
 import Booking from "../models/Booking.js";
 import Worker from "../models/Worker.js";
 import User from "../models/User.js";
+import { optionalProtect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 // 🚨 SOS EMERGENCY DECLARATION TRIGGER
-router.post("/sos", async (req, res) => {
+router.post("/sos", optionalProtect, async (req, res) => {
   try {
     const { user_id, name, role, booking_id, lat, lng, location_name } = req.body;
 
     if (!user_id || !name || !role) {
       return res.status(400).json({ error: "user_id, name, and role are required parameters" });
+    }
+
+    if (!["user", "worker", "admin"].includes(role)) {
+      return res.status(400).json({ error: "Invalid role specified for SOS alert" });
     }
 
     // Initialize all details

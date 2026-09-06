@@ -3035,9 +3035,13 @@ function AdminDashboard() {
                     onClick={async () => {
                       if(window.confirm("Mark all system emergency notifications read? This will archive existing feeds.")) {
                          try {
+                           const token = sessionStorage.getItem("authToken");
                            await fetch("/api/notifications/mark-read", {
                              method: "PATCH",
-                             headers: { "Content-Type": "application/json" },
+                             headers: { 
+                               "Content-Type": "application/json",
+                               ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                             },
                              body: JSON.stringify({ role: "admin" })
                            });
                            syncAdminStore();
@@ -3318,9 +3322,13 @@ function AdminDashboard() {
                                   onClick={async () => {
                                     if(window.confirm("Log this emergency event as verified, investigated, and fully resolved?")) {
                                        try {
+                                         const token = sessionStorage.getItem("authToken");
                                          await fetch(`/api/notifications/${alertItem._id}`, {
                                            method: "PATCH",
-                                           headers: { "Content-Type": "application/json" },
+                                           headers: { 
+                                             "Content-Type": "application/json",
+                                             ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                                           },
                                            body: JSON.stringify({ is_read: true })
                                          });
                                          setAdminNotifications(prev => prev.map(n => n._id === alertItem._id ? { ...n, is_read: true } : n));

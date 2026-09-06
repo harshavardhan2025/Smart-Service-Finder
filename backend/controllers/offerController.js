@@ -70,7 +70,8 @@ export const createOffer = async (req, res) => {
   try {
     const { code } = req.body;
     if (code) {
-      const existingOffer = await Offer.findOne({ code: { $regex: new RegExp(`^${code.trim()}$`, "i") } });
+      const escaped = code.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const existingOffer = await Offer.findOne({ code: { $regex: new RegExp(`^${escaped}$`, "i") } });
       if (existingOffer) {
         return res.status(409).json({ error: "An offer with this code already exists." });
       }
@@ -86,15 +87,16 @@ export const updateOffer = async (req, res) => {
   try {
     const { code } = req.body;
     if (code) {
+      const escaped = code.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const existingOffer = await Offer.findOne({
         _id: { $ne: req.params.id },
-        code: { $regex: new RegExp(`^${code.trim()}$`, "i") }
+        code: { $regex: new RegExp(`^${escaped}$`, "i") }
       });
       if (existingOffer) {
         return res.status(409).json({ error: "An offer with this code already exists." });
       }
     }
-    const offer = await Offer.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const offer = await Offer.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
     res.status(200).json({ success: true, offer });
   } catch (error) {
     res.status(400).json({ error: error.message });

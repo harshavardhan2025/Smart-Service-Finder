@@ -26,7 +26,7 @@ import {
   FaCreditCard,
   FaTimes
 } from "react-icons/fa";
-import { getWalletBalance, addToWallet } from "../utils/wallet";
+import { getWalletBalance, addToWallet, syncWalletFromServer, setWalletBalance } from "../utils/wallet";
 
 const STATUS_STYLE = {
   Paid:     { color: "var(--success)", bg: "#dcfce7" },
@@ -79,6 +79,10 @@ function Profile() {
         };
         setProfile(p);
         setDraft(p);
+        if (user.walletBalance !== undefined && !isNaN(user.walletBalance)) {
+          setWalletBalance(user.walletBalance);
+          setWalletBal(user.walletBalance);
+        }
       }
     } catch (err) {
       console.error("Failed to load user profile", err);
@@ -87,7 +91,7 @@ function Profile() {
 
   const fetchUserData = async () => {
     try {
-       const currentBal = getWalletBalance();
+       const currentBal = await syncWalletFromServer();
        setWalletBal(currentBal);
 
        const resp = await fetch(`/api/transactions?user=${encodeURIComponent(currentUsr)}`);

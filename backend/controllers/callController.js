@@ -90,11 +90,13 @@ export const checkIncomingCall = async (req, res) => {
 
     // Also check by email match (in case IDs differ between collections)
     if (!call) {
-      // Find all ringing calls and check if any callee matches by booking lookup
+      // Find recent ringing calls (within last 45s) and check if any callee matches by booking lookup
+      const cutoffTime = new Date(Date.now() - 45000);
       const ringingCalls = await CallSession.find({
         status: "ringing",
-        $or: [{ ended_at: null }, { ended_at: { $exists: false } }]
-      }).sort({ createdAt: -1 }).lean();
+        $or: [{ ended_at: null }, { ended_at: { $exists: false } }],
+        createdAt: { $gt: cutoffTime }
+      }).sort({ createdAt: -1 }).limit(5).lean();
       for (const c of ringingCalls) {
         if (!c.booking_id) continue;
         

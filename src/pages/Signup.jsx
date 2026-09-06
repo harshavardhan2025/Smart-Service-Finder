@@ -315,13 +315,17 @@ function Signup() {
   // ── Worker Google Signup (after filling details) ───────────
   const handleWorkerGoogle = () => {
     if (!workerName.trim()) { setPopupResult({ type: "fail", message: "Please enter your full name." }); return; }
-    if (!workerPhone.trim() || !/^\d{10}$/.test(workerPhone.trim())) { setPopupResult({ type: "fail", message: "Please enter a valid 10-digit phone number." }); return; }
+    const cleanPhone = workerPhone.replace(/\D/g, "");
+    if (!cleanPhone || cleanPhone.length !== 10 || !/^[6-9]\d{9}$/.test(cleanPhone)) {
+      setPopupResult({ type: "fail", message: "Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9." });
+      return;
+    }
     if (!workerCity.trim()) { setPopupResult({ type: "fail", message: "Please enter your serving location." }); return; }
 
     launchGoogleAuth({
       role: "worker",
       name: workerName.trim(),
-      phone: workerPhone.trim(),
+      phone: cleanPhone,
       profession: workerProfession,
       city: workerCity.trim(),
     });
@@ -332,6 +336,11 @@ function Signup() {
     e.preventDefault();
     if (!name || !email || !password || !phone) {
       setPopupResult({ type: "fail", message: "Please fill in all required fields." });
+      return;
+    }
+    const cleanPhone = phone.replace(/\D/g, "");
+    if (!cleanPhone || cleanPhone.length !== 10 || !/^[6-9]\d{9}$/.test(cleanPhone)) {
+      setPopupResult({ type: "fail", message: "Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9." });
       return;
     }
     if (emailRole === "worker" && !emailCity.trim()) {
@@ -350,7 +359,7 @@ function Signup() {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, phone, role: emailRole, profession: emailRole === "worker" ? emailProfession : null, city: emailRole === "worker" ? emailCity : "Mumbai" })
+        body: JSON.stringify({ name, email, password, phone: cleanPhone, role: emailRole, profession: emailRole === "worker" ? emailProfession : null, city: emailRole === "worker" ? emailCity : "Mumbai" })
       });
       const data = await safeJson(response);
       setIsLoading(false);
@@ -809,9 +818,10 @@ function Signup() {
 
                   <InputField
                     icon={FaPhone}
-                    label="Phone Number" id="signup-phone"
+                    label="Phone Number" hint="(10 digits)" id="signup-phone"
                     type="tel" placeholder="e.g. 9876543210"
-                    value={phone} onChange={(e) => setPhone(e.target.value)}
+                    value={phone} onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                    maxLength={10}
                     focusColor="#dfb453" required
                   />
 
