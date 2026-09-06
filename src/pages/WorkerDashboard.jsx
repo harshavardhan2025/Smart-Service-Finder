@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import RouteMap from "../components/RouteMap";
@@ -12,6 +12,11 @@ function WorkerDashboard() {
   const [isActive, setIsActive] = useState(true);
   const [openMapId, setOpenMapId] = useState(null);
   const [editMode, setEditMode] = useState(false);
+  const editModeRef = useRef(false);
+  const setEditModeState = (val) => {
+    editModeRef.current = val;
+    setEditMode(val);
+  };
   const [sosCategory, setSosCategory] = useState("General Emergency");
   const [sosActive, setSosActive] = useState(() => sessionStorage.getItem("sosActive") === "true");
   const [sosLoading, setSosLoading] = useState(false);
@@ -143,8 +148,8 @@ function WorkerDashboard() {
     city: "...",
     rating: 5.0,
     totalReviews: 0,
-    joinedDate: "...",
-    mongoId: null,
+    joinedDate: "May 2026",
+    mongoId: sessionStorage.getItem("workerProfileId") || sessionStorage.getItem("loggedInWorkerId") || null,
     photo: "👷"
   });
   const [editProfile, setEditProfile] = useState({ ...profile });
@@ -229,10 +234,10 @@ function WorkerDashboard() {
             photo: match.service && match.service.includes("Doctors") ? "🩺" : "👷"
           };
           setProfile(p);
-          setEditProfile(prev => {
-            // Only update editProfile draft if they are not actively editing
-            return editMode ? prev : p;
-          });
+          // Only update editProfile draft if user is not actively editing
+          if (!editModeRef.current) {
+            setEditProfile(p);
+          }
           setIsActive(match.status === "Active");
         } else if (sessionStorage.getItem("userRole") !== "admin") {
           // No worker record found in DB for this email -> immediately eject to Customer Home
@@ -531,9 +536,26 @@ function WorkerDashboard() {
     try {
       const token = sessionStorage.getItem("authToken");
       const userId = sessionStorage.getItem("userId");
-      if (token && profile.mongoId) {
+      const userEmail = sessionStorage.getItem("userEmail");
+      let targetWorkerMongoId = profile.mongoId || sessionStorage.getItem("workerProfileId") || sessionStorage.getItem("loggedInWorkerId");
+
+      // Dynamic fallback: discover worker ID from workers list if missing
+      if (!targetWorkerMongoId && userEmail) {
+        try {
+          const wResp = await fetch("/api/workers?adminView=true");
+          if (wResp.ok) {
+            const wList = await wResp.json();
+            const found = wList.find(w => (w.email && w.email.toLowerCase() === userEmail.toLowerCase()) || w._id === userId);
+            if (found) targetWorkerMongoId = found._id;
+          }
+        } catch (e) {
+          console.warn("Fallback worker ID lookup failed:", e);
+        }
+      }
+
+      if (token && targetWorkerMongoId) {
         // 1. Update Worker profile in DB (Strictly Name & City)
-        const workerResp = await fetch(`/api/workers/${profile.mongoId}`, {
+        const workerResp = await fetch(`/api/workers/${targetWorkerMongoId}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -563,32 +585,38 @@ function WorkerDashboard() {
         }
 
         if (workerResp.ok && userOk) {
-          const updated = { ...profile, name: editProfile.name.trim(), city: editProfile.city.trim() };
+          const updatedName = editProfile.name.trim();
+          const updatedCity = editProfile.city.trim();
+          const updated = { ...profile, name: updatedName, city: updatedCity, mongoId: targetWorkerMongoId };
           setProfile(updated);
           setEditProfile(updated);
-          setEditMode(false);
+          setEditModeState(false);
           alert("Profile updated successfully!");
 
           // Update storage sessions
-          sessionStorage.setItem("userName", editProfile.name.trim());
-          sessionStorage.setItem("userCity", editProfile.city.trim());
+          sessionStorage.setItem("userName", updatedName);
+          sessionStorage.setItem("userCity", updatedCity);
+          sessionStorage.setItem("workerSession_name", updatedName);
+          sessionStorage.setItem("workerProfileId", targetWorkerMongoId);
+          sessionStorage.setItem("loggedInWorkerId", targetWorkerMongoId);
           const authSession = JSON.parse(localStorage.getItem("authSession") || "{}");
-          authSession.userName = editProfile.name.trim();
-          authSession.userCity = editProfile.city.trim();
+          authSession.userName = updatedName;
+          authSession.userCity = updatedCity;
           localStorage.setItem("authSession", JSON.stringify(authSession));
 
           // Dispatch event to refresh Navbar instantly
           window.dispatchEvent(new Event("storage"));
           
-          syncStore(); // Refresh
+          await syncStore(); // Refresh
         } else {
-          alert("Failed to update profile details on the server.");
+          const errData = await workerResp.json().catch(() => ({}));
+          alert(`Failed to update profile details on the server: ${errData.error || "Please try again."}`);
         }
       } else {
         const updated = { ...profile, name: editProfile.name.trim(), city: editProfile.city.trim() };
         setProfile(updated);
         setEditProfile(updated);
-        setEditMode(false);
+        setEditModeState(false);
         alert("Profile updated locally!");
       }
     } catch (err) {
@@ -1132,7 +1160,7 @@ function WorkerDashboard() {
                     </div>
                   ))}
                   {!editMode ? (
-                    <button onClick={() => { setEditProfile({ ...profile }); setEditMode(true); }} style={{ width: "100%", marginTop: 18, padding: "12px", backgroundColor: "var(--primary)", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer" }}>
+                    <button onClick={() => { setEditProfile({ ...profile }); setEditModeState(true); }} style={{ width: "100%", marginTop: 18, padding: "12px", backgroundColor: "var(--primary)", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer" }}>
                       ✏️ Edit Profile
                     </button>
                   ) : (
@@ -1161,13 +1189,9 @@ function WorkerDashboard() {
                         />
                       </div>
 
-                      <div style={{ padding: "8px 12px", backgroundColor: "var(--bg-card-hover)", borderRadius: "8px", border: "1px solid var(--border-color)", fontSize: "12px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
-                        🔒 <strong>Protected Details:</strong> Profession ({profile.profession}), Phone ({profile.phone}), Email ({profile.email}) are fixed and cannot be changed.
-                      </div>
-
                       <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
                         <button onClick={handleSaveProfile} style={{ flex: 1, padding: "11px", backgroundColor: "var(--primary)", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: "14px" }}>💾 Save Changes</button>
-                        <button onClick={() => setEditMode(false)} style={{ flex: 1, padding: "11px", backgroundColor: "#e2e8f0", color: "var(--text-secondary)", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: "14px" }}>Cancel</button>
+                        <button onClick={() => setEditModeState(false)} style={{ flex: 1, padding: "11px", backgroundColor: "#e2e8f0", color: "var(--text-secondary)", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: "14px" }}>Cancel</button>
                       </div>
                     </div>
                   )}
