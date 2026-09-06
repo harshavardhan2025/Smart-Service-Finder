@@ -107,7 +107,7 @@ export const registerUser = async (req, res) => {
       email,
       password,
       role: role || "user",
-      city: city || "Mumbai",
+      city: city || "Kakinada",
       phone: phone || "",
       isWorker: role === "worker",
     });
@@ -124,7 +124,7 @@ export const registerUser = async (req, res) => {
         email,
         phone: phone || "",
         service: profession || "Plumbing",
-        city: city || "Mumbai",
+        city: city || "Kakinada",
         rating: 2.7,      // Bayesian new-worker baseline
         ratingSum: 0,
         reviews: 0,
@@ -464,21 +464,21 @@ export const googleAuth = async (req, res) => {
         email,
         password: placeholderPassword,
         role: role || "user",
-        city: city || "Mumbai",
+        city: city || "Kakinada",
         phone: phone || "",
         isWorker: role === "worker",
       }));
 
       if (role === "worker") {
         const basePrice = SERVICE_BASE_PRICES[profession || "Carpentry"] || 350;
-        const multiplier = getPriceMultiplier(city || "Mumbai");
+        const multiplier = getPriceMultiplier(city || "Kakinada");
         const locationPrice = Math.round(basePrice * multiplier);
 
         associatedWorker = await executeWithRetry(() => Worker.create({
           name: user.name,
           email,
           service: profession || "Carpentry",
-          city: city || "Mumbai",
+          city: city || "Kakinada",
           rating: 2.7,
           ratingSum: 0,
           reviews: 0,
@@ -500,7 +500,7 @@ export const googleAuth = async (req, res) => {
         action: "SIGNUP",
         device: req.headers["user-agent"] || "Generic Web Client",
         ip: req.ip || "127.0.0.1",
-        city: city || "Mumbai"
+        city: city || "Kakinada"
       }));
 
     // ── LOGIN FLOW: no role passed ───────────────────────────
@@ -616,21 +616,21 @@ export const googleMockAuth = async (req, res) => {
         email,
         password: `GoogleMockAuth_${Date.now()}`,
         role: role || "user",
-        city: city || "Mumbai",
+        city: city || "Kakinada",
         phone: phone || "",
         isWorker: role === "worker",
       }));
 
       if (role === "worker") {
         const basePrice = SERVICE_BASE_PRICES[profession || "Carpentry"] || 350;
-        const multiplier = getPriceMultiplier(city || "Mumbai");
+        const multiplier = getPriceMultiplier(city || "Kakinada");
         const locationPrice = Math.round(basePrice * multiplier);
 
         associatedWorker = await executeWithRetry(() => Worker.create({
           name,
           email,
           service: profession || "Carpentry",
-          city: city || "Mumbai",
+          city: city || "Kakinada",
           rating: 2.7,
           ratingSum: 0,
           reviews: 0,
@@ -652,7 +652,7 @@ export const googleMockAuth = async (req, res) => {
         action: "SIGNUP",
         device: req.headers["user-agent"] || "Google Mock Auth",
         ip: req.ip || "127.0.0.1",
-        city: city || "Mumbai"
+        city: city || "Kakinada"
       }));
 
     } else {

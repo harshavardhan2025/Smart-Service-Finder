@@ -48,8 +48,8 @@ function SearchResults() {
         const savedLat = localStorage.getItem("userCoordsLat");
         const savedLng = localStorage.getItem("userCoordsLng");
         const savedLoc = localStorage.getItem("userLocation");
-        const userCoords = savedLat && savedLng ? { lat: parseFloat(savedLat), lng: parseFloat(savedLng) } : null;
-        const locationKey = savedLoc ? getShortLocation(savedLoc) : "";
+        const userCoords = savedLat && savedLng ? { lat: parseFloat(savedLat), lng: parseFloat(savedLng) } : { lat: 16.989062, lng: 82.243878 };
+        const locationKey = savedLoc ? getShortLocation(savedLoc) : "Kakinada, Andhra Pradesh";
 
         // Get nearby workers
         const allLocalWorkers = await filterWorkersClientSide(userCoords, locationKey);
@@ -202,7 +202,7 @@ function SearchResults() {
           value={searchText}
           onChange={setSearchText}
           onSearch={(newQuery) => setSearchParams({ q: newQuery })}
-          detectedLocation={localStorage.getItem("userLocation") || ""}
+          detectedLocation={localStorage.getItem("userLocation") || "Kakinada, Andhra Pradesh, India"}
         />
 
         {/* Search Title & Count */}

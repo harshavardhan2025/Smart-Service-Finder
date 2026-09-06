@@ -359,7 +359,7 @@ function Signup() {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, phone: cleanPhone, role: emailRole, profession: emailRole === "worker" ? emailProfession : null, city: emailRole === "worker" ? emailCity : "Mumbai" })
+        body: JSON.stringify({ name, email, password, phone: cleanPhone, role: emailRole, profession: emailRole === "worker" ? emailProfession : null, city: emailRole === "worker" ? emailCity : "Kakinada" })
       });
       const data = await safeJson(response);
       setIsLoading(false);
@@ -898,7 +898,7 @@ function Signup() {
                       <InputField
                         icon={FaMapMarkerAlt}
                         label="Serving Location" id="signup-city"
-                        placeholder="e.g. Mumbai or Kadapa"
+                        placeholder="e.g. Kakinada, Andhra Pradesh"
                         value={emailCity} onChange={(e) => setEmailCity(e.target.value)}
                         focusColor="#dfb453" required={emailRole === "worker"}
                       />

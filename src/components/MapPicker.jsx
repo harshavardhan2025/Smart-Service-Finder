@@ -294,7 +294,8 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
 
       if (!success) {
 
-        setLocationError("Failed to auto-detect location. Please search manually.");
+        applyLocation(16.989062, 82.243878, "Kakinada, Andhra Pradesh, India", "Kakinada");
+        setLocationError("Failed to auto-detect. Defaulted to Kakinada, Andhra Pradesh.");
 
       }
 
@@ -338,15 +339,18 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
 
         if (err.code === 1) {
 
-          setLocationError("Location permission denied. Please allow location access in your browser/device settings.");
+          applyLocation(16.989062, 82.243878, "Kakinada, Andhra Pradesh, India", "Kakinada");
+        setLocationError("Location permission denied. Defaulted to Kakinada, Andhra Pradesh.");
 
         } else if (err.code === 2) {
 
-          setLocationError("Location is turned off or unavailable. Please turn on your device's GPS/Location services.");
+          applyLocation(16.989062, 82.243878, "Kakinada, Andhra Pradesh, India", "Kakinada");
+        setLocationError("Location unavailable. Defaulted to Kakinada, Andhra Pradesh.");
 
         } else if (err.code === 3) {
 
-          setLocationError("Location request timed out. Please check your signal or try again.");
+          applyLocation(16.989062, 82.243878, "Kakinada, Andhra Pradesh, India", "Kakinada");
+        setLocationError("Location request timed out. Defaulted to Kakinada, Andhra Pradesh.");
 
         } else {
 
@@ -370,9 +374,9 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
 
   useEffect(() => {
 
-    const savedLat = parseFloat(localStorage.getItem("userCoordsLat")) || 14.471306;
+    const savedLat = parseFloat(localStorage.getItem("userCoordsLat")) || 16.989062;
 
-    const savedLng = parseFloat(localStorage.getItem("userCoordsLng")) || 78.824165;
+    const savedLng = parseFloat(localStorage.getItem("userCoordsLng")) || 82.243878;
 
     const savedLocation = localStorage.getItem("userLocation") || "Kakinada, Andhra Pradesh, India";
 

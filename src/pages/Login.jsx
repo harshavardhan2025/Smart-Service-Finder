@@ -453,7 +453,7 @@ function Login() {
         sessionStorage.setItem("userCity", user.city);
         localStorage.setItem("userCity", user.city);
       }
-      const targetCity = user.city || "Mumbai";
+      const targetCity = user.city || "Kakinada";
       setTimeout(() => navigate("/"), 800);
       fetch(`/api/workers/geocode?q=${encodeURIComponent(targetCity)}`)
         .then(res => res.ok ? res.json() : null)

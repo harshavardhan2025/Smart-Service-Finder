@@ -22,11 +22,11 @@ import {
    HELPERS
 ========================================================= */
 
-const DEFAULT_LOCATION = "Kadapa, Andhra Pradesh, India";
+const DEFAULT_LOCATION = "Kakinada, Andhra Pradesh, India";
 
 const DEFAULT_COORDS = {
-  lat: 14.471306,
-  lng: 78.824165,
+  lat: 16.989062,
+  lng: 82.243878,
 };
 
 const truncateLocation = (loc) => {
@@ -454,7 +454,7 @@ function Home() {
         return;
       }
 
-      const targetCity = registeredCity || "Kadapa";
+      const targetCity = registeredCity || "Kakinada";
       try {
         const response = await fetch(`/api/workers/geocode?q=${encodeURIComponent(targetCity)}`);
         if (!response.ok) throw new Error(`Geocode failed: ${response.status}`);

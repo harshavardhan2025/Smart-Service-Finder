@@ -55,7 +55,7 @@ function UserLocationMap({ isLoggedIn }) {
 
   const [location, setLocation] = useState(
 
-    localStorage.getItem("userLocation") || "Kadapa, Andhra Pradesh, India"
+    localStorage.getItem("userLocation") || "Kakinada, Andhra Pradesh, India"
 
   );
 
@@ -281,7 +281,7 @@ function UserDashboard() {
 
   const triggerSosAlert = async () => {
 
-    let coords = { lat: 17.0005, lng: 81.8040 }; // Fallback Rajahmundry
+    let coords = { lat: 16.989062, lng: 82.243878 }; // Fallback Kakinada
 
     try {
 

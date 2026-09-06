@@ -74,7 +74,7 @@ function Profile() {
           email: user.email || sessionStorage.getItem("userEmail") || "user@example.com",
           phone: user.phone || "Not Provided",
           role: user.role || "Customer",
-          location: user.city || "Mumbai",
+          location: user.city || "Kakinada, Andhra Pradesh, India",
           memberSince: "Joined 2026"
         };
         setProfile(p);

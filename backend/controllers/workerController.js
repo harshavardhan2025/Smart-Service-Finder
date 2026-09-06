@@ -490,23 +490,19 @@ export const getIpLocation = async (req, res) => {
       return res.status(200).json({
         lat: data.latitude,
         lon: data.longitude,
-        city: data.city || "Mumbai",
+        city: data.city || "Kakinada",
         label: `${data.city || ""}, ${data.region || ""}, ${data.country_name || "India"}`
       });
     }
     
     res.status(200).json({
-      lat: 19.0760,
-      lon: 72.8777,
-      city: "Mumbai",
-      label: "Mumbai, Maharashtra, India"
+      lat: 16.98906, lon: 82.24747,
+      city: "Kakinada", label: "Kakinada, Andhra Pradesh, India"
     });
   } catch (error) {
     res.status(200).json({
-      lat: 19.0760,
-      lon: 72.8777,
-      city: "Mumbai",
-      label: "Mumbai, Maharashtra, India"
+      lat: 16.98906, lon: 82.24747,
+      city: "Kakinada", label: "Kakinada, Andhra Pradesh, India"
     });
   }
 };
