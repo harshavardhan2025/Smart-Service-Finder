@@ -167,22 +167,7 @@ function Navbar() {
               gap: isMobile ? "8px" : "10px",
             }}
           >
-            <div
-              style={{
-                width: isMobile ? "32px" : "36px",
-                height: isMobile ? "32px" : "36px",
-                borderRadius: "9px",
-                background: "linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "white",
-                boxShadow: "0 3px 10px rgba(37, 99, 235, 0.25)",
-                flexShrink: 0,
-              }}
-            >
-              <FaTools size={isMobile ? 14 : 16} />
-            </div>
+            <FaTools style={{ color: "var(--primary)", fontSize: isMobile ? "20px" : "22px", flexShrink: 0 }} />
             <span
               style={{
                 fontWeight: 800,

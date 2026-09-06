@@ -595,21 +595,7 @@ function Sidebar({ open: controlledOpen, onClose: controlledOnClose }) {
                 gap: "10px",
               }}
             >
-              <div
-                style={{
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "10px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  background: "linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)",
-                  color: "white",
-                  boxShadow: "0 4px 12px rgba(37, 99, 235, 0.25)",
-                }}
-              >
-                <FaTools size={16} />
-              </div>
+              <FaTools style={{ color: "var(--primary)", fontSize: "20px", flexShrink: 0 }} />
 
               <h2
                 style={{
