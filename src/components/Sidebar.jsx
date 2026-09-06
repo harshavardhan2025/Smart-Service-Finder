@@ -15,8 +15,10 @@ import {
 } from "react-icons/fa";
 import { NavLink, Link } from "react-router-dom";
 
-function Sidebar() {
-  const [open, setOpen] = useState(false);
+function Sidebar({ open: controlledOpen, onClose: controlledOnClose }) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
 
   const [theme, setTheme] = useState(
     () => localStorage.getItem("theme") || "light"
@@ -109,7 +111,7 @@ function Sidebar() {
   useEffect(() => {
     const handleEscape = (event) => {
       if (event.key === "Escape") {
-        setOpen(false);
+        closeSidebar();
       }
     };
 
@@ -124,7 +126,8 @@ function Sidebar() {
         handleEscape
       );
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [controlledOnClose]);
 
   /* =========================================================
      AUTH INFORMATION
@@ -141,11 +144,18 @@ function Sidebar() {
   ========================================================= */
 
   const toggleSidebar = () => {
-    setOpen((previous) => !previous);
+    if (open) {
+      closeSidebar();
+    } else {
+      setInternalOpen(true);
+    }
   };
 
   const closeSidebar = () => {
-    setOpen(false);
+    if (typeof controlledOnClose === "function") {
+      controlledOnClose();
+    }
+    setInternalOpen(false);
   };
 
   /* =========================================================
@@ -306,7 +316,7 @@ function Sidebar() {
       "authSession"
     );
 
-    setOpen(false);
+    closeSidebar();
 
     setAuthVersion(
       (previous) => previous + 1
@@ -415,73 +425,75 @@ function Sidebar() {
       `}</style>
 
       {/* =====================================================
-          HAMBURGER / CLOSE BUTTON
+          HAMBURGER / CLOSE BUTTON (Standalone Fallback Only)
       ===================================================== */}
 
-      <button
-        type="button"
-        onClick={toggleSidebar}
-        aria-label={
-          open
-            ? "Close navigation menu"
-            : "Open navigation menu"
-        }
-        aria-expanded={open}
-        style={{
-          position: "fixed",
+      {!isControlled && (
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          aria-label={
+            open
+              ? "Close navigation menu"
+              : "Open navigation menu"
+          }
+          aria-expanded={open}
+          style={{
+            position: "fixed",
 
-          top: isMobile
-            ? "10px"
-            : "12px",
-
-          left: open
-            ? "calc(min(280px, 88vw) - 48px)"
-            : isMobile
+            top: isMobile
               ? "10px"
-              : "18px",
+              : "12px",
 
-          zIndex: 1102,
+            left: open
+              ? "calc(min(280px, 88vw) - 48px)"
+              : isMobile
+                ? "10px"
+                : "18px",
 
-          width: "36px",
-          height: "36px",
+            zIndex: 1102,
 
-          padding: 0,
+            width: "36px",
+            height: "36px",
 
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+            padding: 0,
 
-          background:
-            "var(--bg-card-hover)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
 
-          color: "var(--text-main)",
+            background:
+              "var(--bg-card-hover)",
 
-          border:
-            "1.5px solid var(--border-color)",
+            color: "var(--text-main)",
 
-          borderBottom:
-            "1.5px solid var(--border-color)",
+            border:
+              "1.5px solid var(--border-color)",
 
-          borderRadius: "12px",
+            borderBottom:
+              "1.5px solid var(--border-color)",
 
-          cursor: "pointer",
+            borderRadius: "12px",
 
-          boxShadow:
-            "0 4px 12px rgba(0,0,0,0.18)",
+            cursor: "pointer",
 
-          backdropFilter:
-            "blur(10px)",
+            boxShadow:
+              "0 4px 12px rgba(0,0,0,0.18)",
 
-          transition:
-            "all 0.2s ease",
-        }}
-      >
-        {open ? (
-          <FaTimes size={16} />
-        ) : (
-          <FaBars size={16} />
-        )}
-      </button>
+            backdropFilter:
+              "blur(10px)",
+
+            transition:
+              "all 0.2s ease",
+          }}
+        >
+          {open ? (
+            <FaTimes size={16} />
+          ) : (
+            <FaBars size={16} />
+          )}
+        </button>
+      )}
 
       {/* =====================================================
           BACKDROP
@@ -564,82 +576,82 @@ function Sidebar() {
         <div
           style={{
             marginBottom: "18px",
-
-            paddingTop: "28px",
-
-            paddingBottom: "18px",
-
-            borderBottom:
-              "1.5px solid var(--border-color)",
+            paddingTop: "14px",
+            paddingBottom: "16px",
+            borderBottom: "1.5px solid var(--border-color)",
           }}
         >
           <div
             style={{
               display: "flex",
-
               alignItems: "center",
-
-              gap: "10px",
+              justifyContent: "space-between",
             }}
           >
             <div
               style={{
-                width: "38px",
-                height: "38px",
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+              }}
+            >
+              <div
+                style={{
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "10px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)",
+                  color: "white",
+                  boxShadow: "0 4px 12px rgba(37, 99, 235, 0.25)",
+                }}
+              >
+                <FaTools size={16} />
+              </div>
 
-                borderRadius: "11px",
+              <h2
+                style={{
+                  margin: 0,
+                  fontSize: "21px",
+                  fontWeight: 800,
+                  letterSpacing: "-0.4px",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <span style={{ color: "var(--text-main)" }}>Work</span>
+                <span style={{ color: "var(--warning, #f59e0b)" }}>zy</span>
+              </h2>
+            </div>
 
+            <button
+              type="button"
+              onClick={closeSidebar}
+              aria-label="Close navigation menu"
+              style={{
+                width: "34px",
+                height: "34px",
+                borderRadius: "9px",
+                border: "1.5px solid var(--border-color)",
+                background: "var(--bg-card-hover)",
+                color: "var(--text-main)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-
-                background:
-                  "var(--primary-grad)",
-
-                color: "white",
-
-                boxShadow:
-                  "0 6px 16px var(--primary-glow)",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
               }}
             >
-              <FaTools size={17} />
-            </div>
-
-            <h2
-              style={{
-                margin: 0,
-
-                fontSize: "22px",
-
-                fontWeight: 800,
-
-                letterSpacing:
-                  "0.3px",
-
-                whiteSpace:
-                  "nowrap",
-              }}
-            >
-              Work
-              <span
-                style={{
-                  color: "var(--warning)",
-                }}
-              >
-                zy
-              </span>
-            </h2>
+              <FaTimes size={15} />
+            </button>
           </div>
 
           <p
             style={{
-              margin:
-                "8px 0 0 48px",
-
+              margin: "8px 0 0 46px",
               fontSize: "11.5px",
-
               color: "var(--text-secondary)",
-
               fontWeight: 500,
             }}
           >

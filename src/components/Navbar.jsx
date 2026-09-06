@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import "../App.css";
 import Sidebar from "./Sidebar";
-import { FaTools, FaTag, FaBell, FaSun, FaMoon, FaUser, FaCrown, FaSignOutAlt } from "react-icons/fa";
+import { FaTools, FaTag, FaBell, FaSun, FaMoon, FaUser, FaCrown, FaSignOutAlt, FaBars } from "react-icons/fa";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -17,6 +17,7 @@ function Navbar() {
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [logoutToast, setLogoutToast] = useState(false);
   const notificationRef = useRef(null);
@@ -95,7 +96,7 @@ function Navbar() {
 
   return (
     <>
-      <Sidebar />
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Logout toast — shown briefly after logout, no browser alert */}
       {logoutToast && (
@@ -116,7 +117,8 @@ function Navbar() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          padding: isMobile ? "8px 14px" : "10px 20px",
+          padding: isMobile ? "9px 14px" : "11px 22px",
+          minHeight: isMobile ? "56px" : "64px",
           background: "var(--bg-card)",
           color: "var(--text-main)",
           borderBottom: "1.5px solid var(--border-color)",
@@ -129,20 +131,74 @@ function Navbar() {
           overflow: "visible",
         }}
       >
-        <Link
-          to={userRole === "worker" ? "/worker-dashboard" : (userRole === "admin" ? "/admin-dashboard" : "/")}
-          style={{
-            textDecoration: "none",
-            color: "inherit",
-            paddingLeft: isMobile ? "30px" : "44px",
-            transition: "padding-left 0.25s ease-in-out"
-          }}
-        >
-          <h2 style={{ margin: 0, fontWeight: 800, fontSize: isMobile ? "19px" : "21px", letterSpacing: "-0.5px", display: "flex", alignItems: "center", gap: "8px", whiteSpace: "nowrap" }}>
-            <FaTools style={{ color: "var(--primary)" }} />
-            <span><span style={{ color: "var(--text-main)" }}>Work</span><span style={{ color: "var(--warning)" }}>zy</span></span>
-          </h2>
-        </Link>
+        {/* BRAND & MENU SECTION */}
+        <div style={{ display: "flex", alignItems: "center", gap: isMobile ? "10px" : "14px" }}>
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Open Navigation Menu"
+            style={{
+              width: isMobile ? "38px" : "40px",
+              height: isMobile ? "38px" : "40px",
+              borderRadius: "10px",
+              border: "1.5px solid var(--border-color)",
+              background: "var(--bg-card-hover)",
+              color: "var(--text-main)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              boxShadow: "0 2px 6px rgba(0, 0, 0, 0.04)",
+              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+              flexShrink: 0,
+              padding: 0,
+            }}
+          >
+            <FaBars size={isMobile ? 15 : 17} />
+          </button>
+
+          <Link
+            to={userRole === "worker" ? "/worker-dashboard" : (userRole === "admin" ? "/admin-dashboard" : "/")}
+            style={{
+              textDecoration: "none",
+              color: "inherit",
+              display: "flex",
+              alignItems: "center",
+              gap: isMobile ? "8px" : "10px",
+            }}
+          >
+            <div
+              style={{
+                width: isMobile ? "32px" : "36px",
+                height: isMobile ? "32px" : "36px",
+                borderRadius: "9px",
+                background: "linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "white",
+                boxShadow: "0 3px 10px rgba(37, 99, 235, 0.25)",
+                flexShrink: 0,
+              }}
+            >
+              <FaTools size={isMobile ? 14 : 16} />
+            </div>
+            <span
+              style={{
+                fontWeight: 800,
+                fontSize: isMobile ? "19px" : "22px",
+                letterSpacing: "-0.4px",
+                lineHeight: 1,
+                whiteSpace: "nowrap",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <span style={{ color: "var(--text-main)" }}>Work</span>
+              <span style={{ color: "var(--warning, #f59e0b)" }}>zy</span>
+            </span>
+          </Link>
+        </div>
 
         <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
           
@@ -175,19 +231,22 @@ function Navbar() {
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
                 style={{
-                  background: "none",
+                  width: isMobile ? "38px" : "40px",
+                  height: isMobile ? "38px" : "40px",
                   border: "1.5px solid var(--border-color)",
-                  padding: "8px",
-                  fontSize: "18px",
+                  padding: 0,
+                  fontSize: isMobile ? "15px" : "16px",
                   cursor: "pointer",
-                  borderRadius: "50%",
+                  borderRadius: "10px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   backgroundColor: "var(--bg-card-hover)",
                   color: "var(--text-main)",
                   transition: "all 0.2s",
-                  position: "relative"
+                  position: "relative",
+                  boxShadow: "0 2px 6px rgba(0, 0, 0, 0.04)",
+                  flexShrink: 0,
                 }}
                 title="Notifications"
               >
