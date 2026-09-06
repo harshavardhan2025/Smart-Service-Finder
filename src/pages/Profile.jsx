@@ -1,5 +1,31 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import {
+  FaUserCircle,
+  FaCheckCircle,
+  FaUserEdit,
+  FaWallet,
+  FaPlus,
+  FaCrown,
+  FaIdCard,
+  FaUser,
+  FaMapMarkerAlt,
+  FaEnvelope,
+  FaPhone,
+  FaUserTag,
+  FaLock,
+  FaSave,
+  FaReceipt,
+  FaCalendarAlt,
+  FaChevronDown,
+  FaChevronUp,
+  FaLink,
+  FaClipboardList,
+  FaGift,
+  FaHeadset,
+  FaCreditCard,
+  FaTimes
+} from "react-icons/fa";
 import { getWalletBalance, addToWallet } from "../utils/wallet";
 
 const STATUS_STYLE = {
@@ -238,7 +264,7 @@ function Profile() {
           ← Back to Home
         </Link>
         <h1 style={{ margin: "0 0 4px 0", fontSize: "26px", fontWeight: 800 }}>
-          👤 My Profile
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}><FaUserCircle /> My Profile</span>
         </h1>
         <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "14px" }}>
           Manage your personal information and account settings
@@ -308,7 +334,7 @@ function Profile() {
                   fontWeight: 700
                 }}
               >
-                ✅ Verified
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}><FaCheckCircle /> Verified</span>
               </span>
             </div>
             <p style={{ margin: "6px 0 0 0", fontSize: "13px", color: "var(--text-secondary)" }}>
@@ -331,7 +357,7 @@ function Profile() {
                 whiteSpace: "nowrap"
               }}
             >
-              ✏️ Edit Profile
+              <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><FaUserEdit /> Edit Profile</span>
             </button>
           )}
         </div>
@@ -348,7 +374,7 @@ function Profile() {
           }}
         >
           <h3 style={{ margin: "0 0 14px 0", fontSize: "16px", fontWeight: 700, color: "var(--text-main)", display: "flex", alignItems: "center", gap: "8px" }}>
-            🪙 Wallet & Rewards Dashboard
+            <FaWallet style={{ color: "var(--primary)" }} /> Wallet & Rewards Dashboard
           </h3>
           <div className="wallet-cards-row" style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
             {/* Wallet Balance Card */}
@@ -361,7 +387,7 @@ function Profile() {
                 onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
                 onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
               >
-                ➕ Add Money
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}><FaPlus /> Add Money</span>
               </button>
             </div>
 
@@ -369,7 +395,7 @@ function Profile() {
             <div className="wallet-loyalty-card" style={{ flex: 1, minWidth: "200px", padding: "20px", borderRadius: "16px", background: "linear-gradient(135deg, #ffb300, #ff8f00)", color: "white" }}>
               <div style={{ fontSize: "12px", opacity: 0.9, fontWeight: 600, textTransform: "uppercase" }}>Loyalty Tier Status</div>
               <div style={{ fontSize: "24px", fontWeight: 800, margin: "8px 0", display: "flex", alignItems: "center", gap: "6px" }}>
-                🌟 Gold Member
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><FaCrown style={{ color: "#ffd700" }} /> Gold Member</span>
               </div>
               {/* Progress bar to Platinum */}
               <div style={{ fontSize: "12px", opacity: 0.9, marginBottom: "6px" }}>750 / 1,000 Points (250 more to Platinum)</div>
@@ -392,7 +418,7 @@ function Profile() {
           }}
         >
           <h3 style={{ margin: "0 0 14px 0", fontSize: "16px", fontWeight: 700, color: "var(--text-main)" }}>
-            📋 Personal Information
+            <FaIdCard style={{ color: "var(--primary)" }} /> Personal Information
           </h3>
 
           {editing ? (
@@ -411,7 +437,7 @@ function Profile() {
                     letterSpacing: "0.05em"
                   }}
                 >
-                  👤 Full Name <span style={{ color: "var(--primary)", fontSize: "11px" }}>(Editable)</span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><FaUser /> Full Name</span> <span style={{ color: "var(--primary)", fontSize: "11px" }}>(Editable)</span>
                 </label>
                 <input
                   type="text"
@@ -448,7 +474,7 @@ function Profile() {
                     letterSpacing: "0.05em"
                   }}
                 >
-                  📍 Location / City <span style={{ color: "var(--primary)", fontSize: "11px" }}>(Editable)</span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><FaMapMarkerAlt /> Location / City</span> <span style={{ color: "var(--primary)", fontSize: "11px" }}>(Editable)</span>
                 </label>
                 <input
                   type="text"
@@ -485,7 +511,7 @@ function Profile() {
                     letterSpacing: "0.05em"
                   }}
                 >
-                  📧 Email Address 🔒 <span style={{ fontSize: "11px", fontWeight: 500 }}>(Fixed)</span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><FaEnvelope /> Email Address <FaLock style={{ fontSize: "11px" }} /></span> <span style={{ fontSize: "11px", fontWeight: 500 }}>(Fixed)</span>
                 </label>
                 <div
                   style={{
@@ -514,7 +540,7 @@ function Profile() {
                     letterSpacing: "0.05em"
                   }}
                 >
-                  📱 Phone Number 🔒 <span style={{ fontSize: "11px", fontWeight: 500 }}>(Fixed)</span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><FaPhone /> Phone Number <FaLock style={{ fontSize: "11px" }} /></span> <span style={{ fontSize: "11px", fontWeight: 500 }}>(Fixed)</span>
                 </label>
                 <div
                   style={{
@@ -543,7 +569,7 @@ function Profile() {
                     letterSpacing: "0.05em"
                   }}
                 >
-                  🎭 Account Role 🔒 <span style={{ fontSize: "11px", fontWeight: 500 }}>(Fixed)</span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><FaUserTag /> Account Role <FaLock style={{ fontSize: "11px" }} /></span> <span style={{ fontSize: "11px", fontWeight: 500 }}>(Fixed)</span>
                 </label>
                 <div
                   style={{
@@ -575,7 +601,7 @@ function Profile() {
                     cursor: "pointer"
                   }}
                 >
-                  💾 Save Changes
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px" }}><FaSave /> Save Changes</span>
                 </button>
                 <button
                   onClick={handleCancel}
@@ -599,12 +625,12 @@ function Profile() {
             /* View Mode */
             <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
               {[
-                { label: "Full Name", value: profile.name, icon: "👤" },
-                { label: "Email Address", value: profile.email, icon: "📧" },
-                { label: "Phone Number", value: profile.phone, icon: "📱" },
-                { label: "Location", value: profile.location, icon: "📍" },
-                { label: "Role", value: profile.role, icon: "🎭" }
-              ].map(({ label, value, icon }, i, arr) => (
+                { label: "Full Name", value: profile.name, icon: FaUser },
+                { label: "Email Address", value: profile.email, icon: FaEnvelope },
+                { label: "Phone Number", value: profile.phone, icon: FaPhone },
+                { label: "Location", value: profile.location, icon: FaMapMarkerAlt },
+                { label: "Role", value: profile.role, icon: FaUserTag }
+              ].map(({ label, value, icon: RowIcon }, i, arr) => (
                 <div
                   key={label}
                   className="profile-info-row"
@@ -616,8 +642,8 @@ function Profile() {
                     borderBottom: i < arr.length - 1 ? "1px solid var(--border-color)" : "none"
                   }}
                 >
-                  <span style={{ fontSize: "13px", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "6px" }}>
-                    {icon} {label}
+                  <span style={{ fontSize: "13px", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <RowIcon style={{ color: "var(--primary)" }} /> {label}
                   </span>
                   <span style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-main)" }}>
                     {value}
@@ -642,7 +668,7 @@ function Profile() {
           {/* Section Header */}
           <div className="payment-history-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", flexWrap: "wrap", gap: "8px" }}>
             <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "var(--text-main)" }}>
-              💳 Payment History
+              <FaReceipt style={{ color: "var(--primary)" }} /> Payment History
             </h3>
             {/* Total Spent */}
             <div style={{ backgroundColor: "var(--success-light)", borderRadius: "10px", padding: "6px 14px", fontSize: "13px", color: "var(--success)", fontWeight: 700 }}>
@@ -702,7 +728,7 @@ function Profile() {
                       <span style={{ fontSize: "22px" }}>{txn.icon}</span>
                       <div>
                         <p style={{ margin: 0, fontWeight: 700, fontSize: "14px", color: "var(--text-main)" }}>{txn.service}</p>
-                        <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>📅 {txn.date} &nbsp;·&nbsp; {txnIdentifier}</p>
+                        <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}><FaCalendarAlt style={{ verticalAlign: "middle" }} /> {txn.date} &nbsp;·&nbsp; {txnIdentifier}</p>
                       </div>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -710,7 +736,7 @@ function Profile() {
                       <span style={{ backgroundColor: s.bg, color: s.color, padding: "3px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700 }}>
                         {txn.status}
                       </span>
-                      <span style={{ color: "var(--text-secondary)", fontSize: "12px" }}>{isOpen ? "▲" : "▼"}</span>
+                      <span style={{ color: "var(--text-secondary)", fontSize: "12px" }}>{isOpen ? <FaChevronUp /> : <FaChevronDown />}</span>
                     </div>
                   </div>
 
@@ -785,14 +811,14 @@ function Profile() {
           className="profile-card premium-card quick-links-card"
         >
           <h3 style={{ margin: "0 0 14px 0", fontSize: "16px", fontWeight: 700, color: "var(--text-main)" }}>
-            🔗 Quick Links
+            <FaLink style={{ color: "var(--primary)" }} /> Quick Links
           </h3>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
             {[
-              { to: "/my-bookings", label: "📋 My Bookings", color: "#2196F3", bg: "#eff6ff" },
-              { to: "/reviews", label: "🎁 Rewards", color: "#7c3aed", bg: "#f5f3ff" },
-              { to: "/support", label: "💬 Support", color: "var(--success)", bg: "#f0fdf4" }
-            ].map(({ to, label, color, bg }) => (
+              { to: "/my-bookings", label: "My Bookings", icon: FaClipboardList, color: "#2196F3", bg: "#eff6ff" },
+              { to: "/reviews", label: "Rewards", icon: FaGift, color: "#7c3aed", bg: "#f5f3ff" },
+              { to: "/support", label: "Support", icon: FaHeadset, color: "var(--success)", bg: "#f0fdf4" }
+            ].map(({ to, label, icon: LinkIcon, color, bg }) => (
               <Link
                 key={to}
                 to={to}
@@ -809,7 +835,7 @@ function Profile() {
                 onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.75")}
                 onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
               >
-                {label}
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><LinkIcon /> {label}</span>
               </Link>
             ))}
           </div>
@@ -833,26 +859,27 @@ function Profile() {
             style={{
               maxWidth: "420px",
               width: "90%",
+              maxHeight: "85vh",
+              overflowY: "auto",
               backgroundColor: "var(--bg-card)",
               borderRadius: "20px",
               padding: "26px",
+              boxSizing: "border-box",
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 800, color: "var(--text-main)", display: "flex", alignItems: "center", gap: "8px" }}>
-                <span>💳</span> Add Money to Wallet
+                <FaCreditCard style={{ color: "var(--primary)" }} /> Add Money to Wallet
               </h3>
               <button
                 onClick={() => setShowAddMoneyModal(false)}
                 style={{ background: "none", border: "none", fontSize: "18px", color: "var(--text-secondary)", cursor: "pointer" }}
-              >
-                ✕
-              </button>
+              ><FaTimes /></button>
             </div>
 
             <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: "0 0 16px 0" }}>
-              Current Balance: <strong style={{ color: "#31525B" }}>₹{walletBal.toLocaleString()}</strong>
+              Current Balance: <strong style={{ color: "var(--text-main)" }}>₹{walletBal.toLocaleString()}</strong>
             </p>
 
             <div style={{ marginBottom: "16px" }}>
@@ -912,7 +939,7 @@ function Profile() {
                 onClick={handleConfirmAddMoney}
                 style={{
                   flex: 1.5,
-                  backgroundColor: "#31525B",
+                  backgroundColor: "var(--primary)",
                   color: "white",
                   border: "none",
                   padding: "12px",
@@ -922,7 +949,7 @@ function Profile() {
                   cursor: topUpProcessing ? "not-allowed" : "pointer"
                 }}
               >
-                {topUpProcessing ? "Adding Funds..." : "Confirm & Top Up 💳"}
+                {topUpProcessing ? "Adding Funds..." : "Confirm & Top Up"}
               </button>
               <button
                 disabled={topUpProcessing}

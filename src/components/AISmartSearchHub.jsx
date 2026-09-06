@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, Link } from "react-router-dom";
-import { FaMicrophone, FaMap } from "react-icons/fa";
+import { FaMicrophone, FaMap, FaStar, FaBolt, FaGift } from "react-icons/fa";
+import { FaWandMagicSparkles } from "react-icons/fa6";
 import MapPicker from "./MapPicker";
 import SkeletonLoader from "./SkeletonLoader";
 
@@ -471,10 +472,10 @@ function AISmartSearchHub({
               margin-top: 2px !important;
             }
             .ai-banner-robot-icon {
-              width: 24px !important;
-              height: 24px !important;
-              font-size: 12px !important;
-              border-radius: 6px !important;
+              width: 28px !important;
+              height: 28px !important;
+              font-size: 13px !important;
+              border-radius: 50% !important;
             }
             .ai-banner-title {
               font-size: 11.5px !important;
@@ -896,7 +897,7 @@ function QuickSearchChips({ value, onChipClick }) {
           background: "rgba(49, 82, 91, 0.08)",
         }}
       >
-        ⚡ Quick Find:
+        <FaBolt style={{ color: "#f59e0b", fontSize: "11px", marginRight: "5px" }} /> Quick Find:
       </span>
 
       <div
@@ -1010,19 +1011,21 @@ function AIRecommendationCard({
         <div
           className="ai-banner-robot-icon"
           style={{
-            width: "36px",
-            height: "36px",
-            borderRadius: "10px",
-            background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+            width: "38px",
+            height: "38px",
+            minWidth: "38px",
+            minHeight: "38px",
+            borderRadius: "50%",
+            background: "linear-gradient(135deg, #e68a00 0%, #ffa101 100%)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "18px",
-            boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)",
+            boxShadow: "0 4px 14px rgba(255, 161, 1, 0.4)",
+            border: "1.5px solid rgba(255, 255, 255, 0.35)",
             flexShrink: 0,
           }}
         >
-          🤖
+          <FaWandMagicSparkles style={{ fontSize: "18px", color: "#ffffff" }} />
         </div>
         <div style={{ flex: 1 }}>
           <span
@@ -1030,9 +1033,11 @@ function AIRecommendationCard({
             style={{
               fontSize: "13.5px",
               fontWeight: 800,
-              color: "#34d399",
+              color: "#fbbf24",
               letterSpacing: "0.5px",
-              display: "block",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
             }}
           >
             Zy AI Assistant
@@ -1146,7 +1151,10 @@ function SuggestedWorkers({ isAiLoading, aiSuggestedWorkers, aiBannerExpertsTitl
             >
               <span className="zy-hub-grid-name" style={{ fontWeight: 800, fontSize: "13.5px", color: "#ffffff" }}>{worker.name}</span>
               <span className="zy-hub-grid-role" style={{ fontSize: "11.5px", color: "#94a3b8", fontWeight: 500 }}>{worker.service}</span>
-              <span className="zy-hub-grid-rating" style={{ fontSize: "11.5px", color: "#fbbf24", fontWeight: 800, display: "flex", alignItems: "center", gap: "3px", marginTop: "1px" }}>⭐ {worker.rating}</span>
+              <span className="zy-hub-grid-rating" style={{ fontSize: "11.5px", color: "#fbbf24", fontWeight: 800, display: "flex", alignItems: "center", gap: "4px", marginTop: "1px" }}>
+                <FaStar style={{ fontSize: "10px", color: "#fbbf24" }} />
+                {worker.rating}
+              </span>
             </div>
           </Link>
         ))}
@@ -1186,10 +1194,10 @@ function LocationBonuses({
             color: "#ffffff",
             display: "flex",
             alignItems: "center",
-            gap: "4px",
+            gap: "6px",
           }}
         >
-          🎁 Location Bonuses Unlocked!
+          <FaGift style={{ color: "#fbbf24", fontSize: "13px" }} /> Location Bonuses Unlocked!
         </strong>
         <span
           className="ai-banner-bonus-desc"

@@ -851,7 +851,7 @@ function WorkerDashboard() {
                   <p style={{ margin: 0 }}>No new alerts or bookings at the moment.</p>
                 </div>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 16, maxHeight: "70vh", overflowY: "auto" }}>
                   {notifications.map((n) => (
                     <div key={n.id} className="premium-card" style={{ padding: 24, borderLeft: `6px solid ${n.type === "booking" ? "var(--primary)" : "#eab308"}` }}>
                       <div style={{ display: "flex", gap: 14 }}>
@@ -1698,8 +1698,10 @@ function WorkerDashboard() {
           animation: "fadeIn 0.2s ease-out forwards"
         }}>
           <div style={{
-            maxWidth: "400px", width: "90%", backgroundColor: "var(--bg-card)",
-            borderRadius: "20px", padding: "28px", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+            maxWidth: "400px", width: "90%", maxHeight: "85vh", overflowY: "auto",
+            backgroundColor: "var(--bg-card)",
+            borderRadius: "20px", padding: "28px", boxSizing: "border-box",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
             border: "1px solid rgba(0,0,0,0.05)"
           }}>
             <h3 style={{ margin: "0 0 8px 0", fontSize: "20px", fontWeight: 800, color: "var(--text-main)" }}>
@@ -1768,9 +1770,9 @@ function WorkerDashboard() {
           <div
             style={{
               maxWidth: "500px",
-              width: "90%",
-              height: "600px",
-              maxHeight: "80vh",
+              width: "94%",
+              height: "auto",
+              maxHeight: "85vh",
               backgroundColor: chatTheme === 'light' ? "white" : "#111827",
               borderRadius: "20px",
               display: "flex",

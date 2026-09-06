@@ -59,8 +59,16 @@ export const getPlans = async (req, res) => {
         { endDate: "" }
       ];
     }
-    const plans = await Plan.find(filter);
-    res.status(200).json(plans);
+    let plans = await Plan.find(filter);
+    const sanitizedPlans = plans.map(p => {
+      const doc = p.toObject ? p.toObject() : { ...p };
+      const col = (doc.color || "").trim().toLowerCase();
+      if (!doc.color || ["#ffffff", "#fff", "white", "#f8fafc", "#f1f5f9", "transparent"].includes(col)) {
+        doc.color = "#2563eb";
+      }
+      return doc;
+    });
+    res.status(200).json(sanitizedPlans);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

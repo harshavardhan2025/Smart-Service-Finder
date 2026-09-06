@@ -1,4 +1,12 @@
 import { useEffect, useState } from "react";
+import {
+  FaCalendarAlt,
+  FaWallet,
+  FaLock,
+  FaExclamationTriangle,
+  FaStar,
+  FaInfoCircle
+} from "react-icons/fa";
 
 // ponytail: merged AnimatedSuccess + AnimatedFailure — same modal shell, different icon/content
 const CONFETTI_COLORS = ["#425664", "#61082b", "#c6ad8f", "#4d724d", "#b4d0e7"];
@@ -18,7 +26,9 @@ function HelpBox({ kind }) {
   const base = { borderRadius: "14px", padding: "14px 16px", marginBottom: "24px", fontSize: "13px", textAlign: "left" };
   if (kind === "slot") return (
     <div style={{ ...base, backgroundColor: "var(--warning-light)", border: "1px solid #fde68a", color: "#78350f" }}>
-      <strong>💡 What to do:</strong>
+      <strong style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+        <FaInfoCircle /> What to do:
+      </strong>
       <ul style={{ margin: "8px 0 0 0", paddingLeft: "16px", lineHeight: "1.7" }}>
         <li>Pick a <strong>different time slot</strong> on the same day.</li>
         <li>Try a <strong>different date</strong>.</li>
@@ -28,7 +38,9 @@ function HelpBox({ kind }) {
   );
   if (kind === "wallet") return (
     <div style={{ ...base, backgroundColor: "var(--danger-light)", border: "1px solid var(--border-color)", color: "var(--text-main)" }}>
-      <strong>💡 What to do:</strong>
+      <strong style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+        <FaInfoCircle /> What to do:
+      </strong>
       <ul style={{ margin: "8px 0 0 0", paddingLeft: "16px", lineHeight: "1.7" }}>
         <li>Top up your wallet from the checkout screen.</li>
         <li>Switch to UPI, Card, or Cash payment instead.</li>
@@ -37,7 +49,9 @@ function HelpBox({ kind }) {
   );
   return (
     <div style={{ ...base, backgroundColor: "var(--danger-light)", border: "1px solid var(--border-color)", color: "var(--text-main)" }}>
-      <strong>💡 Possible causes:</strong>
+      <strong style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+        <FaInfoCircle /> Possible causes:
+      </strong>
       <ul style={{ margin: "8px 0 0 0", paddingLeft: "16px", lineHeight: "1.6" }}>
         <li>Temporary network issue — please retry.</li>
         <li>Worker may have become unavailable.</li>
@@ -70,10 +84,10 @@ function BookingFeedback({ type = "success", bookingDetails, errorMessage, onClo
 
   const errorKind = classifyError(errorMessage);
   const errorConfig = {
-    slot:    { icon: "📅", title: "Slot Already Taken",    accent: "#d97706" },
-    wallet:  { icon: "💼", title: "Insufficient Balance",  accent: "#dc2626" },
-    auth:    { icon: "🔐", title: "Session Expired",       accent: "#7c3aed" },
-    generic: { icon: "⚠️", title: "Booking Failed",        accent: "#dc2626" },
+    slot:    { icon: <FaCalendarAlt size={34} color="#d97706" />, title: "Slot Already Taken",    accent: "#d97706" },
+    wallet:  { icon: <FaWallet size={34} color="#dc2626" />, title: "Insufficient Balance",  accent: "#dc2626" },
+    auth:    { icon: <FaLock size={34} color="#7c3aed" />, title: "Session Expired",       accent: "#7c3aed" },
+    generic: { icon: <FaExclamationTriangle size={34} color="#dc2626" />, title: "Booking Failed",        accent: "#dc2626" },
   }[errorKind];
 
   const overlayStyle = {
@@ -122,7 +136,7 @@ function BookingFeedback({ type = "success", bookingDetails, errorMessage, onClo
                 <polyline points="20 6 9 17 4 12" style={{ strokeDasharray: 48, strokeDashoffset: 48, animation: "checkmark 0.6s 0.2s cubic-bezier(0.65,0,0.45,1) forwards" }} />
               </svg>
             </div>
-            <h2 style={{ margin: "0 0 8px 0", fontSize: 24, fontWeight: 800, color: "var(--text-main)" }}>Booking Confirmed! 🚀</h2>
+            <h2 style={{ margin: "0 0 8px 0", fontSize: 24, fontWeight: 800, color: "var(--text-main)" }}>Booking Confirmed!</h2>
             <p style={{ margin: "0 0 28px 0", fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.5 }}>
               Your service booking has been processed successfully. An expert partner is dispatched.
             </p>
@@ -139,7 +153,9 @@ function BookingFeedback({ type = "success", bookingDetails, errorMessage, onClo
               ))}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 10 }}>
                 <span style={{ color: "var(--text-secondary)", fontWeight: 500 }}>Instant Cash Rewards:</span>
-                <span style={{ backgroundColor: "rgba(198,173,143,0.15)", color: "var(--primary)", padding: "4px 8px", borderRadius: 12, fontSize: 11, fontWeight: 700, border: "1px solid var(--accent)" }}>⭐ Wallet Cashback Active</span>
+                <span style={{ backgroundColor: "rgba(198,173,143,0.15)", color: "var(--primary)", padding: "4px 8px", borderRadius: 12, fontSize: 11, fontWeight: 700, border: "1px solid var(--accent)", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                  <FaStar style={{ fontSize: "11px", color: "#f59e0b" }} /> Wallet Cashback Active
+                </span>
               </div>
             </div>
             <button onClick={onClose} style={{ width: "100%", background: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)", color: "white", border: "none", padding: "14px 20px", borderRadius: 12, fontWeight: "bold", fontSize: 15, cursor: "pointer", boxShadow: "0 8px 16px rgba(66,86,100,0.25)", transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.transform = "translateY(-1px)"} onMouseLeave={e => e.currentTarget.style.transform = "none"}>
@@ -149,7 +165,7 @@ function BookingFeedback({ type = "success", bookingDetails, errorMessage, onClo
         ) : (
           <>
             <div style={{ width: 80, height: 80, borderRadius: "50%", backgroundColor: "var(--danger-light)", display: "inline-flex", justifyContent: "center", alignItems: "center", marginBottom: 20, animation: "pulse-hazard 2s infinite ease-in-out" }}>
-              <span style={{ fontSize: 36 }}>{errorConfig.icon}</span>
+              {errorConfig.icon}
             </div>
             <h2 style={{ margin: "0 0 8px 0", fontSize: 22, fontWeight: 800, color: errorConfig.accent }}>{errorConfig.title}</h2>
             <p style={{ margin: "0 0 20px 0", fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.6 }}>

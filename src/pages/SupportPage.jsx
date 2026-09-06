@@ -1,6 +1,20 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import { useLocation } from "react-router-dom";
+import {
+  FaCreditCard,
+  FaUserTie,
+  FaCalendarAlt,
+  FaLock,
+  FaLightbulb,
+  FaEnvelopeOpenText,
+  FaPaperPlane,
+  FaCheckCircle,
+  FaTicketAlt,
+  FaExclamationTriangle,
+  FaHistory,
+  FaChevronDown
+} from "react-icons/fa";
 
 function SupportPage() {
   const location = useLocation();
@@ -35,19 +49,23 @@ function SupportPage() {
 
   const faqs = [
     {
-      q: "💳 How do I get a refund for a cancelled booking?",
+      icon: FaCreditCard,
+      q: "How do I get a refund for a cancelled booking?",
       a: "Refunds are processed automatically back to your original payment method. It usually takes 3-5 business days to reflect in your bank account."
     },
     {
-      q: "👷 What happens if a professional doesn't show up?",
+      icon: FaUserTie,
+      q: "What happens if a professional doesn't show up?",
       a: "If a professional fails to arrive within 30 minutes of the scheduled time, you can cancel the order free of charge. The provider's rating will be affected and you will receive a 100% refund."
     },
     {
-      q: "📅 Can I reschedule my service booking?",
+      icon: FaCalendarAlt,
+      q: "Can I reschedule my service booking?",
       a: "Yes! You can reschedule any booking up to 2 hours before the scheduled time directly from your 'My Bookings' panel without any penalty."
     },
     {
-      q: "🔒 Are my payments secure?",
+      icon: FaLock,
+      q: "Are my payments secure?",
       a: "Absolutely. All payments are securely processed using industry-standard SSL encryption. We do not store your raw card details on our servers."
     }
   ];
@@ -81,7 +99,7 @@ function SupportPage() {
         setEmail("");
         setPhone("");
       }, 5000);
-    } catch (err) { setFormError("🚨 Submission failed. Please try again or contact us directly."); }
+    } catch (err) { setFormError("Submission failed. Please try again or contact us directly."); }
   };
 
   return (
@@ -108,60 +126,72 @@ function SupportPage() {
           {/* LEFT COLUMN: FAQ SECTION */}
           <div>
             <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-main)", marginBottom: "24px", display: "flex", alignItems: "center", gap: "10px" }}>
-              <span>💡</span> Frequently Asked Questions
+              <FaLightbulb style={{ color: "var(--primary)" }} /> Frequently Asked Questions
             </h2>
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              {faqs.map((faq, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
-                  style={{
-                    backgroundColor: "var(--bg-card)",
-                    padding: "20px",
-                    borderRadius: "12px",
-                    cursor: "pointer",
-                    transition: "all 0.3s ease",
-                    border: activeFaq === idx ? "1px solid var(--primary)" : "1px solid var(--border)"
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <h3 style={{ fontSize: "15px", fontWeight: 700, color: "var(--text-main)", margin: 0 }}>{faq.q}</h3>
-                    <span style={{ fontSize: "18px", color: "var(--primary)", transform: activeFaq === idx ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.3s" }}>
-                      ▼
-                    </span>
+              {faqs.map((faq, idx) => {
+                const FaqIcon = faq.icon;
+                return (
+                  <div
+                    key={idx}
+                    onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
+                    style={{
+                      backgroundColor: "var(--bg-card)",
+                      padding: "20px",
+                      borderRadius: "12px",
+                      cursor: "pointer",
+                      transition: "all 0.3s ease",
+                      border: activeFaq === idx ? "1.5px solid var(--primary)" : "1px solid var(--border)"
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <FaqIcon style={{ color: "var(--primary)", flexShrink: 0, fontSize: "16px" }} />
+                        <h3 style={{ fontSize: "15px", fontWeight: 700, color: "var(--text-main)", margin: 0 }}>{faq.q}</h3>
+                      </div>
+                      <FaChevronDown
+                        style={{
+                          fontSize: "14px",
+                          color: "var(--primary)",
+                          transform: activeFaq === idx ? "rotate(180deg)" : "rotate(0deg)",
+                          transition: "transform 0.3s",
+                          flexShrink: 0
+                        }}
+                      />
+                    </div>
+                    {activeFaq === idx && (
+                      <p style={{ marginTop: "12px", fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.6", borderTop: "1px solid var(--border)", paddingTop: "12px" }}>
+                        {faq.a}
+                      </p>
+                    )}
                   </div>
-                  {activeFaq === idx && (
-                    <p style={{ marginTop: "12px", fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.6", borderTop: "1px solid var(--border)", paddingTop: "12px" }}>
-                      {faq.a}
-                    </p>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
           {/* RIGHT COLUMN: SUBMIT TICKET FORM */}
           <div className="premium-card" style={{ padding: "40px" }}>
             <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-main)", marginBottom: "24px", display: "flex", alignItems: "center", gap: "10px" }}>
-              <span>✉️</span> Send us a Message
+              <FaEnvelopeOpenText style={{ color: "var(--primary)" }} /> Send us a Message
             </h2>
 
             {success ? (
               <div style={{ textAlign: "center", padding: "40px 10px" }}>
-                <div style={{ fontSize: "56px", marginBottom: "16px" }}>🎉</div>
+                <FaCheckCircle style={{ fontSize: "52px", color: "var(--primary)", marginBottom: "16px" }} />
                 <h3 style={{ fontSize: "20px", fontWeight: 800, color: "var(--primary)", marginBottom: "8px" }}>Ticket Submitted!</h3>
                 <p style={{ color: "var(--text-muted)", fontSize: "14px", lineHeight: "1.6" }}>
                   Your support request has been logged. We'll contact you at <strong>{email}</strong> within 24 hours.
                 </p>
-                <div className="inline-alert inline-alert-success" style={{ marginTop: 16, justifyContent: "center" }}>
-                  ✅ Ticket ID: #{Math.random().toString(36).slice(2,8).toUpperCase()} — Keep this for reference
+                <div className="inline-alert inline-alert-success" style={{ marginTop: 16, justifyContent: "center", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <FaTicketAlt /> Ticket ID: #{Math.random().toString(36).slice(2,8).toUpperCase()} — Keep this for reference
                 </div>
               </div>
             ) : (
               <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
                 {formError && (
-                  <div className="inline-alert inline-alert-error">
-                    ⚠️ {formError}
+                  <div className="inline-alert inline-alert-error" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <FaExclamationTriangle /> {formError}
                   </div>
                 )}
                 <div>
@@ -180,11 +210,11 @@ function SupportPage() {
                       outline: "none"
                     }}
                   >
-                    <option value="billing">💳 Billing & Payments Inquiry</option>
-                    <option value="worker">👷 Issue with Professional Worker</option>
-                    <option value="booking">📅 Booking & Rescheduling</option>
-                    <option value="bug">📱 Technical App Bug</option>
-                    <option value="other">❓ Other General Inquiry</option>
+                    <option value="billing">Billing & Payments Inquiry</option>
+                    <option value="worker">Issue with Professional Worker</option>
+                    <option value="booking">Booking & Rescheduling</option>
+                    <option value="bug">Technical App Bug</option>
+                    <option value="other">Other General Inquiry</option>
                   </select>
                 </div>
 
@@ -265,10 +295,14 @@ function SupportPage() {
                     fontSize: "14px",
                     cursor: "pointer",
                     transition: "all 0.2s ease",
-                    width: "100%"
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px"
                   }}
                 >
-                  Send Message
+                  <FaPaperPlane /> Send Message
                 </button>
               </form>
             )}
@@ -280,7 +314,7 @@ function SupportPage() {
         {userName && (
           <div className="premium-card" style={{ marginTop: "60px", padding: "35px" }}>
             <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-main)", marginBottom: "20px", display: "flex", alignItems: "center", gap: "10px" }}>
-              <span>📜</span> Your Past Messages
+              <FaHistory style={{ color: "var(--primary)" }} /> Your Past Messages
             </h2>
             {history.length === 0 ? (
               <p style={{ color: "var(--text-muted)", fontStyle: "italic" }}>No previously submitted support tickets found under your account name.</p>

@@ -9,10 +9,21 @@ import Notification from "../models/Notification.js";
 // Parse scheduled date and time into authoritative Date object
 const parseBookingDateTime = (dateStr, timeStr) => {
   try {
-    const [time, modifier] = timeStr.split(" ");
-    let [hours, minutes] = time.split(":");
-    hours = parseInt(hours, 10);
-    minutes = parseInt(minutes, 10);
+    if (!dateStr || !timeStr) return null;
+    const parts = timeStr.trim().split(/\s+/);
+    const time = parts[0];
+    const modifier = parts[1] ? parts[1].toUpperCase() : "";
+    let hours = 0;
+    let minutes = 0;
+    if (time.includes(":")) {
+      const [h, m] = time.split(":");
+      hours = parseInt(h, 10);
+      minutes = parseInt(m, 10) || 0;
+    } else {
+      hours = parseInt(time, 10);
+      minutes = 0;
+    }
+    if (isNaN(hours)) return null;
     
     if (modifier === "PM" && hours < 12) hours += 12;
     if (modifier === "AM" && hours === 12) hours = 0;
@@ -915,16 +926,28 @@ export const rescheduleBooking = async (req, res) => {
       return res.status(400).json({ error: "Date and time slot are required for rescheduling." });
     }
 
-    // 🛡️ 9-DAY SCHEDULING LOCK: Enforce strictly up to 9 days advance booking for rescheduling
+    // 🛡️ 9-DAY SCHEDULING LOCK & PAST DATE/TIME VALIDATION
     const todayDate = new Date();
     todayDate.setHours(0, 0, 0, 0);
     const maxDate = new Date(todayDate);
     maxDate.setDate(maxDate.getDate() + 9);
 
     const targetDate = new Date(`${date}T00:00:00`);
+    if (targetDate < todayDate) {
+      return res.status(400).json({
+        error: "Cannot reschedule to a past date. Please select a current or future date."
+      });
+    }
     if (targetDate > maxDate) {
       return res.status(400).json({
         error: "Rescheduling is strictly limited to 9 days into the future. Please choose a date within the next 9 days."
+      });
+    }
+
+    const newScheduledDateTime = parseBookingDateTime(date, time);
+    if (newScheduledDateTime && newScheduledDateTime <= new Date()) {
+      return res.status(400).json({
+        error: "Cannot reschedule to a time slot that has already completed or passed. Please select an upcoming available time slot."
       });
     }
 
@@ -948,13 +971,20 @@ export const rescheduleBooking = async (req, res) => {
       return res.status(400).json({ error: "Instant service bookings cannot be rescheduled as workers are dispatched immediately." });
     }
 
+    // 🔄 2-TIMES MAXIMUM RESCHEDULE LIMIT ENFORCEMENT
+    if ((booking.rescheduleCount || 0) >= 2) {
+      return res.status(400).json({ 
+        error: "Maximum reschedule limit of 2 times reached! You cannot reschedule this appointment any further." 
+      });
+    }
+
     const now = new Date();
     const scheduledDateTime = parseBookingDateTime(booking.date, booking.time);
     if (scheduledDateTime && !isNaN(scheduledDateTime.getTime())) {
       const diffHours = (scheduledDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
       if (diffHours < 2) {
         return res.status(400).json({ 
-          error: "Rescheduling is only allowed up to 2 hours before the scheduled service time." 
+          error: "Rescheduling is only accepted at least 2 hours before the scheduled service time." 
         });
       }
     }
@@ -977,13 +1007,14 @@ export const rescheduleBooking = async (req, res) => {
 
     booking.date = date;
     booking.time = time;
+    booking.rescheduleCount = (booking.rescheduleCount || 0) + 1;
     await booking.save();
 
     await Notification.create({
       role: "user",
       user_id: booking.customer_id,
       title: "📅 Booking Rescheduled",
-      message: `Your booking for ${booking.service} has been successfully rescheduled to ${date} at ${time}.`,
+      message: `Your booking for ${booking.service} has been successfully rescheduled to ${date} at ${time} (${booking.rescheduleCount}/2 reschedules used).`,
       type: "success",
       is_read: false
     });

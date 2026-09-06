@@ -301,6 +301,17 @@ small,
   line-height: 1.7;
 }
 
+/* Ensure text inside buttons, badges, pills, and tabs inherits high-contrast foreground color */
+button span,
+.btn span,
+.badge span,
+[class*="badge"] span,
+[class*="button"] span,
+[class*="pill"] span,
+[class*="tab"] span {
+  color: inherit;
+}
+
 /* =========================================================
    INPUTS
 ========================================================= */
@@ -1856,4 +1867,49 @@ button {
   .auth-wrapper {
     padding: 16px 12px !important;
   }
+
+  /* ===== GLOBAL MOBILE MODAL FIXES ===== */
+
+  /* All fixed-position modal overlays — ensure safe padding */
+  .custom-modal {
+    max-height: 85vh !important;
+    overflow-y: auto !important;
+    padding: 20px !important;
+    box-sizing: border-box !important;
+    margin: 0 8px !important;
+  }
+
+  /* Dashboard content padding */
+  .dashboard-header-block {
+    padding: 20px 14px 40px 14px !important;
+  }
+  .dashboard-header-block h1 {
+    font-size: 20px !important;
+  }
+
+  /* Profile content */
+  .profile-content {
+    padding: 0 12px !important;
+  }
+
+  /* Navbar adjustments */
+  .navbar {
+    padding: 8px 10px !important;
+  }
 }
+
+/* ===== EXTRA SMALL SCREENS (< 400px) ===== */
+@media (max-width: 400px) {
+  .quick-actions-row {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+  .greeting-banner {
+    padding: 12px 12px !important;
+  }
+  .greeting-banner h2 { font-size: 15px !important; }
+  .custom-modal {
+    padding: 16px !important;
+  }
+}
+

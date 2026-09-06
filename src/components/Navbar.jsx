@@ -120,9 +120,10 @@ function Navbar() {
           boxShadow: "0 4px 20px rgba(0, 0, 0, 0.05)",
           position: "sticky",
           top: 0,
-          zIndex: 100,
+          zIndex: 1001,
           transition: "all 0.3s ease",
           backdropFilter: "blur(12px)",
+          overflow: "visible",
         }}
       >
         <Link
@@ -216,17 +217,18 @@ function Navbar() {
               {showNotifications && (
                 <div
                   style={{
-                    position: "absolute",
-                    top: "45px",
-                    right: 0,
-                    width: isMobile ? "280px" : "320px",
-                    maxHeight: "360px",
+                    position: isMobile ? "fixed" : "absolute",
+                    top: isMobile ? "56px" : "45px",
+                    right: isMobile ? "8px" : 0,
+                    left: isMobile ? "8px" : "auto",
+                    width: isMobile ? "auto" : "320px",
+                    maxHeight: isMobile ? "70vh" : "360px",
                     backgroundColor: "var(--bg-card)",
                     backdropFilter: "var(--blur)",
                     border: "1px solid var(--border-color)",
                     borderRadius: "16px",
-                    boxShadow: "var(--shadow-3d)",
-                    zIndex: 1000,
+                    boxShadow: "0 20px 50px -12px rgba(0, 0, 0, 0.3)",
+                    zIndex: 10000,
                     overflowY: "auto",
                     padding: "16px",
                     boxSizing: "border-box"

@@ -240,6 +240,43 @@ function PlansOffers() {
 
 
 
+  const getButtonTheme = (planColor, disabled) => {
+    if (disabled) {
+      return {
+        bg: "var(--border, #94a3b8)",
+        color: "var(--text-muted, #64748b)",
+        boxShadow: "none"
+      };
+    }
+    if (!planColor) {
+      return {
+        bg: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+        color: "#ffffff",
+        boxShadow: "0 8px 20px -6px rgba(37,99,235,0.4)"
+      };
+    }
+    const c = String(planColor).trim().toLowerCase();
+    if (c === "#ffffff" || c === "#fff" || c === "white" || c === "#f8fafc" || c === "#f1f5f9" || c === "transparent" || c === "rgb(255,255,255)") {
+      return {
+        bg: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+        color: "#ffffff",
+        boxShadow: "0 8px 20px -6px rgba(37,99,235,0.4)"
+      };
+    }
+    if (c.includes("eab308") || c.includes("yellow") || c.includes("fef08a") || c.includes("fde047") || c === "#f59e0b") {
+      return {
+        bg: planColor,
+        color: "#0f172a",
+        boxShadow: "0 8px 20px -6px rgba(234, 179, 8, 0.4)"
+      };
+    }
+    return {
+      bg: planColor,
+      color: "#ffffff",
+      boxShadow: `0 8px 20px -6px ${planColor}40`
+    };
+  };
+
   const handleCopy = (code) => {
 
     navigator.clipboard.writeText(code);
@@ -765,8 +802,12 @@ function PlansOffers() {
               }}
               style={{
                 width: "100%", padding: "14px", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: "pointer",
-                backgroundColor: plan.color || "var(--primary)", color: "white", transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-                boxShadow: `0 4px 14px ${plan.color ? plan.color + "30" : "rgba(49, 82, 91, 0.2)"}`, position: "relative"
+                background: getButtonTheme(plan.color, false).bg,
+                backgroundColor: getButtonTheme(plan.color, false).bg,
+                color: getButtonTheme(plan.color, false).color,
+                transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                boxShadow: getButtonTheme(plan.color, false).boxShadow,
+                position: "relative"
               }}
             >
               {plan.btnText || "Subscribe Now"}
@@ -1021,6 +1062,8 @@ function PlansOffers() {
                 backgroundColor: "var(--bg-card)", border: "1px solid var(--border)", 
 
                 borderRadius: "24px", padding: "32px", width: "100%", maxWidth: "440px", 
+
+                maxHeight: "85vh", overflowY: "auto", boxSizing: "border-box",
 
                 boxShadow: "0 20px 40px -10px rgba(0,0,0,0.15)", color: "var(--text-main)", position: "relative"
 
@@ -1320,7 +1363,7 @@ function PlansOffers() {
 
                       <span>Current Wallet Balance</span>
 
-                      <strong style={{ color: "#31525B" }}>₹{walletBal.toLocaleString()}</strong>
+                      <strong style={{ color: "var(--text-main)" }}>₹{walletBal.toLocaleString()}</strong>
 
                     </div>
 
@@ -1476,33 +1519,30 @@ function PlansOffers() {
 
 
 
-                <button 
-
-                  type="submit" 
-
-                  disabled={paymentProcessing || (payingPlan.terms && !agreedToTerms)}
-
-                  style={{
-
-                    width: "100%", padding: "16px", border: "none", borderRadius: "12px", marginTop: "4px",
-
-                    fontSize: "16px", fontWeight: 800, cursor: (paymentProcessing || (payingPlan.terms && !agreedToTerms)) ? "not-allowed" : "pointer",
-
-                    backgroundColor: (payingPlan.terms && !agreedToTerms) ? "#cbd5e1" : (payingPlan.color || "var(--primary)"), color: "white", 
-
-                    transition: "all 0.2s", boxShadow: (payingPlan.terms && !agreedToTerms) ? "none" : "0 8px 20px -6px rgba(37,99,235,0.4)", opacity: paymentProcessing ? 0.7 : 1
-
-                  }}
-
-                  onMouseEnter={(e) => { if(!paymentProcessing && !(payingPlan.terms && !agreedToTerms)) e.currentTarget.style.transform = "translateY(-2px)" }}
-
-                  onMouseLeave={(e) => { if(!paymentProcessing && !(payingPlan.terms && !agreedToTerms)) e.currentTarget.style.transform = "translateY(0)" }}
-
-                >
-
-                  {paymentProcessing ? "Verifying Payment Details... ⚡" : `Confirm & Pay ₹${Math.max(0, (parseInt(payingPlan.price.replace(/[^\d]/g, ""), 10) || 0) - discountAmount)} Now`}
-
-                </button>
+                {(() => {
+                  const isPayDisabled = paymentProcessing || (payingPlan.terms && !agreedToTerms);
+                  const btnTheme = getButtonTheme(payingPlan.color, isPayDisabled);
+                  return (
+                    <button 
+                      type="submit" 
+                      disabled={isPayDisabled}
+                      style={{
+                        width: "100%", padding: "16px", border: "none", borderRadius: "12px", marginTop: "4px",
+                        fontSize: "16px", fontWeight: 800, cursor: isPayDisabled ? "not-allowed" : "pointer",
+                        background: btnTheme.bg,
+                        backgroundColor: btnTheme.bg,
+                        color: btnTheme.color, 
+                        transition: "all 0.2s", 
+                        boxShadow: btnTheme.boxShadow, 
+                        opacity: paymentProcessing ? 0.7 : 1
+                      }}
+                      onMouseEnter={(e) => { if (!isPayDisabled) e.currentTarget.style.transform = "translateY(-2px)"; }}
+                      onMouseLeave={(e) => { if (!isPayDisabled) e.currentTarget.style.transform = "translateY(0)"; }}
+                    >
+                      {paymentProcessing ? "Verifying Payment Details... ⚡" : `Confirm & Pay ₹${Math.max(0, (parseInt(payingPlan.price.replace(/[^\d]/g, ""), 10) || 0) - discountAmount)} Now`}
+                    </button>
+                  );
+                })()}
 
                   </div>
 
@@ -1545,6 +1585,8 @@ function PlansOffers() {
                 backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border)", 
 
                 borderRadius: "16px", padding: "30px", width: "100%", maxWidth: "460px", 
+
+                maxHeight: "85vh", overflowY: "auto", boxSizing: "border-box",
 
                 boxShadow: "var(--shadow-3d)", color: "var(--text-main)", position: "relative"
 

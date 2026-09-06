@@ -1,6 +1,22 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { addToWallet } from "../utils/wallet";
+import {
+  FaTicketAlt,
+  FaBolt,
+  FaCoins,
+  FaCrown,
+  FaGift,
+  FaStar,
+  FaLightbulb,
+  FaPenNib,
+  FaUserTie,
+  FaUserCheck,
+  FaCalendarAlt,
+  FaCommentDots,
+  FaCheckCircle,
+  FaReply
+} from "react-icons/fa";
 
 const POINTS_PER_REVIEW = 50;
 const MAX_COMMENT_LENGTH = 1000;
@@ -11,7 +27,7 @@ const REWARDS = [
     id: "booking_discount_50",
     title: "₹50 Off Next Booking",
     points: 100,
-    icon: "🎟️",
+    icon: FaTicketAlt,
     color: "var(--primary)",
     bg: "#f0fdf4",
     desc: "Redeem on any service booking",
@@ -22,7 +38,7 @@ const REWARDS = [
     id: "priority_slot",
     title: "Free Priority Slot",
     points: 150,
-    icon: "⚡",
+    icon: FaBolt,
     color: "#2563eb",
     bg: "#eff6ff",
     desc: "Skip the queue on your next booking",
@@ -32,7 +48,7 @@ const REWARDS = [
     id: "payment_cashback_100",
     title: "₹100 Payment Cashback",
     points: 200,
-    icon: "💸",
+    icon: FaCoins,
     color: "var(--warning)",
     bg: "#fffbeb",
     desc: "Get cashback on your next payment",
@@ -43,7 +59,7 @@ const REWARDS = [
     id: "vip_worker_access",
     title: "VIP Worker Access",
     points: 300,
-    icon: "👑",
+    icon: FaCrown,
     color: "#7c3aed",
     bg: "#f5f3ff",
     desc: "Access top-rated premium workers",
@@ -659,7 +675,7 @@ function ReviewsRewards() {
             ← Back to Home
           </Link>
           <h1 style={{ margin: "0 0 6px 0", fontSize: "28px", fontWeight: 800 }}>
-            🎁 Reviews & Rewards
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}><FaGift /> Reviews & Rewards</span>
           </h1>
           <p style={{ margin: 0, color: "#c4b5fd", fontSize: "14px", lineHeight: 1.5 }}>
             Review your completed services — earn points — redeem on bookings & payments!
@@ -701,7 +717,7 @@ function ReviewsRewards() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "20px" }}>
             <div>
               <p style={{ margin: "0 0 4px 0", fontSize: "13px", color: "#c4b5fd" }}>Available Points</p>
-              <h2 style={{ margin: 0, fontSize: "42px", fontWeight: 900 }}>⭐ {availablePoints}</h2>
+              <h2 style={{ margin: 0, fontSize: "42px", fontWeight: 900, display: "flex", alignItems: "center", gap: "10px" }}><FaStar style={{ color: "#ffd700", fontSize: "36px" }} /> {availablePoints}</h2>
               <p style={{ margin: "7px 0 0 0", fontSize: "12px", color: "#c4b5fd" }}>
                 Total earned: {totalPoints} pts &nbsp;|&nbsp; Redeemed: {spentPoints} pts
               </p>
@@ -745,7 +761,7 @@ function ReviewsRewards() {
               lineHeight: 1.45,
             }}
           >
-            💡 <strong>How to earn:</strong> Submit a review after each completed service and earn <strong>+{POINTS_PER_REVIEW} pts</strong>.
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><FaLightbulb style={{ color: "#fde047" }} /> <strong>How to earn:</strong></span> Submit a review after each completed service and earn <strong>+{POINTS_PER_REVIEW} pts</strong>.
           </div>
         </section>
 
@@ -753,7 +769,7 @@ function ReviewsRewards() {
         {pendingReviews.length > 0 && (
           <section style={{ marginBottom: "30px" }}>
             <h2 style={{ fontSize: "18px", fontWeight: 800, color: "var(--text-main)", margin: "0 0 14px 0" }}>
-              ✍️ Pending Reviews ({pendingReviews.length})
+              <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}><FaPenNib style={{ color: "var(--primary)" }} /> Pending Reviews ({pendingReviews.length})</span>
             </h2>
             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               {pendingReviews.map((booking) => {
@@ -777,7 +793,7 @@ function ReviewsRewards() {
                         <h3 style={{ margin: "0 0 4px 0", fontSize: "16px", fontWeight: 800, color: "var(--text-main)" }}>
                           {booking.service || "Professional Service"}
                         </h3>
-                        <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>👷 Service Expert · 📅 {booking.date || "Completed"}</p>
+                        <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}><span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}><FaUserTie /> Service Expert</span> &nbsp;·&nbsp; <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}><FaCalendarAlt /> {booking.date || "Completed"}</span></p>
                       </div>
                       <span
                         style={{
@@ -854,7 +870,7 @@ function ReviewsRewards() {
                         cursor: isSubmitting ? "not-allowed" : "pointer",
                       }}
                     >
-                      {isSubmitting ? "Submitting..." : `Submit Review & Earn ${POINTS_PER_REVIEW} pts ⭐`}
+                      {isSubmitting ? "Submitting..." : `Submit Review & Earn ${POINTS_PER_REVIEW} pts`}
                     </button>
                   </div>
                 );
@@ -866,7 +882,7 @@ function ReviewsRewards() {
         {/* Redeem Rewards */}
         <section style={{ marginBottom: "28px" }}>
           <h2 style={{ fontSize: "18px", fontWeight: 800, color: "var(--text-main)", margin: "0 0 6px 0" }}>
-            🎁 Redeem Rewards
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}><FaGift style={{ color: "var(--primary)" }} /> Redeem Rewards</span>
           </h2>
           <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: "0 0 14px 0" }}>
             Use your points on bookings, payments & priority slots
@@ -900,7 +916,7 @@ function ReviewsRewards() {
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
-                    <span style={{ fontSize: "28px" }}>{reward.icon}</span>
+                    {typeof reward.icon === "function" ? <reward.icon style={{ fontSize: "28px", color: reward.color }} /> : <span style={{ fontSize: "28px" }}>{reward.icon}</span>}
                     <h3 style={{ margin: 0, fontSize: "15px", fontWeight: 800, color: "var(--text-main)" }}>
                       {reward.title}
                     </h3>
@@ -925,7 +941,7 @@ function ReviewsRewards() {
                       transition: "all 0.2s",
                     }}
                   >
-                    {redeemed ? "✅ Redeemed" : isRedeeming ? "Redeeming..." : canRedeem ? `Redeem for ${reward.points} pts` : `Need ${reward.points - availablePoints} more pts`}
+                    {redeemed ? <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}><FaCheckCircle /> Redeemed</span> : isRedeeming ? "Redeeming..." : canRedeem ? `Redeem for ${reward.points} pts` : `Need ${reward.points - availablePoints} more pts`}
                   </button>
                 </div>
               );
@@ -938,14 +954,14 @@ function ReviewsRewards() {
           <section>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "0 0 14px 0", flexWrap: "wrap", gap: 10 }}>
               <h2 style={{ fontSize: "18px", fontWeight: 800, color: "var(--text-main)", margin: 0 }}>
-                📝 Your Reviews
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}><FaCommentDots style={{ color: "var(--primary)" }} /> Your Reviews</span>
               </h2>
               {/* Category Filters */}
               <div style={{ display: "flex", gap: "8px" }}>
                 {[
                   { id: "all", label: "All" },
-                  { id: "positive", label: "Positive (4-5 ⭐)" },
-                  { id: "critical", label: "Critical (1-3 ⭐)" },
+                  { id: "positive", label: "Positive (4-5 ★)" },
+                  { id: "critical", label: "Critical (1-3 ★)" },
                 ].map((pill) => (
                   <button
                     key={pill.id}
@@ -959,7 +975,7 @@ function ReviewsRewards() {
                       fontWeight: 800,
                       cursor: "pointer",
                       backgroundColor: filterType === pill.id ? "var(--primary)" : "var(--primary-light)",
-                      color: filterType === pill.id ? "var(--primary-dark)" : "var(--text-secondary)",
+                      color: filterType === pill.id ? "#ffffff" : "var(--text-secondary)",
                       transition: "all 0.2s",
                       boxShadow: "none",
                     }}
@@ -990,7 +1006,7 @@ function ReviewsRewards() {
                         <h3 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 800, color: "var(--text-main)" }}>
                           {r.service || "Professional Service"}
                         </h3>
-                        <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>👷 Verified Partner · 📅 {r.date || "Completed"}</p>
+                        <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}><span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}><FaUserCheck /> Verified Partner</span> &nbsp;·&nbsp; <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}><FaCalendarAlt /> {r.date || "Completed"}</span></p>
                       </div>
                       <span
                         style={{
@@ -1002,7 +1018,7 @@ function ReviewsRewards() {
                           fontWeight: 800,
                         }}
                       >
-                        +{POINTS_PER_REVIEW} pts earned ✅
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>+{POINTS_PER_REVIEW} pts earned <FaCheckCircle /></span>
                       </span>
                     </div>
 
@@ -1025,8 +1041,8 @@ function ReviewsRewards() {
                     {r.reply && (
                       <div style={{ marginTop: "12px", padding: "10px 14px", backgroundColor: "#f5f3ff", borderLeft: "3px solid #8b5cf6", borderRadius: "8px", fontSize: "13px", marginLeft: "10px" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                          <span style={{ fontWeight: 800, color: "#6d28d9" }}>💬 Professional Response:</span>
-                          <span style={{ fontSize: "11px", color: "#8b5cf6" }}>📅 {r.replyDate}</span>
+                          <span style={{ fontWeight: 800, color: "#6d28d9" }}><span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><FaReply /> Professional Response:</span></span>
+                          <span style={{ fontSize: "11px", color: "#8b5cf6" }}><span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}><FaCalendarAlt /> {r.replyDate}</span></span>
                         </div>
                         <p style={{ margin: 0, color: "#4c1d95", fontStyle: "normal" }}>{r.reply}</p>
                       </div>
@@ -1043,4 +1059,3 @@ function ReviewsRewards() {
 }
 
 export default ReviewsRewards;
-

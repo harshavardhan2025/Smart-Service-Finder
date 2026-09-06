@@ -1,5 +1,22 @@
 import { useState, useEffect, useRef } from "react";
+import { FaWandMagicSparkles } from "react-icons/fa6";
 import { Link, useLocation } from "react-router-dom";
+import {
+  FaTimes,
+  FaTrashAlt,
+  FaPaperPlane,
+  FaArrowRight,
+  FaMapMarkerAlt,
+  FaStar,
+  FaTools,
+  FaRupeeSign,
+  FaSnowflake,
+  FaGift,
+  FaBroom,
+  FaShieldAlt,
+  FaHeadset,
+  FaMagic
+} from "react-icons/fa";
 
 // ── Zy AI Chatbot Styles ──
 const zyStyles = `
@@ -27,61 +44,87 @@ const zyStyles = `
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
   }
-  @keyframes zyRipple {
-    0% { transform: scale(0.8); opacity: 1; }
-    100% { transform: scale(2.4); opacity: 0; }
+  @keyframes zyGlowPulse {
+    0%, 100% {
+      box-shadow: 0 8px 24px rgba(230, 138, 0, 0.5), 0 0 0 0 rgba(255, 161, 1, 0.4);
+    }
+    50% {
+      box-shadow: 0 12px 30px rgba(230, 138, 0, 0.7), 0 0 0 10px rgba(255, 161, 1, 0);
+    }
   }
 
   .zy-fab {
     position: fixed;
     bottom: 24px;
     right: 24px;
-    width: 62px;
-    height: 62px;
-    border-radius: 50%;
-    background: var(--primary-grad);
-    box-shadow: 0 8px 32px var(--primary-glow), inset 0 1px 0 rgba(255,255,255,0.1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 60px !important;
+    height: 60px !important;
+    min-width: 60px !important;
+    min-height: 60px !important;
+    max-width: 60px !important;
+    max-height: 60px !important;
+    border-radius: 50% !important;
+    aspect-ratio: 1 / 1 !important;
+    background: linear-gradient(135deg, #e68a00 0%, #ffa101 100%) !important;
+    box-shadow: 0 8px 24px rgba(230, 138, 0, 0.5), 0 0 16px rgba(255, 161, 1, 0.4) !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
     cursor: pointer;
     z-index: 10000;
-    transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border: 2px solid var(--border-color);
-    overflow: visible;
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease !important;
+    border: 2px solid rgba(255, 255, 255, 0.5) !important;
+    box-sizing: border-box !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    outline: none !important;
+    animation: zyGlowPulse 3s ease-in-out infinite;
   }
   .zy-fab:hover {
-    transform: scale(1.12) rotate(-3deg);
-    box-shadow: 0 12px 40px var(--primary-glow), inset 0 1px 0 rgba(255,255,255,0.15);
-    border-color: var(--primary);
+    transform: scale(1.08) !important;
+    box-shadow: 0 12px 32px rgba(230, 138, 0, 0.7), 0 0 24px rgba(255, 161, 1, 0.6) !important;
+    border-color: rgba(255, 255, 255, 0.85) !important;
   }
-  .zy-fab::before {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    border: 2px solid var(--border-color);
-    animation: zyRipple 2.5s ease-out infinite;
+  .zy-fab:active {
+    transform: scale(0.95) !important;
   }
   .zy-fab-icon {
-    font-size: 26px;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-    transition: transform 0.3s ease;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+    transition: transform 0.2s ease;
+    color: #ffffff !important;
   }
   .zy-fab:hover .zy-fab-icon {
-    transform: scale(1.1);
+    transform: scale(1.08) rotate(5deg);
   }
 
   .zy-window {
     animation: zySlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #ffffff;
+  }
+  [data-theme="dark"] .zy-window {
+    background: #142228 !important;
+  }
+  [data-theme="light"] .zy-window {
+    background: #ffffff !important;
+  }
+  [data-theme="dark"] .zy-messages {
+    background: #142228 !important;
+  }
+  [data-theme="light"] .zy-messages {
+    background: #f8fafc !important;
   }
 
   .zy-header {
-    background: var(--primary-grad);
+    background: linear-gradient(135deg, #1F353B 0%, #31525B 60%, #203A43 100%) !important;
     position: relative;
     overflow: hidden;
+    border-bottom: 1px solid rgba(179, 222, 229, 0.25);
   }
   .zy-header::before {
     content: '';
@@ -152,18 +195,21 @@ const zyStyles = `
   }
 
   .zy-chip {
-    background: var(--bg-main);
+    background: var(--bg-card);
     border: 1.5px solid var(--border-color);
     border-radius: 20px;
-    padding: 6px 14px;
-    font-size: 11.5px;
+    padding: 8px 14px;
+    font-size: 13px;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--text-main);
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
     font-family: 'Outfit', sans-serif;
     letter-spacing: 0.2px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
   }
   .zy-chip:hover {
     background: var(--primary-grad);
@@ -313,10 +359,48 @@ const zyStyles = `
   .zy-messages::-webkit-scrollbar-thumb:hover {
     background: var(--primary);
   }
+  @media (max-width: 768px) {
+    .zy-fab {
+      bottom: 18px !important;
+      right: 18px !important;
+      width: 56px !important;
+      height: 56px !important;
+      min-width: 56px !important;
+      min-height: 56px !important;
+    }
+    .zy-header-btn {
+      width: 38px !important;
+      height: 38px !important;
+      min-width: 38px !important;
+      min-height: 38px !important;
+      font-size: 16px !important;
+    }
+    .zy-chip {
+      padding: 9px 16px !important;
+      font-size: 13px !important;
+    }
+    .zy-input {
+      font-size: 15px !important;
+      padding: 12px 14px !important;
+    }
+    .zy-send-btn {
+      width: 46px !important;
+      height: 46px !important;
+      min-width: 46px !important;
+      min-height: 46px !important;
+    }
+  }
 `;
 
 function AiChatBot() {
   const location = useLocation();
+  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleCheckMobile = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleCheckMobile);
+    return () => window.removeEventListener("resize", handleCheckMobile);
+  }, []);
   const role = sessionStorage.getItem("userRole");
   const path = location.pathname;
 
@@ -444,7 +528,7 @@ function AiChatBot() {
   const [messages, setMessages] = useState([
     {
       sender: "ai",
-      text: "Hey there! I'm Zy, your smart service assistant. 🤖✨\n\nDescribe any issue or service you need — like 'AC not cooling', 'bridal makeup', or 'house cleaning' — and I'll instantly match you with the best local experts!"
+      text: "Hey there! I'm Zy, your smart service assistant.\n\nDescribe any issue or service you need — like 'AC not cooling', 'bridal makeup', or 'house cleaning' — and I'll instantly match you with the best local experts!"
     }
   ]);
   const [inputText, setInputText] = useState("");
@@ -476,13 +560,13 @@ function AiChatBot() {
   }, []);
 
   const SUGGESTED_PROMPTS = [
-    { text: "❄️ AC not cooling", query: "AC is not cooling" },
-    { text: "🎁 Check Offers", query: "What are the latest offers?" },
-    { text: "🧹 House Cleaning", query: "Need deep house cleaning" },
-    { text: "💰 Pricing & Cost", query: "How much does it cost?" },
-    { text: "💄 Bridal Makeup", query: "Bridal Makeup" },
-    { text: "🛡️ Safety & Trust", query: "Are workers verified? really" },
-    { text: "!✋ support or help", query: "customer support" }
+    { text: "AC not cooling", query: "AC is not cooling", icon: <FaSnowflake style={{ fontSize: "11px", marginRight: "4px" }} /> },
+    { text: "Check Offers", query: "What are the latest offers?", icon: <FaGift style={{ fontSize: "11px", marginRight: "4px" }} /> },
+    { text: "House Cleaning", query: "Need deep house cleaning", icon: <FaBroom style={{ fontSize: "11px", marginRight: "4px" }} /> },
+    { text: "Pricing & Cost", query: "How much does it cost?", icon: <FaRupeeSign style={{ fontSize: "11px", marginRight: "4px" }} /> },
+    { text: "Bridal Makeup", query: "Bridal Makeup", icon: <FaMagic style={{ fontSize: "11px", marginRight: "4px" }} /> },
+    { text: "Safety & Trust", query: "Are workers verified? really", icon: <FaShieldAlt style={{ fontSize: "11px", marginRight: "4px" }} /> },
+    { text: "Support & Help", query: "customer support", icon: <FaHeadset style={{ fontSize: "11px", marginRight: "4px" }} /> }
   ];
 
   const levenshtein = (a, b) => {
@@ -986,8 +1070,6 @@ function AiChatBot() {
     }
   };
 
-  const isMobile = window.innerWidth <= 600;
-
   const renderBoldText = (text) => {
     if (!text) return "";
     const parts = text.split(/(\*\*.*?\*\*)/g);
@@ -1024,15 +1106,87 @@ function AiChatBot() {
   return (
     <div>
       {/* ── Zy Floating Action Button ── */}
-      <div className="zy-fab" onClick={() => setIsOpen(!isOpen)}>
-        <span className="zy-fab-icon">{isOpen ? "✕" : "🤖"}</span>
-      </div>
+      <button
+        type="button"
+        className="zy-fab"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label={isOpen ? "Close AI Assistant" : "Open AI Assistant"}
+        title={isOpen ? "Close AI Assistant" : "Open AI Assistant"}
+        style={{
+          width: isMobile ? "56px" : "60px",
+          height: isMobile ? "56px" : "60px",
+          minWidth: isMobile ? "56px" : "60px",
+          minHeight: isMobile ? "56px" : "60px",
+          borderRadius: "50%",
+          padding: 0,
+          border: "2px solid rgba(255, 255, 255, 0.45)",
+          background: "linear-gradient(135deg, #e68a00 0%, #ffa101 100%)",
+          boxShadow: "0 8px 24px rgba(230, 138, 0, 0.5), 0 0 16px rgba(255, 161, 1, 0.4)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          position: "fixed",
+          bottom: isMobile ? "18px" : "24px",
+          right: isMobile ? "18px" : "24px",
+          zIndex: 10000,
+          boxSizing: "border-box",
+          outline: "none"
+        }}
+      >
+        <span className="zy-fab-icon" style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "#ffffff" }}>
+          {isOpen ? (
+            <FaTimes style={{ fontSize: isMobile ? "20px" : "22px", color: "#ffffff", display: "block" }} />
+          ) : (
+            <FaWandMagicSparkles style={{ fontSize: isMobile ? "24px" : "26px", color: "#ffffff", display: "block" }} />
+          )}
+        </span>
+      </button>
+
+      {/* ── Mobile Dimmed Backdrop Overlay ── */}
+      {isOpen && isMobile && (
+        <div
+          onClick={() => setIsOpen(false)}
+          aria-label="Close chat overlay"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0, 0, 0, 0.65)",
+            backdropFilter: "blur(4px)",
+            WebkitBackdropFilter: "blur(4px)",
+            zIndex: 9999,
+            transition: "opacity 0.25s ease"
+          }}
+        />
+      )}
 
       {/* ── Zy Chat Window ── */}
       {isOpen && (
         <div
           className="zy-window"
-          style={{
+          style={isMobile ? {
+            position: "fixed",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            top: "auto",
+            width: "100%",
+            maxWidth: "100vw",
+            height: "82vh",
+            maxHeight: "90vh",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+            zIndex: 10000,
+            borderRadius: "24px 24px 0 0",
+            background: "var(--bg-card-solid, #152329)",
+            boxShadow: "0 -10px 40px rgba(0, 0, 0, 0.5)",
+            border: "1px solid var(--border-color)",
+            borderBottom: "none"
+          } : {
             position: "fixed",
             left: `${dimensions.x}px`,
             top: `${dimensions.y}px`,
@@ -1088,21 +1242,27 @@ function AiChatBot() {
             >
               <div
                 style={{
-                  width: "40px",
-                  height: "40px",
-                  borderRadius: "12px",
+                  width: "42px",
+                  height: "42px",
+                  minWidth: "42px",
+                  minHeight: "42px",
+                  borderRadius: "50%",
                   background:
-                    "linear-gradient(135deg, rgba(179,222,229,0.3) 0%, rgba(255,255,255,0.1) 100%)",
+                    "linear-gradient(135deg, #e68a00 0%, #ffa101 100%)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent:
                     "center",
-                  fontSize: "22px",
+                  fontSize: "20px",
+                  color: "white",
                   border:
-                    "1px solid rgba(179,222,229,0.2)",
+                    "1.5px solid rgba(255, 255, 255, 0.45)",
+                  boxShadow:
+                    "0 4px 12px rgba(255, 161, 1, 0.4)",
+                  flexShrink: 0
                 }}
               >
-                🤖
+                <FaWandMagicSparkles style={{ fontSize: "20px", color: "#ffffff" }} />
               </div>
 
               <div>
@@ -1153,6 +1313,7 @@ function AiChatBot() {
             >
               <button
                 type="button"
+                className="zy-header-btn"
                 onClick={(event) => {
                   event.stopPropagation();
                   clearChat();
@@ -1160,28 +1321,29 @@ function AiChatBot() {
                 aria-label="Clear chat"
                 title="Clear chat"
                 style={{
-                  background: "transparent",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  borderBottom: "none",
-                  boxShadow: "none",
+                  background: "rgba(255,255,255,0.15)",
+                  border: "1px solid rgba(255,255,255,0.25)",
                   padding: 0,
-                  borderRadius: "8px",
-                  color: "var(--bg-main)",
-                  width: "30px",
-                  height: "30px",
+                  borderRadius: "10px",
+                  color: "#ffffff",
+                  width: "36px",
+                  height: "36px",
+                  minWidth: "36px",
+                  minHeight: "36px",
                   cursor: "pointer",
-                  fontSize: "14px",
+                  fontSize: "15px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  transform: "none"
+                  transition: "all 0.2s ease"
                 }}
               >
-                🗑️
+                <FaTrashAlt style={{ fontSize: "14px", color: "#ffffff" }} />
               </button>
 
               <button
                 type="button"
+                className="zy-header-btn"
                 onClick={(event) => {
                   event.stopPropagation();
                   setIsOpen(false);
@@ -1189,24 +1351,24 @@ function AiChatBot() {
                 aria-label="Close chat"
                 title="Close"
                 style={{
-                  background: "transparent",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  borderBottom: "none",
-                  boxShadow: "none",
+                  background: "rgba(255,255,255,0.15)",
+                  border: "1px solid rgba(255,255,255,0.25)",
                   padding: 0,
-                  borderRadius: "8px",
-                  color: "var(--bg-main)",
-                  width: "30px",
-                  height: "30px",
+                  borderRadius: "10px",
+                  color: "#ffffff",
+                  width: "36px",
+                  height: "36px",
+                  minWidth: "36px",
+                  minHeight: "36px",
                   cursor: "pointer",
                   fontSize: "16px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  transform: "none"
+                  transition: "all 0.2s ease"
                 }}
               >
-                ×
+                <FaTimes style={{ fontSize: "16px", color: "#ffffff" }} />
               </button>
             </div>
           </div>
@@ -1342,7 +1504,7 @@ function AiChatBot() {
                         >
                           {message.linkText ||
                             "Open"}{" "}
-                          →
+                          <FaArrowRight style={{ fontSize: "11px", marginLeft: "4px" }} />
                         </Link>
                       </div>
                     )}
@@ -1499,14 +1661,19 @@ function AiChatBot() {
                                             background:
                                               "rgba(49,82,91,0.08)",
                                             padding:
-                                              "1px 6px",
+                                              "2px 6px",
                                             borderRadius:
                                               "4px",
                                             fontSize:
                                               "10.5px",
+                                            display:
+                                              "inline-flex",
+                                            alignItems:
+                                              "center",
+                                            gap: "3px"
                                           }}
                                         >
-                                          📍{" "}
+                                          <FaMapMarkerAlt style={{ fontSize: "9px" }} />
                                           {
                                             worker.city
                                           }
@@ -1539,14 +1706,14 @@ function AiChatBot() {
                                       "10px",
                                   }}
                                 >
-                                  <span>
-                                    ⭐{" "}
+                                  <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                    <FaStar style={{ fontSize: "11px", color: "#f59e0b" }} />
                                     {worker.rating ||
                                       "N/A"}
                                   </span>
 
-                                  <span>
-                                    🛠️{" "}
+                                  <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                    <FaTools style={{ fontSize: "11px" }} />
                                     {worker.experience ||
                                       "Exp."}
                                   </span>
@@ -1557,9 +1724,14 @@ function AiChatBot() {
                                         "#31525B",
                                       fontWeight:
                                         700,
+                                      display:
+                                        "inline-flex",
+                                      alignItems:
+                                        "center",
+                                      gap: "2px"
                                     }}
                                   >
-                                    💰 ₹
+                                    <FaRupeeSign style={{ fontSize: "11px" }} />
                                     {worker.price ||
                                       350}
                                   </span>
@@ -1669,7 +1841,7 @@ function AiChatBot() {
                           >
                             {message.linkText ||
                               "View"}{" "}
-                            →
+                            <FaArrowRight style={{ fontSize: "11px", marginLeft: "4px" }} />
                           </Link>
                         </div>
                       )}
@@ -1751,16 +1923,17 @@ function AiChatBot() {
           <div
             style={{
               display: "flex",
-              gap: "6px",
-              padding: "8px 14px",
+              gap: "8px",
+              padding: "10px 14px",
               borderTop:
                 "1px solid var(--border-color)",
               overflowX: "auto",
               whiteSpace:
                 "nowrap",
               background:
-                "transparent",
+                "var(--bg-card)",
               flexShrink: 0,
+              scrollbarWidth: "none"
             }}
           >
             {SUGGESTED_PROMPTS.map(
@@ -1777,8 +1950,13 @@ function AiChatBot() {
                       prompt.query
                     )
                   }
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center"
+                  }}
                 >
-                  {prompt.text}
+                  {prompt.icon}
+                  <span>{prompt.text}</span>
                 </button>
               )
             )}
@@ -1795,11 +1973,11 @@ function AiChatBot() {
               borderTop:
                 "1px solid var(--border-color)",
               display: "flex",
-              gap: "8px",
+              gap: "10px",
               alignItems:
                 "center",
               background:
-                "transparent",
+                "var(--bg-card)",
               flexShrink: 0,
             }}
           >
@@ -1826,6 +2004,14 @@ function AiChatBot() {
                 handleInputKeyDown
               }
               aria-label="Ask Zy AI"
+              style={{
+                fontSize: isMobile ? "15px" : "14px",
+                padding: "12px 16px",
+                borderRadius: "14px",
+                border: "1.5px solid var(--border-color)",
+                background: "var(--bg-main)",
+                color: "var(--text-main)"
+              }}
             />
 
             <button
@@ -1840,8 +2026,23 @@ function AiChatBot() {
               }
               title="Send message"
               aria-label="Send message"
+              style={{
+                width: "46px",
+                height: "46px",
+                minWidth: "46px",
+                minHeight: "46px",
+                borderRadius: "14px",
+                background: "linear-gradient(135deg, #e68a00 0%, #ffa101 100%)",
+                border: "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                boxShadow: "0 4px 12px rgba(255, 161, 1, 0.4)",
+                color: "#ffffff"
+              }}
             >
-              ➤
+              <FaPaperPlane style={{ fontSize: "16px", color: "#ffffff" }} />
             </button>
           </div>
 

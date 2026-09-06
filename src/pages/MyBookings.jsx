@@ -1,20 +1,50 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
+import {
+  FaHammer,
+  FaWrench,
+  FaBolt,
+  FaSnowflake,
+  FaBroom,
+  FaPaintRoller,
+  FaTruck,
+  FaStethoscope,
+  FaCalendarAlt,
+  FaClock,
+  FaRupeeSign,
+  FaUserTie,
+  FaCheckCircle,
+  FaHourglassHalf,
+  FaTimesCircle,
+  FaBan,
+  FaSyncAlt,
+  FaCommentDots,
+  FaStar,
+  FaExclamationTriangle,
+  FaArrowLeft,
+  FaClipboardList,
+  FaCheckDouble,
+  FaPhoneAlt,
+  FaMoon,
+  FaSun,
+  FaCheck,
+  FaInfoCircle
+} from "react-icons/fa";
 
 const serviceIcons = {
-  "Carpentry": "🪚",
-  "Plumbing": "🔧",
-  "Electrical": "⚡",
-  "AC Repair": "❄️",
-  "House Cleaning": "🧹",
-  "Interior Painting": "🎨",
-  "Packers & Movers": "📦",
-  "Doctors & Medical": "🩺"
+  "Carpentry": <FaHammer />,
+  "Plumbing": <FaWrench />,
+  "Electrical": <FaBolt />,
+  "AC Repair": <FaSnowflake />,
+  "House Cleaning": <FaBroom />,
+  "Interior Painting": <FaPaintRoller />,
+  "Packers & Movers": <FaTruck />,
+  "Doctors & Medical": <FaStethoscope />
 };
 
 function MyBookings() {
   const [liveBookings, setLiveBookings] = useState([]);
+  const [selectedFilter, setSelectedFilter] = useState("All");
   const [reviewedIds, setReviewedIds] = useState(new Set());
   const navigate = useNavigate();
 
@@ -59,7 +89,7 @@ function MyBookings() {
 
   const [activeRescheduleBooking, setActiveRescheduleBooking] = useState(null);
   const [rescheduleDate, setRescheduleDate] = useState("");
-  const [rescheduleSlot, setRescheduleSlot] = useState("9 AM");
+  const [rescheduleSlot, setRescheduleSlot] = useState("");
   const [submittingReschedule, setSubmittingReschedule] = useState(false);
   const [workerBusySlots, setWorkerBusySlots] = useState([]);
 
@@ -258,15 +288,19 @@ function MyBookings() {
     if (isInstantService(booking)) {
       return { eligible: false, isInstant: true, reason: "Instant dispatch services cannot be rescheduled as workers are dispatched immediately." };
     }
+    const count = booking.rescheduleCount || booking.reschedule_count || 0;
+    if (count >= 2) {
+      return { eligible: false, isInstant: false, reason: "Maximum reschedule limit of 2 times reached! Further rescheduling is not permitted." };
+    }
     const scheduledDateTime = parseBookingDateTime(booking.date, booking.time);
     if (scheduledDateTime && !isNaN(scheduledDateTime.getTime())) {
       const now = new Date();
       const diffHours = (scheduledDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
       if (diffHours < 2) {
-        return { eligible: false, isInstant: false, reason: "Rescheduling is only allowed up to 2 hours before the scheduled time." };
+        return { eligible: false, isInstant: false, reason: "Rescheduling is only accepted at least 2 hours before the scheduled service time." };
       }
     }
-    return { eligible: true, isInstant: false, reason: "" };
+    return { eligible: true, isInstant: false, reason: "", count, remaining: 2 - count };
   };
 
   useEffect(() => {
@@ -291,14 +325,77 @@ function MyBookings() {
     loadWorkerSchedule();
   }, [activeRescheduleBooking]);
 
-  const isWorkerSlotOccupied = (slotLabel) => {
-    if (!activeRescheduleBooking || !rescheduleDate) return false;
+  const RESCHEDULE_TIME_SLOTS = [
+    { label: "9 AM", hour: 9 },
+    { label: "11 AM", hour: 11 },
+    { label: "1 PM", hour: 13 },
+    { label: "3 PM", hour: 15 },
+    { label: "5 PM", hour: 17 }
+  ];
+
+  const getMinRescheduleDate = () => {
+    const now = new Date();
+    // If all slots for today have completed (current hour >= 17 or no remaining slot), minimum date is tomorrow
+    const hasRemainingSlotToday = RESCHEDULE_TIME_SLOTS.some(s => s.hour > now.getHours());
+    if (!hasRemainingSlotToday) {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const yyyy = tomorrow.getFullYear();
+      const mm = String(tomorrow.getMonth() + 1).padStart(2, "0");
+      const dd = String(tomorrow.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  const getMaxRescheduleDate = () => {
+    const base = new Date(getMinRescheduleDate());
+    base.setDate(base.getDate() + 9);
+    const yyyy = base.getFullYear();
+    const mm = String(base.getMonth() + 1).padStart(2, "0");
+    const dd = String(base.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  const isRescheduleSlotPast = (slotLabel, checkDate = rescheduleDate) => {
+    if (!checkDate) return false;
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+
+    if (checkDate < todayStr || checkDate < getMinRescheduleDate()) return true;
+    if (checkDate === todayStr) {
+      const slotObj = RESCHEDULE_TIME_SLOTS.find(s => s.label === slotLabel);
+      if (slotObj) {
+        return slotObj.hour <= now.getHours();
+      }
+    }
+    return false;
+  };
+
+  const isWorkerSlotOccupied = (slotLabel, dateOverride = rescheduleDate) => {
+    if (!activeRescheduleBooking || !dateOverride) return false;
     const currentBid = activeRescheduleBooking._id || activeRescheduleBooking.id;
     return workerBusySlots.some(b => {
       const bId = b._id || b.id;
       if (bId === currentBid) return false;
-      return b.date === rescheduleDate && b.time === slotLabel && !["Cancelled", "Rejected", "Refund Declined"].includes(b.status);
+      return b.date === dateOverride && b.time === slotLabel && !["Cancelled", "Rejected", "Refund Declined"].includes(b.status);
     });
+  };
+
+  const getNextAvailableRescheduleSlot = (targetDate) => {
+    if (!targetDate) return "";
+    for (const s of RESCHEDULE_TIME_SLOTS) {
+      if (!isRescheduleSlotPast(s.label, targetDate) && !isWorkerSlotOccupied(s.label, targetDate)) {
+        return s.label;
+      }
+    }
+    return "";
   };
 
   const getAuthToken = () => {
@@ -317,10 +414,28 @@ function MyBookings() {
 
   const handleConfirmReschedule = async () => {
     if (!activeRescheduleBooking || !rescheduleDate || !rescheduleSlot) {
-      alert("Please select a valid date and time slot.");
+      alert("Please select a valid date and an available time slot.");
       return;
     }
-    if (isWorkerSlotOccupied(rescheduleSlot)) {
+    const currentCount = activeRescheduleBooking.rescheduleCount || activeRescheduleBooking.reschedule_count || 0;
+    if (currentCount >= 2) {
+      alert("⚠️ Reschedule Limit Exceeded!\n\nYou have already rescheduled this appointment 2 times. Maximum reschedule limit reached.");
+      return;
+    }
+    const origDateTime = parseBookingDateTime(activeRescheduleBooking.date, activeRescheduleBooking.time);
+    if (origDateTime && !isNaN(origDateTime.getTime())) {
+      const now = new Date();
+      const diffHours = (origDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+      if (diffHours < 2) {
+        alert("⚠️ Reschedule Restriction!\n\nRescheduling is only accepted at least 2 hours before the scheduled service time.");
+        return;
+      }
+    }
+    if (isRescheduleSlotPast(rescheduleSlot, rescheduleDate)) {
+      alert(`⚠️ Time Slot Completed / Expired!\n\nThe slot "${rescheduleSlot}" on ${rescheduleDate} has already passed or completed. Please choose an upcoming available time slot.`);
+      return;
+    }
+    if (isWorkerSlotOccupied(rescheduleSlot, rescheduleDate)) {
       alert(`⚠️ Professional Booked / Occupied!\n\n${activeRescheduleBooking.workerName || activeRescheduleBooking.worker_name || "The professional"} is already scheduled for another service on ${rescheduleDate} at ${rescheduleSlot}. Please choose another available time slot.`);
       return;
     }
@@ -340,7 +455,9 @@ function MyBookings() {
       try { data = await res.json(); } catch (err) { data = {}; }
 
       if (res.ok) {
-        alert(`📅 Booking Rescheduled Successfully!\n\nYour ${activeRescheduleBooking.service} service has been rescheduled to ${rescheduleDate} at ${rescheduleSlot} without any penalty! 🎉`);
+        const nextCount = currentCount + 1;
+        setLiveBookings(prev => prev.map(b => (b._id === bid || b.id === bid) ? { ...b, date: rescheduleDate, time: rescheduleSlot, rescheduleCount: nextCount } : b));
+        alert(`📅 Booking Rescheduled Successfully!\n\nYour ${activeRescheduleBooking.service} service has been rescheduled to ${rescheduleDate} at ${rescheduleSlot} without any penalty! (${nextCount}/2 reschedules used) 🎉`);
         setActiveRescheduleBooking(null);
         syncBookings();
       } else {
@@ -362,350 +479,570 @@ function MyBookings() {
     }
   };
 
-  const getStatusStyles = (status) => {
+  const renderStatusBadge = (status) => {
+    let label = status;
+    let icon = <FaInfoCircle style={{ fontSize: "11px" }} />;
+    let bg = "rgba(100, 116, 139, 0.12)";
+    let color = "var(--text-secondary)";
+    let border = "1px solid rgba(100, 116, 139, 0.3)";
+
     switch (status) {
+      case "Pending":
+      case "Upcoming":
+        label = "Waiting for worker to accept";
+        icon = <FaHourglassHalf style={{ fontSize: "11px" }} />;
+        bg = "rgba(217, 119, 6, 0.12)";
+        color = "#d97706";
+        border = "1px solid rgba(217, 119, 6, 0.35)";
+        break;
+      case "Confirmed":
+        label = "Booking Confirmed";
+        icon = <FaCheckCircle style={{ fontSize: "11px" }} />;
+        bg = "rgba(16, 185, 129, 0.12)";
+        color = "#10b981";
+        border = "1px solid rgba(16, 185, 129, 0.35)";
+        break;
+      case "Accepted":
+        label = "Worker Assigned";
+        icon = <FaUserTie style={{ fontSize: "11px" }} />;
+        bg = "rgba(16, 185, 129, 0.12)";
+        color = "#10b981";
+        border = "1px solid rgba(16, 185, 129, 0.35)";
+        break;
+      case "On the Way":
+        label = "Worker On the Way";
+        icon = <FaTruck style={{ fontSize: "11px" }} />;
+        bg = "rgba(16, 185, 129, 0.12)";
+        color = "#10b981";
+        border = "1px solid rgba(16, 185, 129, 0.35)";
+        break;
+      case "Started":
+        label = "Service in Progress";
+        icon = <FaBolt style={{ fontSize: "11px" }} />;
+        bg = "rgba(59, 130, 246, 0.12)";
+        color = "#3b82f6";
+        border = "1px solid rgba(59, 130, 246, 0.35)";
+        break;
       case "Completed":
       case "Paid Out":
-        return { color: "var(--primary)", bg: "var(--info-light)" };
-      case "Accepted":
-      case "Confirmed":
-        return { color: "var(--success)", bg: "var(--success-light)" };
+        label = "Service Completed";
+        icon = <FaCheckDouble style={{ fontSize: "11px" }} />;
+        bg = "rgba(59, 130, 246, 0.12)";
+        color = "#3b82f6";
+        border = "1px solid rgba(59, 130, 246, 0.35)";
+        break;
+      case "Cancellation Pending":
+        label = "Cancellation in Review";
+        icon = <FaClock style={{ fontSize: "11px" }} />;
+        bg = "rgba(234, 88, 12, 0.12)";
+        color = "#ea580c";
+        border = "1px solid rgba(234, 88, 12, 0.35)";
+        break;
+      case "Cancelled":
+        label = "Booking Cancelled";
+        icon = <FaTimesCircle style={{ fontSize: "11px" }} />;
+        bg = "rgba(239, 68, 68, 0.12)";
+        color = "#ef4444";
+        border = "1px solid rgba(239, 68, 68, 0.35)";
+        break;
       case "Rejected":
       case "Refund Declined":
-        return { color: "var(--danger)", bg: "var(--danger-light)" };
-      case "Cancelled":
       case "Escrow Declined":
-        return { color: "var(--text-secondary)", bg: "var(--bg-card-hover)" };
-      case "Cancellation Pending":
-        return { color: "var(--warning)", bg: "var(--warning-light)" };
-      case "Upcoming":
       default:
-        return { color: "var(--warning)", bg: "var(--warning-light)" };
+        label = status === "Rejected" ? "Declined by Worker" : status;
+        icon = <FaBan style={{ fontSize: "11px" }} />;
+        bg = "rgba(239, 68, 68, 0.12)";
+        color = "#ef4444";
+        border = "1px solid rgba(239, 68, 68, 0.35)";
+        break;
     }
+
+    return (
+      <span
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "6px",
+          padding: "5px 12px",
+          borderRadius: "16px",
+          fontSize: "12px",
+          fontWeight: 700,
+          backgroundColor: bg,
+          color: color,
+          border: border,
+          whiteSpace: "nowrap"
+        }}
+      >
+        <span style={{ display: "inline-flex", alignItems: "center", color: color }}>{icon}</span>
+        <span style={{ color: color, fontWeight: 700 }}>{label}</span>
+      </span>
+    );
   };
 
-  // Human-readable booking status labels
-  const statusHumanLabel = (status) => {
-    const map = {
-      "Pending":              "⏳ Waiting for worker to accept",
-      "Accepted":             "✅ Confirmed — Worker is coming",
-      "Confirmed":            "✅ Confirmed — Worker is coming",
-      "Upcoming":             "📌 Scheduled — Awaiting service day",
-      "On the Way":           "🚧 Worker is on the way!",
-      "Started":              "🔧 Service in progress",
-      "Completed":            "🎉 Service completed",
-      "Paid Out":             "🎉 Service completed & paid",
-      "Cancelled":            "❌ Cancelled",
-      "Cancellation Pending": "⏳ Cancellation under review",
-      "Rejected":             "⚠️ Worker declined this booking",
-      "Refund Declined":      "⚠️ Refund request declined",
-      "Escrow Declined":      "⚠️ Payment declined",
-    };
-    return map[status] || status;
+  const counts = {
+    All: liveBookings.length,
+    Confirmed: liveBookings.filter(b => b.status === "Confirmed" || b.status === "Accepted" || b.status === "On the Way" || b.status === "Started").length,
+    Pending: liveBookings.filter(b => b.status === "Pending" || b.status === "Upcoming").length,
+    Done: liveBookings.filter(b => b.status === "Completed" || b.status === "Paid Out").length,
+    Cancelled: liveBookings.filter(b => b.status === "Cancelled" || b.status === "Cancellation Pending" || b.status === "Rejected" || b.status === "Refund Declined" || b.status === "Escrow Declined").length
   };
+
+  const filterTabs = [
+    {
+      id: "All",
+      label: `All: ${counts.All}`,
+      icon: <FaClipboardList style={{ fontSize: "12px" }} />,
+      activeBg: "var(--primary, #2563eb)",
+      activeColor: "#ffffff",
+      defaultBg: "var(--bg-card)",
+      defaultColor: "var(--text-main)",
+      defaultBorder: "1px solid var(--border-color)"
+    },
+    {
+      id: "Confirmed",
+      label: `Confirmed: ${counts.Confirmed}`,
+      icon: <FaCheckCircle style={{ fontSize: "12px" }} />,
+      activeBg: "#16a34a",
+      activeColor: "#ffffff",
+      defaultBg: "rgba(22, 163, 74, 0.12)",
+      defaultColor: "#16a34a",
+      defaultBorder: "1px solid rgba(22, 163, 74, 0.35)"
+    },
+    {
+      id: "Pending",
+      label: `Pending: ${counts.Pending}`,
+      icon: <FaHourglassHalf style={{ fontSize: "12px" }} />,
+      activeBg: "#d97706",
+      activeColor: "#ffffff",
+      defaultBg: "rgba(217, 119, 6, 0.12)",
+      defaultColor: "#d97706",
+      defaultBorder: "1px solid rgba(217, 119, 6, 0.35)"
+    },
+    {
+      id: "Completed",
+      label: `Done: ${counts.Done}`,
+      icon: <FaCheckDouble style={{ fontSize: "12px" }} />,
+      activeBg: "#2563eb",
+      activeColor: "#ffffff",
+      defaultBg: "rgba(37, 99, 235, 0.12)",
+      defaultColor: "#2563eb",
+      defaultBorder: "1px solid rgba(37, 99, 235, 0.35)"
+    },
+    {
+      id: "Cancelled",
+      label: `Cancelled: ${counts.Cancelled}`,
+      icon: <FaTimesCircle style={{ fontSize: "12px" }} />,
+      activeBg: "#dc2626",
+      activeColor: "#ffffff",
+      defaultBg: "rgba(220, 38, 38, 0.12)",
+      defaultColor: "#dc2626",
+      defaultBorder: "1px solid rgba(220, 38, 38, 0.35)"
+    }
+  ];
 
   return (
     <div
       style={{
         minHeight: "100vh",
-        backgroundColor: "var(--bg-card-hover)",
-        fontFamily: "'Inter', 'Segoe UI', sans-serif"
+        backgroundColor: "var(--bg-main)",
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        color: "var(--text-main)"
       }}
     >
-      {/* Header */}
+      {/* Clean Official Header */}
       <div
-        className="dashboard-header-block"
         style={{
-          background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
-          color: "white",
-          padding: "40px 24px 30px 24px"
+          backgroundColor: "var(--bg-card)",
+          borderBottom: "1px solid var(--border-color)",
+          padding: "24px 20px"
         }}
       >
-        <Link
-          to="/"
-          style={{
-            color: "var(--text-secondary)",
-            textDecoration: "none",
-            fontSize: "14px",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "6px",
-            marginBottom: "16px"
-          }}
-        >
-          ← Back to Home
-        </Link>
-        <h1 style={{ margin: "0 0 6px 0", fontSize: "28px", fontWeight: 800 }}>
-          📋 My Bookings
-        </h1>
-        <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "14px" }}>
-          Track and manage all your service bookings
-        </p>
+        <div style={{ maxWidth: "720px", margin: "0 auto" }}>
+          <Link
+            to="/"
+            style={{
+              color: "var(--primary, #2563eb)",
+              textDecoration: "none",
+              fontSize: "13px",
+              fontWeight: 600,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              marginBottom: "12px"
+            }}
+          >
+            <FaArrowLeft style={{ fontSize: "11px" }} />
+            <span style={{ color: "inherit" }}>Back to Home</span>
+          </Link>
+          <h1 style={{ margin: "0 0 4px 0", fontSize: "24px", fontWeight: 700, color: "var(--text-main)", display: "flex", alignItems: "center", gap: "10px" }}>
+            <FaClipboardList style={{ color: "var(--primary, #2563eb)", fontSize: "22px" }} />
+            <span>My Bookings</span>
+          </h1>
+          <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "13.5px" }}>
+            Track and manage all your service bookings
+          </p>
+        </div>
       </div>
 
-      {/* Content */}
+      {/* Main Content Area */}
       <div
-        className="bookings-content dashboard-content"
         style={{
-          maxWidth: "700px",
+          maxWidth: "720px",
           margin: "0 auto",
-          padding: "28px 20px"
+          padding: "20px 16px 40px 16px"
         }}
       >
-        {/* Summary Pills */}
-        <div style={{ display: "flex", gap: "10px", marginBottom: "24px", flexWrap: "wrap" }}>
-          {[
-            { label: "All",       count: liveBookings.length,                                                                                                            color: "var(--text-main)",      bg: "var(--bg-card-hover)" },
-            { label: "✅ Confirmed", count: liveBookings.filter(b => b.status === "Confirmed" || b.status === "Accepted").length,                                          color: "var(--success)",        bg: "var(--success-light)" },
-            { label: "⏳ Pending",   count: liveBookings.filter(b => b.status === "Pending" || b.status === "Upcoming").length,                                            color: "var(--warning)",        bg: "var(--warning-light)" },
-            { label: "🎉 Done",      count: liveBookings.filter(b => b.status === "Completed" || b.status === "Paid Out").length,                                          color: "var(--primary)",        bg: "var(--info-light)" },
-            { label: "❌ Cancelled", count: liveBookings.filter(b => b.status === "Cancelled" || b.status === "Cancellation Pending" || b.status === "Rejected").length, color: "var(--danger)",         bg: "var(--danger-light)" }
-          ].map(({ label, count, color, bg }) => (
-            <div key={label} style={{ backgroundColor: bg, color, padding: "6px 14px", borderRadius: "20px", fontSize: "13px", fontWeight: 600 }}>
-              {label}: <strong>{count}</strong>
-            </div>
-          ))}
+        {/* Simple & Clean Filter Pills with Guaranteed High-Contrast Text in All Modes */}
+        <div
+          style={{
+            display: "flex",
+            gap: "8px",
+            flexWrap: "wrap",
+            alignItems: "center",
+            marginBottom: "20px"
+          }}
+        >
+          {filterTabs.map((tab) => {
+            const isSelected = selectedFilter === tab.id;
+            const textColor = isSelected ? tab.activeColor : tab.defaultColor;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setSelectedFilter(tab.id)}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "20px",
+                  border: isSelected ? `1.5px solid ${tab.activeBg}` : tab.defaultBorder,
+                  backgroundColor: isSelected ? tab.activeBg : tab.defaultBg,
+                  color: textColor,
+                  fontWeight: 700,
+                  fontSize: "13px",
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  boxShadow: isSelected ? "0 2px 8px rgba(0, 0, 0, 0.15)" : "none"
+                }}
+              >
+                <span style={{ display: "inline-flex", alignItems: "center", color: textColor }}>
+                  {tab.icon}
+                </span>
+                <span style={{ color: textColor, fontWeight: 700, fontSize: "13px" }}>
+                  {tab.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Booking Cards */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          {liveBookings.length === 0 ? (
-            <div className="empty-state">
-              <span className="empty-state-icon">📋</span>
-              <h3>No bookings yet</h3>
-              <p>You haven't booked any service yet. Find a worker and book your first service!</p>
-              <Link to="/">Book a Service →</Link>
-            </div>
-          ) : (
-            liveBookings.map((booking) => {
-              const { color, bg } = getStatusStyles(booking.status);
+        {/* Bookings List */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          {(() => {
+            const filtered = liveBookings.filter(b => {
+              if (selectedFilter === "All") return true;
+              if (selectedFilter === "Pending") return b.status === "Pending" || b.status === "Upcoming";
+              if (selectedFilter === "Confirmed") return b.status === "Confirmed" || b.status === "Accepted" || b.status === "On the Way" || b.status === "Started";
+              if (selectedFilter === "Completed") return b.status === "Completed" || b.status === "Paid Out";
+              if (selectedFilter === "Cancelled") return b.status === "Cancelled" || b.status === "Cancellation Pending" || b.status === "Rejected" || b.status === "Refund Declined" || b.status === "Escrow Declined";
+              return true;
+            });
+
+            if (filtered.length === 0) {
+              return (
+                <div
+                  style={{
+                    padding: "40px 20px",
+                    textAlign: "center",
+                    backgroundColor: "var(--bg-card)",
+                    borderRadius: "12px",
+                    border: "1px solid var(--border-color)"
+                  }}
+                >
+                  <div style={{ fontSize: "36px", color: "var(--text-secondary)", opacity: 0.6, marginBottom: "12px" }}>
+                    <FaClipboardList />
+                  </div>
+                  <h3 style={{ margin: "0 0 6px 0", fontSize: "16px", fontWeight: 700, color: "var(--text-main)" }}>
+                    {selectedFilter === "All" ? "No bookings yet" : `No ${selectedFilter.toLowerCase()} bookings`}
+                  </h3>
+                  <p style={{ margin: "0 0 16px 0", color: "var(--text-secondary)", fontSize: "13.5px" }}>
+                    {selectedFilter === "All"
+                      ? "You haven't booked any services yet."
+                      : "No service bookings found matching this filter."}
+                  </p>
+                  <Link
+                    to="/"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      padding: "8px 18px",
+                      backgroundColor: "var(--primary, #2563eb)",
+                      color: "#ffffff",
+                      borderRadius: "8px",
+                      textDecoration: "none",
+                      fontWeight: 700,
+                      fontSize: "13px"
+                    }}
+                  >
+                    <span>Book a Service →</span>
+                  </Link>
+                </div>
+              );
+            }
+
+            return filtered.map((booking) => {
               const bid = booking._id || booking.id;
               const isReviewed = reviewedIds.has(bid);
+              const count = booking.rescheduleCount || booking.reschedule_count || 0;
+              const reschStatus = checkRescheduleEligibility(booking);
 
               return (
                 <div
                   key={bid}
-                  className="booking-card"
                   style={{
                     backgroundColor: "var(--bg-card)",
-                    borderRadius: "14px",
-                    padding: "20px",
-                    boxShadow: "0 2px 12px rgba(0,0,0,0.07)",
+                    borderRadius: "12px",
+                    padding: "18px 20px",
                     border: "1px solid var(--border-color)",
-                    transition: "box-shadow 0.2s",
-                    cursor: "default"
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.04)"
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 6px 24px rgba(0,0,0,0.12)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.07)")}
                 >
-                  {/* Card Header */}
+                  {/* Service Header Row */}
                   <div
-                    className="booking-card-header"
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "flex-start",
-                      marginBottom: "14px"
+                      gap: "12px",
+                      flexWrap: "wrap",
+                      marginBottom: "12px"
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <span style={{ fontSize: "28px" }}>
-                        {serviceIcons[booking.service] || "🛠️"}
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      <span style={{
+                        fontSize: "20px",
+                        width: "38px",
+                        height: "38px",
+                        borderRadius: "10px",
+                        backgroundColor: "rgba(37, 99, 235, 0.08)",
+                        color: "var(--primary, #2563eb)",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0
+                      }}>
+                        {serviceIcons[booking.service] || <FaWrench />}
                       </span>
                       <div>
-                        <h3 style={{ margin: 0, fontSize: "17px", fontWeight: 700, color: "var(--text-main)" }}>
+                        <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "var(--text-main)" }}>
                           {booking.service}
                         </h3>
-                        <p style={{ margin: "3px 0 0 0", fontSize: "13px", color: "var(--text-secondary)" }}>
-                          👷 Professional: <strong>{booking.workerName || booking.worker_name || "Verified Professional"}</strong>
-                        </p>
+                        <div style={{ fontSize: "13.5px", color: "var(--text-secondary)", marginTop: "3px", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                          <FaUserTie style={{ fontSize: "11px", color: "var(--text-secondary)" }} />
+                          <span style={{ color: "var(--text-secondary)" }}>
+                            Professional: <strong style={{ color: "var(--text-main)" }}>{booking.workerName || booking.worker_name || "Verified Professional"}</strong>
+                          </span>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Status Badge - human readable */}
-                    <span
-                      style={{
-                        backgroundColor: bg,
-                        color,
-                        padding: "5px 12px",
-                        borderRadius: "20px",
-                        fontSize: "12px",
-                        fontWeight: 700,
-                        whiteSpace: "nowrap",
-                        maxWidth: "200px",
-                        textAlign: "center"
-                      }}
-                    >
-                      {statusHumanLabel(booking.status)}
-                    </span>
+                    <div>
+                      {renderStatusBadge(booking.status)}
+                    </div>
                   </div>
 
-                  {/* Details Row */}
+                  {/* Clean Simple Details with Official UI Symbols */}
                   <div
-                    className="booking-card-details"
                     style={{
                       display: "flex",
-                      gap: "20px",
-                      flexWrap: "wrap",
-                      fontSize: "13px",
+                      flexDirection: "column",
+                      gap: "6px",
+                      fontSize: "13.5px",
                       color: "var(--text-secondary)",
-                      paddingTop: "12px",
-                      borderTop: "1px solid var(--border-color)"
+                      marginBottom: "14px"
                     }}
                   >
-                    <span>📅 Date: {booking.date}</span>
-                    <span>🕐 Time: {booking.time}</span>
-                    <span style={{ fontWeight: 700, color: "var(--primary)" }}>💰 Cost: ₹{booking.price || booking.amount || 0}</span>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                      <FaCalendarAlt style={{ color: "var(--primary, #2563eb)", fontSize: "12px" }} />
+                      <span style={{ color: "var(--text-secondary)" }}>Date: <strong style={{ color: "var(--text-main)" }}>{booking.date}</strong></span>
+                    </div>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                      <FaClock style={{ color: "var(--primary, #2563eb)", fontSize: "12px" }} />
+                      <span style={{ color: "var(--text-secondary)" }}>Time: <strong style={{ color: "var(--text-main)" }}>{booking.time}</strong></span>
+                    </div>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                      <FaRupeeSign style={{ color: "var(--primary, #2563eb)", fontSize: "12px" }} />
+                      <span style={{ color: "var(--text-secondary)" }}>Cost: <strong style={{ color: "var(--text-main)" }}>₹{booking.price || booking.amount || 0}</strong></span>
+                    </div>
+                    {count > 0 && (
+                      <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                        <FaSyncAlt style={{ color: count >= 2 ? "#dc2626" : "#d97706", fontSize: "12px" }} />
+                        <span style={{ color: "var(--text-secondary)" }}>Rescheduled: <strong style={{ color: count >= 2 ? "#dc2626" : "#d97706" }}>{count}/2 times used</strong></span>
+                      </div>
+                    )}
                   </div>
 
-                  {(booking.status === "Completed" || booking.status === "Paid Out") && (
-                    <div style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px dashed #cbd5e1", display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
-                      <button
-                        onClick={() => handleReview(booking)}
-                        disabled={isReviewed}
-                        style={{
-                          backgroundColor: isReviewed ? "#f1f5f9" : "#f59e0b",
-                          color: isReviewed ? "#94a3b8" : "white",
-                          border: "none",
-                          padding: "8px 16px",
-                          borderRadius: "8px",
-                          fontWeight: "bold",
-                          cursor: isReviewed ? "default" : "pointer",
-                          fontSize: "13px",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "6px"
-                        }}
-                      >
-                        {isReviewed ? "✅ Review Submitted & Cashback Claimed" : "⭐ Leave Review & Earn ₹50 Wallet Cashback"}
-                      </button>
-
-                      {isReviewed && booking.status !== "Paid Out" && (
+                  {/* Divider line */}
+                  <div style={{ borderTop: "1px dashed var(--border-color)", paddingTop: "14px", display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+                    
+                    {/* Action buttons for active bookings */}
+                    {!["Completed", "Paid Out", "Cancelled", "Rejected", "Cancellation Pending", "Refund Declined", "Escrow Declined"].includes(booking.status) && (
+                      <>
                         <button
-                          onClick={() => setActiveComplaintBooking(booking)}
+                          type="button"
+                          onClick={() => setActiveCancelBooking(booking)}
                           style={{
-                            backgroundColor: "var(--danger-light)",
-                            color: "var(--danger)",
-                            border: "1px solid #fecaca",
+                            backgroundColor: "rgba(239, 68, 68, 0.1)",
+                            color: "#ef4444",
+                            border: "1px solid rgba(239, 68, 68, 0.35)",
                             padding: "8px 16px",
                             borderRadius: "8px",
-                            fontWeight: "bold",
+                            fontWeight: 700,
                             cursor: "pointer",
                             fontSize: "13px",
                             display: "inline-flex",
                             alignItems: "center",
-                            gap: "6px",
-                            transition: "all 0.2s"
+                            gap: "6px"
                           }}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#fecaca"}
-                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#fee2e2"}
                         >
-                          ⚠️ Report Grievance
+                          <FaBan style={{ fontSize: "11px", color: "#ef4444" }} />
+                          <span style={{ color: "#ef4444", fontWeight: 700 }}>Cancel Booking & Refund</span>
                         </button>
-                      )}
-                    </div>
-                  )}
 
-                  {!["Completed", "Paid Out", "Cancelled", "Rejected", "Cancellation Pending", "Refund Declined", "Escrow Declined"].includes(booking.status) && (
-                    <div style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px dashed #cbd5e1", display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                      <button
-                        onClick={() => setActiveCancelBooking(booking)}
-                        style={{
-                          backgroundColor: "var(--danger-light)",
-                          color: "var(--danger)",
-                          border: "1px solid #fecaca",
-                          padding: "8px 16px",
-                          borderRadius: "8px",
-                          fontWeight: "bold",
-                          cursor: "pointer",
-                          fontSize: "13px",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "6px",
-                          transition: "all 0.2s"
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#fecaca"}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#fee2e2"}
-                      >
-                        ❌ Cancel Booking & Refund
-                      </button>
-
-                      {(() => {
-                        const reschStatus = checkRescheduleEligibility(booking);
-                        if (reschStatus.isInstant) return null;
-                        return (
+                        {!reschStatus.isInstant && (
                           <button
+                            type="button"
                             onClick={() => {
                               if (!reschStatus.eligible) {
                                 alert(`⚠️ Reschedule Restriction\n\n${reschStatus.reason}`);
                                 return;
                               }
                               setActiveRescheduleBooking(booking);
-                              const tomorrow = new Date();
-                              tomorrow.setDate(tomorrow.getDate() + 1);
-                              const yyyy = tomorrow.getFullYear();
-                              const mm = String(tomorrow.getMonth() + 1).padStart(2, "0");
-                              const dd = String(tomorrow.getDate()).padStart(2, "0");
-                              setRescheduleDate(`${yyyy}-${mm}-${dd}`);
-                              setRescheduleSlot("9 AM");
+                              const initialDate = getMinRescheduleDate();
+                              setRescheduleDate(initialDate);
+                              const initialSlot = getNextAvailableRescheduleSlot(initialDate) || "9 AM";
+                              setRescheduleSlot(initialSlot);
                             }}
+                            disabled={!reschStatus.eligible}
                             style={{
-                              backgroundColor: reschStatus.eligible ? "#fef3c7" : "#f1f5f9",
-                              color: reschStatus.eligible ? "#d97706" : "#94a3b8",
-                              border: reschStatus.eligible ? "1px solid #fde68a" : "1px solid #e2e8f0",
+                              backgroundColor: reschStatus.eligible ? "rgba(59, 130, 246, 0.1)" : "var(--bg-main)",
+                              color: reschStatus.eligible ? "var(--primary, #3b82f6)" : "var(--text-muted)",
+                              border: reschStatus.eligible ? "1px solid rgba(59, 130, 246, 0.35)" : "1px solid var(--border-color)",
                               padding: "8px 16px",
                               borderRadius: "8px",
-                              fontWeight: "bold",
+                              fontWeight: 700,
                               cursor: reschStatus.eligible ? "pointer" : "not-allowed",
                               fontSize: "13px",
                               display: "inline-flex",
                               alignItems: "center",
-                              gap: "6px",
-                              transition: "all 0.2s"
+                              gap: "6px"
                             }}
-                            title={reschStatus.eligible ? "Reschedule service time" : reschStatus.reason}
+                            title={reschStatus.eligible ? `Reschedule appointment (Allowed up to 2 times, min 2 hrs in advance. Used: ${count}/2)` : reschStatus.reason}
                           >
-                            📅 Reschedule Service
+                            <FaCalendarAlt style={{ fontSize: "11px", color: reschStatus.eligible ? "var(--primary, #3b82f6)" : "var(--text-muted)" }} />
+                            <span style={{ color: reschStatus.eligible ? "var(--primary, #3b82f6)" : "var(--text-muted)", fontWeight: 700 }}>
+                              Reschedule Service {count > 0 ? `(${count}/2)` : ""}
+                            </span>
                           </button>
-                        );
-                      })()}
+                        )}
 
-                      {["Accepted", "On the Way", "Started"].includes(booking.status) && (
+                        {["Accepted", "On the Way", "Started"].includes(booking.status) && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveChatBooking(booking);
+                              setChatMessages([]);
+                            }}
+                            style={{
+                              backgroundColor: "rgba(16, 185, 129, 0.1)",
+                              color: "#10b981",
+                              border: "1px solid rgba(16, 185, 129, 0.35)",
+                              padding: "8px 16px",
+                              borderRadius: "8px",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              fontSize: "13px",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "6px"
+                            }}
+                          >
+                            <FaCommentDots style={{ fontSize: "12px", color: "#10b981" }} />
+                            <span style={{ color: "#10b981", fontWeight: 700 }}>Chat with Provider</span>
+                          </button>
+                        )}
+                      </>
+                    )}
+
+                    {/* Completed booking actions */}
+                    {(booking.status === "Completed" || booking.status === "Paid Out") && (
+                      <>
                         <button
-                          onClick={() => {
-                            setActiveChatBooking(booking);
-                            setChatMessages([]);
-                          }}
+                          type="button"
+                          onClick={() => handleReview(booking)}
+                          disabled={isReviewed}
                           style={{
-                            backgroundColor: "var(--info-light)",
-                            color: "var(--primary-dark)",
-                            border: "1px solid var(--border-color)",
+                            backgroundColor: isReviewed ? "var(--bg-main)" : "var(--primary, #2563eb)",
+                            color: isReviewed ? "var(--text-secondary)" : "#ffffff",
+                            border: isReviewed ? "1px solid var(--border-color)" : "none",
                             padding: "8px 16px",
                             borderRadius: "8px",
-                            fontWeight: "bold",
-                            cursor: "pointer",
+                            fontWeight: 700,
+                            cursor: isReviewed ? "default" : "pointer",
                             fontSize: "13px",
                             display: "inline-flex",
                             alignItems: "center",
-                            gap: "6px",
-                            transition: "all 0.2s"
+                            gap: "6px"
                           }}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--primary-light)"}
-                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "var(--info-light)"}
                         >
-                          💬 Chat with Provider
+                          {isReviewed ? (
+                            <>
+                              <FaCheck style={{ fontSize: "11px", color: "var(--text-secondary)" }} />
+                              <span style={{ color: "var(--text-secondary)", fontWeight: 700 }}>Review Submitted</span>
+                            </>
+                          ) : (
+                            <>
+                              <FaStar style={{ fontSize: "12px", color: "#fbbf24" }} />
+                              <span style={{ color: "#ffffff", fontWeight: 700 }}>Rate Service & Earn ₹50 Cashback</span>
+                            </>
+                          )}
                         </button>
-                      )}
-                    </div>
-                  )}
+
+                        {isReviewed && booking.status !== "Paid Out" && (
+                          <button
+                            type="button"
+                            onClick={() => setActiveComplaintBooking(booking)}
+                            style={{
+                              backgroundColor: "transparent",
+                              color: "#dc2626",
+                              border: "1px solid #fecaca",
+                              padding: "8px 14px",
+                              borderRadius: "8px",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              fontSize: "13px",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "6px"
+                            }}
+                          >
+                            <FaExclamationTriangle style={{ fontSize: "11px", color: "#dc2626" }} />
+                            <span style={{ color: "#dc2626", fontWeight: 700 }}>Report Grievance</span>
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
               );
-            })
-          )}
+            });
+          })()}
         </div>
       </div>
 
-      {/* ❌ CUSTOM CANCELLATION & WALLET REFUND MODAL */}
+      {/* CUSTOM CANCELLATION & WALLET REFUND MODAL */}
       {activeCancelBooking && (
         <div style={{
           position: "fixed",
@@ -724,9 +1061,12 @@ function MyBookings() {
             style={{
               maxWidth: "400px",
               width: "90%",
+              maxHeight: "85vh",
+              overflowY: "auto",
               backgroundColor: "var(--bg-card)",
               borderRadius: "20px",
               padding: "28px",
+              boxSizing: "border-box",
               boxShadow: "var(--shadow-3d)",
               border: "1px solid var(--border-color)"
             }}
@@ -745,10 +1085,10 @@ function MyBookings() {
                 onChange={(e) => setCancelReason(e.target.value)}
                 style={{ width: "100%", padding: "10px", borderRadius: "10px", border: "1px solid var(--border-color)", backgroundColor: "var(--bg-card-hover)", color: "var(--text-main)" }}
               >
-                <option value="Scheduler Conflict">📅 Scheduler Conflict / Change of Plans</option>
-                <option value="Found alternative worker">👷 Found alternative worker</option>
-                <option value="Worker did not arrive">💤 Worker did not arrive</option>
-                <option value="Pricing Dispute">💰 Pricing / Charge Dispute</option>
+                <option value="Scheduler Conflict">Scheduler Conflict / Change of Plans</option>
+                <option value="Found alternative worker">Found alternative worker</option>
+                <option value="Worker did not arrive">Worker did not arrive</option>
+                <option value="Pricing Dispute">Pricing / Charge Dispute</option>
                 <option value="Other">Other Reason</option>
               </select>
             </div>
@@ -769,7 +1109,7 @@ function MyBookings() {
                   fontSize: "14px"
                 }}
               >
-                {submittingCancel ? "Cancelling..." : "Confirm & Refund 💵"}
+                {submittingCancel ? "Cancelling..." : "Confirm & Refund"}
               </button>
               <button
                 disabled={submittingCancel}
@@ -815,12 +1155,14 @@ function MyBookings() {
             style={{
               maxWidth: "460px",
               width: "92%",
+              maxHeight: "90vh",
+              overflowY: "auto",
               backgroundColor: "var(--bg-card)",
               borderRadius: "24px",
               padding: "0",
+              boxSizing: "border-box",
               boxShadow: "0 30px 70px rgba(31, 53, 59, 0.35), 0 0 0 1px rgba(49, 82, 91, 0.1)",
               border: "1px solid rgba(179, 222, 229, 0.4)",
-              overflow: "hidden",
               position: "relative"
             }}
           >
@@ -850,7 +1192,7 @@ function MyBookings() {
                   textTransform: "uppercase",
                   marginBottom: "8px"
                 }}>
-                  <span>📅</span> Reschedule Service
+                  <FaCalendarAlt style={{ fontSize: "11px" }} /> Reschedule Service
                 </div>
                 <h3 style={{ margin: 0, fontSize: "21px", fontWeight: 800, color: "var(--text-main)", letterSpacing: "-0.3px" }}>
                   Reschedule Appointment
@@ -896,7 +1238,7 @@ function MyBookings() {
                       {activeRescheduleBooking.service}
                     </div>
                     <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "2px" }}>
-                      👷 Assigned Expert: <strong>{activeRescheduleBooking.workerName || activeRescheduleBooking.worker_name || "Verified Professional"}</strong>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}><FaUserTie style={{ fontSize: "11px", color: "var(--text-secondary)" }} /> Assigned Expert: <strong>{activeRescheduleBooking.workerName || activeRescheduleBooking.worker_name || "Verified Professional"}</strong></span>
                     </div>
                   </div>
                   <div style={{
@@ -907,7 +1249,7 @@ function MyBookings() {
                     fontSize: "11px",
                     fontWeight: 700
                   }}>
-                    ✓ Free Penalty
+                    Free of Penalty
                   </div>
                 </div>
 
@@ -923,8 +1265,40 @@ function MyBookings() {
                   gap: "12px"
                 }}>
                   <span>Current Slot:</span>
-                  <strong style={{ color: "var(--primary)" }}>📅 {activeRescheduleBooking.date}</strong>
-                  <strong style={{ color: "var(--primary)" }}>🕐 {activeRescheduleBooking.time}</strong>
+                  <strong style={{ color: "var(--primary)", display: "inline-flex", alignItems: "center", gap: "4px" }}><FaCalendarAlt style={{ fontSize: "11px" }} /> {activeRescheduleBooking.date}</strong>
+                  <strong style={{ color: "var(--primary)", display: "inline-flex", alignItems: "center", gap: "4px" }}><FaClock style={{ fontSize: "11px" }} /> {activeRescheduleBooking.time}</strong>
+                </div>
+
+                {/* 📋 Reschedule Policy Badge & Notice */}
+                <div style={{
+                  padding: "10px 14px",
+                  borderRadius: "10px",
+                  backgroundColor: "rgba(59, 130, 246, 0.06)",
+                  border: "1px solid rgba(59, 130, 246, 0.2)",
+                  fontSize: "12px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "4px"
+                }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontWeight: 800, color: "var(--primary)", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <FaInfoCircle style={{ fontSize: "12px" }} /> Reschedule Policy:
+                    </span>
+                    <span style={{
+                      fontSize: "11px",
+                      fontWeight: 800,
+                      color: (activeRescheduleBooking.rescheduleCount || activeRescheduleBooking.reschedule_count || 0) >= 1 ? "#d97706" : "#10b981",
+                      backgroundColor: (activeRescheduleBooking.rescheduleCount || activeRescheduleBooking.reschedule_count || 0) >= 1 ? "rgba(217, 119, 6, 0.12)" : "rgba(16, 185, 129, 0.12)",
+                      padding: "2px 8px",
+                      borderRadius: "6px"
+                    }}>
+                      Used: {activeRescheduleBooking.rescheduleCount || activeRescheduleBooking.reschedule_count || 0}/2 Times
+                    </span>
+                  </div>
+                  <div style={{ fontSize: "11.5px", color: "var(--text-secondary)", lineHeight: "1.4" }}>
+                    • Allowed maximum <strong>2 times</strong> per booking.<br />
+                    • Rescheduling strictly accepted at least <strong>2 hours prior</strong> to scheduled service.
+                  </div>
                 </div>
               </div>
 
@@ -938,14 +1312,15 @@ function MyBookings() {
                 </div>
                 <input
                   type="date"
-                  min={new Date().toISOString().split("T")[0]}
-                  max={(() => {
-                    const d = new Date();
-                    d.setDate(d.getDate() + 9);
-                    return d.toISOString().split("T")[0];
-                  })()}
+                  min={getMinRescheduleDate()}
+                  max={getMaxRescheduleDate()}
                   value={rescheduleDate}
-                  onChange={(e) => setRescheduleDate(e.target.value)}
+                  onChange={(e) => {
+                    const newDate = e.target.value;
+                    setRescheduleDate(newDate);
+                    const nextAvail = getNextAvailableRescheduleSlot(newDate);
+                    setRescheduleSlot(nextAvail);
+                  }}
                   style={{
                     width: "100%",
                     padding: "12px 14px",
@@ -959,6 +1334,24 @@ function MyBookings() {
                     fontFamily: "inherit"
                   }}
                 />
+                {rescheduleDate < getMinRescheduleDate() && (
+                  <div style={{
+                    marginTop: "8px",
+                    padding: "10px 14px",
+                    borderRadius: "10px",
+                    backgroundColor: "rgba(239, 68, 68, 0.08)",
+                    border: "1px solid rgba(239, 68, 68, 0.25)",
+                    color: "#dc2626",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px"
+                  }}>
+                    <FaBan style={{ color: "#dc2626", fontSize: "13px", flexShrink: 0 }} />
+                    <span>All service slots for this date have completed. Please pick tomorrow or an upcoming date.</span>
+                  </div>
+                )}
               </div>
 
               {/* Time Slot Picker */}
@@ -972,37 +1365,46 @@ function MyBookings() {
                   </span>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "8px" }}>
-                  {["9 AM", "11 AM", "1 PM", "3 PM", "5 PM"].map((slot) => {
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(54px, 1fr))", gap: "8px" }}>
+                  {RESCHEDULE_TIME_SLOTS.map(({ label: slot }) => {
                     const isOccupied = isWorkerSlotOccupied(slot);
-                    const isSelected = rescheduleSlot === slot;
+                    const isPast = isRescheduleSlotPast(slot);
+                    const isUnavailable = isOccupied || isPast;
+                    const isSelected = rescheduleSlot === slot && !isUnavailable;
                     return (
                       <button
                         key={slot}
                         type="button"
-                        disabled={isOccupied}
-                        onClick={() => !isOccupied && setRescheduleSlot(slot)}
+                        disabled={isUnavailable}
+                        onClick={() => !isUnavailable && setRescheduleSlot(slot)}
                         style={{
                           padding: "11px 4px",
                           borderRadius: "12px",
-                          border: isOccupied
+                          border: isSelected
+                            ? "2px solid var(--primary, #31525B)"
+                            : isPast
+                            ? "1.5px dashed var(--border-color, #cbd5e1)"
+                            : isOccupied
                             ? "1.5px solid #fecaca"
-                            : isSelected
-                            ? "2px solid #31525B"
-                            : "1.5px solid #e2e8f0",
+                            : "1.5px solid var(--border-color, #e2e8f0)",
                           background: isSelected
                             ? "linear-gradient(145deg, #31525B 0%, #1F353B 100%)"
+                            : isPast
+                            ? "var(--bg-main, #f1f5f9)"
                             : isOccupied
                             ? "#fee2e2"
-                            : "white",
-                          color: isOccupied
-                            ? "#dc2626"
-                            : isSelected
+                            : "var(--bg-card, white)",
+                          color: isSelected
                             ? "white"
-                            : "#334155",
+                            : isPast
+                            ? "var(--text-muted, #94a3b8)"
+                            : isOccupied
+                            ? "#dc2626"
+                            : "var(--text-main, #334155)",
                           fontWeight: 800,
                           fontSize: "12px",
-                          cursor: isOccupied ? "not-allowed" : "pointer",
+                          cursor: isUnavailable ? "not-allowed" : "pointer",
+                          opacity: isPast ? 0.6 : 1,
                           transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                           display: "flex",
                           flexDirection: "column",
@@ -1012,43 +1414,77 @@ function MyBookings() {
                           boxShadow: isSelected ? "0 4px 12px rgba(49, 82, 91, 0.3)" : "none",
                           transform: isSelected ? "translateY(-1px)" : "none"
                         }}
-                        title={isOccupied ? "Professional is already booked for this slot" : "Select slot"}
+                        title={isPast ? "This time slot has already completed for today" : isOccupied ? "Professional is already booked for this slot" : "Select slot"}
                       >
                         <span>{slot}</span>
-                        {isOccupied ? (
+                        {isPast ? (
+                          <span style={{ fontSize: "8px", opacity: 0.85, fontWeight: 700, textTransform: "uppercase" }}>Passed</span>
+                        ) : isOccupied ? (
                           <span style={{ fontSize: "8.5px", opacity: 0.9, fontWeight: 700, textTransform: "uppercase" }}>Booked</span>
                         ) : isSelected ? (
-                          <span style={{ fontSize: "9px", opacity: 0.9 }}>✓ Selected</span>
+                          <span style={{ fontSize: "9px", opacity: 0.9, display: "inline-flex", alignItems: "center", gap: "3px" }}><FaCheck style={{ fontSize: "8px" }} /> Selected</span>
                         ) : null}
                       </button>
                     );
                   })}
                 </div>
+
+                {RESCHEDULE_TIME_SLOTS.every(s => isRescheduleSlotPast(s.label) || isWorkerSlotOccupied(s.label)) && (
+                  <div style={{
+                    marginTop: "10px",
+                    padding: "10px 14px",
+                    borderRadius: "10px",
+                    backgroundColor: "rgba(239, 68, 68, 0.08)",
+                    border: "1px solid rgba(239, 68, 68, 0.2)",
+                    color: "var(--danger, #ef4444)",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px"
+                  }}>
+                    <FaExclamationTriangle style={{ color: "var(--danger)", fontSize: "13px", flexShrink: 0 }} />
+                    <span>All slots for this date have completed or are booked. Please select a future date.</span>
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}
               <div style={{ display: "flex", gap: "12px" }}>
-                <button
-                  disabled={submittingReschedule}
-                  onClick={handleConfirmReschedule}
-                  style={{
-                    flex: 1.6,
-                    background: "linear-gradient(145deg, #31525B 0%, #1F353B 100%)",
-                    color: "white",
-                    border: "none",
-                    borderBottom: "3px solid #0E1719",
-                    padding: "13px 18px",
-                    borderRadius: "14px",
-                    fontWeight: 700,
-                    fontSize: "14px",
-                    cursor: submittingReschedule ? "not-allowed" : "pointer",
-                    letterSpacing: "0.2px",
-                    boxShadow: "0 4px 14px rgba(49, 82, 91, 0.3)",
-                    transition: "all 0.2s"
-                  }}
-                >
-                  {submittingReschedule ? "Updating Schedule..." : "Confirm Reschedule 📅"}
-                </button>
+                {(() => {
+                  const countReached = (activeRescheduleBooking.rescheduleCount || activeRescheduleBooking.reschedule_count || 0) >= 2;
+                  const isDateExpired = rescheduleDate < getMinRescheduleDate();
+                  const isSlotExpired = !rescheduleSlot || isRescheduleSlotPast(rescheduleSlot, rescheduleDate);
+                  const isBusy = isWorkerSlotOccupied(rescheduleSlot, rescheduleDate);
+                  const isInvalid = countReached || isDateExpired || isSlotExpired || isBusy;
+                  return (
+                    <button
+                      disabled={submittingReschedule || isInvalid}
+                      onClick={handleConfirmReschedule}
+                      style={{
+                        flex: 1.6,
+                        background: isInvalid 
+                          ? "var(--border, #94a3b8)" 
+                          : "linear-gradient(145deg, #31525B 0%, #1F353B 100%)",
+                        color: isInvalid ? "var(--text-muted, #64748b)" : "white",
+                        border: "none",
+                        borderBottom: isInvalid ? "none" : "3px solid #0E1719",
+                        padding: "13px 18px",
+                        borderRadius: "14px",
+                        fontWeight: 700,
+                        fontSize: "14px",
+                        cursor: (submittingReschedule || isInvalid) ? "not-allowed" : "pointer",
+                        letterSpacing: "0.2px",
+                        boxShadow: isInvalid ? "none" : "0 4px 14px rgba(49, 82, 91, 0.3)",
+                        transition: "all 0.2s",
+                        opacity: isInvalid ? 0.6 : 1
+                      }}
+                      title={isInvalid ? "Please choose an upcoming available date and slot" : "Confirm Reschedule"}
+                    >
+                      {submittingReschedule ? "Updating Schedule..." : "Confirm Reschedule"}
+                    </button>
+                  );
+                })()}
                 <button
                   disabled={submittingReschedule}
                   onClick={() => setActiveRescheduleBooking(null)}
@@ -1092,15 +1528,18 @@ function MyBookings() {
             style={{
               maxWidth: "440px",
               width: "90%",
+              maxHeight: "85vh",
+              overflowY: "auto",
               backgroundColor: "var(--bg-card)",
               borderRadius: "20px",
               padding: "28px",
+              boxSizing: "border-box",
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
               border: "1px solid rgba(0,0,0,0.05)"
             }}
           >
             <h3 style={{ margin: "0 0 6px 0", fontSize: "20px", fontWeight: 800, color: "var(--danger)", display: "flex", alignItems: "center", gap: 8 }}>
-              <span>⚠️</span> Report Abuse or Grievance
+              <FaExclamationTriangle style={{ fontSize: "18px" }} /> Report Abuse or Grievance
             </h3>
             <p style={{ margin: "0 0 20px 0", fontSize: "13px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
               Workzy maintains a zero-tolerance policy for abuse. Please document details of the incident below for administrative review and ledger enforcement.
@@ -1113,10 +1552,10 @@ function MyBookings() {
                 onChange={(e) => setIssueType(e.target.value)}
                 style={{ width: "100%", padding: "10px", borderRadius: "10px", border: "1px solid #cbd5e1" }}
               >
-                <option value="Abuse & Harassment">🚨 Verbal Abuse & Harassment</option>
-                <option value="Financial Fraud">💰 Overcharging / Financial Fraud</option>
-                <option value="Poor Service Conduct">🧼 Extremely Poor Service Conduct</option>
-                <option value="Safety Threat">🛡️ Physical Threat / Safety Risk</option>
+                <option value="Abuse & Harassment">Verbal Abuse & Harassment</option>
+                <option value="Financial Fraud">Overcharging / Financial Fraud</option>
+                <option value="Poor Service Conduct">Extremely Poor Service Conduct</option>
+                <option value="Safety Threat">Physical Threat / Safety Risk</option>
                 <option value="Other">Other Incident</option>
               </select>
             </div>
@@ -1148,7 +1587,7 @@ function MyBookings() {
                   fontSize: "14px"
                 }}
               >
-                {submittingComplaint ? "Filing Report..." : "Submit Abuse Report ⚖️"}
+                {submittingComplaint ? "Filing Report..." : "Submit Abuse Report"}
               </button>
               <button
                 disabled={submittingComplaint}
@@ -1190,9 +1629,9 @@ function MyBookings() {
           <div
             style={{
               maxWidth: "500px",
-              width: "90%",
-              height: "600px",
-              maxHeight: "80vh",
+              width: "94%",
+              height: "auto",
+              maxHeight: "85vh",
               backgroundColor: chatTheme === 'light' ? "white" : "#111827",
               borderRadius: "20px",
               display: "flex",
@@ -1217,7 +1656,7 @@ function MyBookings() {
             }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 800 }}>
-                  💬 Chatting with {activeChatBooking.workerName || activeChatBooking.worker_name || "Service Provider"}
+                  <FaCommentDots style={{ marginRight: "6px", fontSize: "14px" }} /> Chatting with {activeChatBooking.workerName || activeChatBooking.worker_name || "Service Provider"}
                 </h3>
                 <span style={{ fontSize: "11px", opacity: 0.8 }}>
                   Booking ID: #{activeChatBooking._id ? activeChatBooking._id.substring(activeChatBooking._id.length - 6).toUpperCase() : ""}
@@ -1241,7 +1680,7 @@ function MyBookings() {
                   }}
                   title="Switch Chat Theme"
                 >
-                  {chatTheme === 'light' ? "🌙" : "☀️"}
+                  {chatTheme === 'light' ? <FaMoon style={{ fontSize: "13px" }} /> : <FaSun style={{ fontSize: "13px" }} />}
                 </button>
                 {!globalCallActive && (
                   <button
@@ -1261,7 +1700,7 @@ function MyBookings() {
                       boxShadow: "0 2px 8px rgba(22,163,74,0.3)"
                     }}
                   >
-                    📞 App Call
+                    <FaPhoneAlt style={{ fontSize: "11px", marginRight: "4px" }} /> App Call
                   </button>
                 )}
                 <button
@@ -1298,7 +1737,7 @@ function MyBookings() {
                   textAlign: "center",
                   color: "var(--text-secondary)"
                 }}>
-                  <p style={{ fontSize: "40px", margin: "0 0 10px 0" }}>💬</p>
+                  <div style={{ fontSize: "36px", margin: "0 0 10px 0", color: "var(--text-secondary)", opacity: 0.5 }}><FaCommentDots /></div>
                   <p style={{ fontSize: "13px", margin: 0 }}>No messages yet. Say hello to get started!</p>
                 </div>
               ) : (

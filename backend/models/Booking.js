@@ -14,7 +14,8 @@ const bookingSchema = new mongoose.Schema({
   address: { type: String, default: "Pending Dispatch Location" },
   status: { type: String, default: "Upcoming" },
   cancelReason: { type: String },
-  rejectReason: { type: String }
+  rejectReason: { type: String },
+  rescheduleCount: { type: Number, default: 0 }
 }, { timestamps: true });
 
 bookingSchema.index({ customer_id: 1 });

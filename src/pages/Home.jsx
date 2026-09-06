@@ -5,7 +5,8 @@ import AISmartSearchHub from "../components/AISmartSearchHub";
 import WorkerCarousel from "../components/WorkerCarousel";
 import NearbyWorkers from "../components/NearbyWorkers";
 import { filterWorkersClientSide } from "../utils/workerService";
-import SkeletonLoader from "../components/SkeletonLoader";
+import SkeletonLoader from "../components/SkeletonLoader";
+import CustomAlert from "../components/CustomAlert";
 
 import {
   FaMapMarkerAlt,
@@ -901,7 +902,8 @@ Do not use markdown.`,
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <Navbar />
+      <Navbar />
+      <CustomAlert />
 
       {/* ===================================================
           HERO
