@@ -26,6 +26,7 @@ function SupportPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [success, setSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Dynamic FAQ Accordion State
   const [activeFaq, setActiveFaq] = useState(null);
@@ -34,10 +35,19 @@ function SupportPage() {
   const [formError, setFormError] = useState("");
   const userName = sessionStorage.getItem("userName");
 
+  useEffect(() => {
+    const savedEmail = sessionStorage.getItem("userEmail");
+    if (savedEmail) setEmail(savedEmail);
+  }, []);
+
   const fetchHistory = async () => {
-    if (!userName) return;
+    const userIdentifier = userName || sessionStorage.getItem("userEmail");
+    if (!userIdentifier) return;
     try {
-      const resp = await fetch(`/api/complaints?reported_by=${encodeURIComponent(userName)}`);
+      const token = sessionStorage.getItem("authToken") || sessionStorage.getItem("token") || localStorage.getItem("authToken");
+      const headers = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      const resp = await fetch(`/api/complaints?reported_by=${encodeURIComponent(userIdentifier)}`, { headers });
       if (resp.ok) setHistory(await resp.json());
     } catch (e) { console.error(e); }
   };
@@ -78,28 +88,47 @@ function SupportPage() {
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
+      const token = sessionStorage.getItem("authToken") || sessionStorage.getItem("token") || localStorage.getItem("authToken");
+      const headers = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const payload = {
+        issue_type: `SUPPORT TICKET: ${category.toUpperCase()}`,
+        description: `Email: ${email.trim()} | Phone: ${phone.trim()} | Message: ${issue.trim()}`,
+        reported_by: sessionStorage.getItem("userName") || email.trim() || "Web Guest"
+      };
+
+      if (passedBooking && String(passedBooking).trim() && passedBooking !== "NON-BOOKING-INQUIRY") {
+        payload.booking_id = String(passedBooking).trim();
+      }
+
       const resp = await fetch("/api/complaints", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          booking_id: passedBooking || "NON-BOOKING-INQUIRY",
-          issue_type: `SUPPORT TICKET: ${category.toUpperCase()}`,
-          description: `Email: ${email} | Phone: ${phone} | Message: ${issue}`,
-          reported_by: sessionStorage.getItem("userName") || email || "Web Guest"
-        })
+        headers,
+        body: JSON.stringify(payload)
       });
-      if (!resp.ok) throw new Error("Cloud post rejection.");
+
+      if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({}));
+        throw new Error(errData.error || errData.message || "Failed to submit support ticket.");
+      }
 
       setSuccess(true);
       fetchHistory();
       setTimeout(() => {
         setSuccess(false);
         setIssue("");
-        setEmail("");
+        setEmail(sessionStorage.getItem("userEmail") || "");
         setPhone("");
       }, 5000);
-    } catch (err) { setFormError("Submission failed. Please try again or contact us directly."); }
+    } catch (err) {
+      setFormError(err.message || "Submission failed. Please try again or contact us directly.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -287,13 +316,15 @@ function SupportPage() {
 
                 <button
                   type="submit"
+                  disabled={isSubmitting}
                   className="btn-primary"
                   style={{
                     padding: "14px",
                     borderRadius: "8px",
                     fontWeight: 700,
                     fontSize: "14px",
-                    cursor: "pointer",
+                    cursor: isSubmitting ? "not-allowed" : "pointer",
+                    opacity: isSubmitting ? 0.7 : 1,
                     transition: "all 0.2s ease",
                     width: "100%",
                     display: "flex",
@@ -302,7 +333,7 @@ function SupportPage() {
                     gap: "8px"
                   }}
                 >
-                  <FaPaperPlane /> Send Message
+                  <FaPaperPlane /> {isSubmitting ? "Sending Message..." : "Send Message"}
                 </button>
               </form>
             )}

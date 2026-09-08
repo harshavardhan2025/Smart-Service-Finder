@@ -10,7 +10,16 @@ const originalFetch = window.fetch;
 window.fetch = function(resource, config) {
   const isInternal = typeof resource === 'string' && (resource.includes('/api') || resource.startsWith('/'));
   if (isInternal) {
-    const token = sessionStorage.getItem("authToken");
+    let token = sessionStorage.getItem("authToken") || sessionStorage.getItem("token") || localStorage.getItem("authToken") || localStorage.getItem("token");
+    if (!token) {
+      try {
+        const raw = localStorage.getItem("authSession");
+        if (raw) {
+          const s = JSON.parse(raw);
+          token = s.authToken || s.token;
+        }
+      } catch (e) {}
+    }
     if (token) {
       config = config || {};
       config.headers = config.headers || {};

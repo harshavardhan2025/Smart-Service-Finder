@@ -239,15 +239,17 @@ function MyBookings() {
           reported_by: sessionStorage.getItem("userName") || "Client"
         })
       });
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
         alert("⚖️ Grievance Formally Recorded!\n\nYour complaint has been logged. Administrators will review and take necessary action.");
         setActiveComplaintBooking(null);
         setComplaintDesc("");
       } else {
-        alert("Failed to record grievance.");
+        alert(`Failed to record grievance: ${data.error || data.message || "Please try again."}`);
       }
     } catch (e) {
       console.error(e);
+      alert("Network error occurred while submitting complaint.");
     } finally {
       setSubmittingComplaint(false);
     }

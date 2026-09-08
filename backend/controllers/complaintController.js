@@ -8,12 +8,18 @@ import Transaction from "../models/Transaction.js";
 export const getComplaints = async (req, res) => {
   try {
     const filter = {};
-    if (req.user.role !== "admin") {
+    if (req.user && req.user.role !== "admin") {
       filter.$or = [
         { reported_by: req.user.name },
+        { reported_by: req.user.email },
         { reported_by: req.user._id.toString() }
       ];
-    } else {
+      if (req.query.reported_by) {
+        filter.$or.push({ reported_by: req.query.reported_by });
+      }
+    } else if (!req.user && req.query.reported_by) {
+      filter.reported_by = req.query.reported_by;
+    } else if (req.user && req.user.role === "admin") {
       if (req.query.reported_by) filter.reported_by = req.query.reported_by;
     }
     const list = await Complaint.find(filter).sort({ createdAt: -1 });
@@ -25,16 +31,31 @@ export const getComplaints = async (req, res) => {
 
 export const submitComplaint = async (req, res) => {
   try {
-    if (req.body.booking_id) {
+    const complaintData = { ...req.body };
+
+    const rawBookingId = complaintData.booking_id ? String(complaintData.booking_id).trim() : "";
+    const isRealBooking = rawBookingId && 
+      rawBookingId !== "NON-BOOKING-INQUIRY" && 
+      !rawBookingId.startsWith("NON-BOOKING");
+
+    if (isRealBooking) {
       const existingComplaint = await Complaint.findOne({
-        booking_id: req.body.booking_id,
+        booking_id: rawBookingId,
         status: { $ne: "Resolved" }
       });
       if (existingComplaint) {
         return res.status(409).json({ error: "A complaint is already active/under review for this booking." });
       }
+      complaintData.booking_id = rawBookingId;
+    } else {
+      delete complaintData.booking_id;
     }
-    const complaint = await Complaint.create(req.body);
+
+    if (req.user && !complaintData.reported_by) {
+      complaintData.reported_by = req.user.name || req.user.email;
+    }
+
+    const complaint = await Complaint.create(complaintData);
 
     // Notify administrators about the new complaint
     try {
