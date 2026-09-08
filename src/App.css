@@ -32,37 +32,28 @@
   --ai-banner-border: #10b981;
 
   /* BACKGROUNDS */
-  --bg-main:
-    linear-gradient(135deg,
-      #f6f4f2 0%,
-      #f5f5f5 50%,
-      #E8F6F7 100%);
+  --bg-main: #f8fafc;
+  --bg-card: rgba(255, 255, 255, 0.98);
+  --bg-card-hover: #ffffff;
 
-  --bg-card:
-    rgba(255, 255, 255, 0.85);
-
-  --bg-card-hover:
-    rgba(255, 255, 255, 0.98);
-
-  /* TEXT */
-  --text-main: #0E1719;
-  --text-muted: #31525B;
-  --text-primary: var(--text-main);
-  --text-secondary: var(--text-muted);
+  /* TEXT - CRYSTAL CLEAR HIGH CONTRAST IN LIGHT MODE */
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
 
   /* BORDER */
-  --border:
-    rgba(49, 82, 91, 0.15);
+  --border: rgba(203, 213, 225, 0.9);
   --border-color: var(--border);
 
   /* SHADOWS */
   --shadow-3d:
-    0 10px 30px -5px rgba(49, 82, 91, 0.05),
+    0 10px 30px -5px rgba(0, 0, 0, 0.05),
     0 4px 12px -2px rgba(0, 0, 0, 0.03);
 
   --shadow-hover:
-    0 20px 40px -5px rgba(49, 82, 91, 0.12),
-    0 8px 24px -2px rgba(0, 0, 0, 0.08);
+    0 20px 40px -5px rgba(0, 0, 0, 0.08),
+    0 8px 24px -2px rgba(0, 0, 0, 0.05);
 
   --blur: blur(20px);
 }
@@ -292,23 +283,41 @@ h6 {
 }
 
 p,
-span,
 small,
 .text-muted {
-
   color: var(--text-muted);
-
   line-height: 1.7;
 }
 
-/* Ensure text inside buttons, badges, pills, and tabs inherits high-contrast foreground color */
+/* Base spans must inherit parent text color rather than being forced to muted */
+span {
+  color: inherit;
+}
+
+/* Ensure all interactive & container elements inherit proper high-contrast text */
+button,
 button span,
+a,
+a span,
+.btn,
 .btn span,
+.btn-primary,
+.btn-primary span,
+.btn-secondary,
+.btn-secondary span,
+.badge,
 .badge span,
+[class*="badge"],
 [class*="badge"] span,
+[class*="button"],
 [class*="button"] span,
+[class*="pill"],
 [class*="pill"] span,
-[class*="tab"] span {
+[class*="tab"],
+[class*="tab"] span,
+.greeting-badge,
+.greeting-banner,
+.greeting-banner * {
   color: inherit;
 }
 
@@ -1703,18 +1712,23 @@ button {
   gap: 6px;
   padding: 10px 20px;
   background: var(--primary);
-  color: white;
+  color: #ffffff !important;
   border-radius: 10px;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 14px;
   text-decoration: none;
   cursor: pointer;
   border: none;
   transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(49, 82, 91, 0.25);
+}
+.empty-state a *, .empty-state button * {
+  color: #ffffff !important;
 }
 .empty-state a:hover, .empty-state button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(49,82,91,0.25);
+  box-shadow: 0 6px 18px rgba(49, 82, 91, 0.35);
+  color: #ffffff !important;
 }
 
 /* --- TAB COUNT BADGE --- */

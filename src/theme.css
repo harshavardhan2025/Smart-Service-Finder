@@ -38,8 +38,8 @@
   /* Text */
   --text-main: #0f172a;
   --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --text-muted: #94a3b8;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
 
   /* Hero section */
   --hero-bg: linear-gradient(135deg, #1f353b 0%, #0e1719 100%);
@@ -76,15 +76,15 @@
   --success-grad: linear-gradient(135deg, #6ee7b7 0%, #324e56 100%);
   --danger-grad: linear-gradient(135deg, #f87171 0%, #7f1d1d 100%);
 
-  --bg-main: #121212;
-  --bg-card: rgba(30, 30, 30, 0.95);
-  --bg-card-hover: #1e1e1e;
-  --border-color: rgba(80, 80, 80, 0.8);
+  --bg-main: #0b0f19;
+  --bg-card: rgba(21, 29, 46, 0.95);
+  --bg-card-hover: #1e293b;
+  --border-color: rgba(255, 255, 255, 0.15);
 
-  --text-main: #e5e7eb;
-  --text-primary: #d1d5db;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
+  --text-main: #f8fafc;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
 
   --hero-bg: linear-gradient(135deg, #0e1719 0%, #1f353b 100%);
   --hero-border: rgba(160, 200, 209, 0.3);

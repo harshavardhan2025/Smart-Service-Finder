@@ -778,17 +778,19 @@ function MyBookings() {
                     style={{
                       display: "inline-flex",
                       alignItems: "center",
-                      gap: "6px",
-                      padding: "8px 18px",
-                      backgroundColor: "var(--primary, #2563eb)",
+                      gap: "8px",
+                      padding: "10px 22px",
+                      backgroundColor: "var(--primary, #31525B)",
                       color: "#ffffff",
-                      borderRadius: "8px",
+                      borderRadius: "10px",
                       textDecoration: "none",
                       fontWeight: 700,
-                      fontSize: "13px"
+                      fontSize: "14px",
+                      boxShadow: "0 4px 14px rgba(49, 82, 91, 0.35)",
+                      transition: "all 0.2s ease"
                     }}
                   >
-                    <span>Book a Service →</span>
+                    <span style={{ color: "#ffffff", fontWeight: 700, fontSize: "14px" }}>Book a Service →</span>
                   </Link>
                 </div>
               );
