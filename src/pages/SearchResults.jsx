@@ -296,7 +296,7 @@ function SearchResults() {
           )}
 
           {/* Results Listings */}
-          <div style={{ flex: 1, width: "100%", display: "flex", flexDirection: "column", gap: "12px", minWidth: 0 }}>
+          <div style={{ flex: 1, width: "100%", display: "flex", flexDirection: "column", gap: "var(--fs-xs, 12px)", minWidth: 0 }}>
             {loading ? (
               <div className="premium-card" style={{ padding: "40px 20px", textAlign: "center", borderRadius: "16px", border: "1.5px solid var(--border-color)" }}>
                 <p style={{ fontStyle: "italic", color: "var(--text-secondary)", fontSize: "14px", fontWeight: 500, margin: 0 }}>
@@ -340,13 +340,13 @@ function SearchResults() {
                   }}
                 >
                   {/* Top Row: Avatar + Name + Category + Rating */}
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px", width: "100%" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "var(--fs-xs, 12px)", width: "100%" }}>
                     {/* Avatar */}
                     <div 
                       style={{ 
                         width: isMobile ? "46px" : "54px", 
                         height: isMobile ? "46px" : "54px", 
-                        borderRadius: "12px", 
+                        borderRadius: "var(--fs-xs, 12px)", 
                         background: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)",
                         display: "flex",
                         alignItems: "center",
@@ -390,11 +390,11 @@ function SearchResults() {
                         <span style={{ display: "inline-flex", alignItems: "center", gap: "3px", color: "var(--warning)", fontWeight: 800, fontSize: "12.5px" }}>
                           <FaStar size={12} /> {worker.rating || "5.0"}
                         </span>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: "3px", color: "var(--text-secondary)", fontSize: "12px", fontWeight: 600 }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "3px", color: "var(--text-secondary)", fontSize: "var(--fs-xs, 12px)", fontWeight: 600 }}>
                           <FaMapMarkerAlt size={11} /> {worker.city}
                         </span>
                         {worker.distanceKm !== undefined && (
-                          <span style={{ backgroundColor: "rgba(49, 82, 91, 0.08)", color: "var(--text-main)", padding: "1px 7px", borderRadius: "10px", fontSize: "10.5px", fontWeight: 700 }}>
+                          <span style={{ backgroundColor: "rgba(49, 82, 91, 0.08)", color: "var(--text-main)", padding: "1px 7px", borderRadius: "10px", fontSize: "var(--fs-xs, 12px)", fontWeight: 700 }}>
                             {worker.distanceKm < 0.5 ? "Under 0.5 km away" : `${worker.distanceKm} km away`}
                           </span>
                         )}
@@ -408,7 +408,7 @@ function SearchResults() {
                   {/* Bottom Row: Standard Rate on Left, Book Button on Right */}
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
                     <div>
-                      <span style={{ fontSize: "10.5px", color: "var(--text-secondary)", display: "block", fontWeight: 600 }}>Standard Rate</span>
+                      <span style={{ fontSize: "var(--fs-xs, 12px)", color: "var(--text-secondary)", display: "block", fontWeight: 600 }}>Standard Rate</span>
                       <span style={{ fontSize: "16px", fontWeight: 800, color: "var(--text-main)", letterSpacing: "-0.2px" }}>
                         ₹{worker.price || 349}
                       </span>

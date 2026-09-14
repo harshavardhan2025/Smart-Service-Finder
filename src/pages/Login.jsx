@@ -116,7 +116,7 @@ function LoginResultPopup({ popup, onClose, onSwitchTab, onOpenJoinForm, navigat
       <div style={{
         background: "var(--bg-card, #ffffff)",
         border: `2px solid ${config.border}`,
-        borderRadius: "24px", padding: "40px 36px", maxWidth: "420px", width: "100%",
+        borderRadius: "var(--fs-xl, 24px)", padding: "40px 36px", maxWidth: "420px", width: "100%",
         textAlign: "center", boxShadow: "0 25px 80px rgba(0,0,0,0.25)",
         animation: "loginPopIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both"
       }}>
@@ -166,7 +166,7 @@ function LoginResultPopup({ popup, onClose, onSwitchTab, onOpenJoinForm, navigat
 // ── Shared status banner ─────────────────────────────────────────────────
 const StatusBanner = ({ status }) => status ? (
   <div style={{
-    padding: "12px 16px", borderRadius: "12px", marginBottom: "16px",
+    padding: "12px 16px", borderRadius: "var(--fs-xs, 12px)", marginBottom: "16px",
     fontSize: "13px", fontWeight: 600, display: "flex", alignItems: "center", gap: "10px",
     animation: "loginFadeIn 0.3s ease-out forwards",
     backgroundColor: status.type === "success" ? "rgba(22, 163, 74, 0.08)" : "rgba(220, 38, 38, 0.06)",
@@ -217,7 +217,7 @@ const InputField = ({ icon: Icon, label, id, type = "text", placeholder, value, 
         style={{
           width: "100%", boxSizing: "border-box",
           padding: Icon ? "10px 14px 10px 40px" : "10px 14px",
-          borderRadius: "12px",
+          borderRadius: "var(--fs-xs, 12px)",
           border: error ? "2px solid rgba(220, 38, 38, 0.3)" : "2px solid var(--border, #e2e8f0)",
           background: "var(--bg-card, #ffffff)",
           color: "var(--text-main)",
@@ -672,7 +672,7 @@ function Login() {
 
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg-primary, #f8fafc)" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg-main, var(--bg-main))" }}>
       <Navbar />
 
       <div style={{
@@ -732,7 +732,7 @@ function Login() {
 
               <div style={{ position: "relative", zIndex: 1 }}>
                 <div style={{
-                  width: "44px", height: "44px", borderRadius: "12px",
+                  width: "44px", height: "44px", borderRadius: "var(--fs-xs, 12px)",
                   background: "linear-gradient(135deg, #dfb453 0%, #f1a829 100%)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   marginBottom: "16px", boxShadow: "0 6px 18px rgba(223, 180, 83, 0.3)",
@@ -787,9 +787,9 @@ function Login() {
             overflowY: "auto", maxHeight: isMobile ? "100%" : "80vh",
           }}>
             {/* ── Header ──────────────────────────────────────────── */}
-            <div style={{ marginBottom: isMobile ? "12px" : "18px" }}>
+            <div style={{ marginBottom: isMobile ? "var(--fs-xs, 12px)" : "18px" }}>
               <h1 style={{
-                margin: "0 0 4px", fontSize: isMobile ? "21px" : "24px",
+                margin: "0 0 4px", fontSize: isMobile ? "21px" : "var(--fs-xl, 24px)",
                 fontWeight: 900, color: "var(--text-main)", letterSpacing: "-0.5px",
               }}>
                 Sign In
@@ -802,7 +802,7 @@ function Login() {
             {/* ── Tab Switcher ─────────────────────────────────────── */}
             <div style={{
               display: "flex", gap: "4px",
-              background: "var(--bg-secondary, #f1f5f9)", borderRadius: "14px",
+              background: "var(--bg-card, var(--bg-card-hover))", borderRadius: "14px",
               padding: "4px", marginBottom: "16px",
             }}>
               <button
@@ -845,7 +845,7 @@ function Login() {
             ════════════════════════════════════════════════════════ */}
             {activeTab === "user" && (
               <>
-                <form onSubmit={handleUserLogin} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <form onSubmit={handleUserLogin} style={{ display: "flex", flexDirection: "column", gap: "var(--fs-xs, 12px)" }}>
                   <InputField
                     icon={FaEnvelope}
                     label="Email Address"
@@ -888,7 +888,7 @@ function Login() {
                     type="submit"
                     disabled={isLoading}
                     style={{
-                      padding: "12px", fontSize: "15px", fontWeight: 700, marginTop: "2px",
+                      padding: "var(--fs-xs, 12px)", fontSize: "15px", fontWeight: 700, marginTop: "2px",
                       width: "100%", border: "none", borderRadius: "14px",
                       cursor: isLoading ? "not-allowed" : "pointer",
                       opacity: isLoading ? 0.7 : 1,
@@ -906,7 +906,7 @@ function Login() {
                 {/* Divider + Google */}
                 <div style={{ display: "flex", alignItems: "center", margin: "16px 0" }}>
                   <div style={{ flex: 1, height: "1px", background: "var(--border, #e2e8f0)" }} />
-                  <span style={{ padding: "0 16px", color: "var(--text-muted)", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1px" }}>or</span>
+                  <span style={{ padding: "0 16px", color: "var(--text-muted)", fontSize: "var(--fs-xs, 12px)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1px" }}>or</span>
                   <div style={{ flex: 1, height: "1px", background: "var(--border, #e2e8f0)" }} />
                 </div>
                 <button
@@ -914,7 +914,7 @@ function Login() {
                   type="button"
                   onClick={() => handleGoogleSignIn("user_login")}
                   style={{
-                    padding: "12px", fontSize: "14px", fontWeight: 600, width: "100%",
+                    padding: "var(--fs-xs, 12px)", fontSize: "14px", fontWeight: 600, width: "100%",
                     display: "flex", justifyContent: "center", alignItems: "center", gap: "10px",
                     borderRadius: "14px", cursor: "pointer",
                     background: "var(--bg-card, #ffffff)",
@@ -984,7 +984,7 @@ function Login() {
                     type="submit"
                     disabled={isLoading}
                     style={{
-                      padding: "12px", fontSize: "15px", fontWeight: 700, marginTop: "2px",
+                      padding: "var(--fs-xs, 12px)", fontSize: "15px", fontWeight: 700, marginTop: "2px",
                       width: "100%", border: "none", borderRadius: "14px",
                       cursor: isLoading ? "not-allowed" : "pointer",
                       opacity: isLoading ? 0.7 : 1,
@@ -1002,7 +1002,7 @@ function Login() {
                 {/* Google Sign-In for Provider */}
                 <div style={{ display: "flex", alignItems: "center", margin: "22px 0" }}>
                   <div style={{ flex: 1, height: "1px", background: "var(--border, #e2e8f0)" }} />
-                  <span style={{ padding: "0 16px", color: "var(--text-muted)", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1px" }}>or</span>
+                  <span style={{ padding: "0 16px", color: "var(--text-muted)", fontSize: "var(--fs-xs, 12px)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1px" }}>or</span>
                   <div style={{ flex: 1, height: "1px", background: "var(--border, #e2e8f0)" }} />
                 </div>
                 <button
@@ -1010,7 +1010,7 @@ function Login() {
                   type="button"
                   onClick={() => handleGoogleSignIn("provider_login")}
                   style={{
-                    padding: "12px", fontSize: "14px", fontWeight: 600, width: "100%",
+                    padding: "var(--fs-xs, 12px)", fontSize: "14px", fontWeight: 600, width: "100%",
                     display: "flex", justifyContent: "center", alignItems: "center", gap: "10px",
                     borderRadius: "14px", cursor: "pointer",
                     background: "var(--bg-card, #ffffff)",

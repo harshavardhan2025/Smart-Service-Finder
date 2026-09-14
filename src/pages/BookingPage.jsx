@@ -464,7 +464,7 @@ function BookingPage() {
               }
             }}
             style={{
-              background: isEmergency ? "linear-gradient(135deg, #ef4444 0%, #991b1b 100%)" : (isBusyForInstant() ? "var(--primary-light)" : "var(--bg-card)"),
+              background: isEmergency ? "linear-gradient(135deg, var(--danger) 0%, #991b1b 100%)" : (isBusyForInstant() ? "var(--primary-light)" : "var(--bg-card)"),
               border: isEmergency ? "none" : "1.5px solid var(--border-color)",
               borderRadius: 20,
               padding: "20px 24px",
@@ -653,7 +653,7 @@ function BookingPage() {
                 <button
                   onClick={handleQuickWalletTopup}
                   style={{
-                    backgroundColor: "#10b981",
+                    backgroundColor: "var(--success)",
                     color: "white",
                     border: "none",
                     borderRadius: "10px",
@@ -688,7 +688,7 @@ function BookingPage() {
             {appliedOffer ? (
               <div style={{
                 backgroundColor: "rgba(16, 185, 129, 0.1)",
-                border: "1.5px solid #10b981",
+                border: "1.5px solid var(--success)",
                 borderRadius: 12,
                 padding: "14px 18px",
                 display: "flex",
@@ -833,7 +833,7 @@ function BookingPage() {
               <button 
                 onClick={() => navigate("/plans-offers")}
                 style={{
-                  background: "#10b981",
+                  background: "var(--success)",
                   color: "white",
                   border: "none",
                   borderRadius: 12,
@@ -927,7 +927,7 @@ function BookingPage() {
               style={{ 
                 width: "100%",
                 padding: "18px",
-                background: !selectedSlot ? "#94a3b8" : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                background: !selectedSlot ? "#94a3b8" : "linear-gradient(135deg, var(--success) 0%, #059669 100%)",
                 color: "white",
                 border: "none",
                 borderRadius: 16,

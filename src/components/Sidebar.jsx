@@ -349,7 +349,7 @@ function Sidebar({ open: controlledOpen, onClose: controlledOnClose }) {
 
     padding: "13px 15px",
 
-    borderRadius: "12px",
+    borderRadius: "var(--fs-xs, 12px)",
 
     fontSize: "14.5px",
 
@@ -443,7 +443,7 @@ function Sidebar({ open: controlledOpen, onClose: controlledOnClose }) {
 
             top: isMobile
               ? "10px"
-              : "12px",
+              : "var(--fs-xs, 12px)",
 
             left: open
               ? "calc(min(280px, 88vw) - 48px)"
@@ -473,7 +473,7 @@ function Sidebar({ open: controlledOpen, onClose: controlledOnClose }) {
             borderBottom:
               "1.5px solid var(--border-color)",
 
-            borderRadius: "12px",
+            borderRadius: "var(--fs-xs, 12px)",
 
             cursor: "pointer",
 
@@ -607,7 +607,8 @@ function Sidebar({ open: controlledOpen, onClose: controlledOnClose }) {
                 }}
               >
                 <span style={{ color: "var(--text-main)" }}>Work</span>
-                <span style={{ color: "var(--warning, #f59e0b)" }}>zy</span>
+                {/* 'zy' — must match Navbar brand colour: #92400e = 7.3:1 on white (WCAG AA ✓) */}
+                <span style={{ color: "var(--brand-accent, #92400e)" }}>zy</span>
               </h2>
             </div>
 
@@ -636,7 +637,7 @@ function Sidebar({ open: controlledOpen, onClose: controlledOnClose }) {
           <p
             style={{
               margin: "8px 0 0 46px",
-              fontSize: "11.5px",
+              fontSize: "var(--fs-sm, 14px)",
               color: "var(--text-secondary)",
               fontWeight: 500,
             }}
@@ -681,26 +682,21 @@ function Sidebar({ open: controlledOpen, onClose: controlledOnClose }) {
                 className="workzy-sidebar-link"
                 style={getLinkStyle}
               >
+                {/* aria-hidden: icon is decorative; link text (label) provides the accessible name */}
                 <span
+                  aria-hidden="true"
                   style={{
                     width: "22px",
-
                     display: "flex",
-
                     alignItems: "center",
-
-                    justifyContent:
-                      "center",
-
+                    justifyContent: "center",
                     fontSize: "17px",
                   }}
                 >
                   {icon}
                 </span>
 
-                <span>
-                  {label}
-                </span>
+                <span>{label}</span>
               </NavLink>
             )
           )}
@@ -799,9 +795,9 @@ function Sidebar({ open: controlledOpen, onClose: controlledOnClose }) {
 
           <div
             style={{
-              marginTop: "12px",
+              marginTop: "var(--fs-xs, 12px)",
 
-              paddingTop: "12px",
+              paddingTop: "var(--fs-xs, 12px)",
 
               borderTop:
                 "1px solid var(--border-color)",
@@ -964,7 +960,7 @@ function Sidebar({ open: controlledOpen, onClose: controlledOnClose }) {
         >
           <p
             style={{
-              fontSize: "10.5px",
+              fontSize: "var(--fs-xs, 12px)",
 
               color: "var(--text-secondary)",
 

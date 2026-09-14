@@ -501,21 +501,21 @@ function MyBookings() {
         label = "Booking Confirmed";
         icon = <FaCheckCircle style={{ fontSize: "11px" }} />;
         bg = "rgba(16, 185, 129, 0.12)";
-        color = "#10b981";
+        color = "var(--success)";
         border = "1px solid rgba(16, 185, 129, 0.35)";
         break;
       case "Accepted":
         label = "Worker Assigned";
         icon = <FaUserTie style={{ fontSize: "11px" }} />;
         bg = "rgba(16, 185, 129, 0.12)";
-        color = "#10b981";
+        color = "var(--success)";
         border = "1px solid rgba(16, 185, 129, 0.35)";
         break;
       case "On the Way":
         label = "Worker On the Way";
         icon = <FaTruck style={{ fontSize: "11px" }} />;
         bg = "rgba(16, 185, 129, 0.12)";
-        color = "#10b981";
+        color = "var(--success)";
         border = "1px solid rgba(16, 185, 129, 0.35)";
         break;
       case "Started":
@@ -544,7 +544,7 @@ function MyBookings() {
         label = "Booking Cancelled";
         icon = <FaTimesCircle style={{ fontSize: "11px" }} />;
         bg = "rgba(239, 68, 68, 0.12)";
-        color = "#ef4444";
+        color = "var(--danger)";
         border = "1px solid rgba(239, 68, 68, 0.35)";
         break;
       case "Rejected":
@@ -554,7 +554,7 @@ function MyBookings() {
         label = status === "Rejected" ? "Declined by Worker" : status;
         icon = <FaBan style={{ fontSize: "11px" }} />;
         bg = "rgba(239, 68, 68, 0.12)";
-        color = "#ef4444";
+        color = "var(--danger)";
         border = "1px solid rgba(239, 68, 68, 0.35)";
         break;
     }
@@ -567,7 +567,7 @@ function MyBookings() {
           gap: "6px",
           padding: "5px 12px",
           borderRadius: "16px",
-          fontSize: "12px",
+          fontSize: "var(--fs-xs, 12px)",
           fontWeight: 700,
           backgroundColor: bg,
           color: color,
@@ -593,7 +593,7 @@ function MyBookings() {
     {
       id: "All",
       label: `All: ${counts.All}`,
-      icon: <FaClipboardList style={{ fontSize: "12px" }} />,
+      icon: <FaClipboardList style={{ fontSize: "var(--fs-xs, 12px)" }} />,
       activeBg: "var(--primary, #2563eb)",
       activeColor: "#ffffff",
       defaultBg: "var(--bg-card)",
@@ -603,7 +603,7 @@ function MyBookings() {
     {
       id: "Confirmed",
       label: `Confirmed: ${counts.Confirmed}`,
-      icon: <FaCheckCircle style={{ fontSize: "12px" }} />,
+      icon: <FaCheckCircle style={{ fontSize: "var(--fs-xs, 12px)" }} />,
       activeBg: "#16a34a",
       activeColor: "#ffffff",
       defaultBg: "rgba(22, 163, 74, 0.12)",
@@ -613,7 +613,7 @@ function MyBookings() {
     {
       id: "Pending",
       label: `Pending: ${counts.Pending}`,
-      icon: <FaHourglassHalf style={{ fontSize: "12px" }} />,
+      icon: <FaHourglassHalf style={{ fontSize: "var(--fs-xs, 12px)" }} />,
       activeBg: "#d97706",
       activeColor: "#ffffff",
       defaultBg: "rgba(217, 119, 6, 0.12)",
@@ -623,7 +623,7 @@ function MyBookings() {
     {
       id: "Completed",
       label: `Done: ${counts.Done}`,
-      icon: <FaCheckDouble style={{ fontSize: "12px" }} />,
+      icon: <FaCheckDouble style={{ fontSize: "var(--fs-xs, 12px)" }} />,
       activeBg: "#2563eb",
       activeColor: "#ffffff",
       defaultBg: "rgba(37, 99, 235, 0.12)",
@@ -633,7 +633,7 @@ function MyBookings() {
     {
       id: "Cancelled",
       label: `Cancelled: ${counts.Cancelled}`,
-      icon: <FaTimesCircle style={{ fontSize: "12px" }} />,
+      icon: <FaTimesCircle style={{ fontSize: "var(--fs-xs, 12px)" }} />,
       activeBg: "#dc2626",
       activeColor: "#ffffff",
       defaultBg: "rgba(220, 38, 38, 0.12)",
@@ -670,13 +670,13 @@ function MyBookings() {
               display: "inline-flex",
               alignItems: "center",
               gap: "6px",
-              marginBottom: "12px"
+              marginBottom: "var(--fs-xs, 12px)"
             }}
           >
             <FaArrowLeft style={{ fontSize: "11px" }} />
             <span style={{ color: "inherit" }}>Back to Home</span>
           </Link>
-          <h1 style={{ margin: "0 0 4px 0", fontSize: "24px", fontWeight: 700, color: "var(--text-main)", display: "flex", alignItems: "center", gap: "10px" }}>
+          <h1 style={{ margin: "0 0 4px 0", fontSize: "var(--fs-xl, 24px)", fontWeight: 700, color: "var(--text-main)", display: "flex", alignItems: "center", gap: "10px" }}>
             <FaClipboardList style={{ color: "var(--primary, #2563eb)", fontSize: "22px" }} />
             <span>My Bookings</span>
           </h1>
@@ -758,11 +758,11 @@ function MyBookings() {
                     padding: "40px 20px",
                     textAlign: "center",
                     backgroundColor: "var(--bg-card)",
-                    borderRadius: "12px",
+                    borderRadius: "var(--fs-xs, 12px)",
                     border: "1px solid var(--border-color)"
                   }}
                 >
-                  <div style={{ fontSize: "36px", color: "var(--text-secondary)", opacity: 0.6, marginBottom: "12px" }}>
+                  <div style={{ fontSize: "36px", color: "var(--text-secondary)", opacity: 0.6, marginBottom: "var(--fs-xs, 12px)" }}>
                     <FaClipboardList />
                   </div>
                   <h3 style={{ margin: "0 0 6px 0", fontSize: "16px", fontWeight: 700, color: "var(--text-main)" }}>
@@ -780,7 +780,7 @@ function MyBookings() {
                       alignItems: "center",
                       gap: "8px",
                       padding: "10px 22px",
-                      backgroundColor: "var(--primary, #31525B)",
+                      backgroundColor: "var(--primary, var(--primary))",
                       color: "#ffffff",
                       borderRadius: "10px",
                       textDecoration: "none",
@@ -807,7 +807,7 @@ function MyBookings() {
                   key={bid}
                   style={{
                     backgroundColor: "var(--bg-card)",
-                    borderRadius: "12px",
+                    borderRadius: "var(--fs-xs, 12px)",
                     padding: "18px 20px",
                     border: "1px solid var(--border-color)",
                     boxShadow: "0 1px 3px rgba(0,0,0,0.04)"
@@ -819,12 +819,12 @@ function MyBookings() {
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "flex-start",
-                      gap: "12px",
+                      gap: "var(--fs-xs, 12px)",
                       flexWrap: "wrap",
-                      marginBottom: "12px"
+                      marginBottom: "var(--fs-xs, 12px)"
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "var(--fs-xs, 12px)" }}>
                       <span style={{
                         fontSize: "20px",
                         width: "38px",
@@ -869,20 +869,20 @@ function MyBookings() {
                     }}
                   >
                     <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                      <FaCalendarAlt style={{ color: "var(--primary, #2563eb)", fontSize: "12px" }} />
+                      <FaCalendarAlt style={{ color: "var(--primary, #2563eb)", fontSize: "var(--fs-xs, 12px)" }} />
                       <span style={{ color: "var(--text-secondary)" }}>Date: <strong style={{ color: "var(--text-main)" }}>{booking.date}</strong></span>
                     </div>
                     <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                      <FaClock style={{ color: "var(--primary, #2563eb)", fontSize: "12px" }} />
+                      <FaClock style={{ color: "var(--primary, #2563eb)", fontSize: "var(--fs-xs, 12px)" }} />
                       <span style={{ color: "var(--text-secondary)" }}>Time: <strong style={{ color: "var(--text-main)" }}>{booking.time}</strong></span>
                     </div>
                     <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                      <FaRupeeSign style={{ color: "var(--primary, #2563eb)", fontSize: "12px" }} />
+                      <FaRupeeSign style={{ color: "var(--primary, #2563eb)", fontSize: "var(--fs-xs, 12px)" }} />
                       <span style={{ color: "var(--text-secondary)" }}>Cost: <strong style={{ color: "var(--text-main)" }}>₹{booking.price || booking.amount || 0}</strong></span>
                     </div>
                     {count > 0 && (
                       <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                        <FaSyncAlt style={{ color: count >= 2 ? "#dc2626" : "#d97706", fontSize: "12px" }} />
+                        <FaSyncAlt style={{ color: count >= 2 ? "#dc2626" : "#d97706", fontSize: "var(--fs-xs, 12px)" }} />
                         <span style={{ color: "var(--text-secondary)" }}>Rescheduled: <strong style={{ color: count >= 2 ? "#dc2626" : "#d97706" }}>{count}/2 times used</strong></span>
                       </div>
                     )}
@@ -899,7 +899,7 @@ function MyBookings() {
                           onClick={() => setActiveCancelBooking(booking)}
                           style={{
                             backgroundColor: "rgba(239, 68, 68, 0.1)",
-                            color: "#ef4444",
+                            color: "var(--danger)",
                             border: "1px solid rgba(239, 68, 68, 0.35)",
                             padding: "8px 16px",
                             borderRadius: "8px",
@@ -911,8 +911,8 @@ function MyBookings() {
                             gap: "6px"
                           }}
                         >
-                          <FaBan style={{ fontSize: "11px", color: "#ef4444" }} />
-                          <span style={{ color: "#ef4444", fontWeight: 700 }}>Cancel Booking & Refund</span>
+                          <FaBan style={{ fontSize: "11px", color: "var(--danger)" }} />
+                          <span style={{ color: "var(--danger)", fontWeight: 700 }}>Cancel Booking & Refund</span>
                         </button>
 
                         {!reschStatus.isInstant && (
@@ -961,7 +961,7 @@ function MyBookings() {
                             }}
                             style={{
                               backgroundColor: "rgba(16, 185, 129, 0.1)",
-                              color: "#10b981",
+                              color: "var(--success)",
                               border: "1px solid rgba(16, 185, 129, 0.35)",
                               padding: "8px 16px",
                               borderRadius: "8px",
@@ -973,8 +973,8 @@ function MyBookings() {
                               gap: "6px"
                             }}
                           >
-                            <FaCommentDots style={{ fontSize: "12px", color: "#10b981" }} />
-                            <span style={{ color: "#10b981", fontWeight: 700 }}>Chat with Provider</span>
+                            <FaCommentDots style={{ fontSize: "var(--fs-xs, 12px)", color: "var(--success)" }} />
+                            <span style={{ color: "var(--success)", fontWeight: 700 }}>Chat with Provider</span>
                           </button>
                         )}
                       </>
@@ -1008,7 +1008,7 @@ function MyBookings() {
                             </>
                           ) : (
                             <>
-                              <FaStar style={{ fontSize: "12px", color: "#fbbf24" }} />
+                              <FaStar style={{ fontSize: "var(--fs-xs, 12px)", color: "#fbbf24" }} />
                               <span style={{ color: "#ffffff", fontWeight: 700 }}>Rate Service & Earn ₹50 Cashback</span>
                             </>
                           )}
@@ -1083,7 +1083,7 @@ function MyBookings() {
             </p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "20px" }}>
-              <label style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)" }}>Select Cancellation Reason</label>
+              <label style={{ fontSize: "var(--fs-xs, 12px)", fontWeight: 700, color: "var(--text-secondary)" }}>Select Cancellation Reason</label>
               <select
                 value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}
@@ -1097,7 +1097,7 @@ function MyBookings() {
               </select>
             </div>
 
-            <div style={{ display: "flex", gap: "12px" }}>
+            <div style={{ display: "flex", gap: "var(--fs-xs, 12px)" }}>
               <button
                 disabled={submittingCancel}
                 onClick={handleConfirmCancel}
@@ -1106,7 +1106,7 @@ function MyBookings() {
                   backgroundColor: "var(--danger)",
                   color: "white",
                   border: "none",
-                  padding: "12px",
+                  padding: "var(--fs-xs, 12px)",
                   borderRadius: "10px",
                   fontWeight: "bold",
                   cursor: "pointer",
@@ -1123,7 +1123,7 @@ function MyBookings() {
                   backgroundColor: "var(--primary-light)",
                   color: "var(--text-secondary)",
                   border: "none",
-                  padding: "12px",
+                  padding: "var(--fs-xs, 12px)",
                   borderRadius: "10px",
                   fontWeight: "bold",
                   cursor: "pointer",
@@ -1162,7 +1162,7 @@ function MyBookings() {
               maxHeight: "90vh",
               overflowY: "auto",
               backgroundColor: "var(--bg-card)",
-              borderRadius: "24px",
+              borderRadius: "var(--fs-xl, 24px)",
               padding: "0",
               boxSizing: "border-box",
               boxShadow: "0 30px 70px rgba(31, 53, 59, 0.35), 0 0 0 1px rgba(49, 82, 91, 0.1)",
@@ -1171,7 +1171,7 @@ function MyBookings() {
             }}
           >
             {/* Top Decorative Gradient Accent */}
-            <div style={{ height: "6px", background: "linear-gradient(90deg, #31525B 0%, #1F353B 50%, #B3DEE5 100%)" }} />
+            <div style={{ height: "6px", background: "linear-gradient(90deg, var(--primary) 0%, #1F353B 50%, var(--primary-light) 100%)" }} />
 
             {/* Header */}
             <div style={{
@@ -1189,7 +1189,7 @@ function MyBookings() {
                   padding: "4px 10px",
                   borderRadius: "20px",
                   background: "rgba(49, 82, 91, 0.08)",
-                  color: "#31525B",
+                  color: "var(--primary)",
                   fontSize: "11px",
                   fontWeight: 700,
                   letterSpacing: "0.5px",
@@ -1241,7 +1241,7 @@ function MyBookings() {
                     <div style={{ fontSize: "14px", fontWeight: 800, color: "#1F353B" }}>
                       {activeRescheduleBooking.service}
                     </div>
-                    <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "2px" }}>
+                    <div style={{ fontSize: "var(--fs-xs, 12px)", color: "var(--text-secondary)", marginTop: "2px" }}>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}><FaUserTie style={{ fontSize: "11px", color: "var(--text-secondary)" }} /> Assigned Expert: <strong>{activeRescheduleBooking.workerName || activeRescheduleBooking.worker_name || "Verified Professional"}</strong></span>
                     </div>
                   </div>
@@ -1262,11 +1262,11 @@ function MyBookings() {
                   background: "var(--bg-main)",
                   borderRadius: "10px",
                   border: "1px solid var(--border-color)",
-                  fontSize: "12px",
+                  fontSize: "var(--fs-xs, 12px)",
                   color: "var(--text-secondary)",
                   display: "flex",
                   alignItems: "center",
-                  gap: "12px"
+                  gap: "var(--fs-xs, 12px)"
                 }}>
                   <span>Current Slot:</span>
                   <strong style={{ color: "var(--primary)", display: "inline-flex", alignItems: "center", gap: "4px" }}><FaCalendarAlt style={{ fontSize: "11px" }} /> {activeRescheduleBooking.date}</strong>
@@ -1279,19 +1279,19 @@ function MyBookings() {
                   borderRadius: "10px",
                   backgroundColor: "rgba(59, 130, 246, 0.06)",
                   border: "1px solid rgba(59, 130, 246, 0.2)",
-                  fontSize: "12px",
+                  fontSize: "var(--fs-xs, 12px)",
                   display: "flex",
                   flexDirection: "column",
                   gap: "4px"
                 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span style={{ fontWeight: 800, color: "var(--primary)", display: "flex", alignItems: "center", gap: "6px" }}>
-                      <FaInfoCircle style={{ fontSize: "12px" }} /> Reschedule Policy:
+                      <FaInfoCircle style={{ fontSize: "var(--fs-xs, 12px)" }} /> Reschedule Policy:
                     </span>
                     <span style={{
                       fontSize: "11px",
                       fontWeight: 800,
-                      color: (activeRescheduleBooking.rescheduleCount || activeRescheduleBooking.reschedule_count || 0) >= 1 ? "#d97706" : "#10b981",
+                      color: (activeRescheduleBooking.rescheduleCount || activeRescheduleBooking.reschedule_count || 0) >= 1 ? "#d97706" : "var(--success)",
                       backgroundColor: (activeRescheduleBooking.rescheduleCount || activeRescheduleBooking.reschedule_count || 0) >= 1 ? "rgba(217, 119, 6, 0.12)" : "rgba(16, 185, 129, 0.12)",
                       padding: "2px 8px",
                       borderRadius: "6px"
@@ -1299,7 +1299,7 @@ function MyBookings() {
                       Used: {activeRescheduleBooking.rescheduleCount || activeRescheduleBooking.reschedule_count || 0}/2 Times
                     </span>
                   </div>
-                  <div style={{ fontSize: "11.5px", color: "var(--text-secondary)", lineHeight: "1.4" }}>
+                  <div style={{ fontSize: "var(--fs-sm, 14px)", color: "var(--text-secondary)", lineHeight: "1.4" }}>
                     • Allowed maximum <strong>2 times</strong> per booking.<br />
                     • Rescheduling strictly accepted at least <strong>2 hours prior</strong> to scheduled service.
                   </div>
@@ -1309,7 +1309,7 @@ function MyBookings() {
               {/* Date Input */}
               <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "18px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <label style={{ fontSize: "11.5px", fontWeight: 700, color: "var(--text-secondary)", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                  <label style={{ fontSize: "var(--fs-sm, 14px)", fontWeight: 700, color: "var(--text-secondary)", letterSpacing: "0.5px", textTransform: "uppercase" }}>
                     Select New Date
                   </label>
                   <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>Max 9-day window</span>
@@ -1328,7 +1328,7 @@ function MyBookings() {
                   style={{
                     width: "100%",
                     padding: "12px 14px",
-                    borderRadius: "12px",
+                    borderRadius: "var(--fs-xs, 12px)",
                     border: "1.5px solid #cbd5e1",
                     fontSize: "13.5px",
                     fontWeight: 600,
@@ -1346,7 +1346,7 @@ function MyBookings() {
                     backgroundColor: "rgba(239, 68, 68, 0.08)",
                     border: "1px solid rgba(239, 68, 68, 0.25)",
                     color: "#dc2626",
-                    fontSize: "12px",
+                    fontSize: "var(--fs-xs, 12px)",
                     fontWeight: 700,
                     display: "flex",
                     alignItems: "center",
@@ -1361,7 +1361,7 @@ function MyBookings() {
               {/* Time Slot Picker */}
               <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "26px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <label style={{ fontSize: "11.5px", fontWeight: 700, color: "var(--text-secondary)", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                  <label style={{ fontSize: "var(--fs-sm, 14px)", fontWeight: 700, color: "var(--text-secondary)", letterSpacing: "0.5px", textTransform: "uppercase" }}>
                     Select Available Window
                   </label>
                   <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
@@ -1383,18 +1383,18 @@ function MyBookings() {
                         onClick={() => !isUnavailable && setRescheduleSlot(slot)}
                         style={{
                           padding: "11px 4px",
-                          borderRadius: "12px",
+                          borderRadius: "var(--fs-xs, 12px)",
                           border: isSelected
-                            ? "2px solid var(--primary, #31525B)"
+                            ? "2px solid var(--primary, var(--primary))"
                             : isPast
                             ? "1.5px dashed var(--border-color, #cbd5e1)"
                             : isOccupied
                             ? "1.5px solid #fecaca"
                             : "1.5px solid var(--border-color, #e2e8f0)",
                           background: isSelected
-                            ? "linear-gradient(145deg, #31525B 0%, #1F353B 100%)"
+                            ? "linear-gradient(145deg, var(--primary) 0%, #1F353B 100%)"
                             : isPast
-                            ? "var(--bg-main, #f1f5f9)"
+                            ? "var(--bg-main, var(--bg-card-hover))"
                             : isOccupied
                             ? "#fee2e2"
                             : "var(--bg-card, white)",
@@ -1406,7 +1406,7 @@ function MyBookings() {
                             ? "#dc2626"
                             : "var(--text-main, #334155)",
                           fontWeight: 800,
-                          fontSize: "12px",
+                          fontSize: "var(--fs-xs, 12px)",
                           cursor: isUnavailable ? "not-allowed" : "pointer",
                           opacity: isPast ? 0.6 : 1,
                           transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -1440,8 +1440,8 @@ function MyBookings() {
                     borderRadius: "10px",
                     backgroundColor: "rgba(239, 68, 68, 0.08)",
                     border: "1px solid rgba(239, 68, 68, 0.2)",
-                    color: "var(--danger, #ef4444)",
-                    fontSize: "12px",
+                    color: "var(--danger, var(--danger))",
+                    fontSize: "var(--fs-xs, 12px)",
                     fontWeight: 600,
                     display: "flex",
                     alignItems: "center",
@@ -1454,7 +1454,7 @@ function MyBookings() {
               </div>
 
               {/* Action Buttons */}
-              <div style={{ display: "flex", gap: "12px" }}>
+              <div style={{ display: "flex", gap: "var(--fs-xs, 12px)" }}>
                 {(() => {
                   const countReached = (activeRescheduleBooking.rescheduleCount || activeRescheduleBooking.reschedule_count || 0) >= 2;
                   const isDateExpired = rescheduleDate < getMinRescheduleDate();
@@ -1469,7 +1469,7 @@ function MyBookings() {
                         flex: 1.6,
                         background: isInvalid 
                           ? "var(--border, #94a3b8)" 
-                          : "linear-gradient(145deg, #31525B 0%, #1F353B 100%)",
+                          : "linear-gradient(145deg, var(--primary) 0%, #1F353B 100%)",
                         color: isInvalid ? "var(--text-muted, #64748b)" : "white",
                         border: "none",
                         borderBottom: isInvalid ? "none" : "3px solid #0E1719",
@@ -1550,7 +1550,7 @@ function MyBookings() {
             </p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "16px" }}>
-              <label style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)" }}>Incident / Grievance Type</label>
+              <label style={{ fontSize: "var(--fs-xs, 12px)", fontWeight: 700, color: "var(--text-secondary)" }}>Incident / Grievance Type</label>
               <select
                 value={issueType}
                 onChange={(e) => setIssueType(e.target.value)}
@@ -1565,7 +1565,7 @@ function MyBookings() {
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "20px" }}>
-              <label style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)" }}>Detailed Incident Description</label>
+              <label style={{ fontSize: "var(--fs-xs, 12px)", fontWeight: 700, color: "var(--text-secondary)" }}>Detailed Incident Description</label>
               <textarea
                 rows={4}
                 value={complaintDesc}
@@ -1575,7 +1575,7 @@ function MyBookings() {
               />
             </div>
 
-            <div style={{ display: "flex", gap: "12px" }}>
+            <div style={{ display: "flex", gap: "var(--fs-xs, 12px)" }}>
               <button
                 disabled={submittingComplaint}
                 onClick={handleConfirmComplaint}
@@ -1584,7 +1584,7 @@ function MyBookings() {
                   backgroundcolor: "var(--danger)",
                   color: "white",
                   border: "none",
-                  padding: "12px",
+                  padding: "var(--fs-xs, 12px)",
                   borderRadius: "10px",
                   fontWeight: "bold",
                   cursor: "pointer",
@@ -1601,7 +1601,7 @@ function MyBookings() {
                   backgroundColor: "#e2e8f0",
                   color: "var(--text-secondary)",
                   border: "none",
-                  padding: "12px",
+                  padding: "var(--fs-xs, 12px)",
                   borderRadius: "10px",
                   fontWeight: "bold",
                   cursor: "pointer",
@@ -1696,7 +1696,7 @@ function MyBookings() {
                       padding: "6px 12px",
                       borderRadius: "8px",
                       fontWeight: "bold",
-                      fontSize: "12px",
+                      fontSize: "var(--fs-xs, 12px)",
                       cursor: "pointer",
                       display: "inline-flex",
                       alignItems: "center",
@@ -1715,7 +1715,7 @@ function MyBookings() {
                     background: "transparent",
                     border: "none",
                     color: "white",
-                    fontSize: "24px",
+                    fontSize: "var(--fs-xl, 24px)",
                     cursor: "pointer",
                     lineHeight: 1
                   }}
@@ -1733,7 +1733,7 @@ function MyBookings() {
               overflowY: "auto",
               display: "flex",
               flexDirection: "column",
-              gap: "12px"
+              gap: "var(--fs-xs, 12px)"
             }}>
               {chatMessages.length === 0 ? (
                 <div style={{
@@ -1760,7 +1760,7 @@ function MyBookings() {
                           border: "1px solid var(--border-color)",
                           padding: "6px 16px",
                           borderRadius: "20px",
-                          fontSize: "12px",
+                          fontSize: "var(--fs-xs, 12px)",
                           fontWeight: "600",
                           boxShadow: "var(--shadow-3d)",
                           textAlign: "center",
@@ -1836,7 +1836,7 @@ function MyBookings() {
                 placeholder="Type your message here..."
                 style={{
                   flex: 1,
-                  padding: "12px",
+                  padding: "var(--fs-xs, 12px)",
                   borderRadius: "10px",
                   border: "1px solid var(--border-color)",
                   backgroundColor: "var(--bg-card-hover)",

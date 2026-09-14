@@ -80,11 +80,11 @@ function CustomAlert() {
         let icon = "ℹ️";
 
         if (alertItem.type === "error") {
-          borderColor = "#ef4444"; // Bright Red
+          borderColor = "var(--danger)"; // Bright Red
           icon = "🛑";
           bgColor = "#2c1515"; // Very dark red tint
         } else if (alertItem.type === "success") {
-          borderColor = "#10b981"; // Bright Green
+          borderColor = "var(--success)"; // Bright Green
           icon = "✅";
           bgColor = "#14251d"; // Very dark green tint
         } else if (alertItem.type === "warning") {
@@ -102,7 +102,7 @@ function CustomAlert() {
             backgroundColor: bgColor,
             color: "white",
             padding: "16px 20px",
-            borderRadius: "12px",
+            borderRadius: "var(--fs-xs, 12px)",
             boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.2)",
             display: "flex",
             justifyContent: "space-between",
@@ -112,14 +112,14 @@ function CustomAlert() {
             borderLeft: `4px solid ${borderColor}`,
             animation: "customAlertSlideDown 0.3s ease-out"
           }}>
-            <div style={{ display: "flex", gap: "12px", alignItems: "flex-start", flex: 1 }}>
+            <div style={{ display: "flex", gap: "var(--fs-xs, 12px)", alignItems: "flex-start", flex: 1 }}>
               {!hasEmojiStart && <span style={{ fontSize: "18px", marginTop: "-2px" }}>{icon}</span>}
               <span style={{ 
                 fontSize: "14.5px", 
                 fontWeight: "500", 
                 whiteSpace: "pre-wrap", 
                 lineHeight: "1.5",
-                color: "#f8fafc",
+                color: "var(--bg-main)",
                 flex: 1
               }}>
                 {displayMessage}
@@ -138,7 +138,7 @@ function CustomAlert() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                height: "24px",
+                height: "var(--fs-xl, 24px)",
                 transition: "color 0.2s"
               }}
               onMouseOver={(e) => e.target.style.color = "white"}

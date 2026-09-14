@@ -519,7 +519,7 @@ function WorkerDashboard() {
   ];
 
   const statusStyle = (s) => ({
-    padding: "4px 10px", borderRadius: "20px", fontSize: "12px", fontWeight: 700,
+    padding: "4px 10px", borderRadius: "20px", fontSize: "var(--fs-xs, 12px)", fontWeight: 700,
     backgroundColor: s === "Completed" ? "var(--primary-light)" : s === "Upcoming" ? "var(--warning-light)" : s === "Accepted" ? "var(--primary-light)" : "var(--danger-light)",
     color: s === "Completed" ? "var(--primary-dark)" : s === "Upcoming" ? "var(--warning)" : s === "Accepted" ? "var(--success)" : "var(--danger)"
   });
@@ -653,27 +653,27 @@ function WorkerDashboard() {
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 style={{
                   display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", width: "100%",
-                  borderRadius: 8, border: isSosTab ? "1.5px solid #ef4444" : "none", textAlign: "left", fontSize: 14, fontWeight: 700, cursor: "pointer",
+                  borderRadius: 8, border: isSosTab ? "1.5px solid var(--danger)" : "none", textAlign: "left", fontSize: 14, fontWeight: 700, cursor: "pointer",
                   backgroundColor: activeTab === tab.id 
                     ? (isSosTab ? "#b91c1c" : "var(--primary)") 
                     : (isSosTab ? "#fff5f5" : "transparent"),
                   color: activeTab === tab.id 
                     ? "white" 
-                    : (isSosTab ? "#ef4444" : "var(--text-secondary)"),
+                    : (isSosTab ? "var(--danger)" : "var(--text-secondary)"),
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   boxShadow: isSosTab && activeTab !== tab.id ? "0 2px 4px rgba(239,68,68,0.1)" : "none"
                 }}
                 onMouseEnter={e => { 
                   if (activeTab !== tab.id) { 
                     e.currentTarget.style.backgroundColor = isSosTab ? "#fee2e2" : "var(--primary-glow)"; 
-                    e.currentTarget.style.color = isSosTab ? "#ef4444" : "var(--primary)"; 
+                    e.currentTarget.style.color = isSosTab ? "var(--danger)" : "var(--primary)"; 
                     e.currentTarget.style.transform = "translateX(5px)"; 
                   } 
                 }}
                 onMouseLeave={e => { 
                   if (activeTab !== tab.id) { 
                     e.currentTarget.style.backgroundColor = isSosTab ? "#fff5f5" : "transparent"; 
-                    e.currentTarget.style.color = isSosTab ? "#ef4444" : "var(--text-secondary)"; 
+                    e.currentTarget.style.color = isSosTab ? "var(--danger)" : "var(--text-secondary)"; 
                     e.currentTarget.style.transform = "translateX(0)"; 
                   } 
                 }}
@@ -737,7 +737,7 @@ function WorkerDashboard() {
               }}
               style={{
                 padding: "7px 16px", borderRadius: "8px", border: "none", fontWeight: 700,
-                fontSize: "12px", cursor: "pointer",
+                fontSize: "var(--fs-xs, 12px)", cursor: "pointer",
                 background: isActive ? "var(--danger-light)" : "var(--success-light)",
                 color: isActive ? "var(--danger)" : "var(--success)"
               }}
@@ -760,7 +760,7 @@ function WorkerDashboard() {
                   <p style={{ color: "var(--text-secondary)", margin: "0 0 6px 0", fontSize: "14px" }}>
                     {isActive ? "Customers can see and book your services right now." : "You are currently hidden from customer search results."}
                   </p>
-                  {isActive && <p style={{ fontSize: "12px", color: "#059669", fontWeight: 600 }}>✅ Showing up in Home, Search & Nearby Results</p>}
+                  {isActive && <p style={{ fontSize: "var(--fs-xs, 12px)", color: "#059669", fontWeight: 600 }}>✅ Showing up in Home, Search & Nearby Results</p>}
                 </div>
                 <button 
                   onClick={async () => {
@@ -784,7 +784,7 @@ function WorkerDashboard() {
                   }} 
                   style={{
                     width: "100%", padding: "16px", fontSize: 16, fontWeight: 700, border: "none", borderRadius: 10, cursor: "pointer",
-                    backgroundColor: isActive ? "#ef4444" : "var(--primary)", color: "white", transition: "all 0.2s"
+                    backgroundColor: isActive ? "var(--danger)" : "var(--primary)", color: "white", transition: "all 0.2s"
                   }}
                 >
                   {isActive ? "🔴 Set Myself Inactive" : "🟢 Set Myself Active"}
@@ -840,7 +840,7 @@ function WorkerDashboard() {
                                     color: "white", 
                                     border: "none", 
                                     borderRadius: "8px", 
-                                    fontSize: "12px", 
+                                    fontSize: "var(--fs-xs, 12px)", 
                                     fontWeight: 800, 
                                     cursor: "pointer",
                                     display: "inline-flex",
@@ -866,7 +866,7 @@ function WorkerDashboard() {
           {/* NOTIFICATIONS TAB */}
           {activeTab === "notifications" && (
             <div className="fade-in">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--fs-xl, 24px)" }}>
                 <h2 style={{ margin: 0, fontWeight: 800, color: "var(--text-primary)" }}>Real-time Alerts Feed</h2>
                 {unreadCount > 0 && (
                   <button onClick={handleMarkNotificationsRead} className="btn-secondary" style={{ padding: "6px 12px", fontSize: "13px" }}>Mark all as read</button>
@@ -895,7 +895,7 @@ function WorkerDashboard() {
 
                       {n.type === "booking" && (
                         <div style={{ borderTop: "1px solid var(--border-color)", paddingTop: 16, marginTop: 12 }}>
-                          <div style={{ marginBottom: "12px" }}>
+                          <div style={{ marginBottom: "var(--fs-xs, 12px)" }}>
                             <a 
                               href={`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(n.workerAddr)}&destination=${encodeURIComponent(n.customerAddr)}`} 
                               target="_blank" 
@@ -1160,7 +1160,7 @@ function WorkerDashboard() {
                     </div>
                   ))}
                   {!editMode ? (
-                    <button onClick={() => { setEditProfile({ ...profile }); setEditModeState(true); }} style={{ width: "100%", marginTop: 18, padding: "12px", backgroundColor: "var(--primary)", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer" }}>
+                    <button onClick={() => { setEditProfile({ ...profile }); setEditModeState(true); }} style={{ width: "100%", marginTop: 18, padding: "var(--fs-xs, 12px)", backgroundColor: "var(--primary)", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer" }}>
                       ✏️ Edit Profile
                     </button>
                   ) : (
@@ -1315,7 +1315,7 @@ function WorkerDashboard() {
                     }
 
                     return (
-                      <div key={rid} className="premium-card" style={{ padding: 24, borderLeft: r.rating >= 4 ? "5px solid #10b981" : "5px solid #ef4444" }}>
+                      <div key={rid} className="premium-card" style={{ padding: 24, borderLeft: r.rating >= 4 ? "5px solid var(--success)" : "5px solid var(--danger)" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
                           <div>
                             <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
@@ -1464,7 +1464,7 @@ function WorkerDashboard() {
               ) : sosActive ? (
                 <div style={{
                   animation: "siren-flash 1.5s infinite",
-                  border: "4px solid #ef4444",
+                  border: "4px solid var(--danger)",
                   borderRadius: 20,
                   padding: 48,
                   textAlign: "center",
@@ -1483,7 +1483,7 @@ function WorkerDashboard() {
                       backgroundColor: "#fff7ed", 
                       border: "3px solid #ea580c", 
                       borderRadius: 16, 
-                      padding: "24px", 
+                      padding: "var(--fs-xl, 24px)", 
                       margin: "24px auto", 
                       maxWidth: 640, 
                       textAlign: "center",
@@ -1576,7 +1576,7 @@ function WorkerDashboard() {
                   </button>
                 </div>
               ) : (
-                <div className="premium-card" style={{ borderTop: "8px solid #ef4444", padding: 40, marginBottom: 32 }}>
+                <div className="premium-card" style={{ borderTop: "8px solid var(--danger)", padding: 40, marginBottom: 32 }}>
                   <h3 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 800, color: "var(--text-primary)" }}>Instant Emergency Broadcast</h3>
                   <p style={{ margin: "0 0 30px", color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.6 }}>
                     Felt unsafe, had an accident, or threatened? Activate the SOS immediately. We capture your exact telemetry coordinates and broadcast an instantaneous visual alert to platform security.
@@ -1688,7 +1688,7 @@ function WorkerDashboard() {
           width: "60px",
           height: "60px",
           borderRadius: "50%",
-          background: "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
+          background: "linear-gradient(135deg, var(--danger) 0%, #b91c1c 100%)",
           boxShadow: "0 8px 24px rgba(239, 68, 68, 0.4)",
           display: "flex",
           justifyContent: "center",
@@ -1736,7 +1736,7 @@ function WorkerDashboard() {
             </p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "20px" }}>
-              <label style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)" }}>Select Rejection Reason</label>
+              <label style={{ fontSize: "var(--fs-xs, 12px)", fontWeight: 700, color: "var(--text-secondary)" }}>Select Rejection Reason</label>
               <select 
                 value={rejectReason} 
                 onChange={(e) => setRejectReason(e.target.value)}
@@ -1750,13 +1750,13 @@ function WorkerDashboard() {
               </select>
             </div>
 
-            <div style={{ display: "flex", gap: "12px" }}>
+            <div style={{ display: "flex", gap: "var(--fs-xs, 12px)" }}>
               <button
                 disabled={submittingReject}
                 onClick={handleConfirmReject}
                 style={{
                   flex: 1, backgroundcolor: "var(--danger)", color: "white", border: "none",
-                  padding: "12px", borderRadius: "10px", fontWeight: "bold",
+                  padding: "var(--fs-xs, 12px)", borderRadius: "10px", fontWeight: "bold",
                   cursor: "pointer", fontSize: "14px"
                 }}
               >
@@ -1767,7 +1767,7 @@ function WorkerDashboard() {
                 onClick={() => setActiveRejectBooking(null)}
                 style={{
                   flex: 1, backgroundColor: "#e2e8f0", color: "var(--text-secondary)", border: "none",
-                  padding: "12px", borderRadius: "10px", fontWeight: "bold",
+                  padding: "var(--fs-xs, 12px)", borderRadius: "10px", fontWeight: "bold",
                   cursor: "pointer", fontSize: "14px"
                 }}
               >
@@ -1857,7 +1857,7 @@ function WorkerDashboard() {
                       padding: "6px 12px",
                       borderRadius: "8px",
                       fontWeight: "bold",
-                      fontSize: "12px",
+                      fontSize: "var(--fs-xs, 12px)",
                       cursor: "pointer",
                       display: "inline-flex",
                       alignItems: "center",
@@ -1876,7 +1876,7 @@ function WorkerDashboard() {
                     background: "transparent",
                     border: "none",
                     color: "white",
-                    fontSize: "24px",
+                    fontSize: "var(--fs-xl, 24px)",
                     cursor: "pointer",
                     lineHeight: 1
                   }}
@@ -1894,7 +1894,7 @@ function WorkerDashboard() {
               overflowY: "auto",
               display: "flex",
               flexDirection: "column",
-              gap: "12px"
+              gap: "var(--fs-xs, 12px)"
             }}>
               {chatMessages.length === 0 ? (
                 <div style={{
@@ -1920,7 +1920,7 @@ function WorkerDashboard() {
                           color: chatTheme === 'light' ? "#3730a3" : "#c7d2fe",
                           padding: "6px 16px",
                           borderRadius: "20px",
-                          fontSize: "12px",
+                          fontSize: "var(--fs-xs, 12px)",
                           fontWeight: "600",
                           boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
                           textAlign: "center",
@@ -1996,7 +1996,7 @@ function WorkerDashboard() {
                 placeholder="Type your message here..."
                 style={{
                   flex: 1,
-                  padding: "12px",
+                  padding: "var(--fs-xs, 12px)",
                   borderRadius: "10px",
                   border: chatTheme === 'light' ? "1px solid #cbd5e1" : "1px solid #374151",
                   backgroundColor: chatTheme === 'light' ? "white" : "#0b0f19",

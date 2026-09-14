@@ -23,7 +23,7 @@ function classifyError(msg = "") {
 }
 
 function HelpBox({ kind }) {
-  const base = { borderRadius: "14px", padding: "14px 16px", marginBottom: "24px", fontSize: "13px", textAlign: "left" };
+  const base = { borderRadius: "14px", padding: "14px 16px", marginBottom: "var(--fs-xl, 24px)", fontSize: "13px", textAlign: "left" };
   if (kind === "slot") return (
     <div style={{ ...base, backgroundColor: "var(--warning-light)", border: "1px solid #fde68a", color: "#78350f" }}>
       <strong style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
@@ -101,7 +101,7 @@ function BookingFeedback({ type = "success", bookingDetails, errorMessage, onClo
 
   const cardStyle = {
     width: "100%", maxWidth: type === "success" ? "460px" : "440px",
-    backgroundColor: "var(--bg-card)", borderRadius: "24px",
+    backgroundColor: "var(--bg-card)", borderRadius: "var(--fs-xl, 24px)",
     padding: "40px 32px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.3)",
     textAlign: "center",
     border: `1.5px solid ${type === "success" ? "var(--border-color)" : "var(--border-color)"}`,

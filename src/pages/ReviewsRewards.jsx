@@ -583,7 +583,7 @@ function ReviewsRewards() {
         >
           <div style={{ maxWidth: "750px", margin: "0 auto" }}>
             <div style={{ width: "180px", height: "14px", borderRadius: "10px", background: "rgba(255,255,255,.15)", marginBottom: "18px" }} />
-            <div style={{ width: "300px", height: "32px", borderRadius: "10px", background: "rgba(255,255,255,.15)", marginBottom: "12px" }} />
+            <div style={{ width: "300px", height: "32px", borderRadius: "10px", background: "rgba(255,255,255,.15)", marginBottom: "var(--fs-xs, 12px)" }} />
             <div style={{ width: "430px", maxWidth: "90%", height: "13px", borderRadius: "10px", background: "rgba(255,255,255,.12)" }} />
           </div>
         </div>
@@ -708,7 +708,7 @@ function ReviewsRewards() {
           style={{
             background: "linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%)",
             borderRadius: "17px",
-            padding: "24px",
+            padding: "var(--fs-xl, 24px)",
             color: "white",
             marginBottom: "28px",
             boxShadow: "0 9px 26px rgba(124,58,237,.25)",
@@ -718,12 +718,12 @@ function ReviewsRewards() {
             <div>
               <p style={{ margin: "0 0 4px 0", fontSize: "13px", color: "#c4b5fd" }}>Available Points</p>
               <h2 style={{ margin: 0, fontSize: "42px", fontWeight: 900, display: "flex", alignItems: "center", gap: "10px" }}><FaStar style={{ color: "#ffd700", fontSize: "36px" }} /> {availablePoints}</h2>
-              <p style={{ margin: "7px 0 0 0", fontSize: "12px", color: "#c4b5fd" }}>
+              <p style={{ margin: "7px 0 0 0", fontSize: "var(--fs-xs, 12px)", color: "#c4b5fd" }}>
                 Total earned: {totalPoints} pts &nbsp;|&nbsp; Redeemed: {spentPoints} pts
               </p>
             </div>
             <div style={{ minWidth: "160px", textAlign: "right" }}>
-              <p style={{ margin: "0 0 6px 0", fontSize: "12px", color: "#c4b5fd" }}>Next reward at {maxPoints} pts</p>
+              <p style={{ margin: "0 0 6px 0", fontSize: "var(--fs-xs, 12px)", color: "#c4b5fd" }}>Next reward at {maxPoints} pts</p>
               <div
                 style={{
                   width: "160px",
@@ -921,7 +921,7 @@ function ReviewsRewards() {
                       {reward.title}
                     </h3>
                   </div>
-                  <p style={{ margin: "0 0 12px 0", fontSize: "12px", color: "var(--text-secondary)", flex: 1, lineHeight: 1.45 }}>
+                  <p style={{ margin: "0 0 12px 0", fontSize: "var(--fs-xs, 12px)", color: "var(--text-secondary)", flex: 1, lineHeight: 1.45 }}>
                     {reward.desc}
                   </p>
                   <button
@@ -986,7 +986,7 @@ function ReviewsRewards() {
               </div>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "var(--fs-xs, 12px)" }}>
               {filteredReviews.map((r) => {
                 const sentiment = getSentiment(r);
                 return (
@@ -995,7 +995,7 @@ function ReviewsRewards() {
                     className="past-review-card"
                     style={{
                       backgroundColor: "var(--bg-card)",
-                      borderRadius: "12px",
+                      borderRadius: "var(--fs-xs, 12px)",
                       padding: "16px 20px",
                       border: "1px solid var(--border-color)",
                       boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
@@ -1014,7 +1014,7 @@ function ReviewsRewards() {
                           color: "var(--success)",
                           padding: "4px 10px",
                           borderRadius: "20px",
-                          fontSize: "12px",
+                          fontSize: "var(--fs-xs, 12px)",
                           fontWeight: 800,
                         }}
                       >
@@ -1039,7 +1039,7 @@ function ReviewsRewards() {
 
                     {/* Threaded worker response */}
                     {r.reply && (
-                      <div style={{ marginTop: "12px", padding: "10px 14px", backgroundColor: "#f5f3ff", borderLeft: "3px solid #8b5cf6", borderRadius: "8px", fontSize: "13px", marginLeft: "10px" }}>
+                      <div style={{ marginTop: "var(--fs-xs, 12px)", padding: "10px 14px", backgroundColor: "#f5f3ff", borderLeft: "3px solid #8b5cf6", borderRadius: "8px", fontSize: "13px", marginLeft: "10px" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
                           <span style={{ fontWeight: 800, color: "#6d28d9" }}><span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><FaReply /> Professional Response:</span></span>
                           <span style={{ fontSize: "11px", color: "#8b5cf6" }}><span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}><FaCalendarAlt /> {r.replyDate}</span></span>

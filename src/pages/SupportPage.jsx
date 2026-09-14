@@ -139,7 +139,7 @@ function SupportPage() {
       <div className="dashboard-content" style={{ maxWidth: "1100px", margin: "0 auto", padding: "60px 20px" }}>
         {/* Support Header */}
         <div style={{ textAlign: "center", marginBottom: "50px" }}>
-          <span style={{ backgroundColor: "var(--border)", color: "var(--primary)", padding: "6px 16px", borderRadius: "20px", fontSize: "12px", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>
+          <span style={{ backgroundColor: "var(--border)", color: "var(--primary)", padding: "6px 16px", borderRadius: "20px", fontSize: "var(--fs-xs, 12px)", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>
             We're Here to Help 24/7
           </span>
           <h1 style={{ fontSize: "42px", fontWeight: 800, margin: "16px 0 8px 0", background: "linear-gradient(to right, var(--text-main), var(--text-muted))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
@@ -154,7 +154,7 @@ function SupportPage() {
 
           {/* LEFT COLUMN: FAQ SECTION */}
           <div>
-            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-main)", marginBottom: "24px", display: "flex", alignItems: "center", gap: "10px" }}>
+            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-main)", marginBottom: "var(--fs-xl, 24px)", display: "flex", alignItems: "center", gap: "10px" }}>
               <FaLightbulb style={{ color: "var(--primary)" }} /> Frequently Asked Questions
             </h2>
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -167,13 +167,13 @@ function SupportPage() {
                     style={{
                       backgroundColor: "var(--bg-card)",
                       padding: "20px",
-                      borderRadius: "12px",
+                      borderRadius: "var(--fs-xs, 12px)",
                       cursor: "pointer",
                       transition: "all 0.3s ease",
                       border: activeFaq === idx ? "1.5px solid var(--primary)" : "1px solid var(--border)"
                     }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "var(--fs-xs, 12px)" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         <FaqIcon style={{ color: "var(--primary)", flexShrink: 0, fontSize: "16px" }} />
                         <h3 style={{ fontSize: "15px", fontWeight: 700, color: "var(--text-main)", margin: 0 }}>{faq.q}</h3>
@@ -189,7 +189,7 @@ function SupportPage() {
                       />
                     </div>
                     {activeFaq === idx && (
-                      <p style={{ marginTop: "12px", fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.6", borderTop: "1px solid var(--border)", paddingTop: "12px" }}>
+                      <p style={{ marginTop: "var(--fs-xs, 12px)", fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.6", borderTop: "1px solid var(--border)", paddingTop: "var(--fs-xs, 12px)" }}>
                         {faq.a}
                       </p>
                     )}
@@ -201,7 +201,7 @@ function SupportPage() {
 
           {/* RIGHT COLUMN: SUBMIT TICKET FORM */}
           <div className="premium-card" style={{ padding: "40px" }}>
-            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-main)", marginBottom: "24px", display: "flex", alignItems: "center", gap: "10px" }}>
+            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-main)", marginBottom: "var(--fs-xl, 24px)", display: "flex", alignItems: "center", gap: "10px" }}>
               <FaEnvelopeOpenText style={{ color: "var(--primary)" }} /> Send us a Message
             </h2>
 
@@ -230,7 +230,7 @@ function SupportPage() {
                     onChange={(e) => setCategory(e.target.value)}
                     style={{
                       width: "100%",
-                      padding: "12px",
+                      padding: "var(--fs-xs, 12px)",
                       borderRadius: "8px",
                       backgroundColor: "var(--bg-card)",
                       border: "1px solid var(--border)",
@@ -257,7 +257,7 @@ function SupportPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     style={{
                       width: "100%",
-                      padding: "12px",
+                      padding: "var(--fs-xs, 12px)",
                       borderRadius: "8px",
                       backgroundColor: "var(--bg-card)",
                       border: "1px solid var(--border)",
@@ -279,7 +279,7 @@ function SupportPage() {
                     onChange={(e) => setPhone(e.target.value)}
                     style={{
                       width: "100%",
-                      padding: "12px",
+                      padding: "var(--fs-xs, 12px)",
                       borderRadius: "8px",
                       backgroundColor: "var(--bg-card)",
                       border: "1px solid var(--border)",
@@ -301,7 +301,7 @@ function SupportPage() {
                     onChange={(e) => setIssue(e.target.value)}
                     style={{
                       width: "100%",
-                      padding: "12px",
+                      padding: "var(--fs-xs, 12px)",
                       borderRadius: "8px",
                       backgroundColor: "var(--bg-card)",
                       border: "1px solid var(--border)",
@@ -369,7 +369,7 @@ function SupportPage() {
                         <td style={{ padding: "14px 10px" }}>
                           <span style={{
                             padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700,
-                            backgroundColor: item.status === "Resolved" ? "var(--primary-light)" : item.status === "Cancelled" ? "#ef4444" : "#eab308",
+                            backgroundColor: item.status === "Resolved" ? "var(--primary-light)" : item.status === "Cancelled" ? "var(--danger)" : "#eab308",
                             color: item.status === "Resolved" ? "var(--primary-dark)" : "white"
                           }}>
                             {item.status.toUpperCase()}

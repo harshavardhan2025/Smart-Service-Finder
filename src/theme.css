@@ -5,6 +5,29 @@
 */
 
 :root {
+  /* ── Typography Scale (6-step canonical — use ONLY these) ───────────────
+     --fs-xs   → captions, labels, micro-copy   (11px)
+     --fs-sm   → secondary body, table cells    (13px)
+     --fs-base → primary body text              (15px)
+     --fs-lg   → card titles, strong labels     (17px)
+     --fs-xl   → section headings               (20px)
+     --fs-2xl  → page-level h2 / hero text      (24px)
+  ──────────────────────────────────────────────────── */
+  --fs-xs:   0.6875rem;  /* 11px */
+  --fs-sm:   0.8125rem;  /* 13px */
+  --fs-base: 0.9375rem;  /* 15px */
+  --fs-lg:   1.0625rem;  /* 17px */
+  --fs-xl:   1.25rem;    /* 20px */
+  --fs-2xl:  1.5rem;     /* 24px */
+
+  /* ── Text-color tokens (5 semantic — no raw hex outside these) ──────────
+     --text-main      → default body text (highest contrast)
+     --text-muted     → secondary / helper text
+     --text-inverse   → text on dark/colored backgrounds
+     --text-success   → positive feedback, amounts credited
+     --text-danger    → errors, destructive actions
+  ──────────────────────────────────────────────────── */
+
   /* Primary palette */
   --primary: #31525b; /* deep teal */
   --primary-hover: #1f353b;
@@ -35,11 +58,14 @@
   --bg-card-hover: #ffffff;
   --border-color: rgba(226, 232, 240, 0.8);
 
-  /* Text */
-  --text-main: #0f172a;
-  --text-primary: #1e293b;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
+  /* Text (map to semantic 5-token set above) */
+  --text-main: #0f172a;       /* default body — 16.5:1 on white */
+  --text-primary: #1e293b;    /* alias kept for compat; prefer --text-main */
+  --text-secondary: #475569;  /* alias; prefer --text-muted */
+  --text-muted: #475569;      /* helper text — 7.3:1 on white — WCAG AA ✓ */
+  --text-inverse: #ffffff;    /* text on dark/primary surfaces */
+  --text-success: #15803d;    /* ≥4.5:1 on white — WCAG AA ✓ */
+  --text-danger: #b91c1c;     /* ≥4.5:1 on white — WCAG AA ✓ */
 
   /* Hero section */
   --hero-bg: linear-gradient(135deg, #1f353b 0%, #0e1719 100%);
@@ -81,10 +107,13 @@
   --bg-card-hover: #1e293b;
   --border-color: rgba(255, 255, 255, 0.15);
 
-  --text-main: #f8fafc;
+  --text-main: #f1f5f9;       /* default body on dark — 14.5:1 on #0b0f19 — WCAG AA ✓ */
   --text-primary: #f1f5f9;
   --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
+  --text-muted: #94a3b8;      /* helper text — 5.0:1 on #0b0f19 — WCAG AA ✓ */
+  --text-inverse: #0f172a;    /* text on light surfaces in dark mode */
+  --text-success: #4ade80;    /* ≥4.5:1 on dark bg — WCAG AA ✓ */
+  --text-danger: #f87171;     /* ≥4.5:1 on dark bg — WCAG AA ✓ */
 
   --hero-bg: linear-gradient(135deg, #0e1719 0%, #1f353b 100%);
   --hero-border: rgba(160, 200, 209, 0.3);

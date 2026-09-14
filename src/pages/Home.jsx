@@ -852,12 +852,12 @@ Do not use markdown.`,
         <span
           style={{
             position: "absolute",
-            top: compact ? "12px" : "15px",
-            right: compact ? "12px" : "15px",
+            top: compact ? "var(--fs-xs, 12px)" : "15px",
+            right: compact ? "var(--fs-xs, 12px)" : "15px",
             backgroundColor: "var(--primary-light)",
             color: "var(--primary-dark)",
             padding: compact ? "3px 6px" : "4px 8px",
-            borderRadius: "12px",
+            borderRadius: "var(--fs-xs, 12px)",
             fontSize: compact ? "9.5px" : "10px",
             fontWeight: 700,
             display: "inline-flex",
@@ -869,7 +869,7 @@ Do not use markdown.`,
           ONLINE
         </span>
 
-        <div style={{ marginBottom: compact ? "10px" : "12px" }}>
+        <div style={{ marginBottom: compact ? "10px" : "var(--fs-xs, 12px)" }}>
           {isDoctor ? (
             <FaStethoscope size={compact ? 24 : 32} style={{ color: "var(--primary)" }} />
           ) : (
@@ -880,12 +880,12 @@ Do not use markdown.`,
         <h3 style={{ margin: compact ? "0 0 2px 0" : "0 0 4px 0", fontSize: compact ? "16px" : "18px", fontWeight: "bold", color: "var(--text-primary)" }}>
           {worker?.name || "Service Professional"}
         </h3>
-        <p style={{ margin: compact ? "0 0 6px 0" : "0 0 8px 0", fontSize: compact ? "12px" : "13px", color: "var(--text-secondary)", fontWeight: 500 }}>
+        <p style={{ margin: compact ? "0 0 6px 0" : "0 0 8px 0", fontSize: compact ? "var(--fs-xs, 12px)" : "13px", color: "var(--text-secondary)", fontWeight: 500 }}>
           {worker?.service || "Professional Service"}
         </p>
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: compact ? "12px" : "16px", borderTop: "1px solid var(--border-color)", paddingTop: compact ? "8px" : "12px", gap: "8px" }}>
-          <span style={{ fontSize: compact ? "11px" : "12px", color: "var(--text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: compact ? "var(--fs-xs, 12px)" : "16px", borderTop: "1px solid var(--border-color)", paddingTop: compact ? "8px" : "var(--fs-xs, 12px)", gap: "8px" }}>
+          <span style={{ fontSize: compact ? "11px" : "var(--fs-xs, 12px)", color: "var(--text-secondary)" }}>
             📍 {truncateLocation(worker?.city || worker?.location)}
           </span>
           <span className="price-badge" style={{ fontSize: compact ? "11px" : undefined, padding: compact ? "2px 6px" : undefined, flexShrink: 0 }}>
@@ -1071,7 +1071,7 @@ Do not use markdown.`,
             padding: "24px 28px",
             background: "var(--bg-card)",
             border: "1.5px solid var(--border-color)",
-            borderRadius: "24px",
+            borderRadius: "var(--fs-xl, 24px)",
             boxShadow: "var(--shadow-3d)",
             backdropFilter: "var(--blur)",
             display: "flex",
@@ -1122,7 +1122,7 @@ Do not use markdown.`,
               The best local experts with great reviews and affordable prices.
             </p>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "var(--fs-xl, 24px)" }}>
               <div>
                 <h3 style={{ fontSize: "16px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 10px 0" }}>
                   🏆 Top Rated Near You
@@ -1167,7 +1167,7 @@ Do not use markdown.`,
                           ₹{price}
                           <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 500 }}>/{plan.period}</span>
                         </p>
-                        <ul style={{ paddingLeft: "16px", margin: "0 0 16px 0", fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.5 }}>
+                        <ul style={{ paddingLeft: "16px", margin: "0 0 16px 0", fontSize: "var(--fs-xs, 12px)", color: "var(--text-muted)", lineHeight: 1.5 }}>
                           {features.slice(0, 3).map((f, i) => <li key={i}>{f}</li>)}
                         </ul>
                       </div>
@@ -1181,7 +1181,7 @@ Do not use markdown.`,
                 })}
               </div>
             ) : (
-              <div className="premium-card" style={{ padding: "24px", textAlign: "center", color: "var(--text-secondary)", backgroundColor: "rgba(0,0,0,0.02)" }}>
+              <div className="premium-card" style={{ padding: "var(--fs-xl, 24px)", textAlign: "center", color: "var(--text-secondary)", backgroundColor: "rgba(0,0,0,0.02)" }}>
                 <p style={{ margin: 0, fontSize: "13.5px", fontWeight: "bold" }}>No seasonal plans active in your area.</p>
               </div>
             )}
@@ -1193,30 +1193,30 @@ Do not use markdown.`,
           margin: "10px 20px 30px 20px",
           padding: "32px",
           background: "var(--bg-card)",
-          borderRadius: "24px",
+          borderRadius: "var(--fs-xl, 24px)",
           border: "1.5px solid var(--border-color)",
           boxShadow: "var(--shadow-3d)",
         }}>
-          <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-primary)", textAlign: "center", marginBottom: "24px" }}>
+          <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-primary)", textAlign: "center", marginBottom: "var(--fs-xl, 24px)" }}>
             How Workzy Works
           </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "24px", textAlign: "center" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "var(--fs-xl, 24px)", textAlign: "center" }}>
             <div>
-              <div style={{ fontSize: "24px", marginBottom: "12px", background: "var(--primary-light)", width: "56px", height: "56px", lineHeight: "56px", borderRadius: "50%", margin: "0 auto 12px", color: "var(--primary-dark)", display: "flex", justifyContent: "center", alignItems: "center" }}>
+              <div style={{ fontSize: "var(--fs-xl, 24px)", marginBottom: "var(--fs-xs, 12px)", background: "var(--primary-light)", width: "56px", height: "56px", lineHeight: "56px", borderRadius: "50%", margin: "0 auto 12px", color: "var(--primary-dark)", display: "flex", justifyContent: "center", alignItems: "center" }}>
                 <FaMapMarkerAlt />
               </div>
               <h4 style={{ fontWeight: 700, color: "var(--text-main)", marginBottom: "8px" }}>1. Search Services</h4>
               <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>Find trusted professionals near your exact location.</p>
             </div>
             <div>
-              <div style={{ fontSize: "24px", marginBottom: "12px", background: "var(--warning)", width: "56px", height: "56px", lineHeight: "56px", borderRadius: "50%", margin: "0 auto 12px", color: "#000", display: "flex", justifyContent: "center", alignItems: "center" }}>
+              <div style={{ fontSize: "var(--fs-xl, 24px)", marginBottom: "var(--fs-xs, 12px)", background: "var(--warning)", width: "56px", height: "56px", lineHeight: "56px", borderRadius: "50%", margin: "0 auto 12px", color: "#000", display: "flex", justifyContent: "center", alignItems: "center" }}>
                 <FaUser />
               </div>
               <h4 style={{ fontWeight: 700, color: "var(--text-main)", marginBottom: "8px" }}>2. Compare & Book</h4>
               <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>Review profiles, ratings, and prices before booking instantly.</p>
             </div>
             <div>
-              <div style={{ fontSize: "24px", marginBottom: "12px", background: "var(--success-light)", width: "56px", height: "56px", lineHeight: "56px", borderRadius: "50%", margin: "0 auto 12px", color: "var(--success)", display: "flex", justifyContent: "center", alignItems: "center" }}>
+              <div style={{ fontSize: "var(--fs-xl, 24px)", marginBottom: "var(--fs-xs, 12px)", background: "var(--success-light)", width: "56px", height: "56px", lineHeight: "56px", borderRadius: "50%", margin: "0 auto 12px", color: "var(--success)", display: "flex", justifyContent: "center", alignItems: "center" }}>
                 <FaStar />
               </div>
               <h4 style={{ fontWeight: 700, color: "var(--text-main)", marginBottom: "8px" }}>3. Get It Done</h4>
@@ -1230,7 +1230,7 @@ Do not use markdown.`,
           margin: "0 20px 40px 20px",
           padding: "36px",
           background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)",
-          borderRadius: "24px",
+          borderRadius: "var(--fs-xl, 24px)",
           color: "#fff",
           display: "flex",
           flexWrap: "wrap",
@@ -1240,7 +1240,7 @@ Do not use markdown.`,
           boxShadow: "0 10px 30px rgba(0,0,0,0.15)"
         }}>
           <div style={{ flex: "1 1 300px" }}>
-            <h2 style={{ fontSize: "24px", fontWeight: 800, margin: "0 0 10px 0", color: "#fff" }}>Are you a Service Professional?</h2>
+            <h2 style={{ fontSize: "var(--fs-xl, 24px)", fontWeight: 800, margin: "0 0 10px 0", color: "#fff" }}>Are you a Service Professional?</h2>
             <p style={{ fontSize: "15px", margin: 0, opacity: 0.9, fontWeight: 500, color: "#fff" }}>Join Workzy today to get more customers, manage your bookings, and grow your business.</p>
           </div>
           <Link to="/signup" style={{ textDecoration: "none" }}>
@@ -1249,7 +1249,7 @@ Do not use markdown.`,
               color: "var(--primary-dark)",
               border: "none",
               padding: "14px 28px",
-              borderRadius: "12px",
+              borderRadius: "var(--fs-xs, 12px)",
               fontSize: "15px",
               fontWeight: 800,
               cursor: "pointer",
@@ -1280,17 +1280,17 @@ Do not use markdown.`,
           <div>
             <div style={{ color: "var(--warning)", fontSize: "20px", marginBottom: "8px" }}>⭐ ⭐ ⭐ ⭐ ⭐</div>
             <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "var(--text-main)" }}>4.9/5 Average Rating</h4>
-            <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.5 }}>From over 10,00+ satisfied homeowners</p>
+            <p style={{ margin: 0, fontSize: "var(--fs-xs, 12px)", color: "var(--text-muted)", lineHeight: 1.5 }}>From over 10,00+ satisfied homeowners</p>
           </div>
           <div style={{ borderLeft: "1px solid var(--border-color)", borderRight: "1px solid var(--border-color)" }}>
-            <div style={{ fontSize: "24px", marginBottom: "6px" }}>🛡️</div>
+            <div style={{ fontSize: "var(--fs-xl, 24px)", marginBottom: "6px" }}>🛡️</div>
             <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "var(--text-main)" }}>100% Satisfaction Guarantee</h4>
-            <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.5 }}>Not satisfied? We will re-service for free</p>
+            <p style={{ margin: 0, fontSize: "var(--fs-xs, 12px)", color: "var(--text-muted)", lineHeight: 1.5 }}>Not satisfied? We will re-service for free</p>
           </div>
           <div>
-            <div style={{ fontSize: "24px", marginBottom: "6px" }}>⏱️</div>
+            <div style={{ fontSize: "var(--fs-xl, 24px)", marginBottom: "6px" }}>⏱️</div>
             <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "var(--text-main)" }}>Flexible Cancellation</h4>
-            <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.5 }}>Cancel or switch tiers anytime with no fees</p>
+            <p style={{ margin: 0, fontSize: "var(--fs-xs, 12px)", color: "var(--text-muted)", lineHeight: 1.5 }}>Cancel or switch tiers anytime with no fees</p>
           </div>
         </div>
       </div>

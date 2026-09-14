@@ -290,10 +290,10 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
             style={{
               padding: "4px 10px",
               background: "rgba(239, 68, 68, 0.1)",
-              color: "#ef4444",
+              color: "var(--danger)",
               border: "1px solid rgba(239, 68, 68, 0.25)",
               borderRadius: "20px",
-              fontSize: "11.5px",
+              fontSize: "var(--fs-sm, 14px)",
               fontWeight: 700,
               cursor: "pointer"
             }}
@@ -351,7 +351,7 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
         onMouseUp={() => handleResumeAutoScroll(600)}
         style={{
           display: "flex",
-          gap: "12px",
+          gap: "var(--fs-xs, 12px)",
           overflowX: "auto",
           width: "100%",
           padding: "6px 0 14px",
@@ -365,9 +365,10 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
         {[...SERVICES, ...SERVICES, ...SERVICES, ...SERVICES].map((service, idx) => {
           const isSelected = selectedService?.id === service.id;
           return (
-            <div
-              key={`${service.id}-${idx}`}
-              className="premium-card category-scroll-pill"
+            <button
+              key={`${service.id}-${idx}`}
+              className="premium-card category-scroll-pill"
+              aria-current={isSelected ? "true" : undefined}
               onClick={() => handleServiceClick(service)}
               style={{
                 flex: "0 0 auto",
@@ -384,10 +385,10 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
               }}
             >
               <div style={{ fontSize: "28px", marginBottom: "6px", filter: isSelected ? "drop-shadow(0 4px 6px var(--primary-glow))" : "none" }}>{service.icon}</div>
-              <div style={{ fontSize: "12px", fontWeight: 700, color: isSelected ? "var(--primary-dark)" : "var(--text-main)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {service.name}
-              </div>
-            </div>
+              <div style={{ fontSize: "var(--fs-xs, 12px)", fontWeight: 700, color: isSelected ? "var(--primary-dark)" : "var(--text-main)", whiteSpace: "normal" }}>
+                {service.name}
+              </div>
+            </button>
           );
         })}
       </div>
@@ -400,7 +401,7 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
             borderRadius: "20px",
             padding: "20px",
             border: "1.5px solid #e2e8f0",
-            marginBottom: "24px",
+            marginBottom: "var(--fs-xl, 24px)",
             animation: "fadeIn 0.2s ease-out"
           }}
         >
@@ -409,7 +410,7 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
           </h3>
           
           {/* Gender Selection Row */}
-          <div style={{ display: "flex", gap: "12px", marginBottom: "20px" }}>
+          <div style={{ display: "flex", gap: "var(--fs-xs, 12px)", marginBottom: "20px" }}>
             {selectedService.genders.map((gender) => {
               const isGenderSelected = selectedGender === gender.id;
               return (
@@ -423,7 +424,7 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
                     justifyContent: "center",
                     gap: "8px",
                     padding: "14px",
-                    borderRadius: "12px",
+                    borderRadius: "var(--fs-xs, 12px)",
                     border: isGenderSelected ? "2.5px solid var(--primary)" : "1.5px solid var(--border-color)",
                     backgroundColor: isGenderSelected ? "var(--primary-light)" : "var(--bg-card)",
                     color: isGenderSelected ? "var(--primary-dark)" : "var(--text-secondary)",
@@ -451,7 +452,7 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
-                  gap: "12px"
+                  gap: "var(--fs-xs, 12px)"
                 }}
               >
                 {currentGenderData.subServices.map((sub) => {
@@ -463,7 +464,7 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
                       style={{
                         backgroundColor: isBeautySubActive ? "var(--primary-light)" : "var(--bg-card)",
                         border: isBeautySubActive ? "2.5px solid var(--primary)" : "1.5px solid var(--border-color)",
-                        borderRadius: "12px",
+                        borderRadius: "var(--fs-xs, 12px)",
                         padding: "12px 8px",
                         textAlign: "center",
                         cursor: "pointer",
@@ -471,8 +472,8 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
                         transition: "all 0.15s ease"
                       }}
                     >
-                      <div style={{ fontSize: "24px", marginBottom: "6px" }}>{sub.icon}</div>
-                      <div style={{ fontSize: "12px", fontWeight: 700, color: isBeautySubActive ? "var(--primary-dark)" : "var(--text-secondary)" }}>
+                      <div style={{ fontSize: "var(--fs-xl, 24px)", marginBottom: "6px" }}>{sub.icon}</div>
+                      <div style={{ fontSize: "var(--fs-xs, 12px)", fontWeight: 700, color: isBeautySubActive ? "var(--primary-dark)" : "var(--text-secondary)" }}>
                         {sub.name}
                       </div>
                     </div>
@@ -489,11 +490,11 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
         <div
           className="premium-card fade-in"
           style={{
-            marginBottom: "24px"
+            marginBottom: "var(--fs-xl, 24px)"
           }}
         >
           {/* Header & Internal Filtering/Search Bar */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", marginBottom: "16px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--fs-xs, 12px)", marginBottom: "16px" }}>
             <h3 style={{ fontSize: "15px", fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
               {selectedService.icon} {selectedService.name} Sub-Services
             </h3>
@@ -524,7 +525,7 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
-              gap: "12px"
+              gap: "var(--fs-xs, 12px)"
             }}
           >
             {filteredSubServicesList.length > 0 ? (
@@ -537,7 +538,7 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
                     style={{
                       backgroundColor: isSubActive ? "var(--primary-light)" : "var(--bg-card)",
                       border: isSubActive ? "2.5px solid var(--primary)" : "1.5px solid var(--border-color)",
-                      borderRadius: "12px",
+                      borderRadius: "var(--fs-xs, 12px)",
                       padding: "16px 8px",
                       textAlign: "center",
                       cursor: "pointer",
@@ -547,7 +548,7 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
                     }}
                   >
                     <div style={{ fontSize: "28px", marginBottom: "8px" }}>{sub.icon}</div>
-                    <div style={{ fontSize: "12px", fontWeight: 700, color: isSubActive ? "var(--primary-dark)" : "var(--text-secondary)" }}>
+                    <div style={{ fontSize: "var(--fs-xs, 12px)", fontWeight: 700, color: isSubActive ? "var(--primary-dark)" : "var(--text-secondary)" }}>
                       {sub.name}
                     </div>
                   </div>
@@ -566,13 +567,13 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
       <div
         style={{
           borderTop: "1.5px solid var(--border-color)",
-          paddingTop: "24px",
-          marginTop: "12px"
+          paddingTop: "var(--fs-xl, 24px)",
+          marginTop: "var(--fs-xs, 12px)"
         }}
       >
         {!activeServiceText ? (
-          <div className="premium-card" style={{ textAlign: "center", backgroundColor: "var(--bg-primary)" }}>
-            <FaHandPointRight size={36} style={{ color: "var(--primary)", marginBottom: "12px" }} />
+          <div className="premium-card" style={{ textAlign: "center", backgroundColor: "var(--bg-main)" }}>
+            <FaHandPointRight size={36} style={{ color: "var(--primary)", marginBottom: "var(--fs-xs, 12px)" }} />
             <h4 style={{ fontSize: "18px", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 4px 0" }}>
               Ready to find a Professional?
             </h4>
@@ -587,7 +588,7 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
                 {activeBeautySubService?.icon || activeSubService?.icon || selectedService.icon} Available {activeServiceText} Experts
               </h3>
               {searchedLocation && (
-                <span style={{ fontSize: "12px", backgroundColor: "var(--bg-primary)", padding: "4px 10px", borderRadius: "12px", color: "var(--text-secondary)", fontWeight: 600 }}>
+                <span style={{ fontSize: "var(--fs-xs, 12px)", backgroundColor: "var(--bg-main)", padding: "4px 10px", borderRadius: "var(--fs-xs, 12px)", color: "var(--text-secondary)", fontWeight: 600 }}>
                   📍 {searchedLocation.split(",")[0]}
                 </span>
               )}
@@ -609,7 +610,7 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-                  gap: "24px"
+                  gap: "var(--fs-xl, 24px)"
                 }}
               >
                 {filteredWorkers.map((worker, index) => (
@@ -633,7 +634,7 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
                           color: "var(--primary-dark)",
                           padding: "6px 12px",
                           borderRadius: "8px",
-                          fontSize: "12px",
+                          fontSize: "var(--fs-xs, 12px)",
                           fontWeight: "bold"
                         }}
                       >
@@ -649,9 +650,9 @@ function NearbyWorkers({ searchedLocation, userCoords, excludeEmail = "" }) {
                               backgroundColor: "#eff6ff",
                               color: "#1d4ed8",
                               border: "1px solid #bfdbfe",
-                              borderRadius: "12px",
+                              borderRadius: "var(--fs-xs, 12px)",
                               padding: "2px 10px",
-                              fontSize: "12px",
+                              fontSize: "var(--fs-xs, 12px)",
                               fontWeight: 700,
                               display: "inline-flex",
                               alignItems: "center",

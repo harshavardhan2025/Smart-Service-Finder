@@ -63,7 +63,7 @@ function ResultPopup({ result, onClose, navigate }) {
       <div style={{
         background: "var(--bg-card, white)",
         border: `2px solid ${config.border || "#e2e8f0"}`,
-        borderRadius: "24px", padding: "44px 40px", maxWidth: "420px", width: "95%",
+        borderRadius: "var(--fs-xl, 24px)", padding: "44px 40px", maxWidth: "420px", width: "95%",
         textAlign: "center",
         boxShadow: "0 30px 80px rgba(0, 0, 0, 0.25)",
         animation: "signupPopIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both"
@@ -105,7 +105,7 @@ function ResultPopup({ result, onClose, navigate }) {
         )}
         {result.type === "fail" && (
           <button onClick={onClose} style={{
-            background: "linear-gradient(135deg, #dc2626, #ef4444)", color: "white",
+            background: "linear-gradient(135deg, #dc2626, var(--danger))", color: "white",
             border: "none", borderRadius: "14px", padding: "14px 36px",
             fontSize: "14px", fontWeight: 700, cursor: "pointer",
             boxShadow: "0 6px 20px rgba(220, 38, 38, 0.3)",
@@ -136,7 +136,7 @@ const Spinner = () => (
 // ── Shared Input Field Component ──────────────────────────────────────────
 const InputField = ({ icon: Icon, label, hint, id, type = "text", placeholder, value, onChange, children, focusColor = "#2d5a9e", ...rest }) => (
   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-    <label htmlFor={id} style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-main)", letterSpacing: "0.3px", textTransform: "uppercase" }}>
+    <label htmlFor={id} style={{ fontSize: "var(--fs-xs, 12px)", fontWeight: 700, color: "var(--text-main)", letterSpacing: "0.3px", textTransform: "uppercase" }}>
       {label} {hint && <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: 400, textTransform: "none" }}>{hint}</span>}
     </label>
     <div style={{ position: "relative" }}>
@@ -153,7 +153,7 @@ const InputField = ({ icon: Icon, label, hint, id, type = "text", placeholder, v
         style={{
           width: "100%", boxSizing: "border-box",
           padding: Icon ? "12px 14px 12px 40px" : "12px 14px",
-          borderRadius: "12px",
+          borderRadius: "var(--fs-xs, 12px)",
           border: "2px solid var(--border, #e2e8f0)",
           background: "var(--bg-card, #ffffff)",
           color: "var(--text-main)", fontSize: "14px", fontWeight: 500,
@@ -430,7 +430,7 @@ function Signup() {
 
   // ── Render ────────────────────────────────────────────────
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg-primary, #f8fafc)" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg-main, var(--bg-main))" }}>
       <Navbar />
       <ResultPopup result={popupResult} onClose={() => setPopupResult(null)} navigate={navigate} />
 
@@ -486,8 +486,8 @@ function Signup() {
 
               <div style={{ position: "relative", zIndex: 1 }}>
                 <div style={{
-                  width: "44px", height: "44px", borderRadius: "12px",
-                  background: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
+                  width: "44px", height: "44px", borderRadius: "var(--fs-xs, 12px)",
+                  background: "linear-gradient(135deg, #059669 0%, var(--success) 100%)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   marginBottom: "16px", boxShadow: "0 6px 18px rgba(5, 150, 105, 0.3)",
                 }}>
@@ -524,7 +524,7 @@ function Signup() {
                       padding: "8px 10px", borderRadius: "8px",
                       background: "rgba(255, 255, 255, 0.04)",
                     }}>
-                      <span style={{ color: "#10b981", fontSize: "12px", flexShrink: 0, display: "flex" }}>
+                      <span style={{ color: "var(--success)", fontSize: "var(--fs-xs, 12px)", flexShrink: 0, display: "flex" }}>
                         {item.icon}
                       </span>
                       <span style={{ fontSize: "12.5px", color: "rgba(255, 255, 255, 0.75)", fontWeight: 500 }}>
@@ -551,7 +551,7 @@ function Signup() {
               <>
                 <div style={{ marginBottom: "18px" }}>
                   <h1 style={{
-                    margin: "0 0 4px", fontSize: isMobile ? "21px" : "24px",
+                    margin: "0 0 4px", fontSize: isMobile ? "21px" : "var(--fs-xl, 24px)",
                     fontWeight: 900, color: "var(--text-main)", letterSpacing: "-0.5px",
                   }}>
                     Create Account
@@ -634,7 +634,7 @@ function Signup() {
                 {/* ── Divider ────────────────────────────────────── */}
                 <div style={{ display: "flex", alignItems: "center", margin: "4px 0 20px" }}>
                   <div style={{ flex: 1, height: "1px", background: "var(--border, #e2e8f0)" }} />
-                  <span style={{ padding: "0 16px", color: "var(--text-muted)", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1px" }}>or</span>
+                  <span style={{ padding: "0 16px", color: "var(--text-muted)", fontSize: "var(--fs-xs, 12px)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1px" }}>or</span>
                   <div style={{ flex: 1, height: "1px", background: "var(--border, #e2e8f0)" }} />
                 </div>
 
@@ -657,7 +657,7 @@ function Signup() {
                   Sign up with Email & Password
                 </button>
 
-                <p style={{ textAlign: "center", marginTop: "24px", fontSize: "14px", color: "var(--text-muted)" }}>
+                <p style={{ textAlign: "center", marginTop: "var(--fs-xl, 24px)", fontSize: "14px", color: "var(--text-muted)" }}>
                   Already have an account?{" "}
                   <Link to="/login" style={{ color: "#2d5a9e", fontWeight: 700, textDecoration: "none" }}>Sign in</Link>
                 </p>
@@ -669,10 +669,10 @@ function Signup() {
             ═══════════════════════════════════════════════════════ */}
             {step === "worker-details" && (
               <>
-                <div style={{ marginBottom: "24px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
+                <div style={{ marginBottom: "var(--fs-xl, 24px)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "var(--fs-xs, 12px)", marginBottom: "8px" }}>
                     <div style={{
-                      width: "44px", height: "44px", borderRadius: "12px",
+                      width: "44px", height: "44px", borderRadius: "var(--fs-xs, 12px)",
                       background: "linear-gradient(135deg, #065f46, #059669)",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       boxShadow: "0 6px 16px rgba(5, 150, 105, 0.25)",
@@ -680,7 +680,7 @@ function Signup() {
                       <FaTools size={18} color="white" />
                     </div>
                     <div>
-                      <h1 style={{ margin: 0, fontSize: isMobile ? "22px" : "24px", fontWeight: 900, color: "var(--text-main)", letterSpacing: "-0.3px" }}>
+                      <h1 style={{ margin: 0, fontSize: isMobile ? "22px" : "var(--fs-xl, 24px)", fontWeight: 900, color: "var(--text-main)", letterSpacing: "-0.3px" }}>
                         Worker Registration
                       </h1>
                       <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "13px" }}>
@@ -708,14 +708,14 @@ function Signup() {
                   />
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <label style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-main)", letterSpacing: "0.3px", textTransform: "uppercase" }}>
+                    <label style={{ fontSize: "var(--fs-xs, 12px)", fontWeight: 700, color: "var(--text-main)", letterSpacing: "0.3px", textTransform: "uppercase" }}>
                       Service / Profession *
                     </label>
                     <select
                       value={workerProfession} onChange={(e) => setWorkerProfession(e.target.value)}
                       style={{
                         width: "100%", boxSizing: "border-box", padding: "12px 14px",
-                        borderRadius: "12px", border: "2px solid var(--border, #e2e8f0)",
+                        borderRadius: "var(--fs-xs, 12px)", border: "2px solid var(--border, #e2e8f0)",
                         background: "var(--bg-card, #fff)", color: "var(--text-main)",
                         fontSize: "14px", fontWeight: 500, outline: "none", transition: "border-color 0.2s",
                       }}
@@ -741,7 +741,7 @@ function Signup() {
                   <div style={{
                     background: "rgba(5, 150, 105, 0.05)",
                     border: "1px solid rgba(5, 150, 105, 0.15)",
-                    borderRadius: "12px", padding: "12px 16px",
+                    borderRadius: "var(--fs-xs, 12px)", padding: "12px 16px",
                     fontSize: "13px", color: "var(--text-secondary)",
                     display: "flex", alignItems: "center", gap: "10px",
                   }}>
@@ -795,7 +795,7 @@ function Signup() {
             ═══════════════════════════════════════════════════════ */}
             {step === "email-form" && (
               <>
-                <div style={{ marginBottom: "24px" }}>
+                <div style={{ marginBottom: "var(--fs-xl, 24px)" }}>
                   <h1 style={{
                     margin: "0 0 6px", fontSize: isMobile ? "22px" : "26px",
                     fontWeight: 900, color: "var(--text-main)", letterSpacing: "-0.3px",
@@ -854,13 +854,13 @@ function Signup() {
                   </InputField>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <label style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-main)", letterSpacing: "0.3px", textTransform: "uppercase" }}>
+                    <label style={{ fontSize: "var(--fs-xs, 12px)", fontWeight: 700, color: "var(--text-main)", letterSpacing: "0.3px", textTransform: "uppercase" }}>
                       Account Type
                     </label>
                     <select value={emailRole} onChange={(e) => setEmailRole(e.target.value)}
                       style={{
                         width: "100%", boxSizing: "border-box", padding: "12px 14px",
-                        borderRadius: "12px", border: "2px solid var(--border, #e2e8f0)",
+                        borderRadius: "var(--fs-xs, 12px)", border: "2px solid var(--border, #e2e8f0)",
                         background: "var(--bg-card, #fff)", color: "var(--text-main)",
                         fontSize: "14px", fontWeight: 500, outline: "none", transition: "border-color 0.2s",
                       }}
@@ -875,13 +875,13 @@ function Signup() {
                   {emailRole === "worker" && (
                     <>
                       <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                        <label style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-main)", letterSpacing: "0.3px", textTransform: "uppercase" }}>
+                        <label style={{ fontSize: "var(--fs-xs, 12px)", fontWeight: 700, color: "var(--text-main)", letterSpacing: "0.3px", textTransform: "uppercase" }}>
                           Select Profession *
                         </label>
                         <select value={emailProfession} onChange={(e) => setEmailProfession(e.target.value)}
                           style={{
                             width: "100%", boxSizing: "border-box", padding: "12px 14px",
-                            borderRadius: "12px", border: "2px solid var(--border, #e2e8f0)",
+                            borderRadius: "var(--fs-xs, 12px)", border: "2px solid var(--border, #e2e8f0)",
                             background: "var(--bg-card, #fff)", color: "var(--text-main)",
                             fontSize: "14px", fontWeight: 500, outline: "none", transition: "border-color 0.2s",
                           }}

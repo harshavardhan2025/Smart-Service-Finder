@@ -72,12 +72,12 @@ function PaymentPage() {
          backgroundColor: "var(--bg-card)",
          width: "100%",
          maxWidth: "480px",
-         borderRadius: "24px",
+         borderRadius: "var(--fs-xl, 24px)",
          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.15)",
          overflow: "hidden"
       }}>
          {/* Heading Ribbon */}
-         <div style={{ background: "linear-gradient(135deg, #1e293b, #0f172a)", color: "white", padding: "30px 24px", textAlign: "center" }}>
+         <div style={{ background: "linear-gradient(135deg, #1e293b, var(--text-main))", color: "white", padding: "30px 24px", textAlign: "center" }}>
             <h2 style={{ margin: "0 0 4px 0", fontSize: "22px", fontWeight: 800 }}>💳 Add Money to Wallet</h2>
             <p style={{ margin: 0, fontSize: "14px", opacity: 0.8 }}>Secure SSL encrypted payment</p>
          </div>
@@ -98,7 +98,7 @@ function PaymentPage() {
             <label style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", marginBottom: "8px", display: "block" }}>
                Load Amount
             </label>
-            <div style={{ position: "relative", marginBottom: "24px" }}>
+            <div style={{ position: "relative", marginBottom: "var(--fs-xl, 24px)" }}>
                <span style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", fontSize: "20px", fontWeight: 800, color: "var(--text-main)" }}>₹</span>
                <input 
                  type="number"
@@ -113,11 +113,11 @@ function PaymentPage() {
             </div>
 
             {/* Selector Grid */}
-            <label style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", marginBottom: "12px", display: "block" }}>
+            <label style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", marginBottom: "var(--fs-xs, 12px)", display: "block" }}>
                Choose Payment Method
             </label>
             
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "28px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "var(--fs-xs, 12px)", marginBottom: "28px" }}>
                {PAYMENT_OPTIONS.map(opt => {
                   const isSelected = method === opt.id;
                   return (
@@ -140,7 +140,7 @@ function PaymentPage() {
                         <div style={{ fontSize: "26px" }}>{opt.icon}</div>
                         <div style={{ flex: 1 }}>
                            <div style={{ fontWeight: 700, fontSize: "15px", color: "var(--text-main)" }}>{opt.label}</div>
-                           <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{opt.desc}</div>
+                           <div style={{ fontSize: "var(--fs-xs, 12px)", color: "var(--text-secondary)" }}>{opt.desc}</div>
                         </div>
                         <div style={{
                            width: "20px", height: "20px", borderRadius: "50%", border: "2px solid " + (isSelected ? "var(--primary)" : "#cbd5e1"),
@@ -161,7 +161,7 @@ function PaymentPage() {
                   padding: "18px",
                   borderRadius: "14px",
                   border: "none",
-                  background: processing ? "#94a3b8" : "linear-gradient(135deg, #10b981, #059669)",
+                  background: processing ? "#94a3b8" : "linear-gradient(135deg, var(--success), #059669)",
                   color: "white",
                   fontSize: "17px",
                   fontWeight: 800,

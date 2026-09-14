@@ -69,10 +69,10 @@ function SecurityLogs({ userId = "admin", limit = 0 }) {
       backdropFilter: "blur(12px)",
       border: "1px solid var(--border-color)",
       borderRadius: "20px",
-      padding: "24px",
+      padding: "var(--fs-xl, 24px)",
       boxShadow: "var(--card-shadow)"
     }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", borderBottom: "1.5px solid var(--border-color)", paddingBottom: "12px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", borderBottom: "1.5px solid var(--border-color)", paddingBottom: "var(--fs-xs, 12px)" }}>
         <h3 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "8px" }}>
           <FaShieldAlt style={{ color: "var(--primary)" }} /> Security & Access Logs Timeline
         </h3>
@@ -130,7 +130,7 @@ function SecurityLogs({ userId = "admin", limit = 0 }) {
                   </td>
                   <td style={{ padding: "12px 8px" }}>
                     <strong style={{ 
-                      color: log.action === "SOS_TRIGGERED" ? "#ef4444" : 
+                      color: log.action === "SOS_TRIGGERED" ? "var(--danger)" : 
                              log.action === "BOOKING_CANCELLED" ? "#ea580c" : "var(--text-main)",
                       fontSize: "13px"
                     }}>

@@ -562,7 +562,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
 
               backgroundColor: "var(--bg-card-hover, #ffffff)",
 
-              color: "var(--text-main, #0f172a)",
+              color: "var(--text-main, var(--text-main))",
 
               fontSize: "13.5px",
 
@@ -684,7 +684,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
 
         fontSize: "12.5px",
 
-        color: "var(--text-main, #0f172a)",
+        color: "var(--text-main, var(--text-main))",
 
         fontWeight: 500
 
@@ -712,7 +712,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
 
         style={{
 
-          borderRadius: "12px",
+          borderRadius: "var(--fs-xs, 12px)",
 
           overflow: "hidden",
 
@@ -800,7 +800,7 @@ function MapPicker({ onLocationChange, onCoordsChange }) {
 
           borderRadius: "8px",
 
-          fontSize: "12px",
+          fontSize: "var(--fs-xs, 12px)",
 
           display: "flex",
 

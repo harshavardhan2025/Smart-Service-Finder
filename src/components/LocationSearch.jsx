@@ -135,7 +135,7 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
 
   return (
     <div className="service-search-container" ref={containerRef} style={{ padding: "16px 18px", margin: "0", background: "var(--bg-card)", border: "1.5px solid var(--border-color)", borderRadius: "18px", boxShadow: "var(--card-shadow)", backdropFilter: "blur(16px)", width: "100%", boxSizing: "border-box", ...style }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", flexWrap: "wrap", gap: "8px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "var(--fs-xs, 12px)", flexWrap: "wrap", gap: "8px" }}>
         <p style={{ margin: 0, fontSize: "14px", color: "var(--text-main)", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px", letterSpacing: "0.2px" }}>
           <FaSearch size={15} style={{ color: "#0284c7" }} /> Search Services or Workers
         </p>
@@ -207,11 +207,11 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
                 alignItems: "center",
                 padding: "16px 20px",
                 borderBottom: "1px solid var(--border-color, #e2e8f0)",
-                backgroundColor: "var(--primary-light, #f8fafc)"
+                backgroundColor: "var(--primary-light, var(--bg-main))"
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <FaMap size={16} style={{ color: "#0284c7" }} />
-                  <h3 style={{ margin: 0, fontSize: "15px", fontWeight: 700, color: "var(--text-main, #0f172a)" }}>
+                  <h3 style={{ margin: 0, fontSize: "15px", fontWeight: 700, color: "var(--text-main, var(--text-main))" }}>
                     Select Your Service Location
                   </h3>
                 </div>
@@ -227,7 +227,7 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
                     padding: "4px 8px",
                     borderRadius: "6px"
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = "#ef4444"}
+                  onMouseEnter={(e) => e.currentTarget.style.color = "var(--danger)"}
                   onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-secondary, #64748b)"}
                 >
                   &times;
@@ -261,8 +261,8 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
             style={{
               width: "100%",
               padding: "12px 48px 12px 16px",
-              borderRadius: "12px",
-              border: isListening ? "2px solid #ef4444" : "1.5px solid var(--border-color)",
+              borderRadius: "var(--fs-xs, 12px)",
+              border: isListening ? "2px solid var(--danger)" : "1.5px solid var(--border-color)",
               backgroundColor: "var(--bg-card-hover)",
               color: "var(--text-main)",
               fontSize: "14.5px",
@@ -291,12 +291,12 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: isListening ? "#ffffff" : "#10b981",
+              color: isListening ? "#ffffff" : "var(--success)",
               zIndex: 10,
               padding: 0,
               borderRadius: "50%",
-              border: isListening ? "2px solid #ef4444" : "1.5px solid rgba(16, 185, 129, 0.4)",
-              backgroundColor: isListening ? "#ef4444" : "rgba(16, 185, 129, 0.12)",
+              border: isListening ? "2px solid var(--danger)" : "1.5px solid rgba(16, 185, 129, 0.4)",
+              backgroundColor: isListening ? "var(--danger)" : "rgba(16, 185, 129, 0.12)",
               boxShadow: isListening
                 ? "0 0 14px rgba(239, 68, 68, 0.6)"
                 : "0 2px 6px rgba(16, 185, 129, 0.15)",
@@ -371,7 +371,7 @@ function LocationSearch({ value, onChange, onSearch, detectedLocation, onLocatio
           aria-label="Search services"
           style={{
             padding: "12px 24px",
-            borderRadius: "12px",
+            borderRadius: "var(--fs-xs, 12px)",
             background: "linear-gradient(135deg, #0284c7 0%, #0369a1 100%)",
             color: "#ffffff",
             border: "none",

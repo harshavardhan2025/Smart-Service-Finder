@@ -6,6 +6,12 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Global focus indicator for accessibility */
+*:focus-visible {
+  outline: 3px solid var(--primary) !important;
+  outline-offset: 2px !important;
+}
+
 :root {
   --primary: #31525B;
   --primary-hover: #1F353B;
@@ -96,9 +102,19 @@ button:hover {
   box-shadow: 0 8px 16px -3px var(--primary-glow), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-button:active {
+button:active, a:active, [role="button"]:active {
   transform: translateY(2px);
-  border-bottom-width: 1px;
+  border-bottom-width: 0px;
+  margin-top: 4px;
+}
+
+/* Global Error State for Form Fields */
+input[aria-invalid="true"], 
+textarea[aria-invalid="true"], 
+select[aria-invalid="true"],
+.error-state {
+  border-color: var(--danger) !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
 }
 
 /* Global Input & Select Styling */

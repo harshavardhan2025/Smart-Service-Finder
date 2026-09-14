@@ -248,7 +248,7 @@ function Profile() {
       <div
         className="dashboard-header-block"
         style={{
-          background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)",
+          background: "linear-gradient(135deg, var(--text-main) 0%, #1e3a5f 100%)",
           color: "white",
           padding: "30px 20px 50px 20px"
         }}
@@ -322,7 +322,7 @@ function Profile() {
                   color: "var(--primary)",
                   padding: "3px 10px",
                   borderRadius: "20px",
-                  fontSize: "12px",
+                  fontSize: "var(--fs-xs, 12px)",
                   fontWeight: 700
                 }}
               >
@@ -334,7 +334,7 @@ function Profile() {
                   color: "var(--success)",
                   padding: "3px 10px",
                   borderRadius: "20px",
-                  fontSize: "12px",
+                  fontSize: "var(--fs-xs, 12px)",
                   fontWeight: 700
                 }}
               >
@@ -383,11 +383,11 @@ function Profile() {
           <div className="wallet-cards-row" style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
             {/* Wallet Balance Card */}
             <div className="wallet-loyalty-card" style={{ flex: 1, minWidth: "200px", padding: "20px", borderRadius: "16px", background: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)", color: "white" }}>
-              <div style={{ fontSize: "12px", opacity: 0.9, fontWeight: 600, textTransform: "uppercase" }}>Available Wallet Balance</div>
+              <div style={{ fontSize: "var(--fs-xs, 12px)", opacity: 0.9, fontWeight: 600, textTransform: "uppercase" }}>Available Wallet Balance</div>
               <div style={{ fontSize: "32px", fontWeight: 800, margin: "8px 0" }}>₹{walletBal.toLocaleString()}</div>
               <button 
                 onClick={() => setShowAddMoneyModal(true)}
-                style={{ padding: "8px 16px", backgroundColor: "var(--bg-card)", color: "var(--primary)", border: "none", borderRadius: "8px", fontWeight: 700, fontSize: "12px", cursor: "pointer", transition: "all 0.2s" }}
+                style={{ padding: "8px 16px", backgroundColor: "var(--bg-card)", color: "var(--primary)", border: "none", borderRadius: "8px", fontWeight: 700, fontSize: "var(--fs-xs, 12px)", cursor: "pointer", transition: "all 0.2s" }}
                 onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
                 onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
               >
@@ -397,12 +397,12 @@ function Profile() {
 
             {/* Loyalty Tier Progress Card */}
             <div className="wallet-loyalty-card" style={{ flex: 1, minWidth: "200px", padding: "20px", borderRadius: "16px", background: "linear-gradient(135deg, #ffb300, #ff8f00)", color: "white" }}>
-              <div style={{ fontSize: "12px", opacity: 0.9, fontWeight: 600, textTransform: "uppercase" }}>Loyalty Tier Status</div>
-              <div style={{ fontSize: "24px", fontWeight: 800, margin: "8px 0", display: "flex", alignItems: "center", gap: "6px" }}>
+              <div style={{ fontSize: "var(--fs-xs, 12px)", opacity: 0.9, fontWeight: 600, textTransform: "uppercase" }}>Loyalty Tier Status</div>
+              <div style={{ fontSize: "var(--fs-xl, 24px)", fontWeight: 800, margin: "8px 0", display: "flex", alignItems: "center", gap: "6px" }}>
                 <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><FaCrown style={{ color: "#ffd700" }} /> Gold Member</span>
               </div>
               {/* Progress bar to Platinum */}
-              <div style={{ fontSize: "12px", opacity: 0.9, marginBottom: "6px" }}>750 / 1,000 Points (250 more to Platinum)</div>
+              <div style={{ fontSize: "var(--fs-xs, 12px)", opacity: 0.9, marginBottom: "6px" }}>750 / 1,000 Points (250 more to Platinum)</div>
               <div style={{ width: "100%", height: "8px", backgroundColor: "rgba(255,255,255,0.3)", borderRadius: "4px", overflow: "hidden" }}>
                 <div style={{ width: "75%", height: "100%", backgroundColor: "var(--bg-card)", borderRadius: "4px" }} />
               </div>
@@ -433,7 +433,7 @@ function Profile() {
                 <label
                   style={{
                     display: "block",
-                    fontSize: "12px",
+                    fontSize: "var(--fs-xs, 12px)",
                     fontWeight: 700,
                     color: "var(--text-secondary)",
                     marginBottom: "6px",
@@ -470,7 +470,7 @@ function Profile() {
                 <label
                   style={{
                     display: "block",
-                    fontSize: "12px",
+                    fontSize: "var(--fs-xs, 12px)",
                     fontWeight: 700,
                     color: "var(--text-secondary)",
                     marginBottom: "6px",
@@ -507,7 +507,7 @@ function Profile() {
                 <label
                   style={{
                     display: "block",
-                    fontSize: "12px",
+                    fontSize: "var(--fs-xs, 12px)",
                     fontWeight: 600,
                     color: "var(--text-muted, #94a3b8)",
                     marginBottom: "6px",
@@ -536,7 +536,7 @@ function Profile() {
                 <label
                   style={{
                     display: "block",
-                    fontSize: "12px",
+                    fontSize: "var(--fs-xs, 12px)",
                     fontWeight: 600,
                     color: "var(--text-muted, #94a3b8)",
                     marginBottom: "6px",
@@ -565,7 +565,7 @@ function Profile() {
                 <label
                   style={{
                     display: "block",
-                    fontSize: "12px",
+                    fontSize: "var(--fs-xs, 12px)",
                     fontWeight: 600,
                     color: "var(--text-muted, #94a3b8)",
                     marginBottom: "6px",
@@ -590,12 +590,12 @@ function Profile() {
               </div>
 
               {/* Action Buttons */}
-              <div style={{ display: "flex", gap: "12px", marginTop: "4px" }}>
+              <div style={{ display: "flex", gap: "var(--fs-xs, 12px)", marginTop: "4px" }}>
                 <button
                   onClick={handleSave}
                   style={{
                     flex: 1,
-                    padding: "12px",
+                    padding: "var(--fs-xs, 12px)",
                     background: "linear-gradient(135deg, var(--primary), var(--primary-dark))",
                     color: "white",
                     border: "none",
@@ -611,7 +611,7 @@ function Profile() {
                   onClick={handleCancel}
                   style={{
                     flex: 1,
-                    padding: "12px",
+                    padding: "var(--fs-xs, 12px)",
                     backgroundColor: "var(--bg-card)",
                     color: "var(--text-secondary)",
                     border: "1.5px solid #e2e8f0",
@@ -681,7 +681,7 @@ function Profile() {
           </div>
 
           {/* Summary Pills */}
-          <div className="txn-status-pills" style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "12px" }}>
+          <div className="txn-status-pills" style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "var(--fs-xs, 12px)" }}>
             {Object.entries(STATUS_STYLE).map(([status, style]) => (
               <span
                 key={status}
@@ -690,7 +690,7 @@ function Profile() {
                   color: style.color,
                   padding: "4px 12px",
                   borderRadius: "20px",
-                  fontSize: "12px",
+                  fontSize: "var(--fs-xs, 12px)",
                   fontWeight: 700
                 }}
               >
@@ -710,7 +710,7 @@ function Profile() {
                   key={txnIdentifier}
                   style={{
                     border: `1.5px solid ${isOpen ? "var(--primary)" : "var(--border-color)"}`,
-                    borderRadius: "12px",
+                    borderRadius: "var(--fs-xs, 12px)",
                     overflow: "hidden",
                     transition: "border 0.2s"
                   }}
@@ -728,11 +728,11 @@ function Profile() {
                       transition: "background 0.2s"
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "var(--fs-xs, 12px)" }}>
                       <span style={{ fontSize: "22px" }}>{txn.icon}</span>
                       <div>
                         <p style={{ margin: 0, fontWeight: 700, fontSize: "14px", color: "var(--text-main)" }}>{txn.service}</p>
-                        <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}><FaCalendarAlt style={{ verticalAlign: "middle" }} /> {txn.date} &nbsp;·&nbsp; {txnIdentifier}</p>
+                        <p style={{ margin: 0, fontSize: "var(--fs-xs, 12px)", color: "var(--text-secondary)" }}><FaCalendarAlt style={{ verticalAlign: "middle" }} /> {txn.date} &nbsp;·&nbsp; {txnIdentifier}</p>
                       </div>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -740,7 +740,7 @@ function Profile() {
                       <span style={{ backgroundColor: s.bg, color: s.color, padding: "3px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700 }}>
                         {txn.status}
                       </span>
-                      <span style={{ color: "var(--text-secondary)", fontSize: "12px" }}>{isOpen ? <FaChevronUp /> : <FaChevronDown />}</span>
+                      <span style={{ color: "var(--text-secondary)", fontSize: "var(--fs-xs, 12px)" }}>{isOpen ? <FaChevronUp /> : <FaChevronDown />}</span>
                     </div>
                   </div>
 
@@ -791,7 +791,7 @@ function Profile() {
                 justifyContent: "center",
                 gap: "8px",
                 width: "100%",
-                marginTop: "12px",
+                marginTop: "var(--fs-xs, 12px)",
                 padding: "11px",
                 backgroundColor: showAllTxn ? "var(--primary-light)" : "rgba(198, 173, 143, 0.15)",
                 color: showAllTxn ? "var(--text-secondary)" : "var(--primary)",
@@ -817,7 +817,7 @@ function Profile() {
           <h3 style={{ margin: "0 0 14px 0", fontSize: "16px", fontWeight: 700, color: "var(--text-main)" }}>
             <FaLink style={{ color: "var(--primary)" }} /> Quick Links
           </h3>
-          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: "var(--fs-xs, 12px)", flexWrap: "wrap" }}>
             {[
               { to: "/my-bookings", label: "My Bookings", icon: FaClipboardList, color: "#2196F3", bg: "#eff6ff" },
               { to: "/reviews", label: "Rewards", icon: FaGift, color: "#7c3aed", bg: "#f5f3ff" },
@@ -887,7 +887,7 @@ function Profile() {
             </p>
 
             <div style={{ marginBottom: "16px" }}>
-              <label style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)", display: "block", marginBottom: "8px" }}>
+              <label style={{ fontSize: "var(--fs-xs, 12px)", fontWeight: 700, color: "var(--text-secondary)", display: "block", marginBottom: "8px" }}>
                 SELECT QUICK AMOUNT
               </label>
               <div style={{ display: "flex", gap: "8px" }}>
@@ -904,7 +904,7 @@ function Profile() {
                       backgroundColor: topUpAmount === amt ? "var(--primary-light)" : "var(--bg-card-hover)",
                       color: topUpAmount === amt ? "var(--primary)" : "var(--text-secondary)",
                       fontWeight: 800,
-                      fontSize: "12px",
+                      fontSize: "var(--fs-xs, 12px)",
                       cursor: "pointer"
                     }}
                   >
@@ -915,7 +915,7 @@ function Profile() {
             </div>
 
             <div style={{ marginBottom: "20px" }}>
-              <label style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)", display: "block", marginBottom: "6px" }}>
+              <label style={{ fontSize: "var(--fs-xs, 12px)", fontWeight: 700, color: "var(--text-secondary)", display: "block", marginBottom: "6px" }}>
                 ENTER AMOUNT (₹)
               </label>
               <input
@@ -925,7 +925,7 @@ function Profile() {
                 onChange={(e) => setTopUpAmount(parseFloat(e.target.value) || 0)}
                 style={{
                   width: "100%",
-                  padding: "12px",
+                  padding: "var(--fs-xs, 12px)",
                   borderRadius: "10px",
                   border: "1.5px solid #cbd5e1",
                   fontSize: "16px",
@@ -946,7 +946,7 @@ function Profile() {
                   backgroundColor: "var(--primary)",
                   color: "white",
                   border: "none",
-                  padding: "12px",
+                  padding: "var(--fs-xs, 12px)",
                   borderRadius: "10px",
                   fontWeight: 800,
                   fontSize: "14px",
@@ -963,7 +963,7 @@ function Profile() {
                   backgroundColor: "var(--bg-card-hover)",
                   color: "var(--text-secondary)",
                   border: "1px solid #cbd5e1",
-                  padding: "12px",
+                  padding: "var(--fs-xs, 12px)",
                   borderRadius: "10px",
                   fontWeight: 700,
                   fontSize: "14px",

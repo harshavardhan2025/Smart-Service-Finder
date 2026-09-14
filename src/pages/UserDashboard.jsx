@@ -79,31 +79,30 @@ function UserLocationMap({ isLoggedIn }) {
 
     <div className="premium-card" style={{ marginBottom: "40px", overflow: "hidden" }}>
 
-      <div
-
+      {/* Location toggle — button for keyboard access (WCAG 2.1.1) */}
+      <button
+        aria-expanded={open}
+        aria-controls="location-map-panel"
+        aria-label={open ? "Collapse location picker" : "Expand location picker"}
         style={{
-
+          width: "100%",
+          background: "none",
+          border: "none",
           padding: "20px 24px",
-
           display: "flex",
-
           alignItems: "center",
-
           justifyContent: "space-between",
-
           cursor: "pointer",
-
+          textAlign: "left",
         }}
-
         onClick={handleToggle}
-
       >
 
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--fs-xs, 12px)" }}>
 
           <div style={{
 
-            width: "44px", height: "44px", borderRadius: "12px",
+            width: "44px", height: "44px", borderRadius: "var(--fs-xs, 12px)",
 
             background: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)",
 
@@ -113,7 +112,7 @@ function UserLocationMap({ isLoggedIn }) {
 
           }}>
 
-            <FaMapMarkerAlt style={{ color: "white" }} />
+            <FaMapMarkerAlt aria-hidden="true" style={{ color: "white" }} />
 
           </div>
 
@@ -126,21 +125,22 @@ function UserLocationMap({ isLoggedIn }) {
             </h3>
 
             <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)", maxWidth: "480px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-
-              <FaMapMarkerAlt style={{ color: "var(--primary)", flexShrink: 0 }} /> {location} {!isLoggedIn && " (Guest Preview)"}
-
+              <FaMapMarkerAlt aria-hidden="true" style={{ color: "var(--primary)", flexShrink: 0 }} /> {location} {!isLoggedIn && " (Guest Preview)"}
             </p>
 
           </div>
 
         </div>
 
-        <FaChevronDown style={{ fontSize: "14px", color: "var(--text-muted)", transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "none" }} />
+        <FaChevronDown aria-hidden="true" style={{ fontSize: "14px", color: "var(--text-muted)", transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "none" }} />
 
-      </div>
+      </button>
+
 
       <div
-
+        id="location-map-panel"
+        role="region"
+        aria-label="Location picker map"
         style={{
 
           borderTop: open ? "1px solid var(--border)" : "none",
@@ -158,6 +158,7 @@ function UserLocationMap({ isLoggedIn }) {
         }}
 
       >
+
 
         <MapPicker
 
@@ -725,7 +726,7 @@ function UserDashboard() {
 
             <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
 
-              <div style={{ width: "48px", height: "48px", borderRadius: "12px", background: "linear-gradient(135deg, #eab308 0%, #f97316 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "white", flexShrink: 0, boxShadow: "0 4px 10px rgba(234, 179, 8, 0.25)" }}><FaTag /></div>
+              <div style={{ width: "48px", height: "48px", borderRadius: "var(--fs-xs, 12px)", background: "linear-gradient(135deg, #eab308 0%, #f97316 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "white", flexShrink: 0, boxShadow: "0 4px 10px rgba(234, 179, 8, 0.25)" }}><FaTag /></div>
 
               <div style={{ flex: 1 }}>
 
@@ -735,7 +736,7 @@ function UserDashboard() {
 
                 </h3>
 
-                <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)", fontWeight: 500, lineHeight: "1.4" }}>
+                <p style={{ margin: 0, fontSize: "var(--fs-xs, 12px)", color: "var(--text-muted)", fontWeight: 500, lineHeight: "1.4" }}>
 
                   {isLoggedIn && activePlans.length > 0 
 
@@ -753,15 +754,17 @@ function UserDashboard() {
 
             <Link to="/plans-offers" style={{ textDecoration: "none" }}>
 
-              <button 
+                <button 
 
                 className="btn-primary" 
+
+                aria-label="View all plans and seasonal offers on the Plans & Offers page"
 
                 style={{
 
                   width: "100%",
 
-                  padding: "12px",
+                  padding: "var(--fs-xs, 12px)",
 
                   borderRadius: "10px",
 
@@ -809,7 +812,8 @@ function UserDashboard() {
 
               >
 
-                Explore Plans & Offers →
+                  Explore Plans &amp; Offers
+                  <span aria-hidden="true"> →</span>
 
               </button>
 
@@ -825,7 +829,7 @@ function UserDashboard() {
 
           <div className="premium-card metric-card" ref={walletCardRef} style={{ padding: "22px", display: "flex", alignItems: "center", gap: "18px" }}>
 
-            <div style={{ width: "52px", height: "52px", borderRadius: "12px", background: "linear-gradient(135deg, #6366f1, #4f46e5)", display: "flex", justifyContent: "center", alignItems: "center", color: "white", fontSize: "22px", flexShrink: 0 }}>
+            <div style={{ width: "52px", height: "52px", borderRadius: "var(--fs-xs, 12px)", background: "linear-gradient(135deg, #6366f1, #4f46e5)", display: "flex", justifyContent: "center", alignItems: "center", color: "white", fontSize: "22px", flexShrink: 0 }}>
 
               <FaWallet />
 
@@ -833,9 +837,9 @@ function UserDashboard() {
 
             <div>
 
-              <p style={{ margin: "0 0 2px 0", color: "var(--text-muted)", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Wallet Balance</p>
+              <p style={{ margin: "0 0 2px 0", color: "var(--text-muted)", fontSize: "var(--fs-xs, 12px)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Wallet Balance</p>
 
-              <h2 style={{ margin: "0 0 2px 0", color: "var(--text-main)", fontSize: "24px", fontWeight: 800 }}>₹{isLoggedIn ? wallet.toLocaleString() : "0"}</h2>
+              <h2 style={{ margin: "0 0 2px 0", color: "var(--text-main)", fontSize: "var(--fs-xl, 24px)", fontWeight: 800 }}>₹{isLoggedIn ? wallet.toLocaleString() : "0"}</h2>
 
               <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)" }}>Available for booking payments</p>
 
@@ -845,7 +849,7 @@ function UserDashboard() {
 
           <div className="premium-card metric-card" ref={activeCardRef} style={{ padding: "22px", display: "flex", alignItems: "center", gap: "18px" }}>
 
-            <div style={{ width: "52px", height: "52px", borderRadius: "12px", background: "linear-gradient(135deg, #10b981, #059669)", display: "flex", justifyContent: "center", alignItems: "center", color: "white", fontSize: "22px", flexShrink: 0 }}>
+            <div style={{ width: "52px", height: "52px", borderRadius: "var(--fs-xs, 12px)", background: "linear-gradient(135deg, var(--success), #059669)", display: "flex", justifyContent: "center", alignItems: "center", color: "white", fontSize: "22px", flexShrink: 0 }}>
 
               <FaCalendarCheck />
 
@@ -853,9 +857,9 @@ function UserDashboard() {
 
             <div>
 
-              <p style={{ margin: "0 0 2px 0", color: "var(--text-muted)", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Active Bookings</p>
+              <p style={{ margin: "0 0 2px 0", color: "var(--text-muted)", fontSize: "var(--fs-xs, 12px)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Active Bookings</p>
 
-              <h2 style={{ margin: "0 0 2px 0", color: "var(--text-main)", fontSize: "24px", fontWeight: 800 }}>{isLoggedIn ? activeBookings.length : "0"}</h2>
+              <h2 style={{ margin: "0 0 2px 0", color: "var(--text-main)", fontSize: "var(--fs-xl, 24px)", fontWeight: 800 }}>{isLoggedIn ? activeBookings.length : "0"}</h2>
 
               <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)" }}>In progress or confirmed</p>
 
@@ -865,7 +869,7 @@ function UserDashboard() {
 
           <div className="premium-card metric-card" ref={totalCardRef} style={{ padding: "22px", display: "flex", alignItems: "center", gap: "18px" }}>
 
-            <div style={{ width: "52px", height: "52px", borderRadius: "12px", background: "linear-gradient(135deg, #f59e0b, #d97706)", display: "flex", justifyContent: "center", alignItems: "center", color: "white", fontSize: "22px", flexShrink: 0 }}>
+            <div style={{ width: "52px", height: "52px", borderRadius: "var(--fs-xs, 12px)", background: "linear-gradient(135deg, #f59e0b, #d97706)", display: "flex", justifyContent: "center", alignItems: "center", color: "white", fontSize: "22px", flexShrink: 0 }}>
 
               <FaRegClock />
 
@@ -873,9 +877,9 @@ function UserDashboard() {
 
             <div>
 
-              <p style={{ margin: "0 0 2px 0", color: "var(--text-muted)", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Total Bookings</p>
+              <p style={{ margin: "0 0 2px 0", color: "var(--text-muted)", fontSize: "var(--fs-xs, 12px)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Total Bookings</p>
 
-              <h2 style={{ margin: "0 0 2px 0", color: "var(--text-main)", fontSize: "24px", fontWeight: 800 }}>{isLoggedIn ? bookings.length : "0"}</h2>
+              <h2 style={{ margin: "0 0 2px 0", color: "var(--text-main)", fontSize: "var(--fs-xl, 24px)", fontWeight: 800 }}>{isLoggedIn ? bookings.length : "0"}</h2>
 
               <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)" }}>All-time service requests</p>
 
@@ -893,7 +897,7 @@ function UserDashboard() {
 
         <div className="premium-card" style={{ 
 
-          padding: "24px", 
+          padding: "var(--fs-xl, 24px)", 
 
           marginBottom: "40px", 
 
@@ -940,12 +944,13 @@ function UserDashboard() {
                 };
                 const ServiceIcon = serviceIconMap[serviceName] || FaTools;
                 return (
-                  <div
+                  <button
                     key={serviceName}
                     onClick={() => {
                        localStorage.setItem("voice_query", serviceName);
                        navigate("/");
                     }}
+                    aria-label={`Book ${serviceName} service — AI match 98%`}
                     style={{
                       backgroundColor: "var(--bg-card)",
                       border: "1px solid var(--border)",
@@ -954,7 +959,9 @@ function UserDashboard() {
                       textAlign: "center",
                       cursor: "pointer",
                       transition: "all 0.2s ease",
-                      boxShadow: "var(--shadow-3d)"
+                      boxShadow: "var(--shadow-3d)",
+                      width: "100%",
+                      fontFamily: "inherit",
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = "translateY(-4px)";
@@ -965,18 +972,18 @@ function UserDashboard() {
                       e.currentTarget.style.borderColor = "var(--border)";
                     }}
                   >
-                    <div style={{ fontSize: "32px", marginBottom: "10px", color: "var(--primary)", display: "flex", justifyContent: "center" }}>
+                    {/* Decorative icon — hidden from AT */}
+                    <div aria-hidden="true" style={{ fontSize: "32px", marginBottom: "10px", color: "var(--primary)", display: "flex", justifyContent: "center" }}>
                       <ServiceIcon />
                     </div>
                     <h4 style={{ margin: "0 0 6px 0", fontSize: "15px", color: "var(--text-main)" }}>{serviceName}</h4>
 
-                    <span style={{ fontSize: "11px", fontWeight: "bold", color: "var(--primary)", backgroundColor: "rgba(66, 86, 100, 0.1)", padding: "4px 8px", borderRadius: "10px" }}>
-
+                    {/* Badge: solid bg ensures ≥4.5:1 contrast (WCAG 1.4.3 ✓) */}
+                    <span style={{ fontSize: "11px", fontWeight: "bold", color: "#1f4e5a", backgroundColor: "#d0edf1", padding: "4px 8px", borderRadius: "10px" }}>
                       Match 98%
-
                     </span>
 
-                  </div>
+                  </button>
 
                 );
 
@@ -996,13 +1003,13 @@ function UserDashboard() {
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "30px" }}>
 
-          <div className="premium-card" style={{ padding: "24px" }}>
+          <div className="premium-card" style={{ padding: "var(--fs-xl, 24px)" }}>
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
 
               <h3 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "var(--text-main)", display: "flex", alignItems: "center", gap: "8px" }}><FaClipboardList style={{ color: "var(--primary)" }} /> Recent Bookings</h3>
 
-              {isLoggedIn && <Link to="/my-bookings" style={{ color: "var(--primary)", fontSize: "13px", fontWeight: 600, textDecoration: "none" }}>View All →</Link>}
+              {isLoggedIn && <Link to="/my-bookings" aria-label="View all your bookings" style={{ color: "var(--primary)", fontSize: "13px", fontWeight: 600, textDecoration: "none" }}>View All <span aria-hidden="true">→</span></Link>}
 
             </div>
 
@@ -1026,7 +1033,13 @@ function UserDashboard() {
 
             ) : bookings.length > 0 ? (
 
-              <div className="custom-scrollbar" style={{ display: "flex", flexDirection: "column", gap: "14px", maxHeight: "280px", overflowY: "auto", paddingRight: "6px" }}>
+              <div
+                className="custom-scrollbar"
+                role="region"
+                aria-label="Recent bookings list"
+                tabIndex={0}
+                style={{ display: "flex", flexDirection: "column", gap: "14px", maxHeight: "280px", overflowY: "auto", paddingRight: "6px" }}
+              >
 
                 {bookings.map(b => {
 
@@ -1040,7 +1053,7 @@ function UserDashboard() {
 
                         <p style={{ margin: "0 0 3px 0", fontWeight: 700, color: "var(--text-main)", fontSize: "14px" }}>{b.service}</p>
 
-                        <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)" }}>{b.date || "Scheduled"} • {b.workerName || "Worker assigned soon"}</p>
+                        <p style={{ margin: 0, fontSize: "var(--fs-xs, 12px)", color: "var(--text-muted)" }}>{b.date || "Scheduled"} • {b.workerName || "Worker assigned soon"}</p>
 
                       </div>
 
@@ -1072,7 +1085,7 @@ function UserDashboard() {
 
           </div>
 
-          <div className="premium-card" style={{ padding: "24px" }}>
+          <div className="premium-card" style={{ padding: "var(--fs-xl, 24px)" }}>
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
 
@@ -1090,21 +1103,27 @@ function UserDashboard() {
 
                 <h4 style={{ margin: "12px 0 6px 0", color: "var(--text-main)", fontWeight: 700 }}>Statements Locked</h4>
 
-                <p style={{ fontSize: "12px", margin: "0 0 16px 0", lineHeight: "1.4" }}>Sign in with a customer account to top-up wallet balances and view invoice logs.</p>
+                <p style={{ fontSize: "var(--fs-xs, 12px)", margin: "0 0 16px 0", lineHeight: "1.4" }}>Sign in with a customer account to top-up wallet balances and view invoice logs.</p>
 
-                <button onClick={() => navigate("/login")} className="btn-secondary" style={{ padding: "8px 16px", fontSize: "12px", cursor: "pointer", fontWeight: 700 }}>Login Now</button>
+                <button onClick={() => navigate("/login")} className="btn-secondary" style={{ padding: "8px 16px", fontSize: "var(--fs-xs, 12px)", cursor: "pointer", fontWeight: 700 }}>Login Now</button>
 
               </div>
 
             ) : transactions.length > 0 ? (
 
-              <div className="custom-scrollbar" style={{ display: "flex", flexDirection: "column", gap: "16px", maxHeight: "300px", overflowY: "auto", paddingRight: "8px" }}>
+              <div
+                className="custom-scrollbar"
+                role="region"
+                aria-label="Recent transactions list"
+                tabIndex={0}
+                style={{ display: "flex", flexDirection: "column", gap: "16px", maxHeight: "300px", overflowY: "auto", paddingRight: "8px" }}
+              >
 
                 {transactions.map(t => (
 
                   <div key={t._id || t.id} className="dashboard-list-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "16px", borderBottom: "1px solid var(--border)" }}>
 
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "var(--fs-xs, 12px)" }}>
 
                       <div style={{ width: "40px", height: "40px", borderRadius: "50%", backgroundColor: "var(--border)", display: "flex", justifyContent: "center", alignItems: "center", fontSize: "18px" }}>
 
@@ -1116,7 +1135,7 @@ function UserDashboard() {
 
                         <p style={{ margin: "0 0 4px 0", fontWeight: "500", color: "var(--text-main)" }}>{t.service}</p>
 
-                        <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)" }}>{t.date || (t.createdAt ? new Date(t.createdAt).toLocaleDateString() : "")} • {t.method}</p>
+                        <p style={{ margin: 0, fontSize: "var(--fs-xs, 12px)", color: "var(--text-muted)" }}>{t.date || (t.createdAt ? new Date(t.createdAt).toLocaleDateString() : "")} • {t.method}</p>
 
                       </div>
 
@@ -1128,7 +1147,7 @@ function UserDashboard() {
 
                       fontWeight: "600", 
 
-                      color: (t.status === "Refunded" || t.status === "Added" || t.method === "Cashback" || t.method === "Reward" || t.method === "Wallet Topup") ? "#16a34a" : "var(--text-main)" 
+                      color: (t.status === "Refunded" || t.status === "Added" || t.method === "Cashback" || t.method === "Reward" || t.method === "Wallet Topup") ? "var(--text-success)" : "var(--text-main)" 
 
                     }}>
 
@@ -1150,13 +1169,13 @@ function UserDashboard() {
 
           </div>
 
-          <div className="premium-card" style={{ padding: "24px" }}>
+          <div className="premium-card" style={{ padding: "var(--fs-xl, 24px)" }}>
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
 
               <h3 style={{ margin: 0, fontSize: "18px", color: "var(--text-main)" }}>Manage Plans</h3>
 
-              <Link to="/plans-offers" style={{ color: "var(--primary)", fontSize: "14px", fontWeight: "500", textDecoration: "none" }}>Explore Plans</Link>
+              <Link to="/plans-offers" aria-label="Explore subscription plans and offers" style={{ color: "var(--primary)", fontSize: "14px", fontWeight: "500", textDecoration: "none" }}>Explore Plans</Link>
 
             </div>
 
@@ -1168,21 +1187,27 @@ function UserDashboard() {
 
                 <h4 style={{ margin: "12px 0 6px 0", color: "var(--text-main)", fontWeight: 700 }}>Subscriptions Locked</h4>
 
-                <p style={{ fontSize: "12px", margin: "0 0 16px 0", lineHeight: "1.4" }}>Sign in with a customer account to unlock seasonal coupons and service packages.</p>
+                <p style={{ fontSize: "var(--fs-xs, 12px)", margin: "0 0 16px 0", lineHeight: "1.4" }}>Sign in with a customer account to unlock seasonal coupons and service packages.</p>
 
-                <button onClick={() => navigate("/login")} className="btn-secondary" style={{ padding: "8px 16px", fontSize: "12px", cursor: "pointer", fontWeight: 700 }}>Login Now</button>
+                <button onClick={() => navigate("/login")} className="btn-secondary" style={{ padding: "8px 16px", fontSize: "var(--fs-xs, 12px)", cursor: "pointer", fontWeight: 700 }}>Login Now</button>
 
               </div>
 
             ) : activePlans.length > 0 ? (
 
-              <div className="custom-scrollbar" style={{ display: "flex", flexDirection: "column", gap: "16px", maxHeight: "300px", overflowY: "auto", paddingRight: "8px" }}>
+              <div
+                className="custom-scrollbar"
+                role="region"
+                aria-label="Active subscription plans list"
+                tabIndex={0}
+                style={{ display: "flex", flexDirection: "column", gap: "16px", maxHeight: "300px", overflowY: "auto", paddingRight: "8px" }}
+              >
 
                 {activePlans.map(p => (
 
                   <div key={p._id || p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "16px", borderBottom: "1px solid var(--border)" }}>
 
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "var(--fs-xs, 12px)" }}>
 
                       <div style={{ width: "40px", height: "40px", borderRadius: "50%", backgroundColor: "var(--border)", display: "flex", justifyContent: "center", alignItems: "center", fontSize: "18px" }}>
 
@@ -1194,13 +1219,13 @@ function UserDashboard() {
 
                         <p style={{ margin: "0 0 4px 0", fontWeight: "600", color: "var(--text-main)" }}>{p.service.replace("Plan Subscription: ", "")}</p>
 
-                        <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)" }}>Subscribed on {p.date || new Date(p.createdAt).toLocaleDateString()}</p>
+                        <p style={{ margin: 0, fontSize: "var(--fs-xs, 12px)", color: "var(--text-muted)" }}>Subscribed on {p.date || new Date(p.createdAt).toLocaleDateString()}</p>
 
                       </div>
 
                     </div>
 
-                    <span style={{ padding: "6px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: "600", backgroundColor: "var(--success-light)", color: "var(--success)" }}>
+                    <span style={{ padding: "6px 12px", borderRadius: "20px", fontSize: "var(--fs-xs, 12px)", fontWeight: "600", backgroundColor: "var(--success-light)", color: "var(--success)" }}>
 
                       Active
 
@@ -1250,11 +1275,13 @@ function UserDashboard() {
 
       </div>
 
-      {/* 🚨 FLOATING SOS IN-APP PANIC TRIGGER */}
+      {/* 🚨 FLOATING SOS BUTTON — proper <button> for keyboard & screen reader access */}
 
-      <div
+      <button
 
         onClick={startSosCountdown}
+        aria-label="Trigger SOS emergency alert"
+        title="SOS Emergency Alert"
 
         style={{
 
@@ -1270,7 +1297,7 @@ function UserDashboard() {
 
           borderRadius: "50%",
 
-          background: "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
+          background: "linear-gradient(135deg, var(--danger) 0%, #b91c1c 100%)",
 
           boxShadow: "0 8px 24px rgba(239, 68, 68, 0.4)",
 
@@ -1298,9 +1325,9 @@ function UserDashboard() {
 
       >
 
-        🆘
+        <span aria-hidden="true">🆘</span>
 
-      </div>
+      </button>
 
       {/* 🛑 FULLSCREEN SOS COUNTDOWN & ALERT OVERLAY */}
 
@@ -1336,7 +1363,7 @@ function UserDashboard() {
 
             backgroundColor: "var(--bg-card)",
 
-            borderRadius: "24px",
+            borderRadius: "var(--fs-xl, 24px)",
 
             padding: "32px",
 
@@ -1344,7 +1371,7 @@ function UserDashboard() {
 
             boxShadow: "0 25px 50px -12px rgba(239, 68, 68, 0.25)",
 
-            border: "3px solid #ef4444",
+            border: "3px solid var(--danger)",
 
             animation: "scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)"
 
@@ -1380,7 +1407,7 @@ function UserDashboard() {
                   <FaShieldAlt />
                 </div>
 
-                <h2 style={{ margin: "0 0 10px 0", fontSize: "24px", fontWeight: 800, color: "var(--text-main)" }}>
+                <h2 style={{ margin: "0 0 10px 0", fontSize: "var(--fs-xl, 24px)", fontWeight: 800, color: "var(--text-main)" }}>
 
                   Emergency Action Triggered
 
@@ -1512,7 +1539,7 @@ function UserDashboard() {
 
                       padding: "14px",
 
-                      borderRadius: "12px",
+                      borderRadius: "var(--fs-xs, 12px)",
 
                       textDecoration: "none",
 
@@ -1548,7 +1575,7 @@ function UserDashboard() {
 
                       padding: "14px",
 
-                      borderRadius: "12px",
+                      borderRadius: "var(--fs-xs, 12px)",
 
                       textDecoration: "none",
 

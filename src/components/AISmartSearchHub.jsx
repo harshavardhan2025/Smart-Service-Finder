@@ -389,7 +389,7 @@ function AISmartSearchHub({
         margin: "16px 20px 20px 20px",
         background: "var(--bg-card)",
         border: "1.5px solid var(--border-color)",
-        borderRadius: "24px",
+        borderRadius: "var(--fs-xl, 24px)",
         boxShadow: "var(--shadow-3d)",
         backdropFilter: "var(--blur)",
         display: "flex",
@@ -604,7 +604,7 @@ function SearchHeader({ detectedLocation, onShowMap }) {
         type="button"
         className="search-header-loc-btn"
         onClick={onShowMap}
-        aria-label="Select service location"
+        aria-label={detectedLocation ? `📍 ${getShortLocation(detectedLocation)} — change service location` : "📍 Set Location on Map"}
         style={{
           display: "inline-flex",
           alignItems: "center",
@@ -618,7 +618,6 @@ function SearchHeader({ detectedLocation, onShowMap }) {
           border: "1px solid var(--border-color)",
           cursor: "pointer",
           transition: "transform 0.15s ease",
-          outline: "none",
         }}
         onMouseEnter={(event) => {
           event.currentTarget.style.transform = "scale(1.03)";
@@ -627,7 +626,7 @@ function SearchHeader({ detectedLocation, onShowMap }) {
           event.currentTarget.style.transform = "none";
         }}
       >
-        <span>📍</span>
+        <span aria-hidden="true">📍</span>
         {detectedLocation ? getShortLocation(detectedLocation) : "Set Location on Map"}
       </button>
     </div>
@@ -655,7 +654,7 @@ function SearchInput({
         display: "flex",
         alignItems: "center",
         width: "100%",
-        gap: "12px",
+        gap: "var(--fs-xs, 12px)",
         flexWrap: "wrap",
         position: "relative",
       }}
@@ -676,7 +675,7 @@ function SearchInput({
             width: "100%",
             padding: "14px 52px 14px 18px",
             borderRadius: "16px",
-            border: isListening ? "2.5px solid #ef4444" : "1.5px solid var(--border-color)",
+            border: isListening ? "2.5px solid var(--danger)" : "1.5px solid var(--border-color)",
             backgroundColor: "var(--bg-card-hover)",
             color: "var(--text-main)",
             fontSize: "15px",
@@ -705,13 +704,13 @@ function SearchInput({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: isListening ? "#ffffff" : "#10b981",
+            color: isListening ? "#ffffff" : "var(--success)",
             fontSize: "15px",
             zIndex: 10,
             padding: 0,
             borderRadius: "50%",
-            border: isListening ? "2px solid #ef4444" : "1.5px solid rgba(16, 185, 129, 0.4)",
-            backgroundColor: isListening ? "#ef4444" : "rgba(16, 185, 129, 0.12)",
+            border: isListening ? "2px solid var(--danger)" : "1.5px solid rgba(16, 185, 129, 0.4)",
+            backgroundColor: isListening ? "var(--danger)" : "rgba(16, 185, 129, 0.12)",
             boxShadow: isListening
               ? "0 0 14px rgba(239, 68, 68, 0.6)"
               : "0 2px 6px rgba(16, 185, 129, 0.15)",
@@ -887,7 +886,7 @@ function QuickSearchChips({ value, onChipClick }) {
       <span
         className="quick-find-badge"
         style={{
-          fontSize: "12px",
+          fontSize: "var(--fs-xs, 12px)",
           color: "var(--text-secondary)",
           fontWeight: 800,
           flexShrink: 0,
@@ -931,7 +930,8 @@ function QuickSearchChips({ value, onChipClick }) {
               key={chip.query}
               type="button"
               onClick={() => onChipClick(chip.query)}
-              aria-label={`Search for ${chip.query}`}
+              // WCAG 2.5.3: aria-label MUST start with the visible label text
+              aria-label={`${chip.label} — search for ${chip.query}`}
               style={{
                 padding: "6px 14px",
                 borderRadius: "20px",
@@ -946,7 +946,7 @@ function QuickSearchChips({ value, onChipClick }) {
                     ? "linear-gradient(135deg, rgba(49, 82, 91, 0.12) 0%, rgba(179, 222, 229, 0.25) 100%)"
                     : "linear-gradient(135deg, rgba(49, 82, 91, 0.05) 0%, rgba(179, 222, 229, 0.1) 100%)",
                 color: isSelected ? "#ffffff" : isAttracted ? "var(--primary-dark)" : "var(--text-main)",
-                fontSize: "12px",
+                fontSize: "var(--fs-xs, 12px)",
                 fontWeight: isSelected || isAttracted ? 800 : 600,
                 transform: isAttracted ? "scale(1.04)" : "none",
                 boxShadow: isSelected || isAttracted
@@ -991,7 +991,7 @@ function AIRecommendationCard({
         color: "#ffffff",
         display: "flex",
         flexDirection: "column",
-        gap: "12px",
+        gap: "var(--fs-xs, 12px)",
         transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
         minHeight: "auto",
         boxShadow: "0 12px 30px -10px rgba(0, 0, 0, 0.35), 0 0 15px rgba(16, 185, 129, 0.15)",
@@ -1007,7 +1007,7 @@ function AIRecommendationCard({
         event.currentTarget.style.boxShadow = "0 12px 30px -10px rgba(0, 0, 0, 0.35), 0 0 15px rgba(16, 185, 129, 0.15)";
       }}
     >
-      <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+      <div style={{ display: "flex", gap: "var(--fs-xs, 12px)", alignItems: "flex-start" }}>
         <div
           className="ai-banner-robot-icon"
           style={{
@@ -1131,7 +1131,7 @@ function SuggestedWorkers({ isAiLoading, aiSuggestedWorkers, aiBannerExpertsTitl
                 backgroundColor: "rgba(255, 255, 255, 0.07)",
                 backdropFilter: "blur(12px)",
                 padding: "10px 14px",
-                borderRadius: "12px",
+                borderRadius: "var(--fs-xs, 12px)",
                 border: "1px solid rgba(255, 255, 255, 0.12)",
                 display: "flex",
                 flexDirection: "column",
@@ -1150,8 +1150,8 @@ function SuggestedWorkers({ isAiLoading, aiSuggestedWorkers, aiBannerExpertsTitl
               }}
             >
               <span className="zy-hub-grid-name" style={{ fontWeight: 800, fontSize: "13.5px", color: "#ffffff" }}>{worker.name}</span>
-              <span className="zy-hub-grid-role" style={{ fontSize: "11.5px", color: "#94a3b8", fontWeight: 500 }}>{worker.service}</span>
-              <span className="zy-hub-grid-rating" style={{ fontSize: "11.5px", color: "#fbbf24", fontWeight: 800, display: "flex", alignItems: "center", gap: "4px", marginTop: "1px" }}>
+              <span className="zy-hub-grid-role" style={{ fontSize: "var(--fs-sm, 14px)", color: "#94a3b8", fontWeight: 500 }}>{worker.service}</span>
+              <span className="zy-hub-grid-rating" style={{ fontSize: "var(--fs-sm, 14px)", color: "#fbbf24", fontWeight: 800, display: "flex", alignItems: "center", gap: "4px", marginTop: "1px" }}>
                 <FaStar style={{ fontSize: "10px", color: "#fbbf24" }} />
                 {worker.rating}
               </span>
@@ -1177,7 +1177,7 @@ function LocationBonuses({
       className="ai-banner-bonuses"
       style={{
         marginTop: "4px",
-        paddingTop: "12px",
+        paddingTop: "var(--fs-xs, 12px)",
         borderTop: "1px solid rgba(255, 255, 255, 0.1)",
         display: "flex",
         alignItems: "center",
@@ -1202,7 +1202,7 @@ function LocationBonuses({
         <span
           className="ai-banner-bonus-desc"
           style={{
-            fontSize: "11.5px",
+            fontSize: "var(--fs-sm, 14px)",
             color: "rgba(203, 213, 225, 0.85)",
             marginTop: "1px",
           }}
@@ -1236,7 +1236,7 @@ function LocationBonuses({
           alignItems: "center",
           gap: "4px",
           padding: "8px 14px",
-          background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+          background: "linear-gradient(135deg, var(--success) 0%, #059669 100%)",
           color: "#ffffff",
           borderRadius: "10px",
           fontSize: "12.5px",
@@ -1300,7 +1300,7 @@ function LocationMapModal({ onClose, onLocationUpdate, onCoordsChange }) {
             alignItems: "center",
             padding: "16px 20px",
             borderBottom: "1px solid var(--border-color, #e2e8f0)",
-            backgroundColor: "var(--primary-light, #f8fafc)",
+            backgroundColor: "var(--primary-light, var(--bg-main))",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -1325,7 +1325,7 @@ function LocationMapModal({ onClose, onLocationUpdate, onCoordsChange }) {
               borderRadius: "6px",
             }}
             onMouseEnter={(event) => {
-              event.currentTarget.style.color = "#ef4444";
+              event.currentTarget.style.color = "var(--danger)";
             }}
             onMouseLeave={(event) => {
               event.currentTarget.style.color = "var(--text-secondary)";

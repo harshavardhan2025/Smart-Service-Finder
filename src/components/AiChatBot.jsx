@@ -117,11 +117,11 @@ const zyStyles = `
     background: #142228 !important;
   }
   [data-theme="light"] .zy-messages {
-    background: #f8fafc !important;
+    background: var(--bg-main) !important;
   }
 
   .zy-header {
-    background: linear-gradient(135deg, #1F353B 0%, #31525B 60%, #203A43 100%) !important;
+    background: linear-gradient(135deg, #1F353B 0%, var(--primary) 60%, #203A43 100%) !important;
     position: relative;
     overflow: hidden;
     border-bottom: 1px solid rgba(179, 222, 229, 0.25);
@@ -1127,8 +1127,8 @@ function AiChatBot() {
           justifyContent: "center",
           cursor: "pointer",
           position: "fixed",
-          bottom: isMobile ? "18px" : "24px",
-          right: isMobile ? "18px" : "24px",
+          bottom: isMobile ? "18px" : "var(--fs-xl, 24px)",
+          right: isMobile ? "18px" : "var(--fs-xl, 24px)",
           zIndex: 10000,
           boxSizing: "border-box",
           outline: "none"
@@ -1138,7 +1138,7 @@ function AiChatBot() {
           {isOpen ? (
             <FaTimes style={{ fontSize: isMobile ? "20px" : "22px", color: "#ffffff", display: "block" }} />
           ) : (
-            <FaWandMagicSparkles style={{ fontSize: isMobile ? "24px" : "26px", color: "#ffffff", display: "block" }} />
+            <FaWandMagicSparkles style={{ fontSize: isMobile ? "var(--fs-xl, 24px)" : "26px", color: "#ffffff", display: "block" }} />
           )}
         </span>
       </button>
@@ -1235,7 +1235,7 @@ function AiChatBot() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "12px",
+                gap: "var(--fs-xs, 12px)",
                 position: "relative",
                 zIndex: 1,
               }}
@@ -1412,7 +1412,7 @@ function AiChatBot() {
 
                   <div
                     style={{
-                      fontSize: "10.5px",
+                      fontSize: "var(--fs-xs, 12px)",
                       fontWeight: 600,
                       color:
                         message.sender ===
@@ -1466,7 +1466,7 @@ function AiChatBot() {
                       <div
                         style={{
                           marginTop:
-                            "12px",
+                            "var(--fs-xs, 12px)",
                         }}
                       >
                         <Link
@@ -1579,7 +1579,7 @@ function AiChatBot() {
                                       borderRadius:
                                         "10px",
                                       background:
-                                        "linear-gradient(135deg, #31525B 0%, #B3DEE5 100%)",
+                                        "linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)",
                                       display:
                                         "flex",
                                       alignItems:
@@ -1655,7 +1655,7 @@ function AiChatBot() {
                                         <span
                                           style={{
                                             color:
-                                              "#31525B",
+                                              "var(--primary)",
                                             fontWeight:
                                               700,
                                             background:
@@ -1665,7 +1665,7 @@ function AiChatBot() {
                                             borderRadius:
                                               "4px",
                                             fontSize:
-                                              "10.5px",
+                                              "var(--fs-xs, 12px)",
                                             display:
                                               "inline-flex",
                                             alignItems:
@@ -1689,11 +1689,11 @@ function AiChatBot() {
                                   style={{
                                     display:
                                       "flex",
-                                    gap: "12px",
+                                    gap: "var(--fs-xs, 12px)",
                                     flexWrap:
                                       "wrap",
                                     fontSize:
-                                      "12px",
+                                      "var(--fs-xs, 12px)",
                                     color:
                                       "var(--text-secondary)",
                                     padding:
@@ -1721,7 +1721,7 @@ function AiChatBot() {
                                   <span
                                     style={{
                                       color:
-                                        "#31525B",
+                                        "var(--primary)",
                                       fontWeight:
                                         700,
                                       display:
@@ -1808,7 +1808,7 @@ function AiChatBot() {
                         <div
                           style={{
                             marginTop:
-                              "12px",
+                              "var(--fs-xs, 12px)",
                           }}
                         >
                           <Link
@@ -1867,7 +1867,7 @@ function AiChatBot() {
                 <div
                   style={{
                     fontSize:
-                      "10.5px",
+                      "var(--fs-xs, 12px)",
                     fontWeight: 600,
                     color:
                       "var(--primary)",
@@ -2066,7 +2066,7 @@ function AiChatBot() {
               >
                 <path
                   d="M14 4L4 14M14 8L8 14M14 12L12 14"
-                  stroke="#31525B"
+                  stroke="var(--primary)"
                   strokeWidth="1.5"
                   strokeLinecap="round"
                 />

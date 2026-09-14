@@ -91,7 +91,7 @@ function WorkerCarousel({
           <SkeletonLoader type="card" count={4} />
         ) : sorted.length === 0 ? (
           <div className="premium-card" style={{ minWidth: "220px", height: "215px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "20px", color: "var(--text-secondary)" }}>
-            <span style={{ fontSize: "24px", marginBottom: "8px" }}>🔍</span>
+            <span style={{ fontSize: "var(--fs-xl, 24px)", marginBottom: "8px" }}>🔍</span>
             <p style={{ margin: 0, fontSize: "13px", fontWeight: "bold" }}>No professionals found</p>
             <p style={{ margin: "4px 0 0 0", fontSize: "11px" }}>near this location.</p>
           </div>
@@ -104,7 +104,7 @@ function WorkerCarousel({
                 📍 {truncateLocation(worker.city)}
               </p>
               {worker.distanceKm !== undefined && (
-                <span style={{ display: "inline-block", backgroundColor: "var(--info-light)", color: "var(--text-main)", border: "1px solid var(--border-color)", borderRadius: "12px", padding: "2px 10px", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>
+                <span style={{ display: "inline-block", backgroundColor: "var(--info-light)", color: "var(--text-main)", border: "1px solid var(--border-color)", borderRadius: "var(--fs-xs, 12px)", padding: "2px 10px", fontSize: "var(--fs-xs, 12px)", fontWeight: 700, marginBottom: "4px" }}>
                   🗺️ {worker.distanceKm < 0.5 ? "below 0.5 km" : `${worker.distanceKm} km away`}
                 </span>
               )}

@@ -90,7 +90,7 @@ function WorkerProfile() {
             display: "inline-flex",
             alignItems: "center",
             gap: "6px",
-            marginBottom: "24px",
+            marginBottom: "var(--fs-xl, 24px)",
             fontWeight: 600
           }}
         >
@@ -118,8 +118,8 @@ function WorkerProfile() {
             <span
               style={{
                 position: "absolute",
-                top: "24px",
-                right: "24px",
+                top: "var(--fs-xl, 24px)",
+                right: "var(--fs-xl, 24px)",
                 backgroundColor: "var(--primary)",
                 backdropFilter: "blur(4px)",
                 color: "white",
@@ -149,7 +149,7 @@ function WorkerProfile() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: "24px",
+                  fontSize: "var(--fs-xl, 24px)",
                   fontWeight: 800,
                   boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
                   color: "white",
@@ -160,7 +160,7 @@ function WorkerProfile() {
                 {getInitials(worker.name)}
               </div>
               <div>
-                <h2 style={{ margin: 0, fontSize: "24px", fontWeight: 800, color: "white" }}>
+                <h2 style={{ margin: 0, fontSize: "var(--fs-xl, 24px)", fontWeight: 800, color: "white" }}>
                   {worker.name}
                 </h2>
               </div>
@@ -171,25 +171,25 @@ function WorkerProfile() {
           <div style={{ padding: "32px" }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px 20px", marginBottom: "28px" }}>
               <div>
-                <label style={{ fontSize: "12px", fontWeight: 500, color: "var(--text-secondary)" }}>Specialization</label>
+                <label style={{ fontSize: "var(--fs-xs, 12px)", fontWeight: 500, color: "var(--text-secondary)" }}>Specialization</label>
                 <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "6px" }}>
                   {worker.service}
                 </p>
               </div>
               <div>
-                <label style={{ fontSize: "12px", fontWeight: 500, color: "var(--text-secondary)" }}>Location & Proximity</label>
+                <label style={{ fontSize: "var(--fs-xs, 12px)", fontWeight: 500, color: "var(--text-secondary)" }}>Location & Proximity</label>
                 <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "6px" }}>
                   <FaMapMarkerAlt size={14} style={{ color: "var(--danger)" }} /> {worker.distanceKm !== undefined ? (worker.distanceKm < 0.5 ? "below 0.5 KM" : `${worker.distanceKm} KM`) : (worker.distance || "1.0 KM")} Away ({worker.city})
                 </p>
               </div>
               <div>
-                <label style={{ fontSize: "12px", fontWeight: 500, color: "var(--text-secondary)" }}>Overall Rating</label>
+                <label style={{ fontSize: "var(--fs-xs, 12px)", fontWeight: 500, color: "var(--text-secondary)" }}>Overall Rating</label>
                 <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "var(--warning)", display: "flex", alignItems: "center", gap: "6px" }}>
                   <FaStar size={14} style={{ color: "var(--warning)" }} /> {worker.rating || "4.5"} / 5.0
                 </p>
               </div>
               <div>
-                <label style={{ fontSize: "12px", fontWeight: 500, color: "var(--text-secondary)" }}>Response Time</label>
+                <label style={{ fontSize: "var(--fs-xs, 12px)", fontWeight: 500, color: "var(--text-secondary)" }}>Response Time</label>
                 <p style={{ margin: "4px 0 0 0", fontSize: "16px", fontWeight: 700, color: "var(--primary)", display: "flex", alignItems: "center", gap: "6px" }}>
                   <FaBolt size={14} style={{ color: "var(--warning)" }} /> {getResponseTime(worker.distanceKm)}
                 </p>
@@ -213,7 +213,7 @@ function WorkerProfile() {
               <span style={{ fontSize: "14px", color: "var(--primary-dark)", fontWeight: 600 }}>
                 Standard Service Rate:
               </span>
-              <span style={{ fontSize: "24px", fontWeight: 800, color: "var(--primary-dark)", display: "flex", alignItems: "center" }}>
+              <span style={{ fontSize: "var(--fs-xl, 24px)", fontWeight: 800, color: "var(--primary-dark)", display: "flex", alignItems: "center" }}>
                 ₹{calculatedPrice}
                 <span style={{ fontSize: "14px", fontWeight: 500, marginLeft: "4px", color: "var(--text-secondary)" }}>/ visit</span>
               </span>
@@ -222,7 +222,7 @@ function WorkerProfile() {
             <div style={{ marginBottom: "28px" }} />
 
             {/* Badges / Guarantees */}
-            <div style={{ borderTop: "1.5px solid var(--border-color)", paddingTop: "24px", marginBottom: "32px" }}>
+            <div style={{ borderTop: "1.5px solid var(--border-color)", paddingTop: "var(--fs-xl, 24px)", marginBottom: "32px" }}>
               <h4 style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-primary)", margin: "0 0 12px 0" }}>Hub Guarantees</h4>
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "var(--text-secondary)" }}>

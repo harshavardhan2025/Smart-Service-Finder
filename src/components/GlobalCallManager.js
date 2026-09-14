@@ -547,10 +547,41 @@ function GlobalCallManager() {
         }
       `}</style>
 
-      {/* Hidden audio elements */}
-      <audio ref={remoteAudioRef} autoPlay style={{ position: "absolute", width: 0, height: 0, opacity: 0 }} />
-      <audio ref={ringtoneAudioRef} src="/new_ringtone.mp3" loop style={{ position: "absolute", width: 0, height: 0, opacity: 0 }} />
-      <audio ref={callerTuneAudioRef} src="/caller_tune.wav" loop style={{ position: "absolute", width: 0, height: 0, opacity: 0 }} />
+      {/* 
+        Hidden audio elements for call functionality.
+        These play only when a call is active — they are not ambient/background media.
+        A visually-hidden description is provided for screen readers (WCAG 1.4.2).
+      */}
+      {/* sr-only description acts as the "transcript" pointer required by WCAG 1.2.1 */}
+      <span
+        id="call-audio-description"
+        style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}
+      >
+        Audio is used only during active Workzy app calls: ringtone when incoming, caller tune when dialling, and remote audio during the connected call.
+      </span>
+      {/* Remote call audio — no autoPlay attribute; srcObject is set via ref when call connects */}
+      <audio
+        ref={remoteAudioRef}
+        aria-label="Remote call audio"
+        aria-describedby="call-audio-description"
+        style={{ position: "absolute", width: 0, height: 0, opacity: 0 }}
+      />
+      <audio
+        ref={ringtoneAudioRef}
+        src="/new_ringtone.mp3"
+        loop
+        aria-label="Incoming call ringtone"
+        aria-describedby="call-audio-description"
+        style={{ position: "absolute", width: 0, height: 0, opacity: 0 }}
+      />
+      <audio
+        ref={callerTuneAudioRef}
+        src="/caller_tune.wav"
+        loop
+        aria-label="Outgoing call dialling tone"
+        aria-describedby="call-audio-description"
+        style={{ position: "absolute", width: 0, height: 0, opacity: 0 }}
+      />
 
       {/* ── Active Call Panel ─────────────────────────────────────────────── */}
       {activeCall && (
@@ -590,36 +621,59 @@ function GlobalCallManager() {
 
           {activeCall === "connected" && (
             <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
-              <button onClick={toggleMute} title={isMuted ? "Unmute" : "Mute"} style={{
-                backgroundColor: isMuted ? "#ef4444" : "rgba(255,255,255,0.1)",
-                color: "white", border: "none", width: 40, height: 40,
-                borderRadius: "50%", fontSize: 16, display: "flex",
-                alignItems: "center", justifyContent: "center", cursor: "pointer"
-              }}>
-                {isMuted ? "🔇" : "🎙️"}
+              <button
+                onClick={toggleMute}
+                aria-label={isMuted ? "Unmute microphone" : "Mute microphone"}
+                aria-pressed={isMuted}
+                title={isMuted ? "Unmute" : "Mute"}
+                style={{
+                  backgroundColor: isMuted ? "#ef4444" : "rgba(255,255,255,0.1)",
+                  color: "white", border: "none", width: 40, height: 40,
+                  borderRadius: "50%", fontSize: 16, display: "flex",
+                  alignItems: "center", justifyContent: "center", cursor: "pointer"
+                }}
+              >
+                <span aria-hidden="true">{isMuted ? "🔇" : "🎙️"}</span>
               </button>
-              <button onClick={toggleSpeaker} title="Speaker" style={{
-                backgroundColor: isSpeaker ? "#6366f1" : "rgba(255,255,255,0.1)",
-                color: "white", border: "none", width: 40, height: 40,
-                borderRadius: "50%", fontSize: 16, display: "flex",
-                alignItems: "center", justifyContent: "center", cursor: "pointer"
-              }}>🔊</button>
-              <button onClick={toggleReceiver} title="Earpiece" style={{
-                backgroundColor: !isSpeaker ? "#6366f1" : "rgba(255,255,255,0.1)",
-                color: "white", border: "none", width: 40, height: 40,
-                borderRadius: "50%", fontSize: 16, display: "flex",
-                alignItems: "center", justifyContent: "center", cursor: "pointer"
-              }}>📞</button>
+              <button
+                onClick={toggleSpeaker}
+                aria-label="Toggle speakerphone"
+                aria-pressed={isSpeaker}
+                title="Speaker"
+                style={{
+                  backgroundColor: isSpeaker ? "#6366f1" : "rgba(255,255,255,0.1)",
+                  color: "white", border: "none", width: 40, height: 40,
+                  borderRadius: "50%", fontSize: 16, display: "flex",
+                  alignItems: "center", justifyContent: "center", cursor: "pointer"
+                }}
+              ><span aria-hidden="true">🔊</span></button>
+              <button
+                onClick={toggleReceiver}
+                aria-label="Switch to earpiece"
+                aria-pressed={!isSpeaker}
+                title="Earpiece"
+                style={{
+                  backgroundColor: !isSpeaker ? "#6366f1" : "rgba(255,255,255,0.1)",
+                  color: "white", border: "none", width: 40, height: 40,
+                  borderRadius: "50%", fontSize: 16, display: "flex",
+                  alignItems: "center", justifyContent: "center", cursor: "pointer"
+                }}
+              ><span aria-hidden="true">📞</span></button>
             </div>
           )}
 
-          <button onClick={(e) => { e.stopPropagation(); handleHangUp(); }} style={{
-            backgroundColor: "#ef4444", color: "white", border: "none",
-            width: 50, height: 50, borderRadius: "50%", fontSize: 20,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            cursor: "pointer", boxShadow: "0 6px 15px rgba(239,68,68,0.4)"
-          }}>
-            🛑
+          <button
+            onClick={(e) => { e.stopPropagation(); handleHangUp(); }}
+            aria-label="End call"
+            title="End call"
+            style={{
+              backgroundColor: "#ef4444", color: "white", border: "none",
+              width: 50, height: 50, borderRadius: "50%", fontSize: 20,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", boxShadow: "0 6px 15px rgba(239,68,68,0.4)"
+            }}
+          >
+            <span aria-hidden="true">🛑</span>
           </button>
         </div>
       )}
@@ -656,6 +710,7 @@ function GlobalCallManager() {
           <div style={{ display: "flex", gap: 10 }}>
             <button
               onClick={(e) => { e.stopPropagation(); handleAnswerCall(); }}
+              aria-label="Answer incoming call"
               title="Answer"
               style={{
                 backgroundColor: "#16a34a", color: "white", border: "none",
@@ -663,9 +718,10 @@ function GlobalCallManager() {
                 display: "flex", alignItems: "center", justifyContent: "center",
                 cursor: "pointer", boxShadow: "0 4px 10px rgba(22,163,74,0.3)"
               }}
-            >📞</button>
+            ><span aria-hidden="true">📞</span></button>
             <button
               onClick={(e) => { e.stopPropagation(); handleDeclineCall(); }}
+              aria-label="Decline incoming call"
               title="Decline"
               style={{
                 backgroundColor: "#ef4444", color: "white", border: "none",
@@ -673,7 +729,7 @@ function GlobalCallManager() {
                 display: "flex", alignItems: "center", justifyContent: "center",
                 cursor: "pointer", boxShadow: "0 4px 10px rgba(239,68,68,0.3)"
               }}
-            >🛑</button>
+            ><span aria-hidden="true">🛑</span></button>
           </div>
         </div>
       )}

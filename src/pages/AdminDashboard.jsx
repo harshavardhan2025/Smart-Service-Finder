@@ -773,7 +773,7 @@ function AdminDashboard() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "12px",
+                gap: "var(--fs-xs, 12px)",
                 padding: "12px 16px",
                 width: "100%",
                 borderRadius: "10px",
@@ -810,7 +810,7 @@ function AdminDashboard() {
         <div style={{ flex: 1, padding: "32px 40px", backgroundColor: "var(--bg-main)", color: "var(--text-main)" }}>
 
           {/* Admin Control Panel Banner */}
-          <div className="greeting-banner" style={{ marginBottom: "24px" }}>
+          <div className="greeting-banner" style={{ marginBottom: "var(--fs-xl, 24px)" }}>
             <div>
               <h2>👑 Admin Control Panel</h2>
               <p>Monitor and manage all platform operations across users, workers, and finances</p>
@@ -823,10 +823,10 @@ function AdminDashboard() {
           
           {hasActiveSos && (
             <div style={{
-              backgroundColor: "#ef4444",
+              backgroundColor: "var(--danger)",
               color: "white",
               padding: "16px 24px",
-              borderRadius: "12px",
+              borderRadius: "var(--fs-xs, 12px)",
               marginBottom: "30px",
               display: "flex",
               justifyContent: "space-between",
@@ -835,7 +835,7 @@ function AdminDashboard() {
               boxShadow: "0 10px 20px rgba(239, 68, 68, 0.3)",
               fontFamily: "'Outfit', sans-serif"
             }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "var(--fs-xs, 12px)" }}>
                 <span style={{ fontSize: "28px", animation: "pulse 0.5s infinite" }}>🚨</span>
                 <div>
                   <strong style={{ fontSize: "16px", textTransform: "uppercase" }}>CRITICAL WORKER SOS EMERGENCY SIGNAL DETECTED!</strong>
@@ -866,7 +866,7 @@ function AdminDashboard() {
 
           <style>{`
             @keyframes siren-flash-admin {
-              0% { background-color: #ef4444; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3); }
+              0% { background-color: var(--danger); box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3); }
               100% { background-color: #dc2626; box-shadow: 0 10px 30px rgba(220, 38, 38, 0.6); }
             }
           `}</style>
@@ -881,25 +881,25 @@ function AdminDashboard() {
 
               {/* Stats Card Grid */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "20px", marginBottom: "36px" }}>
-                <div ref={revenueCardRef} style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "14px", border: "1.5px solid var(--border-color)", borderLeft: "4px solid #6366f1", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}>
+                <div ref={revenueCardRef} style={{ backgroundColor: "var(--bg-card)", padding: "var(--fs-xl, 24px)", borderRadius: "14px", border: "1.5px solid var(--border-color)", borderLeft: "4px solid #6366f1", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}>
                   <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Revenue</span>
                   <h2 style={{ margin: "8px 0 2px 0", fontSize: "30px", fontWeight: 800, color: "#6366f1" }}>₹{Number(totalRevenue).toFixed(0)}</h2>
-                  <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)", fontWeight: 500 }}>All payment transactions processed</p>
+                  <p style={{ margin: 0, fontSize: "var(--fs-xs, 12px)", color: "var(--text-muted)", fontWeight: 500 }}>All payment transactions processed</p>
                 </div>
-                <div ref={averageCardRef} style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "14px", border: "1.5px solid var(--border-color)", borderLeft: "4px solid #10b981", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}>
+                <div ref={averageCardRef} style={{ backgroundColor: "var(--bg-card)", padding: "var(--fs-xl, 24px)", borderRadius: "14px", border: "1.5px solid var(--border-color)", borderLeft: "4px solid var(--success)", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}>
                   <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em" }}>Avg Booking Value</span>
-                  <h2 style={{ margin: "8px 0 2px 0", fontSize: "30px", fontWeight: 800, color: "#10b981" }}>₹{averageBookingValue.toFixed(0)}</h2>
-                  <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)", fontWeight: 500 }}>Average revenue per service booking</p>
+                  <h2 style={{ margin: "8px 0 2px 0", fontSize: "30px", fontWeight: 800, color: "var(--success)" }}>₹{averageBookingValue.toFixed(0)}</h2>
+                  <p style={{ margin: 0, fontSize: "var(--fs-xs, 12px)", color: "var(--text-muted)", fontWeight: 500 }}>Average revenue per service booking</p>
                 </div>
-                <div ref={workersCardRef} style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "14px", border: "1.5px solid var(--border-color)", borderLeft: "4px solid #f59e0b", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}>
+                <div ref={workersCardRef} style={{ backgroundColor: "var(--bg-card)", padding: "var(--fs-xl, 24px)", borderRadius: "14px", border: "1.5px solid var(--border-color)", borderLeft: "4px solid #f59e0b", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}>
                   <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em" }}>Registered Workers</span>
                   <h2 style={{ margin: "8px 0 2px 0", fontSize: "30px", fontWeight: 800, color: "var(--text-main)" }}>{workers.length}</h2>
-                  <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)", fontWeight: 500 }}>{workers.filter(w => w.status === "Active").length} currently active / online</p>
+                  <p style={{ margin: 0, fontSize: "var(--fs-xs, 12px)", color: "var(--text-muted)", fontWeight: 500 }}>{workers.filter(w => w.status === "Active").length} currently active / online</p>
                 </div>
-                <div ref={customersCardRef} style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "14px", border: "1.5px solid var(--border-color)", borderLeft: "4px solid #ef4444", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}>
+                <div ref={customersCardRef} style={{ backgroundColor: "var(--bg-card)", padding: "var(--fs-xl, 24px)", borderRadius: "14px", border: "1.5px solid var(--border-color)", borderLeft: "4px solid var(--danger)", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}>
                   <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em" }}>Registered Customers</span>
                   <h2 style={{ margin: "8px 0 2px 0", fontSize: "30px", fontWeight: 800, color: "var(--text-main)" }}>{customers.length}</h2>
-                  <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)", fontWeight: 500 }}>Total user accounts on platform</p>
+                  <p style={{ margin: 0, fontSize: "var(--fs-xs, 12px)", color: "var(--text-muted)", fontWeight: 500 }}>Total user accounts on platform</p>
                 </div>
               </div>
 
@@ -937,39 +937,39 @@ function AdminDashboard() {
                   return (
                     <div>
                       <div style={{ display: "flex", height: "14px", borderRadius: "7px", overflow: "hidden", backgroundColor: "var(--border-color)", margin: "24px 0" }}>
-                        {completedBookingsCount > 0 && <div style={{ width: `${compPct}%`, backgroundColor: "#10b981", transition: "width 0.4s ease" }} title={`Completed: ${compPct}%`} />}
+                        {completedBookingsCount > 0 && <div style={{ width: `${compPct}%`, backgroundColor: "var(--success)", transition: "width 0.4s ease" }} title={`Completed: ${compPct}%`} />}
                         {pendingBookingsCount > 0 && <div style={{ width: `${pendPct}%`, backgroundColor: "var(--warning)", transition: "width 0.4s ease" }} title={`Pending: ${pendPct}%`} />}
                         {cancelledBookingsCount > 0 && <div style={{ width: `${cancPct}%`, backgroundColor: "var(--danger)", transition: "width 0.4s ease" }} title={`Cancelled: ${cancPct}%`} />}
                       </div>
 
                       {/* Legend / Metrics Grid */}
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px", backgroundColor: "rgba(16, 185, 129, 0.05)", borderRadius: "10px", borderLeft: "4px solid #10b981" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "var(--fs-xs, 12px)", padding: "12px 16px", backgroundColor: "rgba(16, 185, 129, 0.05)", borderRadius: "10px", borderLeft: "4px solid var(--success)" }}>
                           <span style={{ fontSize: "20px" }}>🟢</span>
                           <div>
-                            <div style={{ fontSize: "11px", color: "#10b981", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Completed</div>
+                            <div style={{ fontSize: "11px", color: "var(--success)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Completed</div>
                             <div style={{ fontSize: "18px", fontWeight: 850, color: "var(--text-main)", marginTop: "2px" }}>
-                              {completedBookingsCount} <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 600 }}>({compPct}%)</span>
+                              {completedBookingsCount} <span style={{ fontSize: "var(--fs-xs, 12px)", color: "var(--text-muted)", fontWeight: 600 }}>({compPct}%)</span>
                             </div>
                           </div>
                         </div>
 
-                        <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px", backgroundColor: "rgba(245, 158, 11, 0.05)", borderRadius: "10px", borderLeft: "4px solid #f59e0b" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "var(--fs-xs, 12px)", padding: "12px 16px", backgroundColor: "rgba(245, 158, 11, 0.05)", borderRadius: "10px", borderLeft: "4px solid #f59e0b" }}>
                           <span style={{ fontSize: "20px" }}>🟡</span>
                           <div>
                             <div style={{ fontSize: "11px", color: "var(--warning)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Pending</div>
                             <div style={{ fontSize: "18px", fontWeight: 850, color: "var(--text-main)", marginTop: "2px" }}>
-                              {pendingBookingsCount} <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 600 }}>({pendPct}%)</span>
+                              {pendingBookingsCount} <span style={{ fontSize: "var(--fs-xs, 12px)", color: "var(--text-muted)", fontWeight: 600 }}>({pendPct}%)</span>
                             </div>
                           </div>
                         </div>
 
-                        <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px", backgroundColor: "rgba(239, 68, 68, 0.05)", borderRadius: "10px", borderLeft: "4px solid #ef4444" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "var(--fs-xs, 12px)", padding: "12px 16px", backgroundColor: "rgba(239, 68, 68, 0.05)", borderRadius: "10px", borderLeft: "4px solid var(--danger)" }}>
                           <span style={{ fontSize: "20px" }}>🔴</span>
                           <div>
                             <div style={{ fontSize: "11px", color: "var(--danger)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Cancelled</div>
                             <div style={{ fontSize: "18px", fontWeight: 850, color: "var(--text-main)", marginTop: "2px" }}>
-                              {cancelledBookingsCount} <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 600 }}>({cancPct}%)</span>
+                              {cancelledBookingsCount} <span style={{ fontSize: "var(--fs-xs, 12px)", color: "var(--text-muted)", fontWeight: 600 }}>({cancPct}%)</span>
                             </div>
                           </div>
                         </div>
@@ -1007,7 +1007,7 @@ function AdminDashboard() {
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: "25px", marginBottom: "40px" }}>
                     
                     {/* Glowing Multi-Colored SVG Line Graph */}
-                    <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", border: "1.5px solid var(--border-color)", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}>
+                    <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "var(--fs-xs, 12px)", border: "1.5px solid var(--border-color)", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}>
                       <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", fontWeight: 800, color: "var(--text-main)" }}>📈 Revenue Growth Trend</h3>
                       <p style={{ margin: "0 0 24px 0", fontSize: "13px", color: "var(--text-muted)" }}>Cumulative system transaction volume over time</p>
                       
@@ -1058,7 +1058,7 @@ function AdminDashboard() {
                         </svg>
                       </div>
                       
-                      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "12px", fontSize: "11px", color: "var(--text-muted)", fontWeight: 700 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "var(--fs-xs, 12px)", fontSize: "11px", color: "var(--text-muted)", fontWeight: 700 }}>
                         {chartPts.map((pt, idx) => (
                           <span key={idx}>{pt.label}{idx === 4 ? " (LIVE)" : ""}</span>
                         ))}
@@ -1066,7 +1066,7 @@ function AdminDashboard() {
                     </div>
 
                     {/* SVG Segmented Donut Chart */}
-                    <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", border: "1.5px solid var(--border-color)", boxShadow: "0 4px 12px rgba(0,0,0,0.04)", display: "flex", flexDirection: "column" }}>
+                    <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "var(--fs-xs, 12px)", border: "1.5px solid var(--border-color)", boxShadow: "0 4px 12px rgba(0,0,0,0.04)", display: "flex", flexDirection: "column" }}>
                       <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", fontWeight: 800, color: "var(--text-main)" }}>🍩 Booking Category Split</h3>
                       <p style={{ margin: "0 0 24px 0", fontSize: "13px", color: "var(--text-muted)" }}>Order volume distribution by top categories</p>
                       
@@ -1116,7 +1116,7 @@ function AdminDashboard() {
                     </div>
 
                     {/* Peak Bookings CSS Progress Bars */}
-                    <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", border: "1.5px solid var(--border-color)", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}>
+                    <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "var(--fs-xs, 12px)", border: "1.5px solid var(--border-color)", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}>
                       <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", fontWeight: 800, color: "var(--text-main)" }}>⏱️ Peak Booking Hours</h3>
                       <p style={{ margin: "0 0 24px 0", fontSize: "13px", color: "var(--text-muted)" }}>Hourly request analysis and resource loads</p>
                       
@@ -1146,34 +1146,34 @@ function AdminDashboard() {
               })()}
 
               {/* Transactions Table */}
-              <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", border: "1.5px solid var(--border-color)", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}>
+              <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "var(--fs-xs, 12px)", border: "1.5px solid var(--border-color)", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}>
                 <h3 style={{ margin: "0 0 20px 0", fontSize: "18px", fontWeight: 800, color: "var(--text-main)" }}>Recent Payment Transactions</h3>
                 <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "14px" }}>
                   <thead>
                     <tr style={{ borderBottom: "2px solid var(--border-color)", color: "var(--text-main)" }}>
-                      <th style={{ padding: "12px", fontWeight: 800 }}>Transaction ID</th>
-                      <th style={{ padding: "12px", fontWeight: 800 }}>Customer</th>
-                      <th style={{ padding: "12px", fontWeight: 800 }}>Professional</th>
-                      <th style={{ padding: "12px", fontWeight: 800 }}>Service</th>
-                      <th style={{ padding: "12px", fontWeight: 800 }}>Date</th>
-                      <th style={{ padding: "12px", fontWeight: 800 }}>Amount</th>
-                      <th style={{ padding: "12px", fontWeight: 800 }}>Status</th>
+                      <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Transaction ID</th>
+                      <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Customer</th>
+                      <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Professional</th>
+                      <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Service</th>
+                      <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Date</th>
+                      <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Amount</th>
+                      <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {transactions.map((t) => (
                       <tr key={t._id || t.id} style={{ borderBottom: "1px solid var(--border-color)" }}>
-                        <td style={{ padding: "12px", fontWeight: "bold" }}>
+                        <td style={{ padding: "var(--fs-xs, 12px)", fontWeight: "bold" }}>
                           {t._id ? `#${t._id.substring(t._id.length - 8).toUpperCase()}` : t.id || "N/A"}
                         </td>
-                        <td style={{ padding: "12px" }}>{t.customer}</td>
-                        <td style={{ padding: "12px" }}>{t.worker}</td>
-                        <td style={{ padding: "12px" }}>{t.service}</td>
-                        <td style={{ padding: "12px" }}>
+                        <td style={{ padding: "var(--fs-xs, 12px)" }}>{t.customer}</td>
+                        <td style={{ padding: "var(--fs-xs, 12px)" }}>{t.worker}</td>
+                        <td style={{ padding: "var(--fs-xs, 12px)" }}>{t.service}</td>
+                        <td style={{ padding: "var(--fs-xs, 12px)" }}>
                           {t.createdAt ? new Date(t.createdAt).toLocaleDateString() : t.date || "N/A"}
                         </td>
-                        <td style={{ padding: "12px", fontWeight: 800, color: "var(--primary)" }}>₹{t.amount}</td>
-                        <td style={{ padding: "12px" }}>
+                        <td style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800, color: "var(--primary)" }}>₹{t.amount}</td>
+                        <td style={{ padding: "var(--fs-xs, 12px)" }}>
                           <span
                             style={{
                               padding: "4px 8px",
@@ -1198,7 +1198,7 @@ function AdminDashboard() {
           {/* TAB: ALL BOOKINGS MONITOR & MANAGEMENT */}
           {activeTab === "bookings" && (
             <div className="fade-in">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", flexWrap: "wrap", gap: "16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--fs-xl, 24px)", flexWrap: "wrap", gap: "16px" }}>
                 <div>
                   <h2 style={{ margin: "0 0 6px", fontSize: "28px", fontWeight: 800, color: "var(--text-main)" }}>
                     📅 All Service Bookings Management
@@ -1211,7 +1211,7 @@ function AdminDashboard() {
                   <div style={{ backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-color)", padding: "8px 16px", borderRadius: "10px", fontWeight: 700, fontSize: "13px", color: "var(--text-main)" }}>
                     Total: {liveRealTimeBookings.length}
                   </div>
-                  <div style={{ backgroundColor: "rgba(16, 185, 129, 0.1)", border: "1.5px solid rgba(16, 185, 129, 0.3)", padding: "8px 16px", borderRadius: "10px", fontWeight: 700, fontSize: "13px", color: "#10b981" }}>
+                  <div style={{ backgroundColor: "rgba(16, 185, 129, 0.1)", border: "1.5px solid rgba(16, 185, 129, 0.3)", padding: "8px 16px", borderRadius: "10px", fontWeight: 700, fontSize: "13px", color: "var(--success)" }}>
                     Done: {completedBookingsCount}
                   </div>
                   <div style={{ backgroundColor: "rgba(245, 158, 11, 0.1)", border: "1.5px solid rgba(245, 158, 11, 0.3)", padding: "8px 16px", borderRadius: "10px", fontWeight: 700, fontSize: "13px", color: "var(--warning)" }}>
@@ -1227,7 +1227,7 @@ function AdminDashboard() {
                   border: "1.5px solid var(--border-color)",
                   borderRadius: "14px",
                   padding: "20px 24px",
-                  marginBottom: "24px",
+                  marginBottom: "var(--fs-xl, 24px)",
                   boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
                   display: "flex",
                   gap: "16px",
@@ -1273,7 +1273,7 @@ function AdminDashboard() {
                           backgroundColor: isSelected ? "var(--primary)" : "var(--bg-card)",
                           color: isSelected ? "#ffffff" : "var(--text-main)",
                           fontWeight: 700,
-                          fontSize: "12px",
+                          fontSize: "var(--fs-xs, 12px)",
                           cursor: "pointer",
                           transition: "all 0.15s ease"
                         }}
@@ -1286,10 +1286,10 @@ function AdminDashboard() {
               </div>
 
               {/* Bookings Ledger Table */}
-              <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "14px", border: "1.5px solid var(--border-color)", boxShadow: "0 4px 16px rgba(0,0,0,0.04)", padding: "24px", overflowX: "auto" }}>
+              <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "14px", border: "1.5px solid var(--border-color)", boxShadow: "0 4px 16px rgba(0,0,0,0.04)", padding: "var(--fs-xl, 24px)", overflowX: "auto" }}>
                 {filteredAdminBookings.length === 0 ? (
                   <div style={{ textAlign: "center", padding: "48px 20px", color: "var(--text-muted)" }}>
-                    <div style={{ fontSize: "42px", marginBottom: "12px" }}>📋</div>
+                    <div style={{ fontSize: "42px", marginBottom: "var(--fs-xs, 12px)" }}>📋</div>
                     <h3 style={{ margin: "0 0 6px", color: "var(--text-main)", fontWeight: 700 }}>No bookings found</h3>
                     <p style={{ margin: 0, fontSize: "14px" }}>Try adjusting your search query or status filter.</p>
                   </div>
@@ -1324,7 +1324,7 @@ function AdminDashboard() {
                                 <div style={{ fontWeight: 700, color: "var(--text-main)" }}>
                                   {b.customer_name || b.customerName || b.name || "Client"}
                                 </div>
-                                <div style={{ fontSize: "11.5px", color: "var(--text-muted)", marginTop: "2px" }}>
+                                <div style={{ fontSize: "var(--fs-sm, 14px)", color: "var(--text-muted)", marginTop: "2px" }}>
                                   📍 {b.city || b.address || "Local Area"}
                                 </div>
                               </td>
@@ -1335,7 +1335,7 @@ function AdminDashboard() {
                               </td>
                               <td style={{ padding: "14px 10px" }}>
                                 <div style={{ fontWeight: 600, color: "var(--text-main)" }}>{b.date || "Scheduled"}</div>
-                                <div style={{ fontSize: "11.5px", color: "var(--text-muted)", marginTop: "2px" }}>{b.time || "Regular Slot"}</div>
+                                <div style={{ fontSize: "var(--fs-sm, 14px)", color: "var(--text-muted)", marginTop: "2px" }}>{b.time || "Regular Slot"}</div>
                               </td>
                               <td style={{ padding: "14px 10px", fontWeight: 800, color: "var(--success)" }}>
                                 ₹{b.price || b.amount || 0}
@@ -1345,7 +1345,7 @@ function AdminDashboard() {
                                   style={{
                                     padding: "5px 10px",
                                     borderRadius: "16px",
-                                    fontSize: "11.5px",
+                                    fontSize: "var(--fs-sm, 14px)",
                                     fontWeight: 700,
                                     backgroundColor:
                                       b.status === "Completed" || b.status === "Paid Out"
@@ -1357,12 +1357,12 @@ function AdminDashboard() {
                                         : "rgba(239, 68, 68, 0.12)",
                                     color:
                                       b.status === "Completed" || b.status === "Paid Out"
-                                        ? "#10b981"
+                                        ? "var(--success)"
                                         : b.status === "Pending"
                                         ? "var(--warning)"
                                         : b.status === "Confirmed" || b.status === "Started"
                                         ? "#3b82f6"
-                                        : "#ef4444",
+                                        : "var(--danger)",
                                     border: `1px solid ${
                                       b.status === "Completed" || b.status === "Paid Out"
                                         ? "rgba(16, 185, 129, 0.3)"
@@ -1388,14 +1388,14 @@ function AdminDashboard() {
                                       padding: "6px 12px",
                                       borderRadius: "6px",
                                       fontWeight: 700,
-                                      fontSize: "12px",
+                                      fontSize: "var(--fs-xs, 12px)",
                                       cursor: "pointer"
                                     }}
                                   >
                                     Review Refund ⚖️
                                   </button>
                                 ) : (
-                                  <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 600 }}>Active in Ledger</span>
+                                  <span style={{ fontSize: "var(--fs-xs, 12px)", color: "var(--text-muted)", fontWeight: 600 }}>Active in Ledger</span>
                                 )}
                               </td>
                             </tr>
@@ -1405,7 +1405,7 @@ function AdminDashboard() {
                     </table>
 
                     {totalAdminBookingPages > 1 && (
-                      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "14px", marginTop: "24px" }}>
+                      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "14px", marginTop: "var(--fs-xl, 24px)" }}>
                         <button
                           onClick={() => setBookingAdminPage(p => Math.max(1, p - 1))}
                           disabled={bookingAdminPage === 1}
@@ -1442,7 +1442,7 @@ function AdminDashboard() {
 
               <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: "30px", alignItems: "start" }}>
                 {/* Form to add service */}
-                <div style={{ backgroundColor: "var(--bg-card)", padding: "24px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "var(--fs-xl, 24px)", borderRadius: "var(--fs-xs, 12px)", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
                   <h3 style={{ margin: "0 0 16px 0", fontSize: "16px", fontWeight: 700, color: "var(--text-main)" }}>Add New Service</h3>
                   <form onSubmit={handleAddService} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -1471,7 +1471,7 @@ function AdminDashboard() {
                         backgroundColor: "var(--primary)",
                         color: "white",
                         border: "none",
-                        padding: "12px",
+                        padding: "var(--fs-xs, 12px)",
                         borderRadius: "6px",
                         fontWeight: "bold",
                         cursor: "pointer",
@@ -1484,7 +1484,7 @@ function AdminDashboard() {
                 </div>
 
                 {/* Active Services Grid */}
-                <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "var(--fs-xs, 12px)", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
                   <h3 style={{ margin: "0 0 20px 0", fontSize: "18px", fontWeight: 800, color: "var(--text-main)" }}>Active Service Offerings</h3>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px" }}>
                     {services.map((svc) => (
@@ -1500,7 +1500,7 @@ function AdminDashboard() {
                         }}
                       >
                         <div style={{ fontSize: "36px", marginBottom: "8px" }}>{svc.icon}</div>
-                        <div style={{ fontWeight: 700, color: "var(--text-main)", fontSize: "14px", marginBottom: "12px" }}>{svc.name}</div>
+                        <div style={{ fontWeight: 700, color: "var(--text-main)", fontSize: "14px", marginBottom: "var(--fs-xs, 12px)" }}>{svc.name}</div>
                         <button
                           onClick={() => handleRemoveService(svc.id)}
                           style={{
@@ -1509,7 +1509,7 @@ function AdminDashboard() {
                             border: "none",
                             padding: "6px 12px",
                             borderRadius: "6px",
-                            fontSize: "12px",
+                            fontSize: "var(--fs-xs, 12px)",
                             fontWeight: "bold",
                             cursor: "pointer"
                           }}
@@ -1540,7 +1540,7 @@ function AdminDashboard() {
                     </div>
 
                     {/* Add Sub-service form */}
-                    <form onSubmit={handleAddSubService} style={{ display: "flex", gap: "12px", backgroundColor: "var(--bg-card-hover)", padding: "16px", borderRadius: "8px", marginBottom: "20px" }}>
+                    <form onSubmit={handleAddSubService} style={{ display: "flex", gap: "var(--fs-xs, 12px)", backgroundColor: "var(--bg-card-hover)", padding: "16px", borderRadius: "8px", marginBottom: "20px" }}>
                       <input 
                         type="text" 
                         placeholder={`New sub-category under ${services.find(s => s.id === selectedMainSvc)?.name || "selected category"}`} 
@@ -1567,7 +1567,7 @@ function AdminDashboard() {
 
                     {/* Edit Sub-service inline form */}
                     {editingSub && (
-                      <form onSubmit={handleSaveEditSub} style={{ display: "flex", gap: "12px", backgroundColor: "var(--warning-light)", padding: "16px", borderRadius: "8px", marginBottom: "20px", border: "1px solid #fef3c7" }}>
+                      <form onSubmit={handleSaveEditSub} style={{ display: "flex", gap: "var(--fs-xs, 12px)", backgroundColor: "var(--warning-light)", padding: "16px", borderRadius: "8px", marginBottom: "20px", border: "1px solid #fef3c7" }}>
                         <span style={{ alignSelf: "center", fontWeight: "bold", fontSize: "14px", color: "#b45309" }}>Editing Sub-Category:</span>
                         <input 
                           type="text" 
@@ -1617,7 +1617,7 @@ function AdminDashboard() {
                             </span>
                           </h4>
 
-                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: "12px" }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: "var(--fs-xs, 12px)" }}>
                             {(!svc.subServices || svc.subServices.length === 0) ? (
                               <p style={{ gridColumn: "1/-1", color: "var(--text-secondary)", fontSize: "13px", margin: 0, fontStyle: "italic" }}>
                                 No sub-categories defined yet. Choose this category in the selector above to add one!
@@ -1676,9 +1676,9 @@ function AdminDashboard() {
                 style={{
                   backgroundColor: "var(--bg-card)",
                   border: "1.5px solid #cbd5e1",
-                  borderRadius: "12px",
-                  padding: "24px",
-                  marginBottom: "24px",
+                  borderRadius: "var(--fs-xs, 12px)",
+                  padding: "var(--fs-xl, 24px)",
+                  marginBottom: "var(--fs-xl, 24px)",
                   boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)",
                   animation: "fadeIn 0.3s ease"
                 }}
@@ -1688,7 +1688,7 @@ function AdminDashboard() {
                 </h3>
                 <form onSubmit={handleSendMoneyToWorker} style={{ display: "flex", gap: "16px", flexWrap: "wrap", alignItems: "flex-end" }}>
                   <div style={{ flex: 1, minWidth: "200px" }}>
-                    <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "var(--text-muted)", marginBottom: "6px" }}>Select Worker</label>
+                    <label style={{ display: "block", fontSize: "var(--fs-xs, 12px)", fontWeight: 700, color: "var(--text-muted)", marginBottom: "6px" }}>Select Worker</label>
                     <select
                       value={sendMoneyWorkerId}
                       onChange={(e) => setSendMoneyWorkerId(e.target.value)}
@@ -1710,7 +1710,7 @@ function AdminDashboard() {
                     </select>
                   </div>
                   <div style={{ width: "150px" }}>
-                    <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "var(--text-muted)", marginBottom: "6px" }}>Amount (₹)</label>
+                    <label style={{ display: "block", fontSize: "var(--fs-xs, 12px)", fontWeight: 700, color: "var(--text-muted)", marginBottom: "6px" }}>Amount (₹)</label>
                     <input
                       type="number"
                       placeholder="Amount"
@@ -1728,7 +1728,7 @@ function AdminDashboard() {
                     />
                   </div>
                   <div style={{ flex: 1.5, minWidth: "200px" }}>
-                    <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "var(--text-muted)", marginBottom: "6px" }}>Reason / Note</label>
+                    <label style={{ display: "block", fontSize: "var(--fs-xs, 12px)", fontWeight: 700, color: "var(--text-muted)", marginBottom: "6px" }}>Reason / Note</label>
                     <input
                       type="text"
                       placeholder="e.g. Compensation, loyalty reward"
@@ -1764,9 +1764,9 @@ function AdminDashboard() {
                 </form>
               </div>
 
-              <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", border: "1.5px solid var(--border-color)", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}>
+              <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "var(--fs-xs, 12px)", border: "1.5px solid var(--border-color)", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}>
                 {/* Workers Filter Bar */}
-                <div style={{ display: "flex", gap: "16px", marginBottom: "24px", flexWrap: "wrap", alignItems: "center" }}>
+                <div style={{ display: "flex", gap: "16px", marginBottom: "var(--fs-xl, 24px)", flexWrap: "wrap", alignItems: "center" }}>
                   <div style={{ flex: 1, minWidth: "240px" }}>
                     <input
                       type="text"
@@ -1814,29 +1814,29 @@ function AdminDashboard() {
                 <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "14px" }}>
                   <thead>
                     <tr style={{ borderBottom: "2px solid var(--border-color)", color: "var(--text-main)" }}>
-                      <th style={{ padding: "12px", fontWeight: 800 }}>Name</th>
-                      <th style={{ padding: "12px", fontWeight: 800 }}>Specialty</th>
-                      <th style={{ padding: "12px", fontWeight: 800 }}>Location</th>
-                      <th style={{ padding: "12px", fontWeight: 800 }}>Base Rate (₹)</th>
-                      <th style={{ padding: "12px", fontWeight: 800 }}>Wallet Balance (₹)</th>
-                      <th style={{ padding: "12px", fontWeight: 800 }}>Rating</th>
-                      <th style={{ padding: "12px", fontWeight: 800 }}>Status</th>
-                      <th style={{ padding: "12px", textAlign: "right", fontWeight: 800 }}>Actions</th>
+                      <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Name</th>
+                      <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Specialty</th>
+                      <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Location</th>
+                      <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Base Rate (₹)</th>
+                      <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Wallet Balance (₹)</th>
+                      <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Rating</th>
+                      <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Status</th>
+                      <th style={{ padding: "var(--fs-xs, 12px)", textAlign: "right", fontWeight: 800 }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {paginatedWorkers.map((w) => (
                       <tr key={w._id} style={{ borderBottom: "1px solid var(--border-color)", color: "var(--text-main)" }}>
-                        <td style={{ padding: "12px", fontWeight: 700, color: "var(--text-main)" }}>{w.name}</td>
-                        <td style={{ padding: "12px", fontWeight: 600, color: "var(--text-main)" }}>{w.service}</td>
-                        <td style={{ padding: "12px", color: "var(--text-secondary)" }}>📍 {w.city}</td>
-                        <td style={{ padding: "12px", fontWeight: "800", color: "var(--success)" }}>₹{w.price || 0}</td>
-                        <td style={{ padding: "12px", fontWeight: "800", color: "var(--success)" }}>₹{w.walletBalance || 0}</td>
-                        <td style={{ padding: "12px" }}>
+                        <td style={{ padding: "var(--fs-xs, 12px)", fontWeight: 700, color: "var(--text-main)" }}>{w.name}</td>
+                        <td style={{ padding: "var(--fs-xs, 12px)", fontWeight: 600, color: "var(--text-main)" }}>{w.service}</td>
+                        <td style={{ padding: "var(--fs-xs, 12px)", color: "var(--text-secondary)" }}>📍 {w.city}</td>
+                        <td style={{ padding: "var(--fs-xs, 12px)", fontWeight: "800", color: "var(--success)" }}>₹{w.price || 0}</td>
+                        <td style={{ padding: "var(--fs-xs, 12px)", fontWeight: "800", color: "var(--success)" }}>₹{w.walletBalance || 0}</td>
+                        <td style={{ padding: "var(--fs-xs, 12px)" }}>
                           <span style={{ color: "var(--warning)", marginRight: "4px" }}>⭐</span>
                           <strong>{w.rating}</strong> ({w.reviews} reviews)
                         </td>
-                        <td style={{ padding: "12px" }}>
+                        <td style={{ padding: "var(--fs-xs, 12px)" }}>
                           <span
                             style={{
                               padding: "4px 8px",
@@ -1850,7 +1850,7 @@ function AdminDashboard() {
                             {w.status}
                           </span>
                         </td>
-                        <td style={{ padding: "12px", textAlign: "right" }}>
+                        <td style={{ padding: "var(--fs-xs, 12px)", textAlign: "right" }}>
                           {/* 💸 SEND MONEY ACTION */}
                           <button
                             onClick={() => {
@@ -1864,7 +1864,7 @@ function AdminDashboard() {
                               padding: "6px 12px",
                               borderRadius: "6px",
                               fontWeight: "bold",
-                              fontSize: "12px",
+                              fontSize: "var(--fs-xs, 12px)",
                               cursor: "pointer",
                               marginRight: "8px"
                             }}
@@ -1882,7 +1882,7 @@ function AdminDashboard() {
                               padding: "6px 12px",
                               borderRadius: "6px",
                               fontWeight: "bold",
-                              fontSize: "12px",
+                              fontSize: "var(--fs-xs, 12px)",
                               cursor: "pointer",
                               marginRight: "8px"
                             }}
@@ -1899,7 +1899,7 @@ function AdminDashboard() {
                               padding: "6px 12px",
                               borderRadius: "6px",
                               fontWeight: "bold",
-                              fontSize: "12px",
+                              fontSize: "var(--fs-xs, 12px)",
                               cursor: "pointer",
                               marginRight: "8px"
                             }}
@@ -1915,7 +1915,7 @@ function AdminDashboard() {
                               padding: "6px 12px",
                               borderRadius: "6px",
                               fontWeight: "bold",
-                              fontSize: "12px",
+                              fontSize: "var(--fs-xs, 12px)",
                               cursor: "pointer"
                             }}
                           >
@@ -1928,7 +1928,7 @@ function AdminDashboard() {
                 </table>
 
                 {totalWorkerPages > 1 && (
-                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "15px", marginTop: "24px" }}>
+                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "15px", marginTop: "var(--fs-xl, 24px)" }}>
                     <button 
                       onClick={() => setWorkerPage(p => Math.max(1, p - 1))} 
                       disabled={workerPage === 1} 
@@ -1967,9 +1967,9 @@ function AdminDashboard() {
                 style={{
                   backgroundColor: "var(--bg-card)",
                   border: "1.5px solid var(--border-color)",
-                  borderRadius: "12px",
-                  padding: "24px",
-                  marginBottom: "24px",
+                  borderRadius: "var(--fs-xs, 12px)",
+                  padding: "var(--fs-xl, 24px)",
+                  marginBottom: "var(--fs-xl, 24px)",
                   boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)",
                   animation: "fadeIn 0.3s ease"
                 }}
@@ -1979,7 +1979,7 @@ function AdminDashboard() {
                 </h3>
                 <form onSubmit={handleSendMoneyToCustomer} style={{ display: "flex", gap: "16px", flexWrap: "wrap", alignItems: "flex-end" }}>
                   <div style={{ flex: 1, minWidth: "200px" }}>
-                    <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "var(--text-main)", marginBottom: "6px" }}>Select Customer</label>
+                    <label style={{ display: "block", fontSize: "var(--fs-xs, 12px)", fontWeight: 700, color: "var(--text-main)", marginBottom: "6px" }}>Select Customer</label>
                     <select
                       value={sendMoneyCustomerId}
                       onChange={(e) => setSendMoneyCustomerId(e.target.value)}
@@ -2001,7 +2001,7 @@ function AdminDashboard() {
                     </select>
                   </div>
                   <div style={{ width: "150px" }}>
-                    <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "var(--text-main)", marginBottom: "6px" }}>Amount (₹)</label>
+                    <label style={{ display: "block", fontSize: "var(--fs-xs, 12px)", fontWeight: 700, color: "var(--text-main)", marginBottom: "6px" }}>Amount (₹)</label>
                     <input
                       type="number"
                       placeholder="Amount"
@@ -2021,7 +2021,7 @@ function AdminDashboard() {
                     />
                   </div>
                   <div style={{ flex: 1.5, minWidth: "200px" }}>
-                    <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "var(--text-main)", marginBottom: "6px" }}>Reason / Note</label>
+                    <label style={{ display: "block", fontSize: "var(--fs-xs, 12px)", fontWeight: 700, color: "var(--text-main)", marginBottom: "6px" }}>Reason / Note</label>
                     <input
                       type="text"
                       placeholder="e.g. Refund, loyalty reward"
@@ -2059,9 +2059,9 @@ function AdminDashboard() {
                 </form>
               </div>
 
-              <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", border: "1.5px solid var(--border-color)", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+              <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "var(--fs-xs, 12px)", border: "1.5px solid var(--border-color)", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
                 {/* Customers Filter Bar */}
-                <div style={{ display: "flex", gap: "16px", marginBottom: "24px", flexWrap: "wrap", alignItems: "center" }}>
+                <div style={{ display: "flex", gap: "16px", marginBottom: "var(--fs-xl, 24px)", flexWrap: "wrap", alignItems: "center" }}>
                   <div style={{ flex: 1, minWidth: "240px" }}>
                     <input
                       type="text"
@@ -2089,23 +2089,23 @@ function AdminDashboard() {
                 <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "14px" }}>
                   <thead>
                     <tr style={{ borderBottom: "2px solid var(--border-color)", color: "var(--text-main)" }}>
-                      <th style={{ padding: "12px", fontWeight: 800 }}>Name</th>
-                      <th style={{ padding: "12px", fontWeight: 800 }}>Contact Info</th>
-                      <th style={{ padding: "12px", fontWeight: 800 }}>Subscription</th>
-                      <th style={{ padding: "12px", fontWeight: 800 }}>Activity</th>
-                      <th style={{ padding: "12px", fontWeight: 800 }}>Wallet Balance (₹)</th>
-                      <th style={{ padding: "12px", textAlign: "right", fontWeight: 800 }}>Actions</th>
+                      <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Name</th>
+                      <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Contact Info</th>
+                      <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Subscription</th>
+                      <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Activity</th>
+                      <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Wallet Balance (₹)</th>
+                      <th style={{ padding: "var(--fs-xs, 12px)", textAlign: "right", fontWeight: 800 }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredCustomers.map((c) => (
                       <tr key={c.id} style={{ borderBottom: "1px solid var(--border-color)", color: "var(--text-main)" }}>
-                        <td style={{ padding: "12px", fontWeight: 700, color: "var(--text-main)", verticalAlign: "top" }}>{c.name}</td>
-                        <td style={{ padding: "12px", verticalAlign: "top" }}>
-                          <div style={{ fontSize: "12px", color: "var(--text-main)" }}>✉️ {c.email}</div>
-                          <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "4px" }}>📞 {c.phone}</div>
+                        <td style={{ padding: "var(--fs-xs, 12px)", fontWeight: 700, color: "var(--text-main)", verticalAlign: "top" }}>{c.name}</td>
+                        <td style={{ padding: "var(--fs-xs, 12px)", verticalAlign: "top" }}>
+                          <div style={{ fontSize: "var(--fs-xs, 12px)", color: "var(--text-main)" }}>✉️ {c.email}</div>
+                          <div style={{ fontSize: "var(--fs-xs, 12px)", color: "var(--text-secondary)", marginTop: "4px" }}>📞 {c.phone}</div>
                         </td>
-                        <td style={{ padding: "12px", verticalAlign: "top" }}>
+                        <td style={{ padding: "var(--fs-xs, 12px)", verticalAlign: "top" }}>
                           {c.subscriptions && c.subscriptions.length > 0 ? (
                             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                               {c.subscriptions.map((sub, index) => (
@@ -2129,12 +2129,12 @@ function AdminDashboard() {
                             <span style={{ backgroundColor: "var(--bg-card-hover)", color: "var(--text-secondary)", padding: "4px 8px", borderRadius: "6px", fontSize: "11px", border: "1px solid var(--border-color)" }}>No Active Plan</span>
                           )}
                         </td>
-                        <td style={{ padding: "12px", verticalAlign: "top" }}>
-                          <div style={{ fontSize: "12px", fontWeight: "bold", color: "var(--text-main)" }}>{c.bookings} bookings</div>
+                        <td style={{ padding: "var(--fs-xs, 12px)", verticalAlign: "top" }}>
+                          <div style={{ fontSize: "var(--fs-xs, 12px)", fontWeight: "bold", color: "var(--text-main)" }}>{c.bookings} bookings</div>
                           <div style={{ fontSize: "11px", color: "var(--primary-dark)", marginTop: "4px", fontWeight: 800 }}>Spent: {getCustomerSpent(c.name)}</div>
                         </td>
-                        <td style={{ padding: "12px", fontWeight: "800", color: "var(--success)", verticalAlign: "top" }}>₹{c.walletBalance || 0}</td>
-                        <td style={{ padding: "12px", textAlign: "right", verticalAlign: "top" }}>
+                        <td style={{ padding: "var(--fs-xs, 12px)", fontWeight: "800", color: "var(--success)", verticalAlign: "top" }}>₹{c.walletBalance || 0}</td>
+                        <td style={{ padding: "var(--fs-xs, 12px)", textAlign: "right", verticalAlign: "top" }}>
                           {/* 💸 SEND MONEY ACTION */}
                           <button
                             onClick={() => {
@@ -2148,7 +2148,7 @@ function AdminDashboard() {
                               padding: "6px 12px",
                               borderRadius: "6px",
                               fontWeight: "bold",
-                              fontSize: "12px",
+                              fontSize: "var(--fs-xs, 12px)",
                               cursor: "pointer",
                               marginRight: "8px"
                             }}
@@ -2165,7 +2165,7 @@ function AdminDashboard() {
                               padding: "6px 12px",
                               borderRadius: "6px",
                               fontWeight: "bold",
-                              fontSize: "12px",
+                              fontSize: "var(--fs-xs, 12px)",
                               cursor: "pointer"
                             }}
                           >
@@ -2187,7 +2187,7 @@ function AdminDashboard() {
                 Manage Customer Complaints & Moderation
               </h2>
 
-              <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", border: "1.5px solid var(--border-color)", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+              <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "var(--fs-xs, 12px)", border: "1.5px solid var(--border-color)", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
                 {complaintSearch && (
                   <div style={{ marginBottom: "16px", backgroundColor: "var(--warning-light)", padding: "12px 16px", borderRadius: "8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span style={{ fontSize: "14px", color: "#b45309", fontWeight: 600 }}>
@@ -2195,7 +2195,7 @@ function AdminDashboard() {
                     </span>
                     <button 
                       onClick={() => setComplaintSearch("")}
-                      style={{ padding: "6px 12px", backgroundColor: "var(--warning)", color: "white", border: "none", borderRadius: "6px", fontSize: "12px", fontWeight: "bold", cursor: "pointer" }}
+                      style={{ padding: "6px 12px", backgroundColor: "var(--warning)", color: "white", border: "none", borderRadius: "6px", fontSize: "var(--fs-xs, 12px)", fontWeight: "bold", cursor: "pointer" }}
                     >
                       Clear Filter
                     </button>
@@ -2218,13 +2218,13 @@ function AdminDashboard() {
                     <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "14px" }}>
                       <thead>
                         <tr style={{ borderBottom: "2px solid var(--border-color)", color: "var(--text-main)" }}>
-                          <th style={{ padding: "12px", fontWeight: 800 }}>ID</th>
-                          <th style={{ padding: "12px", fontWeight: 800 }}>Customer</th>
-                          <th style={{ padding: "12px", fontWeight: 800 }}>Worker & Order</th>
-                          <th style={{ padding: "12px", fontWeight: 800 }}>Complaint Detail</th>
-                          <th style={{ padding: "12px", fontWeight: 800 }}>Date</th>
-                          <th style={{ padding: "12px", fontWeight: 800 }}>Verdict Status</th>
-                          <th style={{ padding: "12px", textAlign: "right", fontWeight: 800 }}>Actions</th>
+                          <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>ID</th>
+                          <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Customer</th>
+                          <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Worker & Order</th>
+                          <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Complaint Detail</th>
+                          <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Date</th>
+                          <th style={{ padding: "var(--fs-xs, 12px)", fontWeight: 800 }}>Verdict Status</th>
+                          <th style={{ padding: "var(--fs-xs, 12px)", textAlign: "right", fontWeight: 800 }}>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -2236,8 +2236,8 @@ function AdminDashboard() {
 
                           return (
                             <tr key={c._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
-                              <td style={{ padding: "12px", fontWeight: "bold", fontSize: 11 }}>{c._id?.substr(-6).toUpperCase()}</td>
-                              <td style={{ padding: "12px" }}>
+                              <td style={{ padding: "var(--fs-xs, 12px)", fontWeight: "bold", fontSize: 11 }}>{c._id?.substr(-6).toUpperCase()}</td>
+                              <td style={{ padding: "var(--fs-xs, 12px)" }}>
                                  <div style={{ fontWeight: 700 }}>{c.reported_by || "User"}</div>
                                  {linkedBooking && (
                                    <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>
@@ -2245,7 +2245,7 @@ function AdminDashboard() {
                                    </div>
                                  )}
                                </td>
-                              <td style={{ padding: "12px" }}>
+                              <td style={{ padding: "var(--fs-xs, 12px)" }}>
                                 {/* Worker Info */}
                                 {complaintWorker ? (
                                   <div style={{ marginBottom: "4px" }}>
@@ -2253,18 +2253,18 @@ function AdminDashboard() {
                                     <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>{complaintWorker.speciality || complaintWorker.specialty || "Worker"} • {complaintWorker.city || ""}</div>
                                   </div>
                                 ) : (
-                                  <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>Worker info N/A</div>
+                                  <div style={{ fontSize: "var(--fs-xs, 12px)", color: "var(--text-secondary)", marginBottom: "4px" }}>Worker info N/A</div>
                                 )}
                                 {/* Order Price */}
                                 {linkedBooking && (
                                   <div style={{ marginBottom: "4px" }}>
-                                    <span style={{ fontSize: "12px", backgroundColor: "#dbeafe", color: "#1d4ed8", padding: "2px 8px", borderRadius: "4px", fontWeight: 700, display: "inline-block" }}>
+                                    <span style={{ fontSize: "var(--fs-xs, 12px)", backgroundColor: "#dbeafe", color: "#1d4ed8", padding: "2px 8px", borderRadius: "4px", fontWeight: 700, display: "inline-block" }}>
                                       💰 Order: ₹{linkedBooking.price} • {linkedBooking.service}
                                     </span>
                                   </div>
                                 )}
                                 {/* Issue Type */}
-                                <div style={{ fontWeight: "bold", color: "var(--danger)", fontSize: "12px" }}>⚠️ {c.issue_type}</div>
+                                <div style={{ fontWeight: "bold", color: "var(--danger)", fontSize: "var(--fs-xs, 12px)" }}>⚠️ {c.issue_type}</div>
                                 <div style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 700, marginTop: "2px", backgroundColor: "var(--bg-card-hover)", padding: "2px 6px", borderRadius: "4px", display: "inline-block" }}>
                                   Booking: {c.booking_id?.substr(-6) || "N/A"}
                                 </div>
@@ -2283,9 +2283,9 @@ function AdminDashboard() {
                                   </div>
                                 )}
                               </td>
-                              <td style={{ padding: "12px", color: "var(--text-secondary)", fontSize: 13, fontStyle: "italic" }}>"{c.description}"</td>
-                              <td style={{ padding: "12px", fontSize: 12 }}>{c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "Recent"}</td>
-                              <td style={{ padding: "12px" }}>
+                              <td style={{ padding: "var(--fs-xs, 12px)", color: "var(--text-secondary)", fontSize: 13, fontStyle: "italic" }}>"{c.description}"</td>
+                              <td style={{ padding: "var(--fs-xs, 12px)", fontSize: 12 }}>{c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "Recent"}</td>
+                              <td style={{ padding: "var(--fs-xs, 12px)" }}>
                                 <span
                                   style={{
                                     padding: "4px 8px",
@@ -2299,7 +2299,7 @@ function AdminDashboard() {
                                   {c.admin_verdict || "Under Review"}
                                 </span>
                               </td>
-                              <td style={{ padding: "12px", textAlign: "right" }}>
+                              <td style={{ padding: "var(--fs-xs, 12px)", textAlign: "right" }}>
                                 <div style={{ display: "flex", gap: "6px", justifyContent: "flex-end", flexWrap: "wrap", alignItems: "center" }}>
                                   {isEscrowHeld && (
                                     <button
@@ -2337,7 +2337,7 @@ function AdminDashboard() {
                                       </button>
                                     </>
                                   ) : (
-                                    <span style={{ fontSize: "12px", color: "var(--success)", fontWeight: "bold" }}>✅ DECIDED</span>
+                                    <span style={{ fontSize: "var(--fs-xs, 12px)", color: "var(--success)", fontWeight: "bold" }}>✅ DECIDED</span>
                                   )}
                                 </div>
                               </td>
@@ -2361,11 +2361,11 @@ function AdminDashboard() {
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "30px", marginBottom: "40px" }}>
                 {/* 1. PLANS MANAGEMENT */}
-                <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "var(--fs-xs, 12px)", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
                   <h3 style={{ margin: "0 0 20px 0", fontSize: "20px", fontWeight: 700, color: "var(--text-main)" }}>
                     {editingPlan ? "✏️ Edit Service Plan" : "➕ Create New Service Plan"}
                   </h3>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "20px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "var(--fs-xs, 12px)", marginBottom: "20px" }}>
                     <input 
                       type="text" 
                       placeholder="Plan Title (e.g. 🩺 Doctors Annual Family Plan)" 
@@ -2415,7 +2415,7 @@ function AdminDashboard() {
                                 else newList = [...currentList, serviceName];
                                 setPlanForm({ ...planForm, features: newList.join(", ") });
                               }}
-                              style={{ padding: "4px 10px", borderRadius: "12px", border: `1px solid ${isSelected ? "var(--primary)" : "var(--border-color)"}`, backgroundColor: isSelected ? "var(--primary-glow)" : "var(--bg-card)", color: isSelected ? "var(--primary-hover)" : "var(--text-secondary)", fontSize: "11px", fontWeight: "600", cursor: "pointer", transition: "all 0.2s" }}
+                              style={{ padding: "4px 10px", borderRadius: "var(--fs-xs, 12px)", border: `1px solid ${isSelected ? "var(--primary)" : "var(--border-color)"}`, backgroundColor: isSelected ? "var(--primary-glow)" : "var(--bg-card)", color: isSelected ? "var(--primary-hover)" : "var(--text-secondary)", fontSize: "11px", fontWeight: "600", cursor: "pointer", transition: "all 0.2s" }}
                             >
                               {serviceName}
                             </button>
@@ -2525,9 +2525,9 @@ function AdminDashboard() {
                           {planForm.workerId.split(",").map(id => id.trim()).filter(Boolean).map(id => {
                             const worker = workers.find(w => String(w._id || w.id) === id);
                             return (
-                              <div key={id} style={{ display: "flex", alignItems: "center", backgroundColor: "var(--success-light)", color: "var(--success)", padding: "6px 12px", borderRadius: "12px", fontSize: "11px", fontWeight: "600", border: "1px solid #bbf7d0", gap: "10px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
+                              <div key={id} style={{ display: "flex", alignItems: "center", backgroundColor: "var(--success-light)", color: "var(--success)", padding: "6px 12px", borderRadius: "var(--fs-xs, 12px)", fontSize: "11px", fontWeight: "600", border: "1px solid #bbf7d0", gap: "10px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
                                 <div style={{ display: "flex", flexDirection: "column" }}>
-                                  <span style={{ fontSize: "12px", fontWeight: "bold" }}>{worker ? worker.name : `ID: ${id.substr(-6).toUpperCase()}`}</span>
+                                  <span style={{ fontSize: "var(--fs-xs, 12px)", fontWeight: "bold" }}>{worker ? worker.name : `ID: ${id.substr(-6).toUpperCase()}`}</span>
                                   {worker && <span style={{ color: "var(--success)", fontSize: "10px", marginTop: "2px", fontWeight: "normal" }}>📍 {worker.location || worker.city || "N/A"} | ⭐ {worker.rating?.toFixed(1) || "N/A"}</span>}
                                 </div>
                                 <button
@@ -2537,7 +2537,7 @@ function AdminDashboard() {
                                     const newIds = currentIds.filter(i => i !== id);
                                     setPlanForm({ ...planForm, workerId: newIds.join(",") });
                                   }}
-                                  style={{ background: "rgba(22, 101, 52, 0.1)", border: "none", color: "var(--success)", cursor: "pointer", fontSize: "14px", fontWeight: "bold", padding: 0, width: "24px", height: "24px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "background-color 0.2s" }}
+                                  style={{ background: "rgba(22, 101, 52, 0.1)", border: "none", color: "var(--success)", cursor: "pointer", fontSize: "14px", fontWeight: "bold", padding: 0, width: "var(--fs-xl, 24px)", height: "var(--fs-xl, 24px)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "background-color 0.2s" }}
                                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(22, 101, 52, 0.2)"}
                                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "rgba(22, 101, 52, 0.1)"}
                                 >
@@ -2690,11 +2690,11 @@ function AdminDashboard() {
                 </div>
 
                 {/* 2. OFFERS MANAGEMENT */}
-                <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "30px", borderRadius: "var(--fs-xs, 12px)", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
                   <h3 style={{ margin: "0 0 20px 0", fontSize: "20px", fontWeight: 700, color: "var(--text-main)" }}>
                     {editingOffer ? "✏️ Edit Active Coupon" : "➕ Create New Active Coupon"}
                   </h3>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "20px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "var(--fs-xs, 12px)", marginBottom: "20px" }}>
                     <input 
                       type="text" 
                       placeholder="Coupon Code (e.g. DOCFREE)" 
@@ -2792,7 +2792,7 @@ function AdminDashboard() {
                       onChange={(e) => setOfferForm({ ...offerForm, validPeriods: e.target.value })}
                       style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1", marginTop: "10px" }}
                     />
-                    <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "12px", marginTop: "2px" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "var(--fs-xs, 12px)", marginTop: "2px" }}>
                       <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase" }}>Quick Select Periods:</label>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                         {["year", "quarter", "month", "half-year"].map((pName) => {
@@ -2807,7 +2807,7 @@ function AdminDashboard() {
                                 else newList = [...currentList, pName];
                                 setOfferForm({ ...offerForm, validPeriods: newList.join(", ") });
                               }}
-                              style={{ padding: "4px 10px", borderRadius: "12px", border: `1px solid ${isSelected ? "var(--primary)" : "var(--border-color)"}`, backgroundColor: isSelected ? "var(--primary-glow)" : "var(--bg-card)", color: isSelected ? "var(--primary-hover)" : "var(--text-secondary)", fontSize: "11px", fontWeight: "600", cursor: "pointer", transition: "all 0.2s" }}
+                              style={{ padding: "4px 10px", borderRadius: "var(--fs-xs, 12px)", border: `1px solid ${isSelected ? "var(--primary)" : "var(--border-color)"}`, backgroundColor: isSelected ? "var(--primary-glow)" : "var(--bg-card)", color: isSelected ? "var(--primary-hover)" : "var(--text-secondary)", fontSize: "11px", fontWeight: "600", cursor: "pointer", transition: "all 0.2s" }}
                             >
                               {pName}
                             </button>
@@ -2873,9 +2873,9 @@ function AdminDashboard() {
                                 fontSize: "11px",
                                 fontWeight: "600",
                                 cursor: "pointer",
-                                border: isSelected ? "1px solid #10b981" : "1px solid #cbd5e1",
+                                border: isSelected ? "1px solid var(--success)" : "1px solid #cbd5e1",
                                 backgroundColor: isSelected ? "var(--success-light)" : "var(--bg-card)",
-                                color: isSelected ? "#10b981" : "#475569",
+                                color: isSelected ? "var(--success)" : "#475569",
                                 transition: "all 0.15s"
                               }}
                             >
@@ -2995,7 +2995,7 @@ function AdminDashboard() {
 
           {activeTab === "escrow-payouts" && (
             <div className="fade-in" style={{ animation: "fadeIn 0.3s ease" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--fs-xl, 24px)" }}>
                 <div>
                   <h2 style={{ margin: "0 0 6px", fontWeight: 800, color: "var(--text-main)" }}>Admin Escrow Approvals</h2>
                   <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14px" }}>Approve & Release locked payments to workers after successful job completion.</p>
@@ -3005,7 +3005,7 @@ function AdminDashboard() {
                 </div>
               </div>
 
-              <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "12px", border: "1.5px solid var(--border-color)", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", padding: "24px" }}>
+              <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "var(--fs-xs, 12px)", border: "1.5px solid var(--border-color)", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", padding: "var(--fs-xl, 24px)" }}>
                 {escrowSearch && (
                   <div style={{ marginBottom: "16px", backgroundColor: "#e0e7ff", padding: "12px 16px", borderRadius: "8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span style={{ fontSize: "14px", color: "#4338ca", fontWeight: 600 }}>
@@ -3013,7 +3013,7 @@ function AdminDashboard() {
                     </span>
                     <button 
                       onClick={() => setEscrowSearch("")}
-                      style={{ padding: "6px 12px", backgroundColor: "#4338ca", color: "white", border: "none", borderRadius: "6px", fontSize: "12px", fontWeight: "bold", cursor: "pointer" }}
+                      style={{ padding: "6px 12px", backgroundColor: "#4338ca", color: "white", border: "none", borderRadius: "6px", fontSize: "var(--fs-xs, 12px)", fontWeight: "bold", cursor: "pointer" }}
                     >
                       Clear Filter
                     </button>
@@ -3031,7 +3031,7 @@ function AdminDashboard() {
                   if (escrowBookings.length === 0) {
                     return (
                       <div style={{ textAlign: "center", color: "var(--text-secondary)", padding: "48px 0" }}>
-                        <div style={{ fontSize: "48px", marginBottom: "12px" }}>⚖️</div>
+                        <div style={{ fontSize: "48px", marginBottom: "var(--fs-xs, 12px)" }}>⚖️</div>
                         <h3>No matching escrows found.</h3>
                         <p>Awaiting completion signals or try clearing the search filter.</p>
                       </div>
@@ -3055,7 +3055,7 @@ function AdminDashboard() {
                           const linkedComplaint = complaints.find(c => String(c.booking_id) === String(b._id));
                           return (
                             <tr key={b._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
-                              <td style={{ padding: "14px 8px", fontFamily: "monospace", fontSize: "12px" }}>
+                              <td style={{ padding: "14px 8px", fontFamily: "monospace", fontSize: "var(--fs-xs, 12px)" }}>
                                 #{b._id.substr(-6).toUpperCase()}
                                 {linkedComplaint && (
                                   <div style={{ marginTop: "4px" }}>
@@ -3129,7 +3129,7 @@ function AdminDashboard() {
                                            } catch(err) { showAdminMessage(`🛑 Release Failed: ${err.message}`, "error"); }
                                         }
                                       }}
-                                      style={{ backgroundColor: "#4338ca", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer", flex: 1 }}
+                                      style={{ backgroundColor: "#4338ca", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "var(--fs-xs, 12px)", cursor: "pointer", flex: 1 }}
                                     >
                                       💸 Release Money
                                     </button>
@@ -3157,13 +3157,13 @@ function AdminDashboard() {
                                            } catch(err) { showAdminMessage(`🛑 Decline Failed: ${err.message}`, "error"); }
                                         }
                                       }}
-                                      style={{ backgroundColor: "var(--danger)", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer", flex: 1 }}
+                                      style={{ backgroundColor: "var(--danger)", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "var(--fs-xs, 12px)", cursor: "pointer", flex: 1 }}
                                     >
                                       ❌ Decline & Refund
                                     </button>
                                   </div>
                                 ) : (
-                                  <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontStyle: "italic" }}>Completed Successfully</span>
+                                  <span style={{ fontSize: "var(--fs-xs, 12px)", color: "var(--text-secondary)", fontStyle: "italic" }}>Completed Successfully</span>
                                 )}
                               </td>
                             </tr>
@@ -3179,7 +3179,7 @@ function AdminDashboard() {
 
           {activeTab === "cancellation-refunds" && (
             <div className="fade-in" style={{ animation: "fadeIn 0.3s ease" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--fs-xl, 24px)" }}>
                 <div>
                   <h2 style={{ margin: "0 0 6px", fontWeight: 800, color: "var(--text-main)" }}>⚖️ Cancellation Refund Approvals</h2>
                   <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14px" }}>Review, Approve, or Decline customer-requested booking cancellations and refunds.</p>
@@ -3189,10 +3189,10 @@ function AdminDashboard() {
                 </div>
               </div>
 
-              <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", padding: "24px" }}>
+              <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "var(--fs-xs, 12px)", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", padding: "var(--fs-xl, 24px)" }}>
                 {liveRealTimeBookings.filter(b => b.status === "Cancellation Pending").length === 0 ? (
                   <div style={{ textAlign: "center", color: "var(--text-secondary)", padding: "48px 0" }}>
-                    <div style={{ fontSize: "48px", marginBottom: "12px" }}>⚖️</div>
+                    <div style={{ fontSize: "48px", marginBottom: "var(--fs-xs, 12px)" }}>⚖️</div>
                     <h3>No pending cancellation refunds.</h3>
                     <p>All client cancellation requests have been processed successfully.</p>
                   </div>
@@ -3211,7 +3211,7 @@ function AdminDashboard() {
                     <tbody>
                       {liveRealTimeBookings.filter(b => b.status === "Cancellation Pending").map(b => (
                         <tr key={b._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
-                          <td style={{ padding: "14px 8px", fontFamily: "monospace", fontSize: "12px" }}>#{b._id.substr(-6).toUpperCase()}</td>
+                          <td style={{ padding: "14px 8px", fontFamily: "monospace", fontSize: "var(--fs-xs, 12px)" }}>#{b._id.substr(-6).toUpperCase()}</td>
                            <td style={{ padding: "14px 8px" }}>
                              <div style={{ fontWeight: 700, color: "var(--text-main)" }}>{b.customer_name}</div>
                              <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>Address: {b.address || "N/A"}</div>
@@ -3245,7 +3245,7 @@ function AdminDashboard() {
                                      } catch(err) { showAdminMessage(`🛑 Approval Failed: ${err.message}`, "error"); }
                                   }
                                 }}
-                                style={{ backgroundColor: "#10b981", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer" }}
+                                style={{ backgroundColor: "var(--success)", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "var(--fs-xs, 12px)", cursor: "pointer" }}
                               >
                                 🟢 Approve
                               </button>
@@ -3273,7 +3273,7 @@ function AdminDashboard() {
                                      } catch(err) { showAdminMessage(`🛑 Decline Failed: ${err.message}`, "error"); }
                                   }
                                 }}
-                                style={{ backgroundColor: "var(--danger)", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "12px", cursor: "pointer" }}
+                                style={{ backgroundColor: "var(--danger)", color: "white", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: 700, fontSize: "var(--fs-xs, 12px)", cursor: "pointer" }}
                               >
                                 🔴 Decline
                               </button>
@@ -3330,12 +3330,12 @@ function AdminDashboard() {
                     <p style={{ margin: 0, fontSize: 14 }}>No active worker emergency distress telemetry feeds currently detected.</p>
                   </div>
                 ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "var(--fs-xl, 24px)" }}>
                     {adminNotifications.filter(n => !n.is_read).map((alertItem) => (
                       <div 
                         key={alertItem._id} 
                         style={{ 
-                          border: alertItem.is_read ? "1px solid #e2e8f0" : "3px solid #ef4444", 
+                          border: alertItem.is_read ? "1px solid #e2e8f0" : "3px solid var(--danger)", 
                           borderRadius: "16px", 
                           padding: "28px", 
                           backgroundColor: alertItem.is_read ? "#fafafa" : "#fff5f5",
@@ -3345,11 +3345,11 @@ function AdminDashboard() {
                         }}
                       >
                         {!alertItem.is_read && (
-                          <span style={{ position: "absolute", top: "16px", right: "16px", backgroundColor: "var(--danger)", color: "white", padding: "6px 14px", borderRadius: "20px", fontSize: "12px", fontWeight: 800, textTransform: "uppercase", boxShadow: "0 4px 10px rgba(239,68,68,0.3)" }}>
+                          <span style={{ position: "absolute", top: "16px", right: "16px", backgroundColor: "var(--danger)", color: "white", padding: "6px 14px", borderRadius: "20px", fontSize: "var(--fs-xs, 12px)", fontWeight: 800, textTransform: "uppercase", boxShadow: "0 4px 10px rgba(239,68,68,0.3)" }}>
                             🔴 Live Emergency
                           </span>
                         )}
-                        <div style={{ display: "flex", gap: "24px", alignItems: "flex-start" }}>
+                        <div style={{ display: "flex", gap: "var(--fs-xl, 24px)", alignItems: "flex-start" }}>
                           <div style={{ fontSize: "48px" }}>🚨</div>
                           <div style={{ flex: 1 }}>
                             <h4 style={{ margin: "0 0 12px", fontSize: "20px", fontWeight: 850, color: "var(--danger)" }}>{alertItem.title}</h4>
@@ -3425,7 +3425,7 @@ function AdminDashboard() {
                                     fontFamily: "'Outfit', 'Inter', sans-serif"
                                   }}>
                                     {/* Initiator Card */}
-                                    <div style={{ backgroundColor: "var(--bg-card)", padding: "16px", borderRadius: "12px", border: "1.5px solid #fca5a5", boxShadow: "0 2px 4px rgba(239,68,68,0.05)" }}>
+                                    <div style={{ backgroundColor: "var(--bg-card)", padding: "16px", borderRadius: "var(--fs-xs, 12px)", border: "1.5px solid #fca5a5", boxShadow: "0 2px 4px rgba(239,68,68,0.05)" }}>
                                       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                                         <span style={{ fontSize: "20px" }}>👤</span>
                                         <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--danger)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Distress Initiator</span>
@@ -3435,7 +3435,7 @@ function AdminDashboard() {
                                     </div>
 
                                     {/* Location/Address Card */}
-                                    <div style={{ backgroundColor: "var(--bg-card)", padding: "16px", borderRadius: "12px", border: "1.5px solid #fca5a5", boxShadow: "0 2px 4px rgba(239,68,68,0.05)" }}>
+                                    <div style={{ backgroundColor: "var(--bg-card)", padding: "16px", borderRadius: "var(--fs-xs, 12px)", border: "1.5px solid #fca5a5", boxShadow: "0 2px 4px rgba(239,68,68,0.05)" }}>
                                       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                                         <span style={{ fontSize: "20px" }}>📍</span>
                                         <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--danger)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Incident Location / Address</span>
@@ -3447,27 +3447,27 @@ function AdminDashboard() {
                                     </div>
 
                                     {/* Worker Card */}
-                                    <div style={{ backgroundColor: "var(--bg-card)", padding: "16px", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
+                                    <div style={{ backgroundColor: "var(--bg-card)", padding: "16px", borderRadius: "var(--fs-xs, 12px)", border: "1px solid var(--border-color)" }}>
                                       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                                         <span style={{ fontSize: "20px" }}>👷</span>
                                         <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Assigned Professional</span>
                                       </div>
                                       <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-main)" }}>{parsed.assignedWorker}</div>
-                                      <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "6px", wordBreak: "break-word" }}>{parsed.workerContact}</div>
+                                      <div style={{ fontSize: "var(--fs-xs, 12px)", color: "var(--text-secondary)", marginTop: "6px", wordBreak: "break-word" }}>{parsed.workerContact}</div>
                                     </div>
 
                                     {/* Customer Card */}
-                                    <div style={{ backgroundColor: "var(--bg-card)", padding: "16px", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
+                                    <div style={{ backgroundColor: "var(--bg-card)", padding: "16px", borderRadius: "var(--fs-xs, 12px)", border: "1px solid var(--border-color)" }}>
                                       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                                         <span style={{ fontSize: "20px" }}>🧑</span>
                                         <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Customer Details</span>
                                       </div>
                                       <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-main)" }}>{parsed.customer}</div>
-                                      <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "6px", wordBreak: "break-word" }}>{parsed.customerContact}</div>
+                                      <div style={{ fontSize: "var(--fs-xs, 12px)", color: "var(--text-secondary)", marginTop: "6px", wordBreak: "break-word" }}>{parsed.customerContact}</div>
                                     </div>
 
                                     {/* Linked Booking Card */}
-                                    <div style={{ backgroundColor: "var(--bg-card)", padding: "16px", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
+                                    <div style={{ backgroundColor: "var(--bg-card)", padding: "16px", borderRadius: "var(--fs-xs, 12px)", border: "1px solid var(--border-color)" }}>
                                       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                                         <span style={{ fontSize: "20px" }}>📅</span>
                                         <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Linked Booking</span>
@@ -3479,7 +3479,7 @@ function AdminDashboard() {
                               }
 
                               return (
-                                <div style={{ margin: "0 0 20px", color: "var(--text-main)", whiteSpace: "pre-wrap", fontSize: "14px", fontWeight: 600, fontFamily: "'JetBrains Mono', Courier, monospace", backgroundColor: "var(--bg-card)", padding: "20px", borderRadius: "12px", border: "1.5px solid #e2e8f0", lineHeight: 1.6 }}>
+                                <div style={{ margin: "0 0 20px", color: "var(--text-main)", whiteSpace: "pre-wrap", fontSize: "14px", fontWeight: 600, fontFamily: "'JetBrains Mono', Courier, monospace", backgroundColor: "var(--bg-card)", padding: "20px", borderRadius: "var(--fs-xs, 12px)", border: "1.5px solid #e2e8f0", lineHeight: 1.6 }}>
                                   {alertItem.message}
                                 </div>
                               );
@@ -3521,15 +3521,15 @@ function AdminDashboard() {
                                   <button
                                     onClick={() => setExpandedMaps(prev => ({ ...prev, [alertItem._id]: !isMapVisible }))}
                                     style={{
-                                      backgroundColor: isMapVisible ? "#f1f5f9" : "#fee2e2",
+                                      backgroundColor: isMapVisible ? "var(--bg-card-hover)" : "#fee2e2",
                                       color: isMapVisible ? "#475569" : "#dc2626",
                                       border: "1.5px solid " + (isMapVisible ? "#cbd5e1" : "#fca5a5"),
                                       padding: "8px 16px",
                                       borderRadius: "8px",
                                       fontWeight: 700,
-                                      fontSize: "12px",
+                                      fontSize: "var(--fs-xs, 12px)",
                                       cursor: "pointer",
-                                      marginBottom: "12px",
+                                      marginBottom: "var(--fs-xs, 12px)",
                                       display: "inline-flex",
                                       alignItems: "center",
                                       gap: "8px",
@@ -3540,7 +3540,7 @@ function AdminDashboard() {
                                   </button>
 
                                   {isMapVisible && (
-                                    <div style={{ borderRadius: "12px", overflow: "hidden", border: "2px solid #ef4444", boxShadow: "0 4px 12px rgba(239, 68, 68, 0.12)" }}>
+                                    <div style={{ borderRadius: "var(--fs-xs, 12px)", overflow: "hidden", border: "2px solid var(--danger)", boxShadow: "0 4px 12px rgba(239, 68, 68, 0.12)" }}>
                                       <div style={{ height: "200px", width: "100%" }}>
                                         {(() => {
                                           const SOSMapResize = () => {
@@ -3624,7 +3624,7 @@ function AdminDashboard() {
           {/* TAB: OVERDUE JOBS MONITOR */}
           {activeTab === "overdue-jobs" && (
             <div className="fade-in" style={{ animation: "fadeIn 0.3s ease" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--fs-xl, 24px)" }}>
                 <div>
                   <h2 style={{ margin: "0 0 6px", fontWeight: 850, color: "var(--text-main)" }}>⏰ Overdue Jobs Monitor</h2>
                   <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14px" }}>Bookings where work has started but not completed within 24 hours. Admin can force-cancel and refund the customer.</p>
@@ -3635,22 +3635,22 @@ function AdminDashboard() {
               </div>
 
               {/* Overdue Stats Cards */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", marginBottom: "24px" }}>
-                <div style={{ backgroundColor: "var(--bg-card)", padding: "20px", borderRadius: "12px", borderLeft: "4px solid #f59e0b", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", marginBottom: "var(--fs-xl, 24px)" }}>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "20px", borderRadius: "var(--fs-xs, 12px)", borderLeft: "4px solid #f59e0b", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
                   <div style={{ fontSize: "11px", color: "var(--warning)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Currently Started</div>
                   <div style={{ fontSize: "28px", fontWeight: 850, color: "var(--text-main)", marginTop: "4px" }}>{liveRealTimeBookings.filter(b => b.status === "Started").length}</div>
                 </div>
-                <div style={{ backgroundColor: "var(--bg-card)", padding: "20px", borderRadius: "12px", borderLeft: "4px solid #ef4444", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "20px", borderRadius: "var(--fs-xs, 12px)", borderLeft: "4px solid var(--danger)", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
                   <div style={{ fontSize: "11px", color: "var(--danger)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Overdue (&gt;24h)</div>
                   <div style={{ fontSize: "28px", fontWeight: 850, color: "var(--danger)", marginTop: "4px" }}>{overdueBookings.length}</div>
                 </div>
-                <div style={{ backgroundColor: "var(--bg-card)", padding: "20px", borderRadius: "12px", borderLeft: "4px solid var(--secondary)", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                <div style={{ backgroundColor: "var(--bg-card)", padding: "20px", borderRadius: "var(--fs-xs, 12px)", borderLeft: "4px solid var(--secondary)", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
                   <div style={{ fontSize: "11px", color: "var(--secondary)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Locked Revenue at Risk</div>
                   <div style={{ fontSize: "28px", fontWeight: 850, color: "var(--text-main)", marginTop: "4px" }}>₹{overdueBookings.reduce((sum, b) => sum + (b.price || 0), 0)}</div>
                 </div>
               </div>
 
-              <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", padding: "24px" }}>
+              <div style={{ backgroundColor: "var(--bg-card)", borderRadius: "var(--fs-xs, 12px)", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", padding: "var(--fs-xl, 24px)" }}>
                 {overdueBookings.length === 0 ? (
                   <div style={{ textAlign: "center", color: "var(--text-secondary)", padding: "60px 0" }}>
                     <div style={{ fontSize: "56px", marginBottom: "16px" }}>✅</div>
@@ -3684,14 +3684,14 @@ function AdminDashboard() {
                         
                         return (
                           <tr key={b._id} style={{ borderBottom: "1px solid var(--border-color)" }}>
-                            <td style={{ padding: "14px 8px", fontFamily: "monospace", fontSize: "12px", fontWeight: 700 }}>#{b._id.substr(-6).toUpperCase()}</td>
+                            <td style={{ padding: "14px 8px", fontFamily: "monospace", fontSize: "var(--fs-xs, 12px)", fontWeight: 700 }}>#{b._id.substr(-6).toUpperCase()}</td>
                             <td style={{ padding: "14px 8px" }}>
                               <div style={{ fontWeight: 700, color: "var(--text-main)", fontSize: "13px" }}>{b.customer_name}</div>
                               <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>{b.date} at {b.time}<br />Address: {b.address || "N/A"}</div>
                             </td>
                             <td style={{ padding: "14px 8px", fontWeight: 600, color: "var(--text-main)" }}>{b.service}</td>
                             <td style={{ padding: "14px 8px", fontWeight: 700, color: "var(--success)" }}>₹{b.price}</td>
-                            <td style={{ padding: "14px 8px", fontSize: "12px", color: "var(--text-muted)" }}>{startedAt.toLocaleString()}</td>
+                            <td style={{ padding: "14px 8px", fontSize: "var(--fs-xs, 12px)", color: "var(--text-muted)" }}>{startedAt.toLocaleString()}</td>
                             <td style={{ padding: "14px 8px" }}>
                               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                                 <span style={{ padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 800, backgroundColor: `${severityColor}15`, color: severityColor, border: `1px solid ${severityColor}30` }}>
@@ -3739,7 +3739,7 @@ function AdminDashboard() {
                                   padding: "8px 16px", 
                                   borderRadius: "8px", 
                                   fontWeight: 800, 
-                                  fontSize: "12px", 
+                                  fontSize: "var(--fs-xs, 12px)", 
                                   cursor: "pointer",
                                   boxShadow: "0 2px 8px rgba(220, 38, 38, 0.3)",
                                   transition: "all 0.2s ease"
@@ -3807,10 +3807,10 @@ function AdminDashboard() {
             </p>
 
             {/* Order & Worker Details Card */}
-            <div style={{ backgroundColor: "var(--bg-card-hover)", borderRadius: "12px", padding: "16px", marginBottom: "20px", border: "1px solid var(--border-color)" }}>
-              <div style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600, marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Order & Worker Details</div>
+            <div style={{ backgroundColor: "var(--bg-card-hover)", borderRadius: "var(--fs-xs, 12px)", padding: "16px", marginBottom: "20px", border: "1px solid var(--border-color)" }}>
+              <div style={{ fontSize: "var(--fs-xs, 12px)", color: "var(--text-secondary)", fontWeight: 600, marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Order & Worker Details</div>
               
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--fs-xs, 12px)" }}>
                 {/* Worker */}
                 <div style={{ backgroundColor: "var(--bg-card)", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
                   <div style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 600, marginBottom: "4px" }}>👷 WORKER</div>
@@ -3850,10 +3850,10 @@ function AdminDashboard() {
               </div>
 
               {/* Complaint Type */}
-              <div style={{ marginTop: "12px", padding: "8px 12px", backgroundColor: "var(--danger-light)", borderRadius: "8px", border: "1px solid #fecaca" }}>
-                <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--danger)" }}>
+              <div style={{ marginTop: "var(--fs-xs, 12px)", padding: "8px 12px", backgroundColor: "var(--danger-light)", borderRadius: "8px", border: "1px solid #fecaca" }}>
+                <span style={{ fontSize: "var(--fs-xs, 12px)", fontWeight: 700, color: "var(--danger)" }}>
                   ⚠️ {refundModal.complaint.issue_type}: </span>
-                <span style={{ fontSize: "12px", color: "#7f1d1d", fontStyle: "italic" }}>
+                <span style={{ fontSize: "var(--fs-xs, 12px)", color: "#7f1d1d", fontStyle: "italic" }}>
                   "{refundModal.complaint.description || 'No description provided'}"
                 </span>
               </div>
@@ -3870,7 +3870,7 @@ function AdminDashboard() {
                 )}
               </label>
               <div style={{ position: "relative" }}>
-                <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "16px", fontWeight: 700, color: "var(--text-secondary)" }}>₹</span>
+                <span style={{ position: "absolute", left: "var(--fs-xs, 12px)", top: "50%", transform: "translateY(-50%)", fontSize: "16px", fontWeight: 700, color: "var(--text-secondary)" }}>₹</span>
                 <input 
                   type="number"
                   min="0"
@@ -3926,7 +3926,7 @@ function AdminDashboard() {
             </div>
 
             {/* Action Buttons */}
-            <div style={{ display: "flex", gap: "12px" }}>
+            <div style={{ display: "flex", gap: "var(--fs-xs, 12px)" }}>
               <button
                 onClick={handleComplaintVerdict}
                 style={{

@@ -256,7 +256,7 @@ function PlansOffers() {
       };
     }
     const c = String(planColor).trim().toLowerCase();
-    if (c === "#ffffff" || c === "#fff" || c === "white" || c === "#f8fafc" || c === "#f1f5f9" || c === "transparent" || c === "rgb(255,255,255)") {
+    if (c === "#ffffff" || c === "#fff" || c === "white" || c === "var(--bg-main)" || c === "var(--bg-card-hover)" || c === "transparent" || c === "rgb(255,255,255)") {
       return {
         bg: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
         color: "#ffffff",
@@ -266,7 +266,7 @@ function PlansOffers() {
     if (c.includes("eab308") || c.includes("yellow") || c.includes("fef08a") || c.includes("fde047") || c === "#f59e0b") {
       return {
         bg: planColor,
-        color: "#0f172a",
+        color: "var(--text-main)",
         boxShadow: "0 8px 20px -6px rgba(234, 179, 8, 0.4)"
       };
     }
@@ -744,7 +744,7 @@ function PlansOffers() {
               </div>
 
               {(plan.title?.toLowerCase().includes("annual") || plan.title?.toLowerCase().includes("yearly")) && (
-                <span style={{ fontSize: "12px", color: "#10b981", fontWeight: 600, marginTop: "2px" }}>
+                <span style={{ fontSize: "var(--fs-xs, 12px)", color: "var(--success)", fontWeight: 600, marginTop: "2px" }}>
                   Billed Annually (Commitment Plan)
                 </span>
               )}
@@ -754,13 +754,13 @@ function PlansOffers() {
               {featuresArr.map((f, idx) => <li key={idx} style={{ marginBottom: 8 }}>{f}</li>)}
 
               {plan.startDate && plan.endDate && (
-                <li style={{ marginBottom: 8, listStyleType: "none", marginLeft: "-20px", fontSize: "12px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "6px" }}>
+                <li style={{ marginBottom: 8, listStyleType: "none", marginLeft: "-20px", fontSize: "var(--fs-xs, 12px)", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "6px" }}>
                   📅 Validity: {plan.startDate} to {plan.endDate}
                 </li>
               )}
 
               {plan.terms && (
-                <li style={{ marginBottom: 8, listStyleType: "none", marginLeft: "-20px", fontSize: "12px", borderTop: "1px dashed var(--border-color)", paddingTop: "8px", marginTop: "12px" }}>
+                <li style={{ marginBottom: 8, listStyleType: "none", marginLeft: "-20px", fontSize: "var(--fs-xs, 12px)", borderTop: "1px dashed var(--border-color)", paddingTop: "8px", marginTop: "var(--fs-xs, 12px)" }}>
                   <span 
                     onClick={() => setSelectedTermsItem({ ...plan, type: 'plan' })}
                     style={{ color: "var(--primary)", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px", textDecoration: "underline" }}
@@ -772,7 +772,7 @@ function PlansOffers() {
             </ul>
 
             {plan.workerId && (
-              <div style={{ marginBottom: 20, padding: "10px 14px", backgroundColor: "var(--border)", borderRadius: "8px", border: "1px solid var(--border)", display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{ marginBottom: 20, padding: "10px 14px", backgroundColor: "var(--border)", borderRadius: "8px", border: "1px solid var(--border)", display: "flex", alignItems: "center", gap: "var(--fs-xs, 12px)" }}>
                 <FaUser size={18} style={{ color: "var(--primary)" }} />
                 <div>
                   <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>Primary Assigned Expert</p>
@@ -786,7 +786,7 @@ function PlansOffers() {
 
           {userPlans.includes(plan.title) ? (
             <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#10b981", fontWeight: 700, fontSize: 14 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "var(--success)", fontWeight: 700, fontSize: 14 }}>
                 <FaCheckCircle size={18} /> Active Subscription
               </div>
             </div>
@@ -870,7 +870,7 @@ function PlansOffers() {
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <span style={{ fontSize: 20, fontWeight: 800, color: "#34d399" }}>{offer.discount}</span>
               {offer.code && (
-                <span style={{ backgroundColor: "rgba(52, 211, 153, 0.15)", color: "#34d399", padding: "2px 8px", borderRadius: "6px", fontSize: "12px", fontWeight: 700, fontFamily: "monospace" }}>
+                <span style={{ backgroundColor: "rgba(52, 211, 153, 0.15)", color: "#34d399", padding: "2px 8px", borderRadius: "6px", fontSize: "var(--fs-xs, 12px)", fontWeight: 700, fontFamily: "monospace" }}>
                   {offer.code}
                 </span>
               )}
@@ -957,7 +957,7 @@ function PlansOffers() {
 
         {/* Pricing Segment */}
 
-        <h2 style={{ fontSize: "24px", fontWeight: 800, color: "#2563eb", marginBottom: 32, textAlign: "center" }}>
+        <h2 style={{ fontSize: "var(--fs-xl, 24px)", fontWeight: 800, color: "#2563eb", marginBottom: 32, textAlign: "center" }}>
 
           Choose Your Service Plan
 
@@ -1005,17 +1005,17 @@ function PlansOffers() {
 
             <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "var(--text-main)" }}>4.9/5 Average Rating</h4>
 
-            <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.5 }}>From over 10,000+ satisfied homeowners</p>
+            <p style={{ margin: 0, fontSize: "var(--fs-xs, 12px)", color: "var(--text-muted)", lineHeight: 1.5 }}>From over 10,000+ satisfied homeowners</p>
 
           </div>
 
           <div style={{ borderLeft: "1px solid var(--border-color)" }}>
 
-            <div style={{ fontSize: "24px", marginBottom: "6px" }}>🛡️</div>
+            <div style={{ fontSize: "var(--fs-xl, 24px)", marginBottom: "6px" }}>🛡️</div>
 
             <h4 style={{ margin: "0 0 4px 0", fontSize: "15px", fontWeight: 700, color: "var(--text-main)" }}>100% Satisfaction Guarantee</h4>
 
-            <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.5 }}>Not satisfied? We will re-service for free</p>
+            <p style={{ margin: 0, fontSize: "var(--fs-xs, 12px)", color: "var(--text-muted)", lineHeight: 1.5 }}>Not satisfied? We will re-service for free</p>
 
           </div>
 
@@ -1025,7 +1025,7 @@ function PlansOffers() {
 
         {/* Promotional Offers Section */}
 
-        <h2 style={{ fontSize: "24px", fontWeight: 800, color: "#2563eb", marginBottom: 32, textAlign: "center" }}>
+        <h2 style={{ fontSize: "var(--fs-xl, 24px)", fontWeight: 800, color: "#2563eb", marginBottom: 32, textAlign: "center" }}>
 
           Active Offers
 
@@ -1061,7 +1061,7 @@ function PlansOffers() {
 
                 backgroundColor: "var(--bg-card)", border: "1px solid var(--border)", 
 
-                borderRadius: "24px", padding: "32px", width: "100%", maxWidth: "440px", 
+                borderRadius: "var(--fs-xl, 24px)", padding: "32px", width: "100%", maxWidth: "440px", 
 
                 maxHeight: "85vh", overflowY: "auto", boxSizing: "border-box",
 
@@ -1099,13 +1099,13 @@ function PlansOffers() {
 
               <div style={{ textAlign: "center", marginBottom: "28px" }}>
 
-                <div style={{ display: "inline-flex", padding: "14px", backgroundColor: "rgba(37, 99, 235, 0.08)", borderRadius: "50%", marginBottom: "12px", border: "1px solid rgba(37, 99, 235, 0.15)" }}>
+                <div style={{ display: "inline-flex", padding: "14px", backgroundColor: "rgba(37, 99, 235, 0.08)", borderRadius: "50%", marginBottom: "var(--fs-xs, 12px)", border: "1px solid rgba(37, 99, 235, 0.15)" }}>
 
                   <FaCreditCard size={28} style={{ color: "var(--primary)" }} />
 
                 </div>
 
-                <h3 style={{ margin: "0 0 6px 0", fontSize: "24px", fontWeight: 900, color: "var(--text-main)", letterSpacing: "-0.5px" }}>Secure Checkout</h3>
+                <h3 style={{ margin: "0 0 6px 0", fontSize: "var(--fs-xl, 24px)", fontWeight: 900, color: "var(--text-main)", letterSpacing: "-0.5px" }}>Secure Checkout</h3>
 
                 <p style={{ margin: 0, fontSize: "16px", color: "var(--primary)", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
 
@@ -1117,15 +1117,15 @@ function PlansOffers() {
 
 
 
-              <form onSubmit={handlePayment} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+              <form onSubmit={handlePayment} style={{ display: "flex", flexDirection: "column", gap: "var(--fs-xl, 24px)" }}>
 
                 {/* 1. Promo Code Section */}
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px", padding: "16px", backgroundColor: "var(--bg-main)", borderRadius: "14px", border: "1px solid var(--border)" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "var(--fs-xs, 12px)", padding: "16px", backgroundColor: "var(--bg-main)", borderRadius: "14px", border: "1px solid var(--border)" }}>
 
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
 
-                    <span style={{ backgroundColor: "var(--primary)", color: "white", borderRadius: "50%", width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: "bold" }}>1</span>
+                    <span style={{ backgroundColor: "var(--primary)", color: "white", borderRadius: "50%", width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--fs-xs, 12px)", fontWeight: "bold" }}>1</span>
 
                     <label style={{ fontSize: "14px", fontWeight: 800, color: "var(--text-main)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Apply Promo Code</label>
 
@@ -1171,9 +1171,9 @@ function PlansOffers() {
 
                   </div>
 
-                  {couponError && <span style={{ fontSize: "12px", color: "var(--danger)", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px" }}>❌ {couponError}</span>}
+                  {couponError && <span style={{ fontSize: "var(--fs-xs, 12px)", color: "var(--danger)", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px" }}>❌ {couponError}</span>}
 
-                  {couponSuccess && <span style={{ fontSize: "12px", color: "#10b981", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px" }}>✅ {couponSuccess}</span>}
+                  {couponSuccess && <span style={{ fontSize: "var(--fs-xs, 12px)", color: "var(--success)", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px" }}>✅ {couponSuccess}</span>}
 
                 </div>
 
@@ -1181,11 +1181,11 @@ function PlansOffers() {
 
                 {/* 2. Payment Method Section */}
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px", padding: "16px", backgroundColor: "var(--bg-main)", borderRadius: "14px", border: "1px solid var(--border)" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "var(--fs-xs, 12px)", padding: "16px", backgroundColor: "var(--bg-main)", borderRadius: "14px", border: "1px solid var(--border)" }}>
 
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
 
-                    <span style={{ backgroundColor: "var(--primary)", color: "white", borderRadius: "50%", width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: "bold" }}>2</span>
+                    <span style={{ backgroundColor: "var(--primary)", color: "white", borderRadius: "50%", width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--fs-xs, 12px)", fontWeight: "bold" }}>2</span>
 
                     <label style={{ fontSize: "14px", fontWeight: 800, color: "var(--text-main)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Payment Method</label>
 
@@ -1247,7 +1247,7 @@ function PlansOffers() {
 
                 {paymentMethod === "Card" && (
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: "12px", padding: "16px", backgroundColor: "var(--bg-main)", borderRadius: "12px", border: "1px solid var(--border)" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "var(--fs-xs, 12px)", padding: "16px", backgroundColor: "var(--bg-main)", borderRadius: "var(--fs-xs, 12px)", border: "1px solid var(--border)" }}>
 
                     <input 
 
@@ -1263,7 +1263,7 @@ function PlansOffers() {
 
                       required
 
-                      style={{ padding: "12px", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)", outline: "none" }}
+                      style={{ padding: "var(--fs-xs, 12px)", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)", outline: "none" }}
 
                       onFocus={(e) => e.target.style.borderColor = "var(--primary)"}
 
@@ -1271,7 +1271,7 @@ function PlansOffers() {
 
                     />
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--fs-xs, 12px)" }}>
 
                       <input 
 
@@ -1287,7 +1287,7 @@ function PlansOffers() {
 
                         required
 
-                        style={{ padding: "12px", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)", outline: "none" }}
+                        style={{ padding: "var(--fs-xs, 12px)", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)", outline: "none" }}
 
                         onFocus={(e) => e.target.style.borderColor = "var(--primary)"}
 
@@ -1309,7 +1309,7 @@ function PlansOffers() {
 
                         required
 
-                        style={{ padding: "12px", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)", outline: "none" }}
+                        style={{ padding: "var(--fs-xs, 12px)", borderRadius: "8px", border: "1.5px solid var(--border)", backgroundColor: "var(--bg-card)", color: "var(--text-main)", outline: "none" }}
 
                         onFocus={(e) => e.target.style.borderColor = "var(--primary)"}
 
@@ -1381,7 +1381,7 @@ function PlansOffers() {
 
                       <span>Remaining Wallet Balance</span>
 
-                      <strong style={{ color: walletBal >= Math.max(0, (parseInt(payingPlan.price.replace(/[^\d]/g, ""), 10) || 0) - discountAmount) ? "#10b981" : "#ef4444" }}>
+                      <strong style={{ color: walletBal >= Math.max(0, (parseInt(payingPlan.price.replace(/[^\d]/g, ""), 10) || 0) - discountAmount) ? "var(--success)" : "var(--danger)" }}>
 
                         ₹{Math.max(0, walletBal - Math.max(0, (parseInt(payingPlan.price.replace(/[^\d]/g, ""), 10) || 0) - discountAmount)).toLocaleString()}
 
@@ -1391,7 +1391,7 @@ function PlansOffers() {
 
                     {walletBal < Math.max(0, (parseInt(payingPlan.price.replace(/[^\d]/g, ""), 10) || 0) - discountAmount) && (
 
-                      <div style={{ color: "var(--danger)", fontSize: "12px", fontWeight: 700, marginTop: "6px" }}>
+                      <div style={{ color: "var(--danger)", fontSize: "var(--fs-xs, 12px)", fontWeight: 700, marginTop: "6px" }}>
 
                         ⚠️ Insufficient Wallet Balance! Please select UPI/Card or add funds.
 
@@ -1423,7 +1423,7 @@ function PlansOffers() {
 
                   {discountAmount > 0 && (
 
-                    <div style={{ display: "flex", justifyContent: "space-between", color: "#10b981", marginTop: "8px", fontWeight: "700" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "var(--success)", marginTop: "8px", fontWeight: "700" }}>
 
                       <span>Discount Coupon</span>
 
@@ -1485,7 +1485,7 @@ function PlansOffers() {
 
                     </strong>
 
-                    <span style={{ color: "var(--warning)", fontSize: "12px" }}>Click to read ›</span>
+                    <span style={{ color: "var(--warning)", fontSize: "var(--fs-xs, 12px)" }}>Click to read ›</span>
 
                   </button>
 
@@ -1527,7 +1527,7 @@ function PlansOffers() {
                       type="submit" 
                       disabled={isPayDisabled}
                       style={{
-                        width: "100%", padding: "16px", border: "none", borderRadius: "12px", marginTop: "4px",
+                        width: "100%", padding: "16px", border: "none", borderRadius: "var(--fs-xs, 12px)", marginTop: "4px",
                         fontSize: "16px", fontWeight: 800, cursor: isPayDisabled ? "not-allowed" : "pointer",
                         background: btnTheme.bg,
                         backgroundColor: btnTheme.bg,
@@ -1618,7 +1618,7 @@ function PlansOffers() {
 
 
 
-              <div style={{ textAlign: "center", marginBottom: "24px" }}>
+              <div style={{ textAlign: "center", marginBottom: "var(--fs-xl, 24px)" }}>
 
                 <span style={{ fontSize: "36px", display: "block", marginBottom: "10px" }}>📌</span>
 
@@ -1628,7 +1628,7 @@ function PlansOffers() {
 
                 </h3>
 
-                <h4 style={{ margin: 0, fontSize: "16px", color: selectedTermsItem.type === 'plan' ? "#2563eb" : "#10b981", fontWeight: 700 }}>
+                <h4 style={{ margin: 0, fontSize: "16px", color: selectedTermsItem.type === 'plan' ? "#2563eb" : "var(--success)", fontWeight: 700 }}>
 
                   {selectedTermsItem.title || selectedTermsItem.code}
 
@@ -1642,7 +1642,7 @@ function PlansOffers() {
 
                 {/* Price / Discount Info */}
 
-                <div style={{ backgroundColor: "var(--border)", borderRadius: "8px", padding: "12px", border: "1px solid var(--border)", display: "flex", justifyContent: "space-between" }}>
+                <div style={{ backgroundColor: "var(--border)", borderRadius: "8px", padding: "var(--fs-xs, 12px)", border: "1px solid var(--border)", display: "flex", justifyContent: "space-between" }}>
 
                   <span style={{ fontWeight: 600 }}>Rate / Benefit:</span>
 
@@ -1752,7 +1752,7 @@ function PlansOffers() {
 
                     lineHeight: "1.6", color: "var(--text-main)", fontStyle: "italic", 
 
-                    backgroundColor: "rgba(0,0,0,0.02)", padding: "12px", borderRadius: "8px", 
+                    backgroundColor: "rgba(0,0,0,0.02)", padding: "var(--fs-xs, 12px)", borderRadius: "8px", 
 
                     border: "1px solid var(--border)"
 
@@ -1772,11 +1772,11 @@ function PlansOffers() {
 
                   style={{
 
-                    width: "100%", padding: "12px", border: "none", borderRadius: "10px", 
+                    width: "100%", padding: "var(--fs-xs, 12px)", border: "none", borderRadius: "10px", 
 
                     fontSize: "14px", fontWeight: 700, cursor: "pointer",
 
-                    backgroundColor: selectedTermsItem.type === 'plan' ? "#2563eb" : "#10b981", color: "white", 
+                    backgroundColor: selectedTermsItem.type === 'plan' ? "#2563eb" : "var(--success)", color: "white", 
 
                     transition: "all 0.2s", marginTop: "8px"
 

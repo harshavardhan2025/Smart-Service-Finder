@@ -40,9 +40,9 @@ function SkeletonLoader({ type = "card", count = 1 }) {
             gap: "16px",
             padding: "16px",
             backgroundColor: "var(--bg-card)",
-            borderRadius: "12px",
+            borderRadius: "var(--fs-xs, 12px)",
             border: "1px solid var(--border-color)",
-            marginBottom: "12px",
+            marginBottom: "var(--fs-xs, 12px)",
             width: "100%",
             boxSizing: "border-box"
           }}
@@ -61,7 +61,7 @@ function SkeletonLoader({ type = "card", count = 1 }) {
         <div
           key={key}
           style={{
-            padding: "24px",
+            padding: "var(--fs-xl, 24px)",
             backgroundColor: "var(--bg-card)",
             borderRadius: "16px",
             border: "1px solid var(--border-color)",
@@ -76,7 +76,7 @@ function SkeletonLoader({ type = "card", count = 1 }) {
         >
           <div style={{ ...itemStyle, width: "90px", height: "90px", borderRadius: "50%", marginBottom: "16px" }} />
           <div style={{ ...itemStyle, width: "60%", height: "16px", marginBottom: "8px" }} />
-          <div style={{ ...itemStyle, width: "40%", height: "12px", marginBottom: "16px" }} />
+          <div style={{ ...itemStyle, width: "40%", height: "var(--fs-xs, 12px)", marginBottom: "16px" }} />
           <div style={{ width: "100%", display: "flex", gap: "8px", justifyContent: "center" }}>
             <div style={{ ...itemStyle, width: "30%", height: "32px" }} />
             <div style={{ ...itemStyle, width: "30%", height: "32px" }} />
@@ -97,7 +97,7 @@ function SkeletonLoader({ type = "card", count = 1 }) {
           boxShadow: "0 4px 12px rgba(0,0,0,0.02)",
           display: "flex",
           flexDirection: "column",
-          gap: "12px",
+          gap: "var(--fs-xs, 12px)",
           minWidth: "250px",
           flex: 1,
           boxSizing: "border-box"
@@ -107,8 +107,8 @@ function SkeletonLoader({ type = "card", count = 1 }) {
           <div style={{ ...itemStyle, width: "120px", height: "16px" }} />
           <div style={{ ...itemStyle, width: "50px", height: "18px", borderRadius: "20px" }} />
         </div>
-        <div style={{ ...itemStyle, width: "70%", height: "12px" }} />
-        <div style={{ ...itemStyle, width: "90%", height: "12px" }} />
+        <div style={{ ...itemStyle, width: "70%", height: "var(--fs-xs, 12px)" }} />
+        <div style={{ ...itemStyle, width: "90%", height: "var(--fs-xs, 12px)" }} />
         <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
           <div style={{ ...itemStyle, width: "60px", height: "10px" }} />
           <div style={{ ...itemStyle, width: "80px", height: "10px" }} />

@@ -103,7 +103,7 @@ function Navbar() {
         <div style={{
           position: "fixed", top: "20px", left: "50%", transform: "translateX(-50%)",
           background: "#1e293b", color: "white", padding: "12px 24px",
-          borderRadius: "12px", zIndex: 99999, fontWeight: 700, fontSize: "14px",
+          borderRadius: "var(--fs-xs, 12px)", zIndex: 99999, fontWeight: 700, fontSize: "14px",
           boxShadow: "0 8px 24px rgba(0,0,0,0.3)", display: "flex", alignItems: "center", gap: "8px",
           animation: "fadeIn 0.2s ease"
         }}>
@@ -180,7 +180,8 @@ function Navbar() {
               }}
             >
               <span style={{ color: "var(--text-main)" }}>Work</span>
-              <span style={{ color: "var(--warning, #f59e0b)" }}>zy</span>
+              {/* 'zy' brand colour: #92400e = 7.3:1 on white (WCAG AA ✓); dark uses CSS var */}
+              <span style={{ color: "var(--brand-accent, #92400e)" }}>zy</span>
             </span>
           </Link>
         </div>
@@ -233,6 +234,9 @@ function Navbar() {
                   boxShadow: "0 2px 6px rgba(0, 0, 0, 0.04)",
                   flexShrink: 0,
                 }}
+                aria-label={`Notifications — ${notifications.filter(n => !n.is_read).length} unread`}
+                aria-haspopup="true"
+                aria-expanded={showNotifications}
                 title="Notifications"
               >
                 <FaBell size={16} />
@@ -242,7 +246,7 @@ function Navbar() {
                       position: "absolute",
                       top: "-2px",
                       right: "-2px",
-                      backgroundColor: "#ef4444",
+                      backgroundColor: "var(--danger)",
                       color: "white",
                       fontSize: "10px",
                       fontWeight: "bold",
@@ -281,7 +285,7 @@ function Navbar() {
                     boxSizing: "border-box"
                   }}
                 >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", borderBottom: "1px solid var(--border-color)", paddingBottom: "8px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--fs-xs, 12px)", borderBottom: "1px solid var(--border-color)", paddingBottom: "8px" }}>
                     <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "var(--text-main)" }}>Notifications & Messages</h4>
                     <button
                       onClick={async () => {
@@ -317,7 +321,7 @@ function Navbar() {
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                     {notifications.length === 0 ? (
-                      <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)", textAlign: "center", padding: "16px 0" }}>No new messages or notifications</p>
+                      <p style={{ margin: 0, fontSize: "var(--fs-xs, 12px)", color: "var(--text-secondary)", textAlign: "center", padding: "16px 0" }}>No new messages or notifications</p>
                     ) : (
                       notifications.map((n) => (
                         <div
@@ -327,13 +331,13 @@ function Navbar() {
                             borderRadius: "10px",
                             backgroundColor: n.is_read ? "var(--bg-card-hover)" : "var(--primary-light)",
                             borderLeft: n.is_read ? "3px solid transparent" : "3px solid var(--primary)",
-                            fontSize: "12px",
+                            fontSize: "var(--fs-xs, 12px)",
                             transition: "background-color 0.2s"
                           }}
                         >
                           <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, color: "var(--text-main)", marginBottom: "4px" }}>
                             <span style={{ fontWeight: 800 }}>{n.title || "Notification"}</span>
-                            <span style={{ fontSize: "9px", color: "var(--text-secondary)" }}>
+                            <span aria-hidden="true" style={{ fontSize: "9px", color: "var(--text-secondary)" }}>
                               {n.createdAt ? new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Just now"}
                             </span>
                           </div>
@@ -357,7 +361,6 @@ function Navbar() {
                 className="theme-toggle-btn"
                 style={{
                   background: "none",
-                  padding: "8px",
                   fontSize: "20px",
                   cursor: "pointer",
                   borderRadius: "50%",
@@ -370,6 +373,7 @@ function Navbar() {
                   border: "1.5px solid var(--border-color)",
                   boxShadow: "none"
                 }}
+                aria-label={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
                 title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
               >
                 {isDark ? <FaSun size={18} style={{ color: "var(--warning)" }} /> : <FaMoon size={18} style={{ color: "var(--primary)" }} />}
@@ -465,7 +469,7 @@ function Navbar() {
                   </button>
                 </div>
               ) : (
-                <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                <div style={{ display: "flex", gap: "var(--fs-xs, 12px)", alignItems: "center" }}>
                   <Link to="/login" style={{ textDecoration: "none" }}>
                     <button
                       style={{
