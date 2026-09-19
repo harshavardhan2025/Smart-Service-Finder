@@ -360,18 +360,20 @@ function Navbar() {
                 onClick={toggleTheme}
                 className="theme-toggle-btn"
                 style={{
-                  background: "none",
-                  fontSize: "20px",
+                  width: isMobile ? "38px" : "40px",
+                  height: isMobile ? "38px" : "40px",
+                  padding: 0,
                   cursor: "pointer",
                   borderRadius: "50%",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  backgroundColor: "var(--bg-card-hover)",
+                  background: "var(--bg-card-hover)",
                   color: "var(--text-main)",
                   transition: "all 0.2s",
                   border: "1.5px solid var(--border-color)",
-                  boxShadow: "none"
+                  boxShadow: "0 2px 6px rgba(0, 0, 0, 0.04)",
+                  flexShrink: 0,
                 }}
                 aria-label={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
                 title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}

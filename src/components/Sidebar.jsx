@@ -619,6 +619,7 @@ function Sidebar({ open: controlledOpen, onClose: controlledOnClose }) {
               style={{
                 width: "34px",
                 height: "34px",
+                padding: 0,
                 borderRadius: "9px",
                 border: "1.5px solid var(--border-color)",
                 background: "var(--bg-card-hover)",
@@ -627,6 +628,7 @@ function Sidebar({ open: controlledOpen, onClose: controlledOnClose }) {
                 alignItems: "center",
                 justifyContent: "center",
                 cursor: "pointer",
+                flexShrink: 0,
                 transition: "all 0.2s ease",
               }}
             >
